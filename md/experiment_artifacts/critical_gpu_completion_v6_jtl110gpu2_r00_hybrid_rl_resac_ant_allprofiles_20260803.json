@@ -1,0 +1,3055 @@
+{
+  "admission_delay_included_in_completion_jct": true,
+  "algorithm_path": "controlled_theorem_measurement_direct",
+  "allow_launch": true,
+  "campaign_id": "critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803",
+  "capacity_boundary_count": 0,
+  "coordinated_post_warmup_start_required_for_builtin_gpu_workloads": true,
+  "environment_gate": {
+    "ready": true,
+    "reason": "",
+    "returncode": 0,
+    "stderr_tail": "",
+    "stdout_tail": "ENV_READY\nRESAC_READY\n"
+  },
+  "final_measurement_code_manifest": {
+    "algorithm": "sha256(path\\0content\\0)",
+    "files": [
+      {
+        "path": "algorithm/experiments/critical_gpu_completion_campaign.py",
+        "sha256": "e3deabc5d8402f3aa9ae19b11a93a557b72c57f5aecfaf7be9901a68facdb6c6"
+      },
+      {
+        "path": "algorithm/experiments/critical_gpu_completion_series.py",
+        "sha256": "9cfe671ccbfa886a073992cec0233eb2cc18fc4ca9dd3235596b4d27a15723d0"
+      },
+      {
+        "path": "algorithm/experiments/gpu_progress_benchmark.py",
+        "sha256": "b6920fa34f025c78f12995707ea5407e7c45c07a97f2a2a82358bd7bdd98f0cb"
+      },
+      {
+        "path": "algorithm/experiments/progress_units.py",
+        "sha256": "293722b931966fac3433dd1b0bdf1a43083c2acef8eba68c2a3307b61bbd4c60"
+      },
+      {
+        "path": "algorithm/experiments/progress_wrapper.py",
+        "sha256": "c8edb95425e18241f9b5ec33fa99c50093e2e8b8e21927b4a65817020910ade0"
+      },
+      {
+        "path": "algorithm/experiments/remote_workload_selected_profile_probe.py",
+        "sha256": "e5d906b3c9189c7a8e9042f0db756d8dc01f813bea3cc4aa256a6d067406d1e3"
+      },
+      {
+        "path": "algorithm/experiments/templates/gpu_matmul_progress.cmd.tpl",
+        "sha256": "f9b1299d279b100b84ee99674f374ca4637873aed005f86bbca880498e844fed"
+      },
+      {
+        "path": "algorithm/experiments/templates/resac_env_real_venv.cmd.tpl",
+        "sha256": "a003a5c34659fc89d3dabc034bb1505e46b1918ad73e4c2a81b143e9dfc59371"
+      },
+      {
+        "path": "algorithm/experiments/templates/torch_cnn_resnet50.cmd.tpl",
+        "sha256": "f6036c685e4c21f665dae88aeee6ff116b196c07ed51c27168a507accbfe797f"
+      },
+      {
+        "path": "algorithm/experiments/templates/torch_llm_distilgpt2.cmd.tpl",
+        "sha256": "bef2f412fce12dc8a0b636317f7a720aa5da45aab75d38ff342c1d282c4f2c1f"
+      },
+      {
+        "path": "algorithm/experiments/torch_cnn_progress_benchmark.py",
+        "sha256": "b6f54d5e7fae703faf1ac501539b95885cfe7c1ad41432d221a7145577ed0a1f"
+      },
+      {
+        "path": "algorithm/experiments/torch_llm_progress_benchmark.py",
+        "sha256": "8f15e2afd0e1a53fc2bf1c4453398bc6a1964ac96e5d13d67709782925f74aaa"
+      }
+    ],
+    "sha256": "203f9471cedc4a2bbdaf63f48f6ba917828b77c6b6222bb990024ba0724b2d19"
+  },
+  "gate": "critical_gpu_completion_campaign",
+  "hardware_local_profile_registry": {
+    "gpu_cnn_torch_resnet50": [
+      1,
+      3
+    ],
+    "gpu_heavy_jax_matmul": [
+      1,
+      3
+    ],
+    "gpu_llm_distilgpt2": [
+      1,
+      3,
+      8
+    ],
+    "hybrid_rl_resac_ant": [
+      2,
+      5
+    ]
+  },
+  "legacy_scheduler_limits_bypassed": true,
+  "measurement_code_manifest": {
+    "algorithm": "sha256(path\\0content\\0)",
+    "files": [
+      {
+        "path": "algorithm/experiments/critical_gpu_completion_campaign.py",
+        "sha256": "e3deabc5d8402f3aa9ae19b11a93a557b72c57f5aecfaf7be9901a68facdb6c6"
+      },
+      {
+        "path": "algorithm/experiments/critical_gpu_completion_series.py",
+        "sha256": "9cfe671ccbfa886a073992cec0233eb2cc18fc4ca9dd3235596b4d27a15723d0"
+      },
+      {
+        "path": "algorithm/experiments/gpu_progress_benchmark.py",
+        "sha256": "b6920fa34f025c78f12995707ea5407e7c45c07a97f2a2a82358bd7bdd98f0cb"
+      },
+      {
+        "path": "algorithm/experiments/progress_units.py",
+        "sha256": "293722b931966fac3433dd1b0bdf1a43083c2acef8eba68c2a3307b61bbd4c60"
+      },
+      {
+        "path": "algorithm/experiments/progress_wrapper.py",
+        "sha256": "c8edb95425e18241f9b5ec33fa99c50093e2e8b8e21927b4a65817020910ade0"
+      },
+      {
+        "path": "algorithm/experiments/remote_workload_selected_profile_probe.py",
+        "sha256": "e5d906b3c9189c7a8e9042f0db756d8dc01f813bea3cc4aa256a6d067406d1e3"
+      },
+      {
+        "path": "algorithm/experiments/templates/gpu_matmul_progress.cmd.tpl",
+        "sha256": "f9b1299d279b100b84ee99674f374ca4637873aed005f86bbca880498e844fed"
+      },
+      {
+        "path": "algorithm/experiments/templates/resac_env_real_venv.cmd.tpl",
+        "sha256": "a003a5c34659fc89d3dabc034bb1505e46b1918ad73e4c2a81b143e9dfc59371"
+      },
+      {
+        "path": "algorithm/experiments/templates/torch_cnn_resnet50.cmd.tpl",
+        "sha256": "f6036c685e4c21f665dae88aeee6ff116b196c07ed51c27168a507accbfe797f"
+      },
+      {
+        "path": "algorithm/experiments/templates/torch_llm_distilgpt2.cmd.tpl",
+        "sha256": "bef2f412fce12dc8a0b636317f7a720aa5da45aab75d38ff342c1d282c4f2c1f"
+      },
+      {
+        "path": "algorithm/experiments/torch_cnn_progress_benchmark.py",
+        "sha256": "b6f54d5e7fae703faf1ac501539b95885cfe7c1ad41432d221a7145577ed0a1f"
+      },
+      {
+        "path": "algorithm/experiments/torch_llm_progress_benchmark.py",
+        "sha256": "8f15e2afd0e1a53fc2bf1c4453398bc6a1964ac96e5d13d67709782925f74aaa"
+      }
+    ],
+    "sha256": "203f9471cedc4a2bbdaf63f48f6ba917828b77c6b6222bb990024ba0724b2d19"
+  },
+  "measurement_code_unchanged": true,
+  "measurement_protocol": "critical_gpu_phase_completion_v6",
+  "natural_completion_required": true,
+  "node": "jtl110gpu2",
+  "node_spec": {
+    "bapr_python": "/home/erzhu419/.venvs/resac-jax-gpu1-0438/bin/python",
+    "gpus": [
+      0,
+      1
+    ],
+    "hardware_class": "NVIDIA_RTX_3080Ti_12GB",
+    "hf_cache_dir": "/home/erzhu419/.cache/huggingface/hub",
+    "node": "jtl110gpu2",
+    "node_bucket": "gpu_3080ti_12gb_dual",
+    "output_root": "/tmp/scheduleurm_critical_gpu_completion",
+    "role": "homogeneous_equivalence",
+    "torch_python": "/home/erzhu419/.venvs/scheduleurm-torch-bench/bin/python",
+    "workload_pythonpath": "/home/erzhu419/scheduleurm_work/python_stdlib_patch:/home/erzhu419/.claude/scheduler/runtime_patches:/home/erzhu419/mine_code/RE-SAC"
+  },
+  "pass": true,
+  "planned_cells": [
+    {
+      "cell_id": "jtl110gpu2_hybrid_rl_resac_ant_p2_r00",
+      "gpus": [
+        0,
+        1
+      ],
+      "hardware_class": "NVIDIA_RTX_3080Ti_12GB",
+      "max_iters": 40,
+      "node": "jtl110gpu2",
+      "node_bucket": "gpu_3080ti_12gb_dual",
+      "node_role": "homogeneous_equivalence",
+      "profile": 2,
+      "profile_axis": "tasks_per_gpu",
+      "quadrant": "q11",
+      "split_role": "smoke_excluded",
+      "timeout_s": 10800,
+      "total_task_count": 4,
+      "wave": 0,
+      "workload_env": "Ant-v2",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "cell_id": "jtl110gpu2_hybrid_rl_resac_ant_p5_r00",
+      "gpus": [
+        0,
+        1
+      ],
+      "hardware_class": "NVIDIA_RTX_3080Ti_12GB",
+      "max_iters": 40,
+      "node": "jtl110gpu2",
+      "node_bucket": "gpu_3080ti_12gb_dual",
+      "node_role": "homogeneous_equivalence",
+      "profile": 5,
+      "profile_axis": "tasks_per_gpu",
+      "quadrant": "q11",
+      "split_role": "smoke_excluded",
+      "timeout_s": 10800,
+      "total_task_count": 10,
+      "wave": 0,
+      "workload_env": "Ant-v2",
+      "workload_key": "hybrid_rl_resac_ant"
+    }
+  ],
+  "pre_registered_split": {
+    "calibration": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "holdout": 13,
+    "smoke_excluded": 0,
+    "training": [
+      1,
+      2,
+      3
+    ]
+  },
+  "ready_row_count": 2,
+  "real_checkpoint_allocation_required": true,
+  "rows": [
+    {
+      "admission_audit": {
+        "children": [
+          {
+            "expected_delay_s": 0.0,
+            "global_index": 0,
+            "local_index": 0,
+            "observed_delay_s": 0,
+            "ready": true,
+            "tolerance_s": 0.25
+          },
+          {
+            "expected_delay_s": 0.0,
+            "global_index": 1,
+            "local_index": 1,
+            "observed_delay_s": 0,
+            "ready": true,
+            "tolerance_s": 0.25
+          },
+          {
+            "expected_delay_s": 0.0,
+            "global_index": 2,
+            "local_index": 0,
+            "observed_delay_s": 0,
+            "ready": true,
+            "tolerance_s": 0.25
+          },
+          {
+            "expected_delay_s": 0.0,
+            "global_index": 3,
+            "local_index": 1,
+            "observed_delay_s": 0,
+            "ready": true,
+            "tolerance_s": 0.25
+          }
+        ],
+        "delay_counted_in_startup_and_jct": true,
+        "minimum_profile": 5,
+        "profile": 2,
+        "ready": true,
+        "stagger_axis": "global_index",
+        "stagger_s": 30.0
+      },
+      "artifact_audit": {
+        "allocated_file_count": 84,
+        "file_count": 84,
+        "files": [
+          {
+            "allocated_blocks_512": 73392,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_2/checkpoints/iter_0000039/replay_buffer.npz",
+            "size_bytes": 37573363
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_2/checkpoints/iter_0000039/train_state.pkl",
+            "size_bytes": 3208
+          },
+          {
+            "allocated_blocks_512": 47104,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_2/checkpoints/iter_0000039/params.pkl",
+            "size_bytes": 24116449
+          },
+          {
+            "allocated_blocks_512": 36728,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_2/checkpoints/iter_0000019/replay_buffer.npz",
+            "size_bytes": 18801296
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_2/checkpoints/iter_0000019/train_state.pkl",
+            "size_bytes": 1696
+          },
+          {
+            "allocated_blocks_512": 47104,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_2/checkpoints/iter_0000019/params.pkl",
+            "size_bytes": 24116413
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_2/checkpoints/latest_checkpoint.pkl",
+            "size_bytes": 52
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_2/logs/q_mean.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_2/logs/eval_reward_std.npy",
+            "size_bytes": 192
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_2/logs/beta_lcb.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_2/logs/critic_loss.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_2/logs/mode_id.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_2/logs/total_steps.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_2/logs/policy_loss.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_2/logs/alpha.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_2/logs/iteration.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_2/logs/train_reward_mean.npy",
+            "size_bytes": 152
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_2/logs/log_prob.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_2/logs/eval_reward.npy",
+            "size_bytes": 192
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_2/logs/train_reward_std.npy",
+            "size_bytes": 152
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_2/logs/q_std_mean.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 73368,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_3/checkpoints/iter_0000039/replay_buffer.npz",
+            "size_bytes": 37563718
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_3/checkpoints/iter_0000039/train_state.pkl",
+            "size_bytes": 3208
+          },
+          {
+            "allocated_blocks_512": 47104,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_3/checkpoints/iter_0000039/params.pkl",
+            "size_bytes": 24116449
+          },
+          {
+            "allocated_blocks_512": 36712,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_3/checkpoints/iter_0000019/replay_buffer.npz",
+            "size_bytes": 18794358
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_3/checkpoints/iter_0000019/train_state.pkl",
+            "size_bytes": 1696
+          },
+          {
+            "allocated_blocks_512": 47104,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_3/checkpoints/iter_0000019/params.pkl",
+            "size_bytes": 24116413
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_3/checkpoints/latest_checkpoint.pkl",
+            "size_bytes": 52
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_3/logs/q_mean.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_3/logs/eval_reward_std.npy",
+            "size_bytes": 192
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_3/logs/beta_lcb.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_3/logs/critic_loss.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_3/logs/mode_id.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_3/logs/total_steps.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_3/logs/policy_loss.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_3/logs/alpha.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_3/logs/iteration.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_3/logs/train_reward_mean.npy",
+            "size_bytes": 152
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_3/logs/log_prob.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_3/logs/eval_reward.npy",
+            "size_bytes": 192
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_3/logs/train_reward_std.npy",
+            "size_bytes": 152
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_3/logs/q_std_mean.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 73384,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_1/checkpoints/iter_0000039/replay_buffer.npz",
+            "size_bytes": 37572591
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_1/checkpoints/iter_0000039/train_state.pkl",
+            "size_bytes": 3170
+          },
+          {
+            "allocated_blocks_512": 47104,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_1/checkpoints/iter_0000039/params.pkl",
+            "size_bytes": 24116449
+          },
+          {
+            "allocated_blocks_512": 36712,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_1/checkpoints/iter_0000019/replay_buffer.npz",
+            "size_bytes": 18794060
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_1/checkpoints/iter_0000019/train_state.pkl",
+            "size_bytes": 1658
+          },
+          {
+            "allocated_blocks_512": 47104,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_1/checkpoints/iter_0000019/params.pkl",
+            "size_bytes": 24116413
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_1/checkpoints/latest_checkpoint.pkl",
+            "size_bytes": 52
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_1/logs/q_mean.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_1/logs/eval_reward_std.npy",
+            "size_bytes": 192
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_1/logs/beta_lcb.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_1/logs/critic_loss.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_1/logs/mode_id.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_1/logs/total_steps.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_1/logs/policy_loss.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_1/logs/alpha.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_1/logs/iteration.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_1/logs/train_reward_mean.npy",
+            "size_bytes": 136
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_1/logs/log_prob.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_1/logs/eval_reward.npy",
+            "size_bytes": 192
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_1/logs/train_reward_std.npy",
+            "size_bytes": 136
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_1/logs/q_std_mean.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 73376,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_0/checkpoints/iter_0000039/replay_buffer.npz",
+            "size_bytes": 37567309
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_0/checkpoints/iter_0000039/train_state.pkl",
+            "size_bytes": 3208
+          },
+          {
+            "allocated_blocks_512": 47104,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_0/checkpoints/iter_0000039/params.pkl",
+            "size_bytes": 24116449
+          },
+          {
+            "allocated_blocks_512": 36720,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_0/checkpoints/iter_0000019/replay_buffer.npz",
+            "size_bytes": 18797366
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_0/checkpoints/iter_0000019/train_state.pkl",
+            "size_bytes": 1696
+          },
+          {
+            "allocated_blocks_512": 47104,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_0/checkpoints/iter_0000019/params.pkl",
+            "size_bytes": 24116413
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_0/checkpoints/latest_checkpoint.pkl",
+            "size_bytes": 52
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_0/logs/q_mean.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_0/logs/eval_reward_std.npy",
+            "size_bytes": 192
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_0/logs/beta_lcb.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_0/logs/critic_loss.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_0/logs/mode_id.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_0/logs/total_steps.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_0/logs/policy_loss.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_0/logs/alpha.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_0/logs/iteration.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_0/logs/train_reward_mean.npy",
+            "size_bytes": 152
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_0/logs/log_prob.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_0/logs/eval_reward.npy",
+            "size_bytes": 192
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_0/logs/train_reward_std.npy",
+            "size_bytes": 152
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_0/logs/q_std_mean.npy",
+            "size_bytes": 432
+          }
+        ],
+        "ready": true,
+        "returncode": 0,
+        "stderr_tail": "",
+        "total_allocated_bytes": 418697216,
+        "total_size_bytes": 418435449
+      },
+      "backend_audit": {
+        "accepted_task_count": 4,
+        "expected_task_count": 4,
+        "markers": [
+          "  JAX devices: [CudaDevice(id=0)]",
+          "Starting training... (first 10000 steps are random exploration)",
+          "  JAX devices: [CudaDevice(id=0)]",
+          "Starting training... (first 10000 steps are random exploration)",
+          "  JAX devices: [CudaDevice(id=0)]",
+          "Starting training... (first 10000 steps are random exploration)",
+          "  JAX devices: [CudaDevice(id=0)]",
+          "Starting training... (first 10000 steps are random exploration)"
+        ],
+        "ready": true
+      },
+      "capacity_boundary": false,
+      "cell_id": "jtl110gpu2_hybrid_rl_resac_ant_p2_r00",
+      "checkpoint_allocation_ready": true,
+      "completion_audit": {
+        "all_completion_models_ready": true,
+        "all_natural_exit": true,
+        "checkpoint_or_finalization_observed": true,
+        "ready": true,
+        "task_count": 4
+      },
+      "coordination_audit": {
+        "end_marker_count": 0,
+        "expected_task_count": 4,
+        "ready": true,
+        "required": false,
+        "start_marker_count": 0
+      },
+      "elapsed_wall_s": 524.0589869022369,
+      "gpus": [
+        0,
+        1
+      ],
+      "hardware_class": "NVIDIA_RTX_3080Ti_12GB",
+      "max_iters": 40,
+      "measurement_code_identity_ready": true,
+      "measurement_code_sha256": "203f9471cedc4a2bbdaf63f48f6ba917828b77c6b6222bb990024ba0724b2d19",
+      "measurement_protocol": "critical_gpu_phase_completion_v6",
+      "node": "jtl110gpu2",
+      "node_bucket": "gpu_3080ti_12gb_dual",
+      "node_role": "homogeneous_equivalence",
+      "preflight": {
+        "compute_process_rows": [],
+        "idle_memory_limit_mb": 512,
+        "idle_util_limit_pct": 5,
+        "ready": true,
+        "returncode": 0,
+        "selected_gpus": [
+          {
+            "index": 0,
+            "name": "NVIDIA GeForce RTX 3080 Ti",
+            "total_mb": 12288,
+            "used_mb": 177,
+            "util_pct": 0
+          },
+          {
+            "index": 1,
+            "name": "NVIDIA GeForce RTX 3080 Ti",
+            "total_mb": 12288,
+            "used_mb": 10,
+            "util_pct": 0
+          }
+        ],
+        "stderr_tail": ""
+      },
+      "probe_result": {
+        "completion_model_ready_count": 4,
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1
+        ],
+        "node": "jtl110gpu2",
+        "pass": true,
+        "profiles": [
+          2
+        ],
+        "rate_count": 4,
+        "run_id": "critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc",
+        "stable_rate_ready_count": 4,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/reports/profile_2_per_gpu_summary.json"
+        ]
+      },
+      "profile": 2,
+      "profile_axis": "tasks_per_gpu",
+      "quadrant": "q11",
+      "ready": true,
+      "remote_cleanup": {
+        "ready": true,
+        "returncode": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "remote_output_root": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc",
+      "run_id": "critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc",
+      "split_role": "smoke_excluded",
+      "status": "READY",
+      "summary": {
+        "aggregate_active_rate_unit_s": 0.902049665,
+        "aggregate_stable_rate_unit_s": 0.545343522,
+        "all_completion_models_ready": true,
+        "all_stable_rate_ready": true,
+        "blocked_count": 0,
+        "capacity_boundary": false,
+        "completion_model_count": 4,
+        "completion_model_ready_count": 4,
+        "coordinated_profile_launch": true,
+        "elapsed_wall_s": 514.1055946350098,
+        "eviction_count": 0,
+        "expected_per_gpu_running": {
+          "0": 2,
+          "1": 2
+        },
+        "gpus": [
+          0,
+          1
+        ],
+        "max_iters": 40,
+        "mean_active_rate_unit_s": 0.22551241625000001,
+        "mean_stable_rate_unit_s": 0.1363358805,
+        "measurement_aggregate_rate_unit_s_median": 0.902049665,
+        "measurement_valid": true,
+        "min_rate_samples": 10,
+        "node": "jtl110gpu2",
+        "per_gpu_running": {
+          "0": 2,
+          "1": 2
+        },
+        "phase": "profile_2_per_gpu",
+        "placement_issues": [],
+        "placement_valid": true,
+        "probe": "remote_workload_selected_profile_probe",
+        "profile": 2,
+        "rate_units": [
+          "iter"
+        ],
+        "rates_unit_s": [
+          0.23255814,
+          0.169491525,
+          0.166666667,
+          0.333333333
+        ],
+        "require_completion_model": true,
+        "require_stable_rate": true,
+        "returncode_acceptance_rule": "strict_zero_or_stable_required_rate",
+        "returncode_accepted_count": 4,
+        "returncode_valid_count": 4,
+        "rows": [
+          {
+            "completion_model": {
+              "amortized_unit_s": 10.226293225384628,
+              "base_unit_s": 5.943017978017451,
+              "checkpoint_observed_s": 0,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 10.226293225384628,
+              "counter_offset": 1,
+              "finalization_after_last_progress_s": 4.390553089993773,
+              "first_progress_unit": 0,
+              "interval_sample_count": 39,
+              "last_progress_unit": 39,
+              "loop_observed_units": 39,
+              "loop_wall_s": 398.8254357900005,
+              "model_abs_error_s": 5.684341886080802e-14,
+              "model_relative_error": 1.1137989238046237e-16,
+              "natural_exit": true,
+              "periodic_extra_s": 167.04773464731988,
+              "phase_durations_s": {},
+              "predicted_total_s": 510.35620205698075,
+              "progress_observation_count": 40,
+              "readiness_reason": "ready",
+              "save_observed_s": 0,
+              "schema_version": 1,
+              "startup_overhead_s": 96.91391995160181,
+              "startup_to_first_progress_s": 107.14021317698644,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 4.390553089993773,
+              "total_units": 40,
+              "total_wall_s": 510.3562020569807,
+              "unit": "iter"
+            },
+            "completion_model_ready": true,
+            "global_index": 0,
+            "gpu": 0,
+            "idx": 0,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/raw/profile_2_per_gpu/gpu0_0.log",
+            "rate": 0.23255814,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_0",
+            "seed": 830000,
+            "stable_cv": 0.0,
+            "stable_last_two_relative_delta": 0.0,
+            "stable_mean_rate": 0.136986301,
+            "stable_rate": 0.136986301,
+            "stable_rate_ready": true,
+            "stable_samples": 3,
+            "stable_tail_rates": [
+              0.136986301,
+              0.136986301
+            ],
+            "unit": "iter"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 10.2246100073337,
+              "base_unit_s": 5.942836094996892,
+              "checkpoint_observed_s": 0,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 10.2246100073337,
+              "counter_offset": 1,
+              "finalization_after_last_progress_s": 4.460774709004909,
+              "first_progress_unit": 0,
+              "interval_sample_count": 39,
+              "last_progress_unit": 39,
+              "loop_observed_units": 39,
+              "loop_wall_s": 398.7597902860143,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 166.98918258113554,
+              "phase_durations_s": {},
+              "predicted_total_s": 509.0269941590086,
+              "progress_observation_count": 40,
+              "readiness_reason": "ready",
+              "save_observed_s": 0,
+              "schema_version": 1,
+              "startup_overhead_s": 95.58181915665568,
+              "startup_to_first_progress_s": 105.80642916398938,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 4.460774709004909,
+              "total_units": 40,
+              "total_wall_s": 509.0269941590086,
+              "unit": "iter"
+            },
+            "completion_model_ready": true,
+            "global_index": 1,
+            "gpu": 0,
+            "idx": 1,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/raw/profile_2_per_gpu/gpu0_1.log",
+            "rate": 0.169491525,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu0_1",
+            "seed": 830001,
+            "stable_cv": 0.0,
+            "stable_last_two_relative_delta": 0.0,
+            "stable_mean_rate": 0.136986301,
+            "stable_rate": 0.136986301,
+            "stable_rate_ready": true,
+            "stable_samples": 3,
+            "stable_tail_rates": [
+              0.136986301,
+              0.136986301
+            ],
+            "unit": "iter"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 10.127423210692658,
+              "base_unit_s": 5.96371500598616,
+              "checkpoint_observed_s": 0,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 10.127423210692658,
+              "counter_offset": 1,
+              "finalization_after_last_progress_s": 4.568282719003037,
+              "first_progress_unit": 0,
+              "interval_sample_count": 39,
+              "last_progress_unit": 39,
+              "loop_observed_units": 39,
+              "loop_wall_s": 394.96950521701365,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 162.38461998355342,
+              "phase_durations_s": {},
+              "predicted_total_s": 506.5325862530153,
+              "progress_observation_count": 40,
+              "readiness_reason": "ready",
+              "save_observed_s": 0,
+              "schema_version": 1,
+              "startup_overhead_s": 96.86737510630599,
+              "startup_to_first_progress_s": 106.99479831699864,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 4.568282719003037,
+              "total_units": 40,
+              "total_wall_s": 506.5325862530153,
+              "unit": "iter"
+            },
+            "completion_model_ready": true,
+            "global_index": 2,
+            "gpu": 1,
+            "idx": 0,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/raw/profile_2_per_gpu/gpu1_0.log",
+            "rate": 0.166666667,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_2",
+            "seed": 830002,
+            "stable_cv": 0.0,
+            "stable_last_two_relative_delta": 0.0,
+            "stable_mean_rate": 0.135501355,
+            "stable_rate": 0.135501355,
+            "stable_rate_ready": true,
+            "stable_samples": 3,
+            "stable_tail_rates": [
+              0.135501355,
+              0.135501355
+            ],
+            "unit": "iter"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 10.181778387564313,
+              "base_unit_s": 5.953576819010777,
+              "checkpoint_observed_s": 0,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 10.181778387564313,
+              "counter_offset": 1,
+              "finalization_after_last_progress_s": 4.4097442099882755,
+              "first_progress_unit": 0,
+              "interval_sample_count": 39,
+              "last_progress_unit": 39,
+              "loop_observed_units": 39,
+              "loop_wall_s": 397.08935711500817,
+              "model_abs_error_s": 5.684341886080802e-14,
+              "model_relative_error": 1.1166225408585493e-16,
+              "natural_exit": true,
+              "periodic_extra_s": 164.89986117358785,
+              "phase_durations_s": {},
+              "predicted_total_s": 509.0656580969808,
+              "progress_observation_count": 40,
+              "readiness_reason": "ready",
+              "save_observed_s": 0,
+              "schema_version": 1,
+              "startup_overhead_s": 97.38477838442002,
+              "startup_to_first_progress_s": 107.56655677198432,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 4.4097442099882755,
+              "total_units": 40,
+              "total_wall_s": 509.06565809698077,
+              "unit": "iter"
+            },
+            "completion_model_ready": true,
+            "global_index": 3,
+            "gpu": 1,
+            "idx": 1,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/raw/profile_2_per_gpu/gpu1_1.log",
+            "rate": 0.333333333,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc_profile_2_per_gpu_gpu1_3",
+            "seed": 830003,
+            "stable_cv": 0.0,
+            "stable_last_two_relative_delta": 0.0,
+            "stable_mean_rate": 0.135869565,
+            "stable_rate": 0.135869565,
+            "stable_rate_ready": true,
+            "stable_samples": 3,
+            "stable_tail_rates": [
+              0.135869565,
+              0.135869565
+            ],
+            "unit": "iter"
+          }
+        ],
+        "run_id": "critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc",
+        "running_count": 4,
+        "running_with_rate_count": 4,
+        "stable_cv_threshold": 0.1,
+        "stable_cycle_units": 5,
+        "stable_rate_ready_count": 4,
+        "stable_rates_unit_s": [
+          0.136986301,
+          0.136986301,
+          0.135501355,
+          0.135869565
+        ],
+        "stable_rel_delta_threshold": 0.08,
+        "stable_skip_samples": 0,
+        "stable_windows": 2,
+        "status_counts": {
+          "missing_rate": 0,
+          "sampled": 4
+        },
+        "terminate_on_stable": false,
+        "timeout_s": 10800,
+        "transport_mode": "foreground_ssh"
+      },
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p2_code203f9471cedc/reports/profile_2_per_gpu_summary.json",
+      "timeout_s": 10800,
+      "total_task_count": 4,
+      "wave": 0,
+      "workload_env": "Ant-v2",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "admission_audit": {
+        "children": [
+          {
+            "expected_delay_s": 0.0,
+            "global_index": 0,
+            "local_index": 0,
+            "observed_delay_s": 0,
+            "ready": true,
+            "tolerance_s": 0.25
+          },
+          {
+            "expected_delay_s": 30.0,
+            "global_index": 1,
+            "local_index": 1,
+            "observed_delay_s": 30.000164564000443,
+            "ready": true,
+            "tolerance_s": 1.5
+          },
+          {
+            "expected_delay_s": 60.0,
+            "global_index": 2,
+            "local_index": 2,
+            "observed_delay_s": 60.000188773992704,
+            "ready": true,
+            "tolerance_s": 3.0
+          },
+          {
+            "expected_delay_s": 90.0,
+            "global_index": 3,
+            "local_index": 3,
+            "observed_delay_s": 90.00014632902457,
+            "ready": true,
+            "tolerance_s": 4.5
+          },
+          {
+            "expected_delay_s": 120.0,
+            "global_index": 4,
+            "local_index": 4,
+            "observed_delay_s": 120.00017963000573,
+            "ready": true,
+            "tolerance_s": 6.0
+          },
+          {
+            "expected_delay_s": 150.0,
+            "global_index": 5,
+            "local_index": 0,
+            "observed_delay_s": 150.00019108099514,
+            "ready": true,
+            "tolerance_s": 7.5
+          },
+          {
+            "expected_delay_s": 180.0,
+            "global_index": 6,
+            "local_index": 1,
+            "observed_delay_s": 180.00016642798437,
+            "ready": true,
+            "tolerance_s": 9.0
+          },
+          {
+            "expected_delay_s": 210.0,
+            "global_index": 7,
+            "local_index": 2,
+            "observed_delay_s": 210.00015444800374,
+            "ready": true,
+            "tolerance_s": 10.5
+          },
+          {
+            "expected_delay_s": 240.0,
+            "global_index": 8,
+            "local_index": 3,
+            "observed_delay_s": 240.0001584010024,
+            "ready": true,
+            "tolerance_s": 12.0
+          },
+          {
+            "expected_delay_s": 270.0,
+            "global_index": 9,
+            "local_index": 4,
+            "observed_delay_s": 270.00016983400565,
+            "ready": true,
+            "tolerance_s": 13.5
+          }
+        ],
+        "delay_counted_in_startup_and_jct": true,
+        "minimum_profile": 5,
+        "profile": 5,
+        "ready": true,
+        "stagger_axis": "global_index",
+        "stagger_s": 30.0
+      },
+      "artifact_audit": {
+        "allocated_file_count": 210,
+        "file_count": 210,
+        "files": [
+          {
+            "allocated_blocks_512": 73376,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_0/checkpoints/iter_0000039/replay_buffer.npz",
+            "size_bytes": 37565252
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_0/checkpoints/iter_0000039/train_state.pkl",
+            "size_bytes": 3208
+          },
+          {
+            "allocated_blocks_512": 47104,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_0/checkpoints/iter_0000039/params.pkl",
+            "size_bytes": 24116449
+          },
+          {
+            "allocated_blocks_512": 36720,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_0/checkpoints/iter_0000019/replay_buffer.npz",
+            "size_bytes": 18796721
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_0/checkpoints/iter_0000019/train_state.pkl",
+            "size_bytes": 1696
+          },
+          {
+            "allocated_blocks_512": 47104,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_0/checkpoints/iter_0000019/params.pkl",
+            "size_bytes": 24116413
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_0/checkpoints/latest_checkpoint.pkl",
+            "size_bytes": 52
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_0/logs/q_mean.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_0/logs/eval_reward_std.npy",
+            "size_bytes": 192
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_0/logs/beta_lcb.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_0/logs/critic_loss.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_0/logs/mode_id.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_0/logs/total_steps.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_0/logs/policy_loss.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_0/logs/alpha.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_0/logs/iteration.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_0/logs/train_reward_mean.npy",
+            "size_bytes": 152
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_0/logs/log_prob.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_0/logs/eval_reward.npy",
+            "size_bytes": 192
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_0/logs/train_reward_std.npy",
+            "size_bytes": 152
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_0/logs/q_std_mean.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 73408,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_4/checkpoints/iter_0000039/replay_buffer.npz",
+            "size_bytes": 37582415
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_4/checkpoints/iter_0000039/train_state.pkl",
+            "size_bytes": 3208
+          },
+          {
+            "allocated_blocks_512": 47104,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_4/checkpoints/iter_0000039/params.pkl",
+            "size_bytes": 24116449
+          },
+          {
+            "allocated_blocks_512": 36720,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_4/checkpoints/iter_0000019/replay_buffer.npz",
+            "size_bytes": 18799120
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_4/checkpoints/iter_0000019/train_state.pkl",
+            "size_bytes": 1696
+          },
+          {
+            "allocated_blocks_512": 47104,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_4/checkpoints/iter_0000019/params.pkl",
+            "size_bytes": 24116413
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_4/checkpoints/latest_checkpoint.pkl",
+            "size_bytes": 52
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_4/logs/q_mean.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_4/logs/eval_reward_std.npy",
+            "size_bytes": 192
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_4/logs/beta_lcb.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_4/logs/critic_loss.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_4/logs/mode_id.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_4/logs/total_steps.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_4/logs/policy_loss.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_4/logs/alpha.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_4/logs/iteration.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_4/logs/train_reward_mean.npy",
+            "size_bytes": 152
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_4/logs/log_prob.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_4/logs/eval_reward.npy",
+            "size_bytes": 192
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_4/logs/train_reward_std.npy",
+            "size_bytes": 152
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_4/logs/q_std_mean.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 73376,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_1/checkpoints/iter_0000039/replay_buffer.npz",
+            "size_bytes": 37565950
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_1/checkpoints/iter_0000039/train_state.pkl",
+            "size_bytes": 3208
+          },
+          {
+            "allocated_blocks_512": 47104,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_1/checkpoints/iter_0000039/params.pkl",
+            "size_bytes": 24116449
+          },
+          {
+            "allocated_blocks_512": 36712,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_1/checkpoints/iter_0000019/replay_buffer.npz",
+            "size_bytes": 18795667
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_1/checkpoints/iter_0000019/train_state.pkl",
+            "size_bytes": 1696
+          },
+          {
+            "allocated_blocks_512": 47104,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_1/checkpoints/iter_0000019/params.pkl",
+            "size_bytes": 24116413
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_1/checkpoints/latest_checkpoint.pkl",
+            "size_bytes": 52
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_1/logs/q_mean.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_1/logs/eval_reward_std.npy",
+            "size_bytes": 192
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_1/logs/beta_lcb.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_1/logs/critic_loss.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_1/logs/mode_id.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_1/logs/total_steps.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_1/logs/policy_loss.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_1/logs/alpha.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_1/logs/iteration.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_1/logs/train_reward_mean.npy",
+            "size_bytes": 152
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_1/logs/log_prob.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_1/logs/eval_reward.npy",
+            "size_bytes": 192
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_1/logs/train_reward_std.npy",
+            "size_bytes": 152
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_1/logs/q_std_mean.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 73392,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_6/checkpoints/iter_0000039/replay_buffer.npz",
+            "size_bytes": 37575943
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_6/checkpoints/iter_0000039/train_state.pkl",
+            "size_bytes": 3208
+          },
+          {
+            "allocated_blocks_512": 47104,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_6/checkpoints/iter_0000039/params.pkl",
+            "size_bytes": 24116449
+          },
+          {
+            "allocated_blocks_512": 36712,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_6/checkpoints/iter_0000019/replay_buffer.npz",
+            "size_bytes": 18795622
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_6/checkpoints/iter_0000019/train_state.pkl",
+            "size_bytes": 1696
+          },
+          {
+            "allocated_blocks_512": 47104,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_6/checkpoints/iter_0000019/params.pkl",
+            "size_bytes": 24116413
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_6/checkpoints/latest_checkpoint.pkl",
+            "size_bytes": 52
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_6/logs/q_mean.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_6/logs/eval_reward_std.npy",
+            "size_bytes": 192
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_6/logs/beta_lcb.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_6/logs/critic_loss.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_6/logs/mode_id.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_6/logs/total_steps.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_6/logs/policy_loss.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_6/logs/alpha.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_6/logs/iteration.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_6/logs/train_reward_mean.npy",
+            "size_bytes": 152
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_6/logs/log_prob.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_6/logs/eval_reward.npy",
+            "size_bytes": 192
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_6/logs/train_reward_std.npy",
+            "size_bytes": 152
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_6/logs/q_std_mean.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 73416,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_3/checkpoints/iter_0000039/replay_buffer.npz",
+            "size_bytes": 37585070
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_3/checkpoints/iter_0000039/train_state.pkl",
+            "size_bytes": 3208
+          },
+          {
+            "allocated_blocks_512": 47104,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_3/checkpoints/iter_0000039/params.pkl",
+            "size_bytes": 24116449
+          },
+          {
+            "allocated_blocks_512": 36720,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_3/checkpoints/iter_0000019/replay_buffer.npz",
+            "size_bytes": 18798579
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_3/checkpoints/iter_0000019/train_state.pkl",
+            "size_bytes": 1696
+          },
+          {
+            "allocated_blocks_512": 47104,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_3/checkpoints/iter_0000019/params.pkl",
+            "size_bytes": 24116413
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_3/checkpoints/latest_checkpoint.pkl",
+            "size_bytes": 52
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_3/logs/q_mean.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_3/logs/eval_reward_std.npy",
+            "size_bytes": 192
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_3/logs/beta_lcb.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_3/logs/critic_loss.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_3/logs/mode_id.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_3/logs/total_steps.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_3/logs/policy_loss.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_3/logs/alpha.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_3/logs/iteration.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_3/logs/train_reward_mean.npy",
+            "size_bytes": 152
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_3/logs/log_prob.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_3/logs/eval_reward.npy",
+            "size_bytes": 192
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_3/logs/train_reward_std.npy",
+            "size_bytes": 152
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_3/logs/q_std_mean.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 73392,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_2/checkpoints/iter_0000039/replay_buffer.npz",
+            "size_bytes": 37576351
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_2/checkpoints/iter_0000039/train_state.pkl",
+            "size_bytes": 3208
+          },
+          {
+            "allocated_blocks_512": 47104,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_2/checkpoints/iter_0000039/params.pkl",
+            "size_bytes": 24116449
+          },
+          {
+            "allocated_blocks_512": 36720,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_2/checkpoints/iter_0000019/replay_buffer.npz",
+            "size_bytes": 18797241
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_2/checkpoints/iter_0000019/train_state.pkl",
+            "size_bytes": 1696
+          },
+          {
+            "allocated_blocks_512": 47104,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_2/checkpoints/iter_0000019/params.pkl",
+            "size_bytes": 24116413
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_2/checkpoints/latest_checkpoint.pkl",
+            "size_bytes": 52
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_2/logs/q_mean.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_2/logs/eval_reward_std.npy",
+            "size_bytes": 192
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_2/logs/beta_lcb.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_2/logs/critic_loss.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_2/logs/mode_id.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_2/logs/total_steps.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_2/logs/policy_loss.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_2/logs/alpha.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_2/logs/iteration.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_2/logs/train_reward_mean.npy",
+            "size_bytes": 152
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_2/logs/log_prob.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_2/logs/eval_reward.npy",
+            "size_bytes": 192
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_2/logs/train_reward_std.npy",
+            "size_bytes": 152
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_2/logs/q_std_mean.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 73392,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_8/checkpoints/iter_0000039/replay_buffer.npz",
+            "size_bytes": 37575857
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_8/checkpoints/iter_0000039/train_state.pkl",
+            "size_bytes": 3208
+          },
+          {
+            "allocated_blocks_512": 47104,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_8/checkpoints/iter_0000039/params.pkl",
+            "size_bytes": 24116449
+          },
+          {
+            "allocated_blocks_512": 36720,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_8/checkpoints/iter_0000019/replay_buffer.npz",
+            "size_bytes": 18796901
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_8/checkpoints/iter_0000019/train_state.pkl",
+            "size_bytes": 1696
+          },
+          {
+            "allocated_blocks_512": 47104,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_8/checkpoints/iter_0000019/params.pkl",
+            "size_bytes": 24116413
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_8/checkpoints/latest_checkpoint.pkl",
+            "size_bytes": 52
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_8/logs/q_mean.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_8/logs/eval_reward_std.npy",
+            "size_bytes": 192
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_8/logs/beta_lcb.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_8/logs/critic_loss.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_8/logs/mode_id.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_8/logs/total_steps.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_8/logs/policy_loss.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_8/logs/alpha.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_8/logs/iteration.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_8/logs/train_reward_mean.npy",
+            "size_bytes": 152
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_8/logs/log_prob.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_8/logs/eval_reward.npy",
+            "size_bytes": 192
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_8/logs/train_reward_std.npy",
+            "size_bytes": 152
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_8/logs/q_std_mean.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 73392,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_7/checkpoints/iter_0000039/replay_buffer.npz",
+            "size_bytes": 37575820
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_7/checkpoints/iter_0000039/train_state.pkl",
+            "size_bytes": 3208
+          },
+          {
+            "allocated_blocks_512": 47104,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_7/checkpoints/iter_0000039/params.pkl",
+            "size_bytes": 24116449
+          },
+          {
+            "allocated_blocks_512": 36720,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_7/checkpoints/iter_0000019/replay_buffer.npz",
+            "size_bytes": 18799640
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_7/checkpoints/iter_0000019/train_state.pkl",
+            "size_bytes": 1696
+          },
+          {
+            "allocated_blocks_512": 47104,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_7/checkpoints/iter_0000019/params.pkl",
+            "size_bytes": 24116413
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_7/checkpoints/latest_checkpoint.pkl",
+            "size_bytes": 52
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_7/logs/q_mean.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_7/logs/eval_reward_std.npy",
+            "size_bytes": 192
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_7/logs/beta_lcb.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_7/logs/critic_loss.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_7/logs/mode_id.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_7/logs/total_steps.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_7/logs/policy_loss.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_7/logs/alpha.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_7/logs/iteration.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_7/logs/train_reward_mean.npy",
+            "size_bytes": 152
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_7/logs/log_prob.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_7/logs/eval_reward.npy",
+            "size_bytes": 192
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_7/logs/train_reward_std.npy",
+            "size_bytes": 152
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_7/logs/q_std_mean.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 73384,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_9/checkpoints/iter_0000039/replay_buffer.npz",
+            "size_bytes": 37572316
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_9/checkpoints/iter_0000039/train_state.pkl",
+            "size_bytes": 3208
+          },
+          {
+            "allocated_blocks_512": 47104,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_9/checkpoints/iter_0000039/params.pkl",
+            "size_bytes": 24116449
+          },
+          {
+            "allocated_blocks_512": 36720,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_9/checkpoints/iter_0000019/replay_buffer.npz",
+            "size_bytes": 18796902
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_9/checkpoints/iter_0000019/train_state.pkl",
+            "size_bytes": 1696
+          },
+          {
+            "allocated_blocks_512": 47104,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_9/checkpoints/iter_0000019/params.pkl",
+            "size_bytes": 24116413
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_9/checkpoints/latest_checkpoint.pkl",
+            "size_bytes": 52
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_9/logs/q_mean.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_9/logs/eval_reward_std.npy",
+            "size_bytes": 192
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_9/logs/beta_lcb.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_9/logs/critic_loss.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_9/logs/mode_id.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_9/logs/total_steps.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_9/logs/policy_loss.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_9/logs/alpha.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_9/logs/iteration.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_9/logs/train_reward_mean.npy",
+            "size_bytes": 152
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_9/logs/log_prob.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_9/logs/eval_reward.npy",
+            "size_bytes": 192
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_9/logs/train_reward_std.npy",
+            "size_bytes": 152
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_9/logs/q_std_mean.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 73392,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_5/checkpoints/iter_0000039/replay_buffer.npz",
+            "size_bytes": 37576162
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_5/checkpoints/iter_0000039/train_state.pkl",
+            "size_bytes": 3208
+          },
+          {
+            "allocated_blocks_512": 47104,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_5/checkpoints/iter_0000039/params.pkl",
+            "size_bytes": 24116449
+          },
+          {
+            "allocated_blocks_512": 36704,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_5/checkpoints/iter_0000019/replay_buffer.npz",
+            "size_bytes": 18788715
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_5/checkpoints/iter_0000019/train_state.pkl",
+            "size_bytes": 1696
+          },
+          {
+            "allocated_blocks_512": 47104,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_5/checkpoints/iter_0000019/params.pkl",
+            "size_bytes": 24116413
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_5/checkpoints/latest_checkpoint.pkl",
+            "size_bytes": 52
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_5/logs/q_mean.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_5/logs/eval_reward_std.npy",
+            "size_bytes": 192
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_5/logs/beta_lcb.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_5/logs/critic_loss.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_5/logs/mode_id.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_5/logs/total_steps.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_5/logs/policy_loss.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_5/logs/alpha.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_5/logs/iteration.npy",
+            "size_bytes": 448
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_5/logs/train_reward_mean.npy",
+            "size_bytes": 152
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_5/logs/log_prob.npy",
+            "size_bytes": 432
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_5/logs/eval_reward.npy",
+            "size_bytes": 192
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_5/logs/train_reward_std.npy",
+            "size_bytes": 152
+          },
+          {
+            "allocated_blocks_512": 8,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_5/logs/q_std_mean.npy",
+            "size_bytes": 432
+          }
+        ],
+        "ready": true,
+        "returncode": 0,
+        "stderr_tail": "",
+        "total_allocated_bytes": 1046798336,
+        "total_size_bytes": 1046144984
+      },
+      "backend_audit": {
+        "accepted_task_count": 10,
+        "expected_task_count": 10,
+        "markers": [
+          "  JAX devices: [CudaDevice(id=0)]",
+          "Starting training... (first 10000 steps are random exploration)",
+          "  JAX devices: [CudaDevice(id=0)]",
+          "Starting training... (first 10000 steps are random exploration)",
+          "  JAX devices: [CudaDevice(id=0)]",
+          "Starting training... (first 10000 steps are random exploration)",
+          "  JAX devices: [CudaDevice(id=0)]",
+          "Starting training... (first 10000 steps are random exploration)",
+          "  JAX devices: [CudaDevice(id=0)]",
+          "Starting training... (first 10000 steps are random exploration)",
+          "  JAX devices: [CudaDevice(id=0)]",
+          "Starting training... (first 10000 steps are random exploration)",
+          "  JAX devices: [CudaDevice(id=0)]",
+          "Starting training... (first 10000 steps are random exploration)",
+          "  JAX devices: [CudaDevice(id=0)]",
+          "Starting training... (first 10000 steps are random exploration)",
+          "  JAX devices: [CudaDevice(id=0)]",
+          "Starting training... (first 10000 steps are random exploration)",
+          "  JAX devices: [CudaDevice(id=0)]",
+          "Starting training... (first 10000 steps are random exploration)"
+        ],
+        "ready": true
+      },
+      "capacity_boundary": false,
+      "cell_id": "jtl110gpu2_hybrid_rl_resac_ant_p5_r00",
+      "checkpoint_allocation_ready": true,
+      "completion_audit": {
+        "all_completion_models_ready": true,
+        "all_natural_exit": true,
+        "checkpoint_or_finalization_observed": true,
+        "ready": true,
+        "task_count": 10
+      },
+      "coordination_audit": {
+        "end_marker_count": 0,
+        "expected_task_count": 10,
+        "ready": true,
+        "required": false,
+        "start_marker_count": 0
+      },
+      "elapsed_wall_s": 1135.5543670654297,
+      "gpus": [
+        0,
+        1
+      ],
+      "hardware_class": "NVIDIA_RTX_3080Ti_12GB",
+      "max_iters": 40,
+      "measurement_code_identity_ready": true,
+      "measurement_code_sha256": "203f9471cedc4a2bbdaf63f48f6ba917828b77c6b6222bb990024ba0724b2d19",
+      "measurement_protocol": "critical_gpu_phase_completion_v6",
+      "node": "jtl110gpu2",
+      "node_bucket": "gpu_3080ti_12gb_dual",
+      "node_role": "homogeneous_equivalence",
+      "preflight": {
+        "compute_process_rows": [],
+        "idle_memory_limit_mb": 512,
+        "idle_util_limit_pct": 5,
+        "ready": true,
+        "returncode": 0,
+        "selected_gpus": [
+          {
+            "index": 0,
+            "name": "NVIDIA GeForce RTX 3080 Ti",
+            "total_mb": 12288,
+            "used_mb": 177,
+            "util_pct": 0
+          },
+          {
+            "index": 1,
+            "name": "NVIDIA GeForce RTX 3080 Ti",
+            "total_mb": 12288,
+            "used_mb": 10,
+            "util_pct": 0
+          }
+        ],
+        "stderr_tail": ""
+      },
+      "probe_result": {
+        "completion_model_ready_count": 10,
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1
+        ],
+        "node": "jtl110gpu2",
+        "pass": true,
+        "profiles": [
+          5
+        ],
+        "rate_count": 10,
+        "run_id": "critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc",
+        "stable_rate_ready_count": 10,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/reports/profile_5_per_gpu_summary.json"
+        ]
+      },
+      "profile": 5,
+      "profile_axis": "tasks_per_gpu",
+      "quadrant": "q11",
+      "ready": true,
+      "remote_cleanup": {
+        "ready": true,
+        "returncode": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "remote_output_root": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc",
+      "run_id": "critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc",
+      "split_role": "smoke_excluded",
+      "status": "READY",
+      "summary": {
+        "aggregate_active_rate_unit_s": 1.657283482,
+        "aggregate_stable_rate_unit_s": 1.2445551134,
+        "all_completion_models_ready": true,
+        "all_stable_rate_ready": true,
+        "blocked_count": 0,
+        "capacity_boundary": false,
+        "completion_model_count": 10,
+        "completion_model_ready_count": 10,
+        "coordinated_profile_launch": true,
+        "elapsed_wall_s": 1127.2792708873749,
+        "eviction_count": 0,
+        "expected_per_gpu_running": {
+          "0": 5,
+          "1": 5
+        },
+        "gpus": [
+          0,
+          1
+        ],
+        "max_iters": 40,
+        "mean_active_rate_unit_s": 0.1657283482,
+        "mean_stable_rate_unit_s": 0.12445551134,
+        "measurement_aggregate_rate_unit_s_median": 1.657283482,
+        "measurement_valid": true,
+        "min_rate_samples": 10,
+        "node": "jtl110gpu2",
+        "per_gpu_running": {
+          "0": 5,
+          "1": 5
+        },
+        "phase": "profile_5_per_gpu",
+        "placement_issues": [],
+        "placement_valid": true,
+        "probe": "remote_workload_selected_profile_probe",
+        "profile": 5,
+        "rate_units": [
+          "iter"
+        ],
+        "rates_unit_s": [
+          0.104166667,
+          0.106382979,
+          0.111111111,
+          0.166666667,
+          0.357142857,
+          0.08,
+          0.106382979,
+          0.111111111,
+          0.169491525,
+          0.344827586
+        ],
+        "require_completion_model": true,
+        "require_stable_rate": true,
+        "returncode_acceptance_rule": "strict_zero_or_stable_required_rate",
+        "returncode_accepted_count": 10,
+        "returncode_valid_count": 10,
+        "rows": [
+          {
+            "completion_model": {
+              "amortized_unit_s": 10.552558713282147,
+              "base_unit_s": 6.787464647000888,
+              "checkpoint_observed_s": 0,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 10.552558713282147,
+              "counter_offset": 1,
+              "finalization_after_last_progress_s": 5.755078381014755,
+              "first_progress_unit": 0,
+              "interval_sample_count": 39,
+              "last_progress_unit": 39,
+              "loop_observed_units": 39,
+              "loop_wall_s": 411.5497898180038,
+              "model_abs_error_s": 5.684341886080802e-14,
+              "model_relative_error": 1.1301732694604893e-16,
+              "natural_exit": true,
+              "periodic_extra_s": 146.83866858496913,
+              "phase_durations_s": {},
+              "predicted_total_s": 502.9619828819995,
+              "progress_observation_count": 40,
+              "readiness_reason": "ready",
+              "save_observed_s": 0,
+              "schema_version": 1,
+              "startup_overhead_s": 75.1045559696989,
+              "startup_to_first_progress_s": 85.65711468298105,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 5.755078381014755,
+              "total_units": 40,
+              "total_wall_s": 502.9619828819996,
+              "unit": "iter"
+            },
+            "completion_model_ready": true,
+            "global_index": 0,
+            "gpu": 0,
+            "idx": 0,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/raw/profile_5_per_gpu/gpu0_0.log",
+            "rate": 0.104166667,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_0",
+            "seed": 830000,
+            "stable_cv": 0.0264765784,
+            "stable_last_two_relative_delta": 0.0543933054,
+            "stable_mean_rate": 0.20380886,
+            "stable_rate": 0.209205021,
+            "stable_rate_ready": true,
+            "stable_samples": 4,
+            "stable_tail_rates": [
+              0.198412698,
+              0.209205021
+            ],
+            "unit": "iter"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 13.639555371128386,
+              "base_unit_s": 8.58751576798386,
+              "checkpoint_observed_s": 0,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 13.639555371128386,
+              "counter_offset": 1,
+              "finalization_after_last_progress_s": 5.208731434977381,
+              "first_progress_unit": 0,
+              "interval_sample_count": 39,
+              "last_progress_unit": 39,
+              "loop_observed_units": 39,
+              "loop_wall_s": 531.9426594740071,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 197.02954452263657,
+              "phase_durations_s": {
+                "admission_delay": [
+                  30.000164564000443
+                ]
+              },
+              "predicted_total_s": 674.8369710260013,
+              "progress_observation_count": 40,
+              "readiness_reason": "ready",
+              "save_observed_s": 0,
+              "schema_version": 1,
+              "startup_overhead_s": 124.04602474588842,
+              "startup_to_first_progress_s": 137.6855801170168,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 5.208731434977381,
+              "total_units": 40,
+              "total_wall_s": 674.8369710260013,
+              "unit": "iter"
+            },
+            "completion_model_ready": true,
+            "global_index": 1,
+            "gpu": 0,
+            "idx": 1,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/raw/profile_5_per_gpu/gpu0_1.log",
+            "rate": 0.106382979,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_1",
+            "seed": 830001,
+            "stable_cv": 0.00840336134,
+            "stable_last_two_relative_delta": 0.0169491525,
+            "stable_mean_rate": 0.120056497,
+            "stable_rate": 0.121065375,
+            "stable_rate_ready": true,
+            "stable_samples": 3,
+            "stable_tail_rates": [
+              0.119047619,
+              0.121065375
+            ],
+            "unit": "iter"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 15.951801896231094,
+              "base_unit_s": 8.990369140024995,
+              "checkpoint_observed_s": 0,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 15.951801896231094,
+              "counter_offset": 1,
+              "finalization_after_last_progress_s": 5.710823250003159,
+              "first_progress_unit": 0,
+              "interval_sample_count": 39,
+              "last_progress_unit": 39,
+              "loop_observed_units": 39,
+              "loop_wall_s": 622.1202739530127,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 271.49587749203783,
+              "phase_durations_s": {
+                "admission_delay": [
+                  60.000188773992704
+                ]
+              },
+              "predicted_total_s": 802.672897137003,
+              "progress_observation_count": 40,
+              "readiness_reason": "ready",
+              "save_observed_s": 0,
+              "schema_version": 1,
+              "startup_overhead_s": 158.8899980377561,
+              "startup_to_first_progress_s": 174.8417999339872,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 5.710823250003159,
+              "total_units": 40,
+              "total_wall_s": 802.672897137003,
+              "unit": "iter"
+            },
+            "completion_model_ready": true,
+            "global_index": 2,
+            "gpu": 0,
+            "idx": 2,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/raw/profile_5_per_gpu/gpu0_2.log",
+            "rate": 0.111111111,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_2",
+            "seed": 830002,
+            "stable_cv": 0.0348977136,
+            "stable_last_two_relative_delta": 0.0674418605,
+            "stable_mean_rate": 0.120483675,
+            "stable_rate": 0.11627907,
+            "stable_rate_ready": true,
+            "stable_samples": 4,
+            "stable_tail_rates": [
+              0.124688279,
+              0.11627907
+            ],
+            "unit": "iter"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 17.937531266923404,
+              "base_unit_s": 8.920338886993704,
+              "checkpoint_observed_s": 0,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 17.937531266923404,
+              "counter_offset": 1,
+              "finalization_after_last_progress_s": 4.394991391978692,
+              "first_progress_unit": 0,
+              "interval_sample_count": 39,
+              "last_progress_unit": 39,
+              "loop_observed_units": 39,
+              "loop_wall_s": 699.5637194100127,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 351.67050281725824,
+              "phase_durations_s": {
+                "admission_delay": [
+                  90.00014632902457
+                ]
+              },
+              "predicted_total_s": 913.8621310190065,
+              "progress_observation_count": 40,
+              "readiness_reason": "ready",
+              "save_observed_s": 0,
+              "schema_version": 1,
+              "startup_overhead_s": 191.96588895009168,
+              "startup_to_first_progress_s": 209.90342021701508,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 4.394991391978692,
+              "total_units": 40,
+              "total_wall_s": 913.8621310190065,
+              "unit": "iter"
+            },
+            "completion_model_ready": true,
+            "global_index": 3,
+            "gpu": 0,
+            "idx": 3,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/raw/profile_5_per_gpu/gpu0_3.log",
+            "rate": 0.166666667,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_3",
+            "seed": 830003,
+            "stable_cv": 0.00957854406,
+            "stable_last_two_relative_delta": 0.0189753321,
+            "stable_mean_rate": 0.0957942296,
+            "stable_rate": 0.0948766603,
+            "stable_rate_ready": true,
+            "stable_samples": 5,
+            "stable_tail_rates": [
+              0.0967117988,
+              0.0948766603
+            ],
+            "unit": "iter"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 18.157206428743965,
+              "base_unit_s": 5.9277290150057524,
+              "checkpoint_observed_s": 0,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 18.157206428743965,
+              "counter_offset": 1,
+              "finalization_after_last_progress_s": 4.492993773979833,
+              "first_progress_unit": 0,
+              "interval_sample_count": 39,
+              "last_progress_unit": 39,
+              "loop_observed_units": 39,
+              "loop_wall_s": 708.1310507210146,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 476.9496191357903,
+              "phase_durations_s": {
+                "admission_delay": [
+                  120.00017963000573
+                ]
+              },
+              "predicted_total_s": 958.9291568069893,
+              "progress_observation_count": 40,
+              "readiness_reason": "ready",
+              "save_observed_s": 0,
+              "schema_version": 1,
+              "startup_overhead_s": 228.14790588325093,
+              "startup_to_first_progress_s": 246.3051123119949,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 4.492993773979833,
+              "total_units": 40,
+              "total_wall_s": 958.9291568069893,
+              "unit": "iter"
+            },
+            "completion_model_ready": true,
+            "global_index": 4,
+            "gpu": 0,
+            "idx": 4,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/raw/profile_5_per_gpu/gpu0_4.log",
+            "rate": 0.357142857,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu0_4",
+            "seed": 830004,
+            "stable_cv": 0.0,
+            "stable_last_two_relative_delta": 0.0,
+            "stable_mean_rate": 0.136986301,
+            "stable_rate": 0.136986301,
+            "stable_rate_ready": true,
+            "stable_samples": 5,
+            "stable_tail_rates": [
+              0.136986301,
+              0.136986301
+            ],
+            "unit": "iter"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 12.6808020391797,
+              "base_unit_s": 9.490426253993064,
+              "checkpoint_observed_s": 0,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 12.6808020391797,
+              "counter_offset": 1,
+              "finalization_after_last_progress_s": 5.135598215012578,
+              "first_progress_unit": 0,
+              "interval_sample_count": 39,
+              "last_progress_unit": 39,
+              "loop_observed_units": 39,
+              "loop_wall_s": 494.5512795280083,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 124.4246556222788,
+              "phase_durations_s": {
+                "admission_delay": [
+                  150.00019108099514
+                ]
+              },
+              "predicted_total_s": 764.3476347140095,
+              "progress_observation_count": 40,
+              "readiness_reason": "ready",
+              "save_observed_s": 0,
+              "schema_version": 1,
+              "startup_overhead_s": 251.9799549318089,
+              "startup_to_first_progress_s": 264.6607569709886,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 5.135598215012578,
+              "total_units": 40,
+              "total_wall_s": 764.3476347140095,
+              "unit": "iter"
+            },
+            "completion_model_ready": true,
+            "global_index": 5,
+            "gpu": 1,
+            "idx": 0,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/raw/profile_5_per_gpu/gpu1_0.log",
+            "rate": 0.08,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_5",
+            "seed": 830005,
+            "stable_cv": 0.00256191289,
+            "stable_last_two_relative_delta": 0.00511073254,
+            "stable_mean_rate": 0.085397657,
+            "stable_rate": 0.0851788756,
+            "stable_rate_ready": true,
+            "stable_samples": 7,
+            "stable_tail_rates": [
+              0.0856164384,
+              0.0851788756
+            ],
+            "unit": "iter"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 13.934264194359107,
+              "base_unit_s": 9.55513447598787,
+              "checkpoint_observed_s": 0,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 13.934264194359107,
+              "counter_offset": 1,
+              "finalization_after_last_progress_s": 5.128265348990681,
+              "first_progress_unit": 0,
+              "interval_sample_count": 39,
+              "last_progress_unit": 39,
+              "loop_observed_units": 39,
+              "loop_wall_s": 543.4363035800052,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 170.78605901647825,
+              "phase_durations_s": {
+                "admission_delay": [
+                  180.00016642798437
+                ]
+              },
+              "predicted_total_s": 850.1693579689891,
+              "progress_observation_count": 40,
+              "readiness_reason": "ready",
+              "save_observed_s": 0,
+              "schema_version": 1,
+              "startup_overhead_s": 287.6705248456341,
+              "startup_to_first_progress_s": 301.6047890399932,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 5.128265348990681,
+              "total_units": 40,
+              "total_wall_s": 850.1693579689891,
+              "unit": "iter"
+            },
+            "completion_model_ready": true,
+            "global_index": 6,
+            "gpu": 1,
+            "idx": 1,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/raw/profile_5_per_gpu/gpu1_1.log",
+            "rate": 0.106382979,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_6",
+            "seed": 830006,
+            "stable_cv": 0.015719468,
+            "stable_last_two_relative_delta": 0.0319410319,
+            "stable_mean_rate": 0.120948871,
+            "stable_rate": 0.122850123,
+            "stable_rate_ready": true,
+            "stable_samples": 3,
+            "stable_tail_rates": [
+              0.119047619,
+              0.122850123
+            ],
+            "unit": "iter"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 16.49865237225701,
+              "base_unit_s": 9.560332124005072,
+              "checkpoint_observed_s": 0,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 16.49865237225701,
+              "counter_offset": 1,
+              "finalization_after_last_progress_s": 4.492968110978836,
+              "first_progress_unit": 0,
+              "interval_sample_count": 39,
+              "last_progress_unit": 39,
+              "loop_observed_units": 39,
+              "loop_wall_s": 643.4474425180233,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 270.5944896818255,
+              "phase_durations_s": {
+                "admission_delay": [
+                  210.00015444800374
+                ]
+              },
+              "predicted_total_s": 983.0625352939824,
+              "progress_observation_count": 40,
+              "readiness_reason": "ready",
+              "save_observed_s": 0,
+              "schema_version": 1,
+              "startup_overhead_s": 318.6234722927232,
+              "startup_to_first_progress_s": 335.1221246649802,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 4.492968110978836,
+              "total_units": 40,
+              "total_wall_s": 983.0625352939824,
+              "unit": "iter"
+            },
+            "completion_model_ready": true,
+            "global_index": 7,
+            "gpu": 1,
+            "idx": 2,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/raw/profile_5_per_gpu/gpu1_2.log",
+            "rate": 0.111111111,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_7",
+            "seed": 830007,
+            "stable_cv": 0.00255319149,
+            "stable_last_two_relative_delta": 0.00509337861,
+            "stable_mean_rate": 0.0851069378,
+            "stable_rate": 0.0848896435,
+            "stable_rate_ready": true,
+            "stable_samples": 3,
+            "stable_tail_rates": [
+              0.0853242321,
+              0.0848896435
+            ],
+            "unit": "iter"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 18.041501287871654,
+              "base_unit_s": 9.094743335997919,
+              "checkpoint_observed_s": 0,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 18.041501287871654,
+              "counter_offset": 1,
+              "finalization_after_last_progress_s": 4.559263300994644,
+              "first_progress_unit": 0,
+              "interval_sample_count": 39,
+              "last_progress_unit": 39,
+              "loop_observed_units": 39,
+              "loop_wall_s": 703.6185502269946,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 348.92356012307573,
+              "phase_durations_s": {
+                "admission_delay": [
+                  240.0001584010024
+                ]
+              },
+              "predicted_total_s": 1071.2685787630035,
+              "progress_observation_count": 40,
+              "readiness_reason": "ready",
+              "save_observed_s": 0,
+              "schema_version": 1,
+              "startup_overhead_s": 345.0492639471426,
+              "startup_to_first_progress_s": 363.09076523501426,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 4.559263300994644,
+              "total_units": 40,
+              "total_wall_s": 1071.2685787630035,
+              "unit": "iter"
+            },
+            "completion_model_ready": true,
+            "global_index": 8,
+            "gpu": 1,
+            "idx": 3,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/raw/profile_5_per_gpu/gpu1_3.log",
+            "rate": 0.169491525,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_8",
+            "seed": 830008,
+            "stable_cv": 0.0110497238,
+            "stable_last_two_relative_delta": 0.0218579235,
+            "stable_mean_rate": 0.138138413,
+            "stable_rate": 0.136612022,
+            "stable_rate_ready": true,
+            "stable_samples": 8,
+            "stable_tail_rates": [
+              0.139664804,
+              0.136612022
+            ],
+            "unit": "iter"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 18.68912306146096,
+              "base_unit_s": 6.021285485010594,
+              "checkpoint_observed_s": 0,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 18.68912306146096,
+              "counter_offset": 1,
+              "finalization_after_last_progress_s": 4.423608075012453,
+              "first_progress_unit": 0,
+              "interval_sample_count": 39,
+              "last_progress_unit": 39,
+              "loop_observed_units": 39,
+              "loop_wall_s": 728.8757993969775,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 494.04566548156436,
+              "phase_durations_s": {
+                "admission_delay": [
+                  270.00016983400565
+                ]
+              },
+              "predicted_total_s": 1122.8570447390084,
+              "progress_observation_count": 40,
+              "readiness_reason": "ready",
+              "save_observed_s": 0,
+              "schema_version": 1,
+              "startup_overhead_s": 370.86851420555746,
+              "startup_to_first_progress_s": 389.55763726701844,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 4.423608075012453,
+              "total_units": 40,
+              "total_wall_s": 1122.8570447390084,
+              "unit": "iter"
+            },
+            "completion_model_ready": true,
+            "global_index": 9,
+            "gpu": 1,
+            "idx": 4,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/raw/profile_5_per_gpu/gpu1_4.log",
+            "rate": 0.344827586,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc_profile_5_per_gpu_gpu1_9",
+            "seed": 830009,
+            "stable_cv": 0.00543478261,
+            "stable_last_two_relative_delta": 0.0109289617,
+            "stable_mean_rate": 0.135873578,
+            "stable_rate": 0.136612022,
+            "stable_rate_ready": true,
+            "stable_samples": 5,
+            "stable_tail_rates": [
+              0.135135135,
+              0.136612022
+            ],
+            "unit": "iter"
+          }
+        ],
+        "run_id": "critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc",
+        "running_count": 10,
+        "running_with_rate_count": 10,
+        "stable_cv_threshold": 0.1,
+        "stable_cycle_units": 5,
+        "stable_rate_ready_count": 10,
+        "stable_rates_unit_s": [
+          0.209205021,
+          0.121065375,
+          0.11627907,
+          0.0948766603,
+          0.136986301,
+          0.0851788756,
+          0.122850123,
+          0.0848896435,
+          0.136612022,
+          0.136612022
+        ],
+        "stable_rel_delta_threshold": 0.08,
+        "stable_skip_samples": 0,
+        "stable_windows": 2,
+        "status_counts": {
+          "missing_rate": 0,
+          "sampled": 10
+        },
+        "terminate_on_stable": false,
+        "timeout_s": 10800,
+        "transport_mode": "foreground_ssh"
+      },
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v6_jtl110gpu2_r00_hybrid_rl_resac_ant_allprofiles_20260803_hybrid_rl_resac_ant_p5_code203f9471cedc/reports/profile_5_per_gpu_summary.json",
+      "timeout_s": 10800,
+      "total_task_count": 10,
+      "wave": 0,
+      "workload_env": "Ant-v2",
+      "workload_key": "hybrid_rl_resac_ant"
+    }
+  ],
+  "selection": {
+    "filtered": true,
+    "profiles": [],
+    "workload_keys": [
+      "hybrid_rl_resac_ant"
+    ]
+  },
+  "split_role": "smoke_excluded",
+  "status": "PASS",
+  "task_native_progress_required": true,
+  "terminate_on_stable": false,
+  "wait_row_count": 0,
+  "wave": 0
+}

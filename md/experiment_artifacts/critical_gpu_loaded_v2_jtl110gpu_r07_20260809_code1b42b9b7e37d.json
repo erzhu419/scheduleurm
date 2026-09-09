@@ -1,0 +1,862 @@
+{
+  "algorithm_path": "controlled_theorem_measurement_direct",
+  "allow_launch": true,
+  "campaign_id": "critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d",
+  "capacity_boundary_count": 0,
+  "cross_node_parallelism_allowed": true,
+  "durable_remote_supervisor_required": true,
+  "environment_gate": {
+    "ready": true,
+    "reason": "",
+    "returncode": 0,
+    "stderr_tail": "\nLoading weights:   0%|          | 0/76 [00:00<?, ?it/s]\nLoading weights: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 76/76 [00:00<00:00, 6357.03it/s]\n",
+    "stdout_tail": "ENV_READY\nRESAC_READY\n"
+  },
+  "executed_scenario_count": 4,
+  "fail_closed_after_first_nonterminal_row": true,
+  "final_measurement_code_manifest": {
+    "files": [
+      {
+        "path": "algorithm/experiments/critical_gpu_completion_campaign.py",
+        "sha256": "ed21922f769e2095583973709f1b76e07be6af1eb958b77f0a60a7532ffee3a1"
+      },
+      {
+        "path": "algorithm/experiments/critical_gpu_loaded_completion_campaign.py",
+        "sha256": "1218ad2a1b884e54766d0ddf3292a9b94dacf2b00b7073ac145603c03799af34"
+      },
+      {
+        "path": "algorithm/experiments/durable_remote_command.py",
+        "sha256": "ae801d70566aacb927e0d207c091ad95cfef97296005640259fedeb6290ca30b"
+      },
+      {
+        "path": "algorithm/experiments/gpu_progress_benchmark.py",
+        "sha256": "b6920fa34f025c78f12995707ea5407e7c45c07a97f2a2a82358bd7bdd98f0cb"
+      },
+      {
+        "path": "algorithm/experiments/progress_units.py",
+        "sha256": "293722b931966fac3433dd1b0bdf1a43083c2acef8eba68c2a3307b61bbd4c60"
+      },
+      {
+        "path": "algorithm/experiments/progress_wrapper.py",
+        "sha256": "dbd26ed0e16b2a549cf060411cd6fee2ea402c8aae311e031db56a6796268193"
+      },
+      {
+        "path": "algorithm/experiments/remote_workload_selected_profile_probe.py",
+        "sha256": "16e63e2646c7ad0cae7692fa8b1b8263bed4903c32cbdfecbc5bc2f3fe65a8dc"
+      },
+      {
+        "path": "algorithm/experiments/templates/gpu_matmul_progress.cmd.tpl",
+        "sha256": "f9b1299d279b100b84ee99674f374ca4637873aed005f86bbca880498e844fed"
+      },
+      {
+        "path": "algorithm/experiments/templates/resac_env_real_venv.cmd.tpl",
+        "sha256": "a003a5c34659fc89d3dabc034bb1505e46b1918ad73e4c2a81b143e9dfc59371"
+      },
+      {
+        "path": "algorithm/experiments/templates/torch_cnn_resnet50.cmd.tpl",
+        "sha256": "f6036c685e4c21f665dae88aeee6ff116b196c07ed51c27168a507accbfe797f"
+      },
+      {
+        "path": "algorithm/experiments/templates/torch_llm_distilgpt2.cmd.tpl",
+        "sha256": "4852b935470552a570c04d05d81ba306780f767b96f9aee54b06c2dc97d2dfca"
+      },
+      {
+        "path": "algorithm/experiments/torch_cnn_progress_benchmark.py",
+        "sha256": "b6f54d5e7fae703faf1ac501539b95885cfe7c1ad41432d221a7145577ed0a1f"
+      },
+      {
+        "path": "algorithm/experiments/torch_llm_progress_benchmark.py",
+        "sha256": "8f15e2afd0e1a53fc2bf1c4453398bc6a1964ac96e5d13d67709782925f74aaa"
+      }
+    ],
+    "sha256": "1b42b9b7e37dae96f6dd3097e3796a2dd8c7b8b123608ecda126c0b8dcd31666"
+  },
+  "full_resident_target_overlap_required": true,
+  "gate": "critical_gpu_loaded_completion_campaign",
+  "gpu_assignment": {
+    "cnn_after_llm": 0,
+    "cnn_after_rl": 1,
+    "llm_after_cnn": 1,
+    "rl_after_cnn": 0
+  },
+  "hardware_class": "NVIDIA_RTX_3080Ti_12GB",
+  "legacy_scheduler_limits_bypassed": true,
+  "measurement_code_manifest": {
+    "files": [
+      {
+        "path": "algorithm/experiments/critical_gpu_completion_campaign.py",
+        "sha256": "ed21922f769e2095583973709f1b76e07be6af1eb958b77f0a60a7532ffee3a1"
+      },
+      {
+        "path": "algorithm/experiments/critical_gpu_loaded_completion_campaign.py",
+        "sha256": "1218ad2a1b884e54766d0ddf3292a9b94dacf2b00b7073ac145603c03799af34"
+      },
+      {
+        "path": "algorithm/experiments/durable_remote_command.py",
+        "sha256": "ae801d70566aacb927e0d207c091ad95cfef97296005640259fedeb6290ca30b"
+      },
+      {
+        "path": "algorithm/experiments/gpu_progress_benchmark.py",
+        "sha256": "b6920fa34f025c78f12995707ea5407e7c45c07a97f2a2a82358bd7bdd98f0cb"
+      },
+      {
+        "path": "algorithm/experiments/progress_units.py",
+        "sha256": "293722b931966fac3433dd1b0bdf1a43083c2acef8eba68c2a3307b61bbd4c60"
+      },
+      {
+        "path": "algorithm/experiments/progress_wrapper.py",
+        "sha256": "dbd26ed0e16b2a549cf060411cd6fee2ea402c8aae311e031db56a6796268193"
+      },
+      {
+        "path": "algorithm/experiments/remote_workload_selected_profile_probe.py",
+        "sha256": "16e63e2646c7ad0cae7692fa8b1b8263bed4903c32cbdfecbc5bc2f3fe65a8dc"
+      },
+      {
+        "path": "algorithm/experiments/templates/gpu_matmul_progress.cmd.tpl",
+        "sha256": "f9b1299d279b100b84ee99674f374ca4637873aed005f86bbca880498e844fed"
+      },
+      {
+        "path": "algorithm/experiments/templates/resac_env_real_venv.cmd.tpl",
+        "sha256": "a003a5c34659fc89d3dabc034bb1505e46b1918ad73e4c2a81b143e9dfc59371"
+      },
+      {
+        "path": "algorithm/experiments/templates/torch_cnn_resnet50.cmd.tpl",
+        "sha256": "f6036c685e4c21f665dae88aeee6ff116b196c07ed51c27168a507accbfe797f"
+      },
+      {
+        "path": "algorithm/experiments/templates/torch_llm_distilgpt2.cmd.tpl",
+        "sha256": "4852b935470552a570c04d05d81ba306780f767b96f9aee54b06c2dc97d2dfca"
+      },
+      {
+        "path": "algorithm/experiments/torch_cnn_progress_benchmark.py",
+        "sha256": "b6f54d5e7fae703faf1ac501539b95885cfe7c1ad41432d221a7145577ed0a1f"
+      },
+      {
+        "path": "algorithm/experiments/torch_llm_progress_benchmark.py",
+        "sha256": "8f15e2afd0e1a53fc2bf1c4453398bc6a1964ac96e5d13d67709782925f74aaa"
+      }
+    ],
+    "sha256": "1b42b9b7e37dae96f6dd3097e3796a2dd8c7b8b123608ecda126c0b8dcd31666"
+  },
+  "measurement_code_unchanged": true,
+  "natural_completion_required": true,
+  "node": "jtl110gpu",
+  "node_bucket": "gpu_3080ti_12gb_dual",
+  "ordinary_running_tasks_touched": false,
+  "pass": true,
+  "pre_registered_split": {
+    "calibration": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "holdout": 13,
+    "training": [
+      1,
+      2,
+      3
+    ]
+  },
+  "protocol": "critical_gpu_loaded_natural_completion_v2",
+  "ready_row_count": 4,
+  "registered_resident_total_units": {
+    "cnn_after_llm": 12000,
+    "cnn_after_rl": 80,
+    "llm_after_cnn": 600,
+    "rl_after_cnn": 18000
+  },
+  "registered_scenario_count": 4,
+  "rows": [
+    {
+      "capacity_boundary": false,
+      "diagnostics_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d_cnn_after_llm/raw/diagnostics.log",
+      "diagnostics_sha256": "e6132b4b7940d043b26ebed4c2032b2db7a0691c12e5c1d4e2f0a76cbe7435e1",
+      "durable_transport": {
+        "control_cleanup_error": "",
+        "control_cleanup_ready": true,
+        "control_dir": "/tmp/scheduleurm_durable_control/critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d_cnn_after_llm",
+        "elapsed_wall_s": 76.17617098201299,
+        "last_transport_error": "",
+        "launch_attempt_count": 1,
+        "long_command_replayed": false,
+        "poll_count": 5,
+        "protocol": "idempotent_detached_remote_supervisor_v1",
+        "remote_returncode": 0,
+        "resumed_existing": false,
+        "run_id": "critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d_cnn_after_llm",
+        "state": "DONE",
+        "supervisor_pid": 19787,
+        "transient_transport_error_count": 0
+      },
+      "elapsed_wall_s": 97.91511225700378,
+      "eta_source": "task_native_tqdm_natural_completion_loaded_trajectory",
+      "gpu": 0,
+      "gpu_monitor_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d_cnn_after_llm/raw/gpu_monitor.log",
+      "gpu_monitor_sha256": "6095a46d8478256272897b1e70201baabab85fe5e89c5f0dafef4d785e17c50f",
+      "hardware_class": "NVIDIA_RTX_3080Ti_12GB",
+      "legacy_scheduler_limits_bypassed": true,
+      "node": "jtl110gpu",
+      "node_bucket": "gpu_3080ti_12gb_dual",
+      "ordinary_running_tasks_touched": false,
+      "post_colocation_count": 2,
+      "ready": true,
+      "reason": "",
+      "remote_returncode": 0,
+      "resident_alive_at_target_end": true,
+      "resident_alive_at_target_start": true,
+      "resident_completion_model": {
+        "amortized_unit_s": 0.0034722638219981616,
+        "base_unit_s": 0.002873134007677436,
+        "checkpoint_observed_s": 0.47423209506087005,
+        "child_returncode": 0,
+        "completion_model_ready": true,
+        "completion_unit_s": 0.0034722638219981616,
+        "counter_offset": 0,
+        "finalization_after_last_progress_s": 1.2965585910715163,
+        "first_progress_unit": 5,
+        "interval_sample_count": 2399,
+        "last_progress_unit": 12000,
+        "loop_observed_units": 11995,
+        "loop_wall_s": 41.64980454486795,
+        "model_abs_error_s": 0.0,
+        "model_relative_error": 0.0,
+        "natural_exit": true,
+        "periodic_extra_s": 7.186562122777104,
+        "phase_durations_s": {
+          "checkpoint": [
+            0.26009730296209455,
+            0.2141347920987755
+          ],
+          "final_save": [
+            0.2143808100372553
+          ],
+          "initialization": [
+            7.330193154048175
+          ],
+          "outer_loop": [
+            41.87827263097279
+          ],
+          "warmup": [
+            1.1420415041502565
+          ]
+        },
+        "predicted_total_s": 51.48280568514019,
+        "progress_observation_count": 2400,
+        "readiness_reason": "ready",
+        "save_observed_s": 0.2143808100372553,
+        "schema_version": 1,
+        "startup_overhead_s": 8.519081230090737,
+        "startup_to_first_progress_s": 8.536442549200729,
+        "stopped_on_stable": false,
+        "terminal_overhead_s": 1.2965585910715163,
+        "total_units": 12000,
+        "total_wall_s": 51.48280568514019,
+        "unit": "step"
+      },
+      "resident_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d_cnn_after_llm/raw/resident.log",
+      "resident_mix": "resident_llm_target_cnn",
+      "resident_overlap_service": {
+        "boundary_rule": "first-to-last resident progress counter inside remote target start/end line-count bounds divided by the full nanosecond overlap duration",
+        "boundary_source": "remote_line_count_and_nanosecond_bounds",
+        "completed_units_lower": 6905,
+        "conservative_rate_units_per_s": 254.87809635058306,
+        "duration_s": 27.09138250350952,
+        "end_epoch_s": 1786282787.4514215,
+        "end_line_count": 4235,
+        "first_progress_unit": 50,
+        "last_progress_unit": 6955,
+        "progress_observation_count": 1382,
+        "ready": true,
+        "reported_rate_median_units_per_s": 323.814113,
+        "start_epoch_s": 1786282760.360039,
+        "start_line_count": 38,
+        "unit": "step"
+      },
+      "resident_process_group_id": 19797,
+      "resident_ready_observations": 8,
+      "resident_returncode": 0,
+      "resident_stable_rate": 355.740823,
+      "resident_total_units": 12000,
+      "resident_workload_env": "distilgpt2_forward_fp16_b2_s128",
+      "resident_workload_key": "gpu_llm_distilgpt2",
+      "resource_state": "mixed_colocation",
+      "scenario_id": "cnn_after_llm",
+      "split_role": "calibration",
+      "target_completion_model": {
+        "amortized_unit_s": 0.05457573675913578,
+        "base_unit_s": 0.05156873501837254,
+        "checkpoint_observed_s": 0.4087258889339864,
+        "child_returncode": 0,
+        "completion_model_ready": true,
+        "completion_unit_s": 0.05457573675913578,
+        "counter_offset": 0,
+        "finalization_after_last_progress_s": 1.2965185011271387,
+        "first_progress_unit": 5,
+        "interval_sample_count": 59,
+        "last_progress_unit": 300,
+        "loop_observed_units": 295,
+        "loop_wall_s": 16.099842343945056,
+        "model_abs_error_s": 0.0,
+        "model_relative_error": 0.0,
+        "natural_exit": true,
+        "periodic_extra_s": 0.8870655135251582,
+        "phase_durations_s": {
+          "checkpoint": [
+            0.22301933402195573,
+            0.1857065549120307
+          ],
+          "final_save": [
+            0.1855842978693545
+          ],
+          "initialization": [
+            5.399825034895912
+          ],
+          "outer_loop": [
+            16.567868252051994
+          ],
+          "warmup": [
+            3.825919972965494
+          ]
+        },
+        "predicted_total_s": 26.94460233603604,
+        "progress_observation_count": 60,
+        "readiness_reason": "ready",
+        "save_observed_s": 0.1855842978693545,
+        "schema_version": 1,
+        "startup_overhead_s": 9.275362807168168,
+        "startup_to_first_progress_s": 9.548241490963846,
+        "stopped_on_stable": false,
+        "terminal_overhead_s": 1.2965185011271387,
+        "total_units": 300,
+        "total_wall_s": 26.94460233603604,
+        "unit": "step"
+      },
+      "target_end_ns": 1786282787451421438,
+      "target_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d_cnn_after_llm/raw/target.log",
+      "target_process_group_id": 20250,
+      "target_returncode": 0,
+      "target_stable_rate": 18.8015928,
+      "target_start_ns": 1786282760360038953,
+      "target_total_units": 300,
+      "target_workload_env": "resnet50_synthetic_train_amp_b32_224",
+      "target_workload_key": "gpu_cnn_torch_resnet50",
+      "wave": 7
+    },
+    {
+      "capacity_boundary": false,
+      "diagnostics_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d_llm_after_cnn/raw/diagnostics.log",
+      "diagnostics_sha256": "6a9ed7dc407a9fdeb0389bc2ec0cf738cefaaae76d15b4eba003f35d94ac0a23",
+      "durable_transport": {
+        "control_cleanup_error": "",
+        "control_cleanup_ready": true,
+        "control_dir": "/tmp/scheduleurm_durable_control/critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d_llm_after_cnn",
+        "elapsed_wall_s": 57.89561149899964,
+        "last_transport_error": "",
+        "launch_attempt_count": 1,
+        "long_command_replayed": false,
+        "poll_count": 4,
+        "protocol": "idempotent_detached_remote_supervisor_v1",
+        "remote_returncode": 0,
+        "resumed_existing": false,
+        "run_id": "critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d_llm_after_cnn",
+        "state": "DONE",
+        "supervisor_pid": 29366,
+        "transient_transport_error_count": 0
+      },
+      "elapsed_wall_s": 76.64235305786133,
+      "eta_source": "task_native_tqdm_natural_completion_loaded_trajectory",
+      "gpu": 1,
+      "gpu_monitor_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d_llm_after_cnn/raw/gpu_monitor.log",
+      "gpu_monitor_sha256": "2659b189a8eeb960e44ad0a3a857748af3ae37d4e558784c54b1d6c9870a5dd2",
+      "hardware_class": "NVIDIA_RTX_3080Ti_12GB",
+      "legacy_scheduler_limits_bypassed": true,
+      "node": "jtl110gpu",
+      "node_bucket": "gpu_3080ti_12gb_dual",
+      "ordinary_running_tasks_touched": false,
+      "post_colocation_count": 2,
+      "ready": true,
+      "reason": "",
+      "remote_returncode": 0,
+      "resident_alive_at_target_end": true,
+      "resident_alive_at_target_start": true,
+      "resident_completion_model": {
+        "amortized_unit_s": 0.04070492256980608,
+        "base_unit_s": 0.03860528143122792,
+        "checkpoint_observed_s": 0.3929700758308172,
+        "child_returncode": 0,
+        "completion_model_ready": true,
+        "completion_unit_s": 0.04070492256980608,
+        "counter_offset": 0,
+        "finalization_after_last_progress_s": 1.6433212170377374,
+        "first_progress_unit": 5,
+        "interval_sample_count": 119,
+        "last_progress_unit": 600,
+        "loop_observed_units": 595,
+        "loop_wall_s": 24.21942892903462,
+        "model_abs_error_s": 0.0,
+        "model_relative_error": 0.0,
+        "natural_exit": true,
+        "periodic_extra_s": 1.2492864774540067,
+        "phase_durations_s": {
+          "checkpoint": [
+            0.17644427996128798,
+            0.21652579586952925
+          ],
+          "final_save": [
+            0.19742927118204534
+          ],
+          "initialization": [
+            6.298586194869131
+          ],
+          "outer_loop": [
+            24.62811798695475
+          ],
+          "warmup": [
+            3.3827279461547732
+          ]
+        },
+        "predicted_total_s": 35.775360957020894,
+        "progress_observation_count": 120,
+        "readiness_reason": "ready",
+        "save_observed_s": 0.19742927118204534,
+        "schema_version": 1,
+        "startup_overhead_s": 9.709086198099506,
+        "startup_to_first_progress_s": 9.912610810948536,
+        "stopped_on_stable": false,
+        "terminal_overhead_s": 1.6433212170377374,
+        "total_units": 600,
+        "total_wall_s": 35.775360957020894,
+        "unit": "step"
+      },
+      "resident_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d_llm_after_cnn/raw/resident.log",
+      "resident_mix": "resident_cnn_target_llm",
+      "resident_overlap_service": {
+        "boundary_rule": "first-to-last resident progress counter inside remote target start/end line-count bounds divided by the full nanosecond overlap duration",
+        "boundary_source": "remote_line_count_and_nanosecond_bounds",
+        "completed_units_lower": 360,
+        "conservative_rate_units_per_s": 23.07150716779332,
+        "duration_s": 15.603662014007568,
+        "end_epoch_s": 1786282877.0330274,
+        "end_line_count": 271,
+        "first_progress_unit": 25,
+        "last_progress_unit": 385,
+        "progress_observation_count": 73,
+        "ready": true,
+        "reported_rate_median_units_per_s": 25.0554928,
+        "start_epoch_s": 1786282861.4293654,
+        "start_line_count": 20,
+        "unit": "step"
+      },
+      "resident_process_group_id": 29376,
+      "resident_ready_observations": 4,
+      "resident_returncode": 0,
+      "resident_stable_rate": 25.2646919,
+      "resident_total_units": 600,
+      "resident_workload_env": "resnet50_synthetic_train_amp_b32_224",
+      "resident_workload_key": "gpu_cnn_torch_resnet50",
+      "resource_state": "mixed_colocation",
+      "scenario_id": "llm_after_cnn",
+      "split_role": "calibration",
+      "target_completion_model": {
+        "amortized_unit_s": 0.004332160890618919,
+        "base_unit_s": 0.003941788617521524,
+        "checkpoint_observed_s": 0.46393145620822906,
+        "child_returncode": 0,
+        "completion_model_ready": true,
+        "completion_unit_s": 0.004332160890618919,
+        "counter_offset": 0,
+        "finalization_after_last_progress_s": 1.2886721601244062,
+        "first_progress_unit": 5,
+        "interval_sample_count": 119,
+        "last_progress_unit": 600,
+        "loop_observed_units": 595,
+        "loop_wall_s": 2.5776357299182564,
+        "model_abs_error_s": 0.0,
+        "model_relative_error": 0.0,
+        "natural_exit": true,
+        "periodic_extra_s": 0.23227150249294937,
+        "phase_durations_s": {
+          "checkpoint": [
+            0.23317641206085682,
+            0.23075504414737225
+          ],
+          "final_save": [
+            0.21289582108147442
+          ],
+          "initialization": [
+            9.5544928049203
+          ],
+          "outer_loop": [
+            2.828803754178807
+          ],
+          "warmup": [
+            1.9320018629077822
+          ]
+        },
+        "predicted_total_s": 15.42003282206133,
+        "progress_observation_count": 120,
+        "readiness_reason": "ready",
+        "save_observed_s": 0.21289582108147442,
+        "schema_version": 1,
+        "startup_overhead_s": 11.532064127565572,
+        "startup_to_first_progress_s": 11.553724932018667,
+        "stopped_on_stable": false,
+        "terminal_overhead_s": 1.2886721601244062,
+        "total_units": 600,
+        "total_wall_s": 15.42003282206133,
+        "unit": "step"
+      },
+      "target_end_ns": 1786282877033027428,
+      "target_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d_llm_after_cnn/raw/target.log",
+      "target_process_group_id": 30084,
+      "target_returncode": 0,
+      "target_stable_rate": 254.978982,
+      "target_start_ns": 1786282861429365417,
+      "target_total_units": 600,
+      "target_workload_env": "distilgpt2_forward_fp16_b2_s128",
+      "target_workload_key": "gpu_llm_distilgpt2",
+      "wave": 7
+    },
+    {
+      "capacity_boundary": false,
+      "diagnostics_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d_rl_after_cnn/raw/diagnostics.log",
+      "diagnostics_sha256": "e6132b4b7940d043b26ebed4c2032b2db7a0691c12e5c1d4e2f0a76cbe7435e1",
+      "durable_transport": {
+        "control_cleanup_error": "",
+        "control_cleanup_ready": true,
+        "control_dir": "/tmp/scheduleurm_durable_control/critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d_rl_after_cnn",
+        "elapsed_wall_s": 982.535133553989,
+        "last_transport_error": "",
+        "launch_attempt_count": 1,
+        "long_command_replayed": false,
+        "poll_count": 55,
+        "protocol": "idempotent_detached_remote_supervisor_v1",
+        "remote_returncode": 0,
+        "resumed_existing": false,
+        "run_id": "critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d_rl_after_cnn",
+        "state": "DONE",
+        "supervisor_pid": 727,
+        "transient_transport_error_count": 0
+      },
+      "elapsed_wall_s": 968.424467086792,
+      "eta_source": "task_native_tqdm_natural_completion_loaded_trajectory",
+      "gpu": 0,
+      "gpu_monitor_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d_rl_after_cnn/raw/gpu_monitor.log",
+      "gpu_monitor_sha256": "781cb5250882484b81e2ce7930d4acfd8c8164b43526b6ea19b93b4f6da9f0d5",
+      "hardware_class": "NVIDIA_RTX_3080Ti_12GB",
+      "legacy_scheduler_limits_bypassed": true,
+      "node": "jtl110gpu",
+      "node_bucket": "gpu_3080ti_12gb_dual",
+      "ordinary_running_tasks_touched": false,
+      "post_colocation_count": 2,
+      "ready": true,
+      "reason": "",
+      "remote_returncode": 0,
+      "resident_alive_at_target_end": true,
+      "resident_alive_at_target_start": true,
+      "resident_completion_model": {
+        "amortized_unit_s": 0.04871078292391811,
+        "base_unit_s": 0.04403244280256331,
+        "checkpoint_observed_s": 0.3792357810307294,
+        "child_returncode": 0,
+        "completion_model_ready": true,
+        "completion_unit_s": 0.04871078292391811,
+        "counter_offset": 0,
+        "finalization_after_last_progress_s": 1.5830534379929304,
+        "first_progress_unit": 5,
+        "interval_sample_count": 3599,
+        "last_progress_unit": 18000,
+        "loop_observed_units": 17995,
+        "loop_wall_s": 876.5505387159064,
+        "model_abs_error_s": 1.1368683772161603e-13,
+        "model_relative_error": 1.2828697429872493e-16,
+        "natural_exit": true,
+        "periodic_extra_s": 84.18673048377968,
+        "phase_durations_s": {
+          "checkpoint": [
+            0.17764571798034012,
+            0.2015900630503893
+          ],
+          "final_save": [
+            0.18974722898565233
+          ],
+          "initialization": [
+            4.645547016058117
+          ],
+          "outer_loop": [
+            876.9413539450616
+          ],
+          "warmup": [
+            3.180629808222875
+          ]
+        },
+        "predicted_total_s": 886.1915899340528,
+        "progress_observation_count": 3600,
+        "readiness_reason": "ready",
+        "save_observed_s": 0.18974722898565233,
+        "schema_version": 1,
+        "startup_overhead_s": 7.814443865533938,
+        "startup_to_first_progress_s": 8.057997780153528,
+        "stopped_on_stable": false,
+        "terminal_overhead_s": 1.5830534379929304,
+        "total_units": 18000,
+        "total_wall_s": 886.1915899340529,
+        "unit": "step"
+      },
+      "resident_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d_rl_after_cnn/raw/resident.log",
+      "resident_mix": "resident_cnn_target_hybrid_rl",
+      "resident_overlap_service": {
+        "boundary_rule": "first-to-last resident progress counter inside remote target start/end line-count bounds divided by the full nanosecond overlap duration",
+        "boundary_source": "remote_line_count_and_nanosecond_bounds",
+        "completed_units_lower": 12470,
+        "conservative_rate_units_per_s": 18.843646112714975,
+        "duration_s": 661.7615256309509,
+        "end_epoch_s": 1786283621.431944,
+        "end_line_count": 8733,
+        "first_progress_unit": 25,
+        "last_progress_unit": 12495,
+        "progress_observation_count": 2495,
+        "ready": true,
+        "reported_rate_median_units_per_s": 22.8220524,
+        "start_epoch_s": 1786282959.6704183,
+        "start_line_count": 20,
+        "unit": "step"
+      },
+      "resident_process_group_id": 737,
+      "resident_ready_observations": 4,
+      "resident_returncode": 0,
+      "resident_stable_rate": 26.9069447,
+      "resident_total_units": 18000,
+      "resident_workload_env": "resnet50_synthetic_train_amp_b32_224",
+      "resident_workload_key": "gpu_cnn_torch_resnet50",
+      "resource_state": "mixed_colocation",
+      "scenario_id": "rl_after_cnn",
+      "split_role": "calibration",
+      "target_completion_model": {
+        "amortized_unit_s": 12.80078276987068,
+        "base_unit_s": 5.961241943063214,
+        "checkpoint_observed_s": 0,
+        "child_returncode": 0,
+        "completion_model_ready": true,
+        "completion_unit_s": 12.80078276987068,
+        "counter_offset": 1,
+        "finalization_after_last_progress_s": 4.772940017981455,
+        "first_progress_unit": 0,
+        "interval_sample_count": 39,
+        "last_progress_unit": 39,
+        "loop_observed_units": 39,
+        "loop_wall_s": 499.2305280249566,
+        "model_abs_error_s": 0.0,
+        "model_relative_error": 0.0,
+        "natural_exit": true,
+        "periodic_extra_s": 266.7420922454912,
+        "phase_durations_s": {},
+        "predicted_total_s": 661.6040196460672,
+        "progress_observation_count": 40,
+        "readiness_reason": "ready",
+        "save_observed_s": 0,
+        "schema_version": 1,
+        "startup_overhead_s": 144.79976883325844,
+        "startup_to_first_progress_s": 157.60055160312913,
+        "stopped_on_stable": false,
+        "terminal_overhead_s": 4.772940017981455,
+        "total_units": 40,
+        "total_wall_s": 661.6040196460672,
+        "unit": "iter"
+      },
+      "target_end_ns": 1786283621431943874,
+      "target_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d_rl_after_cnn/raw/target.log",
+      "target_process_group_id": 1172,
+      "target_returncode": 0,
+      "target_stable_rate": 0.135869565,
+      "target_start_ns": 1786282959670418053,
+      "target_total_units": 40,
+      "target_workload_env": "Ant-v2",
+      "target_workload_key": "hybrid_rl_resac_ant",
+      "wave": 7
+    },
+    {
+      "capacity_boundary": false,
+      "diagnostics_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d_cnn_after_rl/raw/diagnostics.log",
+      "diagnostics_sha256": "d73808c72f81bc5814c35e880c8507922b4bf3b0bd5e11dd7db4b9815062e27f",
+      "durable_transport": {
+        "control_cleanup_error": "",
+        "control_cleanup_ready": true,
+        "control_dir": "/tmp/scheduleurm_durable_control/critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d_cnn_after_rl",
+        "elapsed_wall_s": 693.2641233609756,
+        "last_transport_error": "",
+        "launch_attempt_count": 1,
+        "long_command_replayed": false,
+        "poll_count": 42,
+        "protocol": "idempotent_detached_remote_supervisor_v1",
+        "remote_returncode": 0,
+        "resumed_existing": false,
+        "run_id": "critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d_cnn_after_rl",
+        "state": "DONE",
+        "supervisor_pid": 29922,
+        "transient_transport_error_count": 0
+      },
+      "elapsed_wall_s": 671.549421787262,
+      "eta_source": "task_native_tqdm_natural_completion_loaded_trajectory",
+      "gpu": 1,
+      "gpu_monitor_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d_cnn_after_rl/raw/gpu_monitor.log",
+      "gpu_monitor_sha256": "4b0a82a3d5e28d9ce4efb20f20be37365ba723251b469d8d67ab55996aa83d9c",
+      "hardware_class": "NVIDIA_RTX_3080Ti_12GB",
+      "legacy_scheduler_limits_bypassed": true,
+      "node": "jtl110gpu",
+      "node_bucket": "gpu_3080ti_12gb_dual",
+      "ordinary_running_tasks_touched": false,
+      "post_colocation_count": 2,
+      "ready": true,
+      "reason": "",
+      "remote_returncode": 0,
+      "resident_alive_at_target_end": true,
+      "resident_alive_at_target_start": true,
+      "resident_completion_model": {
+        "amortized_unit_s": 6.561927797202068,
+        "base_unit_s": 5.883820693008602,
+        "checkpoint_observed_s": 0,
+        "child_returncode": 0,
+        "completion_model_ready": true,
+        "completion_unit_s": 6.561927797202068,
+        "counter_offset": 1,
+        "finalization_after_last_progress_s": 9.75541005609557,
+        "first_progress_unit": 0,
+        "interval_sample_count": 79,
+        "last_progress_unit": 79,
+        "loop_observed_units": 79,
+        "loop_wall_s": 518.3922959789634,
+        "model_abs_error_s": 0.0,
+        "model_relative_error": 0.0,
+        "natural_exit": true,
+        "periodic_extra_s": 53.57046123128384,
+        "phase_durations_s": {},
+        "predicted_total_s": 631.7955783060752,
+        "progress_observation_count": 80,
+        "readiness_reason": "ready",
+        "save_observed_s": 0,
+        "schema_version": 1,
+        "startup_overhead_s": 97.08594447381417,
+        "startup_to_first_progress_s": 103.64787227101624,
+        "stopped_on_stable": false,
+        "terminal_overhead_s": 9.75541005609557,
+        "total_units": 80,
+        "total_wall_s": 631.7955783060752,
+        "unit": "iter"
+      },
+      "resident_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d_cnn_after_rl/raw/resident.log",
+      "resident_mix": "resident_hybrid_rl_target_cnn",
+      "resident_overlap_service": {
+        "boundary_rule": "first-to-last resident progress counter inside remote target start/end line-count bounds divided by the full nanosecond overlap duration",
+        "boundary_source": "remote_line_count_and_nanosecond_bounds",
+        "completed_units_lower": 29,
+        "conservative_rate_units_per_s": 0.1214306746427844,
+        "duration_s": 238.8193929195404,
+        "end_epoch_s": 1786284363.9400187,
+        "end_line_count": 116,
+        "first_progress_unit": 3,
+        "last_progress_unit": 32,
+        "progress_observation_count": 30,
+        "ready": true,
+        "reported_rate_median_units_per_s": 0.163934426,
+        "start_epoch_s": 1786284125.1206257,
+        "start_line_count": 25,
+        "unit": "iter"
+      },
+      "resident_process_group_id": 30027,
+      "resident_ready_observations": 3,
+      "resident_returncode": 0,
+      "resident_stable_rate": 0.133333333,
+      "resident_total_units": 80,
+      "resident_workload_env": "Ant-v2",
+      "resident_workload_key": "hybrid_rl_resac_ant",
+      "resource_state": "mixed_colocation",
+      "scenario_id": "cnn_after_rl",
+      "split_role": "calibration",
+      "target_completion_model": {
+        "amortized_unit_s": 0.0760442137906331,
+        "base_unit_s": 0.07834321740083397,
+        "checkpoint_observed_s": 0.3353642066940665,
+        "child_returncode": 0,
+        "completion_model_ready": true,
+        "completion_unit_s": 0.0760442137906331,
+        "counter_offset": 0,
+        "finalization_after_last_progress_s": 1.3088556909933686,
+        "first_progress_unit": 5,
+        "interval_sample_count": 599,
+        "last_progress_unit": 3000,
+        "loop_observed_units": 2995,
+        "loop_wall_s": 227.75242030294612,
+        "model_abs_error_s": 0.0,
+        "model_relative_error": 0.0,
+        "natural_exit": true,
+        "periodic_extra_s": 0.0,
+        "phase_durations_s": {
+          "checkpoint": [
+            0.158325859811157,
+            0.17703834688290954
+          ],
+          "final_save": [
+            0.17532716994173825
+          ],
+          "initialization": [
+            5.790573860052973
+          ],
+          "outer_loop": [
+            228.12126531801187
+          ],
+          "warmup": [
+            3.5702180308289826
+          ]
+        },
+        "predicted_total_s": 238.6541629289277,
+        "progress_observation_count": 600,
+        "readiness_reason": "ready",
+        "save_observed_s": 0.17532716994173825,
+        "schema_version": 1,
+        "startup_overhead_s": 9.212665866035035,
+        "startup_to_first_progress_s": 9.5928869349882,
+        "stopped_on_stable": false,
+        "terminal_overhead_s": 1.3088556909933686,
+        "total_units": 3000,
+        "total_wall_s": 238.6541629289277,
+        "unit": "step"
+      },
+      "target_end_ns": 1786284363940018612,
+      "target_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d_cnn_after_rl/raw/target.log",
+      "target_process_group_id": 9837,
+      "target_returncode": 0,
+      "target_stable_rate": 20.6292611,
+      "target_start_ns": 1786284125120625696,
+      "target_total_units": 3000,
+      "target_workload_env": "resnet50_synthetic_train_amp_b32_224",
+      "target_workload_key": "gpu_cnn_torch_resnet50",
+      "wave": 7
+    }
+  ],
+  "scenario_ids": [
+    "cnn_after_llm",
+    "llm_after_cnn",
+    "rl_after_cnn",
+    "cnn_after_rl"
+  ],
+  "scenario_parallelism": 1,
+  "scenario_parallelism_scope": "sequential_independent_action_measurement",
+  "schema_version": 1,
+  "selection": {
+    "filtered": false,
+    "scenario_ids": []
+  },
+  "split_role": "calibration",
+  "status": "PASS",
+  "stopped_after_scenario": "",
+  "task_native_progress_required": true,
+  "terminate_on_stable": false,
+  "wave": 7
+}

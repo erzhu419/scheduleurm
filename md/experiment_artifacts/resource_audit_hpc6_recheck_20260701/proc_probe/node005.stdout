@@ -1,0 +1,27 @@
+USER        PID   PPID STAT %CPU %MEM COMMAND         COMMAND
+root     274761   8217 Ss    3.0  0.0 sshd            sshd: root@notty
+root     274763 274761 Ss    2.0  0.0 su              su zhengliang01 -s /bin/bash -c bash -c 'ps -eo user,pid,ppid,stat,pcpu,pmem,comm,args --sort=-pcpu | head -25; echo LOAD=$(cat /proc/loadavg); echo NPROC=$(nproc)'
+root       8401   8377 Sl    0.5  0.0 cmd             /cm/local/apps/cmd/sbin/cmd -s -n -P /var/run/cmd.pid
+root          9      2 S     0.2  0.0 rcu_sched       [rcu_sched]
+root          1      0 Ss    0.1  0.0 systemd         /usr/lib/systemd/systemd
+root       7817      1 Ss    0.1  0.0 irqbalance      /usr/sbin/irqbalance --foreground
+root          2      0 S     0.0  0.0 kthreadd        [kthreadd]
+root          4      2 S<    0.0  0.0 kworker/0:0H    [kworker/0:0H]
+root          6      2 S     0.0  0.0 ksoftirqd/0     [ksoftirqd/0]
+root          7      2 S     0.0  0.0 migration/0     [migration/0]
+root          8      2 S     0.0  0.0 rcu_bh          [rcu_bh]
+root         10      2 S<    0.0  0.0 lru-add-drain   [lru-add-drain]
+root         11      2 S     0.0  0.0 watchdog/0      [watchdog/0]
+root         12      2 S     0.0  0.0 watchdog/1      [watchdog/1]
+root         13      2 S     0.0  0.0 migration/1     [migration/1]
+root         14      2 S     0.0  0.0 ksoftirqd/1     [ksoftirqd/1]
+root         16      2 S<    0.0  0.0 kworker/1:0H    [kworker/1:0H]
+root         18      2 S     0.0  0.0 watchdog/2      [watchdog/2]
+root         19      2 S     0.0  0.0 migration/2     [migration/2]
+root         20      2 S     0.0  0.0 ksoftirqd/2     [ksoftirqd/2]
+root         22      2 S<    0.0  0.0 kworker/2:0H    [kworker/2:0H]
+root         23      2 S     0.0  0.0 watchdog/3      [watchdog/3]
+root         24      2 S     0.0  0.0 migration/3     [migration/3]
+root         25      2 S     0.0  0.0 ksoftirqd/3     [ksoftirqd/3]
+LOAD=0.02 0.03 0.05 1/1633 274795
+NPROC=192

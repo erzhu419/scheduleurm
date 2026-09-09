@@ -71,7 +71,11 @@ def select_global_batch_placements(
         action=action,
         candidate_rows=rows,
         queue_vector=queue,
-        scheduler_hook_ready=bool(rows and placements),
+        scheduler_hook_ready=bool(
+            rows
+            and placements
+            and all(bool(row.get("theorem_ready")) for row in rows)
+        ),
     )
 
 
@@ -88,12 +92,21 @@ def _candidate_rows(
             if not node.get("alive", True):
                 continue
             for gpu in node.get("gpus") or []:
-                block = policy.gpu_fit_block_reason(dict(task), dict(gpu), dict(node.get("node_info") or {}), dict(context))
+                node_info = dict(node.get("node_info") or {})
+                node_info["_scheduler_node_state"] = dict(node)
+                block = policy.gpu_fit_block_reason(
+                    dict(task),
+                    dict(gpu),
+                    node_info,
+                    dict(context),
+                )
                 if block:
                     continue
                 legacy_score = (0, node_name, _optional_int(gpu.get("idx")) or -1)
                 policy.gpu_score(dict(task), dict(node), dict(gpu), legacy_score, dict(context))
                 audit = policy.selected_gpu_audit(dict(task), dict(node), dict(gpu), dict(context))
+                if not audit.get("theorem_ready"):
+                    continue
                 gpu_idx = _optional_int(gpu.get("idx"))
                 action_id = f"task={task.get('id') or task.get('signature')};node={node_name};gpu={gpu_idx}"
                 row = {
@@ -108,7 +121,8 @@ def _candidate_rows(
                     "oldest_wait_s": _optional_float(task.get("oldest_wait_s") or task.get("age_s")),
                     "node": node_name,
                     "gpu_idx": gpu_idx,
-                    "scheduler_hint_only": True,
+                    "scheduler_hint_only": False,
+                    "scheduler_execution_contract": "enforced_exact_placement_v1",
                 }
                 rows.append(row)
     return rows

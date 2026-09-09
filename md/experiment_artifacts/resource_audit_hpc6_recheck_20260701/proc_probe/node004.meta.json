@@ -1,0 +1,8 @@
+{
+  "cmd": [
+    "scheduler.run_on",
+    "node004",
+    "ps -eo user,pid,ppid,stat,pcpu,pmem,comm,args --sort=-pcpu | head -25; echo LOAD=$(cat /proc/loadavg); echo NPROC=$(nproc)"
+  ],
+  "returncode": 0
+}

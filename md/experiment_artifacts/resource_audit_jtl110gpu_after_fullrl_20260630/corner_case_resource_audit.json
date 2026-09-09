@@ -1,0 +1,249 @@
+{
+  "created_at_unix": 1782875818.6440034,
+  "gate": "corner_case_resource_audit",
+  "nodes": [
+    {
+      "node": "jtl110gpu",
+      "parsed": {
+        "availability_class": "clean_idle",
+        "cpu_busy": false,
+        "external_busy_process_count": 0,
+        "external_busy_processes": [],
+        "gpu_busy": false,
+        "gpus": [
+          {
+            "index": 0,
+            "memory_total_mb": 12288,
+            "memory_used_mb": 10,
+            "name": "NVIDIA GeForce RTX 3080 Ti",
+            "utilization_gpu_pct": 0
+          },
+          {
+            "index": 1,
+            "memory_total_mb": 12288,
+            "memory_used_mb": 258,
+            "name": "NVIDIA GeForce RTX 3080 Ti",
+            "utilization_gpu_pct": 0
+          }
+        ],
+        "hostname": "huiwei-Super-Server",
+        "loadavg_15m": 6.83,
+        "loadavg_1m": 0.52,
+        "loadavg_5m": 2.51,
+        "mem_available_kb": 521142036,
+        "mem_total_kb": 527787692,
+        "nproc": 24,
+        "processes": [
+          {
+            "args": "/tmp/scheduleurm-k3s/bin/k3s server",
+            "command": "k3s-server",
+            "pcpu": 13.1,
+            "pid": 31905,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "gpushare-device-plugin -logtostderr --v=5 --memory-unit=GiB",
+            "command": "gpushare-device",
+            "pcpu": 11.9,
+            "pid": 821622,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock",
+            "command": "dockerd",
+            "pcpu": 3.6,
+            "pid": 31381,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/local/bin/etcd --listen-client-urls=http://0.0.0.0:2379 --advertise-client-urls=http://iadeep-etcd.iadeep.svc.cluster.local:2379",
+            "command": "etcd",
+            "pcpu": 1.0,
+            "pid": 2750936,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "gpushare-sche-extender",
+            "command": "gpushare-sche-e",
+            "pcpu": 0.6,
+            "pid": 2750630,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/bin/containerd",
+            "command": "containerd",
+            "pcpu": 0.4,
+            "pid": 8529,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "kube-scheduler --config=/etc/kubernetes/scheduler-config.yaml --v=3 --secure-port=10269",
+            "command": "kube-scheduler",
+            "pcpu": 0.4,
+            "pid": 2750935,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/home/huiwei/frpembed/frpc -c /home/huiwei/frpembed/frpc.toml",
+            "command": "frpc",
+            "pcpu": 0.3,
+            "pid": 7544,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/coredns -conf /etc/coredns/Corefile",
+            "command": "coredns",
+            "pcpu": 0.3,
+            "pid": 2751746,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[irq/191-nvidia]",
+            "command": "irq/191-nvidia",
+            "pcpu": 0.2,
+            "pid": 1379,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[irq/192-nvidia]",
+            "command": "irq/192-nvidia",
+            "pcpu": 0.2,
+            "pid": 1430,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kworker/u48:0-p]",
+            "command": "kworker/u48:0-p",
+            "pcpu": 0.2,
+            "pid": 2802505,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kworker/u48:1-e]",
+            "command": "kworker/u48:1-e",
+            "pcpu": 0.2,
+            "pid": 2851169,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kswapd0]",
+            "command": "kswapd0",
+            "pcpu": 0.1,
+            "pid": 244,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[nvidia-modeset/]",
+            "command": "nvidia-modeset/",
+            "pcpu": 0.1,
+            "pid": 793,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/bin/gnome-shell",
+            "command": "gnome-shell",
+            "pcpu": 0.1,
+            "pid": 1502,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/lib/gnome-settings-daemon/gsd-color",
+            "command": "gsd-color",
+            "pcpu": 0.1,
+            "pid": 1588,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/bin/gnome-shell",
+            "command": "gnome-shell",
+            "pcpu": 0.1,
+            "pid": 32417,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/lib/gnome-settings-daemon/gsd-color",
+            "command": "gsd-color",
+            "pcpu": 0.1,
+            "pid": 32627,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/bin/containerd-shim-runc-v2 -namespace moby -id bb01fe1e77538a54a99c8f04160a64d2f5e79081963c16f69f51e1effeded876 -address /run/containerd/containerd.sock",
+            "command": "containerd-shim",
+            "pcpu": 0.1,
+            "pid": 821560,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "sshd: erzhu419@notty",
+            "command": "sshd",
+            "pcpu": 0.1,
+            "pid": 2747835,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/sbin/init splash",
+            "command": "systemd",
+            "pcpu": 0.0,
+            "pid": 1,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kthreadd]",
+            "command": "kthreadd",
+            "pcpu": 0.0,
+            "pid": 2,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[rcu_gp]",
+            "command": "rcu_gp",
+            "pcpu": 0.0,
+            "pid": 3,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[rcu_par_gp]",
+            "command": "rcu_par_gp",
+            "pcpu": 0.0,
+            "pid": 4,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          }
+        ],
+        "safe_for_cpu_probe": true,
+        "safe_for_gpu_only_probe": true,
+        "safe_for_hybrid_probe": true
+      },
+      "raw_stderr": "",
+      "raw_stdout": "huiwei-Super-Server\nNPROC=24\nLOADAVG=0.52 2.51 6.83\nMemTotal:527787692\nMemAvailable:521142036\n0, NVIDIA GeForce RTX 3080 Ti, 10, 12288, 0\n1, NVIDIA GeForce RTX 3080 Ti, 258, 12288, 0\n__SCHEDULEURM_PROCESS_SNAPSHOT__\n  31905 13.1  0.0 k3s-server      /tmp/scheduleurm-k3s/bin/k3s server\n 821622 11.9  0.0 gpushare-device gpushare-device-plugin -logtostderr --v=5 --memory-unit=GiB\n  31381  3.6  0.0 dockerd         /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock\n2750936  1.0  0.0 etcd            /usr/local/bin/etcd --listen-client-urls=http://0.0.0.0:2379 --advertise-client-urls=http://iadeep-etcd.iadeep.svc.cluster.local:2379\n2750630  0.6  0.0 gpushare-sche-e gpushare-sche-extender\n   8529  0.4  0.0 containerd      /usr/bin/containerd\n2750935  0.4  0.0 kube-scheduler  kube-scheduler --config=/etc/kubernetes/scheduler-config.yaml --v=3 --secure-port=10269\n   7544  0.3  0.0 frpc            /home/huiwei/frpembed/frpc -c /home/huiwei/frpembed/frpc.toml\n2751746  0.3  0.0 coredns         /coredns -conf /etc/coredns/Corefile\n   1379  0.2  0.0 irq/191-nvidia  [irq/191-nvidia]\n   1430  0.2  0.0 irq/192-nvidia  [irq/192-nvidia]\n2802505  0.2  0.0 kworker/u48:0-p [kworker/u48:0-p]\n2851169  0.2  0.0 kworker/u48:1-e [kworker/u48:1-e]\n    244  0.1  0.0 kswapd0         [kswapd0]\n    793  0.1  0.0 nvidia-modeset/ [nvidia-modeset/]\n   1502  0.1  0.0 gnome-shell     /usr/bin/gnome-shell\n   1588  0.1  0.0 gsd-color       /usr/lib/gnome-settings-daemon/gsd-color\n  32417  0.1  0.0 gnome-shell     /usr/bin/gnome-shell\n  32627  0.1  0.0 gsd-color       /usr/lib/gnome-settings-daemon/gsd-color\n 821560  0.1  0.0 containerd-shim /usr/bin/containerd-shim-runc-v2 -namespace moby -id bb01fe1e77538a54a99c8f04160a64d2f5e79081963c16f69f51e1effeded876 -address /run/containerd/containerd.sock\n2747835  0.1  0.0 sshd            sshd: erzhu419@notty\n      1  0.0  0.0 systemd         /sbin/init splash\n      2  0.0  0.0 kthreadd        [kthreadd]\n      3  0.0  0.0 rcu_gp          [rcu_gp]\n      4  0.0  0.0 rcu_par_gp      [rcu_par_gp]\n",
+      "reachable": true,
+      "returncode": 0
+    }
+  ],
+  "pass": true
+}

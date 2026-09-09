@@ -238,7 +238,7 @@ def _global_batch_certificate() -> dict[str, Any]:
     ]
     nodes = [
         {
-            "name": "gate-node-a",
+            "name": "jtl110gpu",
             "alive": True,
             "gpus": [
                 {"idx": 0, "used_mb": 100, "free_mb": 11900, "total_mb": 12000, "util_pct": 0, "running_task_count": 0},

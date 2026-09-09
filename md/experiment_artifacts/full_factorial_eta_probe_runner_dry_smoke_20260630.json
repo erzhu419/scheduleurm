@@ -1,0 +1,62 @@
+{
+  "admitted_count": 0,
+  "admitted_rows": [],
+  "allow_launch": false,
+  "boundary_count": 0,
+  "boundary_rows": [],
+  "gate": "full_factorial_eta_probe_runner",
+  "launched_count": 0,
+  "pass": true,
+  "resource_state": "empty",
+  "rows": [
+    {
+      "boundary_closed_profiles": [
+        4,
+        5,
+        6,
+        8
+      ],
+      "config": {
+        "cwd": "/home/erzhu419/mine_code/scheduleurm",
+        "gpus": [
+          0,
+          1
+        ],
+        "max_iters": 240,
+        "node": "jtl110gpu",
+        "stable_cycle_units": 0,
+        "template": "torch_cnn_resnet50.cmd.tpl",
+        "template_values": {},
+        "timeout_s": 1200
+      },
+      "eta_source_required": "tqdm/progress",
+      "family": "cnn",
+      "hardware_group": "gpu_3080ti_12gb_dual",
+      "launch_ready": true,
+      "launched": false,
+      "legacy_scheduler_limits_bypassed": true,
+      "measurement_valid": false,
+      "node": "jtl110gpu",
+      "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+      "pending_reason": "",
+      "profiles": [
+        3
+      ],
+      "resident_mix": "none",
+      "resource_state": "empty",
+      "row_id": "gpu_3080ti_12gb_dual|q01_low_cpu_high_gpu|gpu_cnn_torch_resnet50|cnn|empty|none",
+      "run_id": "ff_eta_t0_smoke_20260630_jtl110gpu_gpu_cnn_torch_resnet50_cnn_empty",
+      "workload_env": "cnn",
+      "workload_key": "gpu_cnn_torch_resnet50"
+    }
+  ],
+  "run_prefix": "ff_eta_t0_smoke_20260630",
+  "scope": "Controlled full-factorial ETA probes.  Launches bypass the legacy scheduler dispatch path and require task-native tqdm/progress.  Invalid profiles are retained as scoped capacity/instability boundaries for the exact node/workload/state.",
+  "selected_count": 1,
+  "service_cache_snapshot": {
+    "capacity_boundaries": [],
+    "records": []
+  },
+  "status": "PROBE_RUNNER_MANIFEST",
+  "tier": "T0_core_curve"
+}

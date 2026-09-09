@@ -15,9 +15,11 @@ to registered-system direct external-binary superiority.
 from __future__ import annotations
 
 import argparse
+import copy
 import csv
 import json
 import time
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -33,6 +35,11 @@ DEFAULT_MARKDOWN_OUTPUT = REPO_ROOT / "md" / "registered_sota_adapter_closure_ga
 
 
 def build_registered_sota_adapter_closure_gate() -> dict[str, Any]:
+    return copy.deepcopy(_cached_registered_sota_adapter_closure_gate())
+
+
+@lru_cache(maxsize=1)
+def _cached_registered_sota_adapter_closure_gate() -> dict[str, Any]:
     runtime = build_registered_sota_runtime_gate(run_smoke=True)
     admitted = build_sota_admitted_universe_closure_gate()
     fullstack = build_sota_fullstack_superiority_gate()

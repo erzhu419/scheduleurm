@@ -1,0 +1,272 @@
+{
+  "admitted_count": 0,
+  "admitted_rows": [],
+  "allow_launch": true,
+  "boundary_count": 1,
+  "boundary_rows": [
+    {
+      "boundary_closed_profiles": [],
+      "capacity_boundary_profiles": [
+        5
+      ],
+      "config": {
+        "cwd": "/home/erzhu419/mine_code/scheduleurm",
+        "gpus": [
+          0,
+          1
+        ],
+        "max_iters": 240,
+        "node": "jtl110gpu2",
+        "stable_cycle_units": 0,
+        "template": "torch_cnn_resnet50.cmd.tpl",
+        "template_values": {},
+        "timeout_s": 1200
+      },
+      "eta_source_required": "tqdm/progress",
+      "family": "cnn",
+      "hardware_group": "gpu_3080ti_12gb_dual",
+      "launch_ready": true,
+      "launched": true,
+      "legacy_scheduler_limits_bypassed": true,
+      "measurement_valid": false,
+      "node": "jtl110gpu2",
+      "node_bucket": "jtl110gpu2:gpu_3080ti_12gb_dual",
+      "pending_reason": "",
+      "probe_result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1
+        ],
+        "node": "jtl110gpu2",
+        "pass": false,
+        "profiles": [
+          5,
+          6,
+          8
+        ],
+        "rate_count": 38,
+        "run_id": "ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl110_spillover_jtl110gpu2_full_loaded_gpu_cnn_torch_resnet50_jtl110gpu2_gpu_cnn_torch_resnet50_cnn_full_loaded",
+        "stable_rate_ready_count": 26,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl110_spillover_jtl110gpu2_full_loaded_gpu_cnn_torch_resnet50_jtl110gpu2_gpu_cnn_torch_resnet50_cnn_full_loaded/reports/profile_5_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl110_spillover_jtl110gpu2_full_loaded_gpu_cnn_torch_resnet50_jtl110gpu2_gpu_cnn_torch_resnet50_cnn_full_loaded/reports/profile_6_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl110_spillover_jtl110gpu2_full_loaded_gpu_cnn_torch_resnet50_jtl110gpu2_gpu_cnn_torch_resnet50_cnn_full_loaded/reports/profile_8_per_gpu_summary.json"
+        ]
+      },
+      "profile_rows": [
+        {
+          "aggregate_stable_rate_unit_s": 82.19972278000002,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 11.74281754,
+          "measurement_valid": false,
+          "path_exists": true,
+          "profile": 5,
+          "running_count": 10,
+          "stable_rate_ready_count": 7,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 10
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl110_spillover_jtl110gpu2_full_loaded_gpu_cnn_torch_resnet50_jtl110gpu2_gpu_cnn_torch_resnet50_cnn_full_loaded/reports/profile_5_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 90.50032421,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 10.055591578888889,
+          "measurement_valid": false,
+          "path_exists": true,
+          "profile": 6,
+          "running_count": 12,
+          "stable_rate_ready_count": 9,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 12
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl110_spillover_jtl110gpu2_full_loaded_gpu_cnn_torch_resnet50_jtl110gpu2_gpu_cnn_torch_resnet50_cnn_full_loaded/reports/profile_6_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 69.41487198,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 6.941487198,
+          "measurement_valid": false,
+          "path_exists": true,
+          "profile": 8,
+          "running_count": 16,
+          "stable_rate_ready_count": 10,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 16
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl110_spillover_jtl110gpu2_full_loaded_gpu_cnn_torch_resnet50_jtl110gpu2_gpu_cnn_torch_resnet50_cnn_full_loaded/reports/profile_8_per_gpu_summary.json"
+        }
+      ],
+      "profiles": [
+        5,
+        6,
+        8
+      ],
+      "reason": "one_or_more_profiles_unstable_or_capacity_boundary",
+      "resident_mix": "same_workload_to_capacity_boundary",
+      "resource_state": "full_loaded",
+      "row_id": "gpu_3080ti_12gb_dual|q01_low_cpu_high_gpu|gpu_cnn_torch_resnet50|cnn|full_loaded|same_workload_to_capacity_boundary",
+      "run_id": "ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl110_spillover_jtl110gpu2_full_loaded_gpu_cnn_torch_resnet50_jtl110gpu2_gpu_cnn_torch_resnet50_cnn_full_loaded",
+      "workload_env": "cnn",
+      "workload_key": "gpu_cnn_torch_resnet50"
+    }
+  ],
+  "gate": "full_factorial_eta_probe_runner",
+  "launched_count": 1,
+  "max_profiles": 0,
+  "pass": true,
+  "resource_state": "full_loaded",
+  "rows": [
+    {
+      "boundary_closed_profiles": [],
+      "capacity_boundary_profiles": [
+        5
+      ],
+      "config": {
+        "cwd": "/home/erzhu419/mine_code/scheduleurm",
+        "gpus": [
+          0,
+          1
+        ],
+        "max_iters": 240,
+        "node": "jtl110gpu2",
+        "stable_cycle_units": 0,
+        "template": "torch_cnn_resnet50.cmd.tpl",
+        "template_values": {},
+        "timeout_s": 1200
+      },
+      "eta_source_required": "tqdm/progress",
+      "family": "cnn",
+      "hardware_group": "gpu_3080ti_12gb_dual",
+      "launch_ready": true,
+      "launched": true,
+      "legacy_scheduler_limits_bypassed": true,
+      "measurement_valid": false,
+      "node": "jtl110gpu2",
+      "node_bucket": "jtl110gpu2:gpu_3080ti_12gb_dual",
+      "pending_reason": "",
+      "probe_result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1
+        ],
+        "node": "jtl110gpu2",
+        "pass": false,
+        "profiles": [
+          5,
+          6,
+          8
+        ],
+        "rate_count": 38,
+        "run_id": "ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl110_spillover_jtl110gpu2_full_loaded_gpu_cnn_torch_resnet50_jtl110gpu2_gpu_cnn_torch_resnet50_cnn_full_loaded",
+        "stable_rate_ready_count": 26,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl110_spillover_jtl110gpu2_full_loaded_gpu_cnn_torch_resnet50_jtl110gpu2_gpu_cnn_torch_resnet50_cnn_full_loaded/reports/profile_5_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl110_spillover_jtl110gpu2_full_loaded_gpu_cnn_torch_resnet50_jtl110gpu2_gpu_cnn_torch_resnet50_cnn_full_loaded/reports/profile_6_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl110_spillover_jtl110gpu2_full_loaded_gpu_cnn_torch_resnet50_jtl110gpu2_gpu_cnn_torch_resnet50_cnn_full_loaded/reports/profile_8_per_gpu_summary.json"
+        ]
+      },
+      "profile_rows": [
+        {
+          "aggregate_stable_rate_unit_s": 82.19972278000002,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 11.74281754,
+          "measurement_valid": false,
+          "path_exists": true,
+          "profile": 5,
+          "running_count": 10,
+          "stable_rate_ready_count": 7,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 10
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl110_spillover_jtl110gpu2_full_loaded_gpu_cnn_torch_resnet50_jtl110gpu2_gpu_cnn_torch_resnet50_cnn_full_loaded/reports/profile_5_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 90.50032421,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 10.055591578888889,
+          "measurement_valid": false,
+          "path_exists": true,
+          "profile": 6,
+          "running_count": 12,
+          "stable_rate_ready_count": 9,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 12
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl110_spillover_jtl110gpu2_full_loaded_gpu_cnn_torch_resnet50_jtl110gpu2_gpu_cnn_torch_resnet50_cnn_full_loaded/reports/profile_6_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 69.41487198,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 6.941487198,
+          "measurement_valid": false,
+          "path_exists": true,
+          "profile": 8,
+          "running_count": 16,
+          "stable_rate_ready_count": 10,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 16
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl110_spillover_jtl110gpu2_full_loaded_gpu_cnn_torch_resnet50_jtl110gpu2_gpu_cnn_torch_resnet50_cnn_full_loaded/reports/profile_8_per_gpu_summary.json"
+        }
+      ],
+      "profiles": [
+        5,
+        6,
+        8
+      ],
+      "reason": "one_or_more_profiles_unstable_or_capacity_boundary",
+      "resident_mix": "same_workload_to_capacity_boundary",
+      "resource_state": "full_loaded",
+      "row_id": "gpu_3080ti_12gb_dual|q01_low_cpu_high_gpu|gpu_cnn_torch_resnet50|cnn|full_loaded|same_workload_to_capacity_boundary",
+      "run_id": "ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl110_spillover_jtl110gpu2_full_loaded_gpu_cnn_torch_resnet50_jtl110gpu2_gpu_cnn_torch_resnet50_cnn_full_loaded",
+      "workload_env": "cnn",
+      "workload_key": "gpu_cnn_torch_resnet50"
+    }
+  ],
+  "run_prefix": "ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl110_spillover_jtl110gpu2_full_loaded_gpu_cnn_torch_resnet50",
+  "scope": "Controlled full-factorial ETA probes.  Launches bypass the legacy scheduler dispatch path and require task-native tqdm/progress.  Invalid profiles are retained as scoped capacity/instability boundaries for the exact node/workload/state.",
+  "selected_count": 1,
+  "service_cache_snapshot": {
+    "capacity_boundaries": [
+      {
+        "aggregate_rate": 41.09986139000001,
+        "capacity_boundary": true,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "node_bucket": "jtl110gpu2:gpu_3080ti_12gb_dual",
+        "per_task_rates": [
+          13.5816572,
+          8.18364536,
+          10.2120346,
+          8.24091817,
+          8.14981315,
+          20.2888661,
+          13.5427882
+        ],
+        "profile": 5,
+        "resource_kind": "cnn",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl110_spillover_jtl110gpu2_full_loaded_gpu_cnn_torch_resnet50_jtl110gpu2_gpu_cnn_torch_resnet50_cnn_full_loaded/reports/profile_5_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 240.0,
+        "unit": "step",
+        "workload_env": "cnn",
+        "workload_key": "gpu_cnn_torch_resnet50"
+      }
+    ],
+    "records": []
+  },
+  "status": "PROBE_RUNNER_LAUNCHED",
+  "tier": "T0_core_curve"
+}

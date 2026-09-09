@@ -15,7 +15,9 @@ or claim direct full-stack external-system superiority.
 from __future__ import annotations
 
 import argparse
+import copy
 import json
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -40,6 +42,11 @@ ARTIFACT_ROOT = REPO_ROOT / "md" / "experiment_artifacts"
 
 
 def build_sota_algorithm_upgrade_gate() -> dict[str, Any]:
+    return copy.deepcopy(_cached_sota_algorithm_upgrade_gate())
+
+
+@lru_cache(maxsize=1)
+def _cached_sota_algorithm_upgrade_gate() -> dict[str, Any]:
     union = build_sota_candidate_union_gate()
     aggregate = union.get("aggregate") or {}
     adaptive = _adaptive_scalarized_certificate(union)

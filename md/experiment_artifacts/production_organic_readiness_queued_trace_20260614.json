@@ -1,7 +1,7 @@
 {
   "algorithm": "theorem_maxweight_v1",
   "allow_all_hard_rule_scope": true,
-  "candidate_count_total": 0,
+  "candidate_count_total": 2,
   "gate": "production_queued_theorem_trace",
   "hard_rule_mode": "clean_bench",
   "max_post_vram_frac": 0.95,
@@ -10,120 +10,354 @@
   "node_summary": [
     {
       "alive": true,
-      "free_cpu": 13,
-      "free_ram_mb": 16537,
+      "free_cpu": 11,
+      "free_ram_mb": 12913,
       "gpu_count": 1,
       "name": "local"
     },
     {
       "alive": true,
-      "free_cpu": 11,
-      "free_ram_mb": 508998,
+      "free_cpu": 10,
+      "free_ram_mb": 449881,
       "gpu_count": 2,
       "name": "jtl110gpu"
     },
     {
       "alive": true,
-      "free_cpu": 12,
-      "free_ram_mb": 508689,
+      "free_cpu": 9,
+      "free_ram_mb": 449861,
       "gpu_count": 2,
       "name": "jtl110gpu2"
     },
     {
-      "alive": true,
-      "free_cpu": 8,
-      "free_ram_mb": 41583,
-      "gpu_count": 2,
+      "alive": false,
+      "free_cpu": null,
+      "free_ram_mb": null,
+      "gpu_count": 0,
       "name": "jtl311linux"
     },
     {
-      "alive": true,
-      "free_cpu": 960,
-      "free_ram_mb": 1349551,
-      "gpu_count": 0,
-      "name": "zhengliang-hpc"
-    },
-    {
-      "alive": true,
+      "alive": false,
       "free_cpu": 64,
-      "free_ram_mb": 233009,
-      "gpu_count": 4,
-      "name": "node007-direct"
+      "free_ram_mb": null,
+      "gpu_count": 0,
+      "name": "node007"
     },
     {
       "alive": true,
       "free_cpu": 128,
-      "free_ram_mb": 490427,
+      "free_ram_mb": 479078,
       "gpu_count": 0,
       "name": "jtl110cpu"
     },
     {
       "alive": true,
       "free_cpu": 128,
-      "free_ram_mb": 485753,
+      "free_ram_mb": 504237,
       "gpu_count": 0,
       "name": "jtl110cpu2"
     },
     {
-      "alive": true,
-      "free_cpu": 192,
-      "free_ram_mb": 183773,
+      "alive": false,
+      "free_cpu": 168,
+      "free_ram_mb": null,
       "gpu_count": 0,
       "name": "node001"
     },
     {
-      "alive": true,
-      "free_cpu": 192,
-      "free_ram_mb": 180497,
+      "alive": false,
+      "free_cpu": 96,
+      "free_ram_mb": null,
       "gpu_count": 0,
       "name": "node002"
     },
     {
-      "alive": true,
-      "free_cpu": 192,
-      "free_ram_mb": 119136,
+      "alive": false,
+      "free_cpu": 132,
+      "free_ram_mb": null,
       "gpu_count": 0,
       "name": "node003"
     },
     {
-      "alive": true,
-      "free_cpu": 192,
-      "free_ram_mb": 151011,
+      "alive": false,
+      "free_cpu": 174,
+      "free_ram_mb": null,
       "gpu_count": 0,
       "name": "node004"
     },
     {
-      "alive": true,
-      "free_cpu": 192,
-      "free_ram_mb": 154729,
+      "alive": false,
+      "free_cpu": 94,
+      "free_ram_mb": null,
       "gpu_count": 0,
       "name": "node005"
     },
     {
-      "alive": true,
-      "free_cpu": 192,
-      "free_ram_mb": 150192,
+      "alive": false,
+      "free_cpu": 156,
+      "free_ram_mb": null,
       "gpu_count": 0,
       "name": "node006"
     }
   ],
   "oracle_bridge": {
-    "blocker_count": 0,
-    "blockers": [],
+    "blocker_count": 1,
+    "blockers": [
+      {
+        "detail": "scheduler_sort_key_minimization",
+        "reason": "score_semantics_not_robust_maxweight_lower_service",
+        "slot_id": "slot:t79387:1786274345.039123:1786710022615"
+      }
+    ],
     "converted_slot_count": 0,
     "interpretation": "Trace cannot certify alpha0/alpha1 until each slot has robust MaxWeight lower-service semantics.",
-    "status": "NO_THEOREM_SLOTS",
-    "trace_slot_count": 0,
+    "status": "NOT_THEOREM_TRACE",
+    "trace_slot_count": 1,
     "usable_for_theorem": false
   },
   "pass": false,
-  "placed_count": 0,
-  "placements": [],
-  "queued_admissible_count": 0,
+  "placed_count": 1,
+  "placements": [
+    {
+      "placement": null,
+      "project": "BAPR",
+      "signature": "BAPR/regime-damping-headroom/v2/analysis",
+      "task_id": "t79295",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "placement": null,
+      "project": "BAPR",
+      "signature": "BAPR/regime-polarity-deployment-confirmation/v1/audit/bapr/seed-52127",
+      "task_id": "t79348",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "placement": null,
+      "project": "BAPR",
+      "signature": "BAPR/regime-polarity-deployment-confirmation/v1/audit/bapr/seed-52237",
+      "task_id": "t79349",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "placement": null,
+      "project": "BAPR",
+      "signature": "BAPR/regime-polarity-deployment-confirmation/v1/audit/bapr/seed-52567",
+      "task_id": "t79352",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "placement": null,
+      "project": "BAPR",
+      "signature": "BAPR/regime-polarity-deployment-confirmation/v1/audit/sac/seed-52127",
+      "task_id": "t79358",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "placement": null,
+      "project": "BAPR",
+      "signature": "BAPR/regime-polarity-deployment-confirmation/v1/audit/sac/seed-52567",
+      "task_id": "t79362",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "placement": null,
+      "project": "BAPR",
+      "signature": "BAPR/regime-polarity-deployment-confirmation/v1/audit/sac/seed-52783",
+      "task_id": "t79364",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "placement": null,
+      "project": "BAPR",
+      "signature": "BAPR/regime-polarity-deployment-confirmation/v1/audit/escp_recurrent/seed-52021",
+      "task_id": "t79367",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "placement": null,
+      "project": "BAPR",
+      "signature": "BAPR/regime-polarity-deployment-confirmation/v1/audit/escp_recurrent/seed-52127",
+      "task_id": "t79368",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "placement": null,
+      "project": "BAPR",
+      "signature": "BAPR/regime-polarity-deployment-confirmation/v1/audit/escp_recurrent/seed-52237",
+      "task_id": "t79369",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "placement": null,
+      "project": "BAPR",
+      "signature": "BAPR/regime-polarity-deployment-confirmation/v1/audit/escp_recurrent/seed-52349",
+      "task_id": "t79370",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "placement": null,
+      "project": "BAPR",
+      "signature": "BAPR/regime-polarity-deployment-confirmation/v1/audit/escp_recurrent/seed-52457",
+      "task_id": "t79371",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "placement": null,
+      "project": "BAPR",
+      "signature": "BAPR/regime-polarity-deployment-confirmation/v1/audit/escp_recurrent/seed-52567",
+      "task_id": "t79372",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "placement": null,
+      "project": "BAPR",
+      "signature": "BAPR/regime-polarity-deployment-confirmation/v1/audit/escp_recurrent/seed-52679",
+      "task_id": "t79373",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "placement": null,
+      "project": "BAPR",
+      "signature": "BAPR/regime-polarity-deployment-confirmation/v1/audit/escp_recurrent/seed-52783",
+      "task_id": "t79374",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "placement": null,
+      "project": "BAPR",
+      "signature": "BAPR/regime-polarity-deployment-confirmation/v1/audit/escp_recurrent/seed-52889",
+      "task_id": "t79375",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "placement": null,
+      "project": "BAPR",
+      "signature": "BAPR/regime-polarity-deployment-confirmation/v1/audit/escp_recurrent/seed-52999",
+      "task_id": "t79376",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "placement": null,
+      "project": "BAPR",
+      "signature": "BAPR/regime-polarity-deployment-confirmation/v1/audit/resac_b0/seed-52127",
+      "task_id": "t79378",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "placement": null,
+      "project": "BAPR",
+      "signature": "BAPR/regime-polarity-deployment-confirmation/v1/audit/resac_b0/seed-52237",
+      "task_id": "t79379",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "placement": null,
+      "project": "BAPR",
+      "signature": "BAPR/regime-polarity-deployment-confirmation/v1/audit/resac_b0/seed-52349",
+      "task_id": "t79380",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "placement": null,
+      "project": "BAPR",
+      "signature": "BAPR/regime-polarity-deployment-confirmation/v1/audit/resac_b0/seed-52457",
+      "task_id": "t79381",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "placement": null,
+      "project": "BAPR",
+      "signature": "BAPR/regime-polarity-deployment-confirmation/v1/audit/resac_b0/seed-52567",
+      "task_id": "t79382",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "placement": null,
+      "project": "BAPR",
+      "signature": "BAPR/regime-polarity-deployment-confirmation/v1/audit/resac_b0/seed-52679",
+      "task_id": "t79383",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "placement": null,
+      "project": "BAPR",
+      "signature": "BAPR/regime-polarity-deployment-confirmation/v1/audit/resac_b0/seed-52783",
+      "task_id": "t79384",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "placement": null,
+      "project": "BAPR",
+      "signature": "BAPR/regime-polarity-deployment-confirmation/v1/audit/resac_b0/seed-52889",
+      "task_id": "t79385",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "placement": null,
+      "project": "BAPR",
+      "signature": "BAPR/regime-polarity-deployment-confirmation/v1/audit/resac_b0/seed-52999",
+      "task_id": "t79386",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "local"
+      },
+      "project": "BAPR",
+      "signature": "BAPR/regime-polarity-deployment-confirmation/v1/analysis",
+      "task_id": "t79387",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "placement": null,
+      "project": "h2oplus-v8-development",
+      "signature": "H2Oplus/v8/development/fewshot/26d4f5c4ca9f/h2oplus_seed6205",
+      "task_id": "t82342",
+      "workload_key": "transit_native_real_demand_batch_c9_16_completed_history"
+    },
+    {
+      "placement": null,
+      "project": "h2oplus-v8-development",
+      "signature": "H2Oplus/v8/development/fewshot/26d4f5c4ca9f/sac-online_seed6201",
+      "task_id": "t82343",
+      "workload_key": "transit_native_real_demand_batch_c9_16_completed_history"
+    },
+    {
+      "placement": null,
+      "project": "h2oplus-v8-development",
+      "signature": "H2Oplus/v8/development/fewshot/26d4f5c4ca9f/sac-online_seed6202",
+      "task_id": "t82344",
+      "workload_key": "transit_native_real_demand_batch_c9_16_completed_history"
+    },
+    {
+      "placement": null,
+      "project": "h2oplus-v8-development",
+      "signature": "H2Oplus/v8/development/fewshot/26d4f5c4ca9f/sac-online_seed6203",
+      "task_id": "t82345",
+      "workload_key": "transit_native_real_demand_batch_c9_16_completed_history"
+    },
+    {
+      "placement": null,
+      "project": "h2oplus-v8-development",
+      "signature": "H2Oplus/v8/development/fewshot/26d4f5c4ca9f/sac-online_seed6204",
+      "task_id": "t82346",
+      "workload_key": "transit_native_real_demand_batch_c9_16_completed_history"
+    },
+    {
+      "placement": null,
+      "project": "h2oplus-v8-development",
+      "signature": "H2Oplus/v8/development/fewshot/26d4f5c4ca9f/sac-online_seed6205",
+      "task_id": "t82347",
+      "workload_key": "transit_native_real_demand_batch_c9_16_completed_history"
+    }
+  ],
+  "queued_admissible_count": 33,
   "requested_algorithm": "theorem_maxweight_v1",
   "scope": "read-only theorem trace over currently queued production tasks; queue is not mutated and no process is launched.",
   "theorem_slot_count": 0,
   "trace_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/production_organic_readiness_queued_trace_20260614.jsonl",
-  "trace_slot_count": 0,
-  "unplaced_count": 0
+  "trace_slot_count": 1,
+  "unplaced_count": 32
 }

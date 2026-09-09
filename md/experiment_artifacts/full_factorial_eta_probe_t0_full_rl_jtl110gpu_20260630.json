@@ -1,0 +1,2085 @@
+{
+  "admitted_count": 3,
+  "admitted_rows": [
+    {
+      "boundary_closed_profiles": [],
+      "capacity_boundary_profiles": [],
+      "config": {
+        "cwd": "/home/erzhu419/mine_code/RE-SAC",
+        "gpus": [
+          0,
+          1
+        ],
+        "max_iters": 200,
+        "node": "jtl110gpu",
+        "stable_cycle_units": 5,
+        "template": "resac_env_real_venv.cmd.tpl",
+        "template_values": {
+          "mujoco_env": "HalfCheetah-v2"
+        },
+        "timeout_s": 2400
+      },
+      "eta_source_required": "tqdm/progress",
+      "family": "hybrid_rl",
+      "hardware_group": "gpu_3080ti_12gb_dual",
+      "launch_ready": true,
+      "launched": true,
+      "legacy_scheduler_limits_bypassed": true,
+      "measurement_valid": true,
+      "node": "jtl110gpu",
+      "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+      "pending_reason": "",
+      "probe_result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1
+        ],
+        "node": "jtl110gpu",
+        "pass": true,
+        "profiles": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "rate_count": 42,
+        "run_id": "ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded",
+        "stable_rate_ready_count": 42,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded/reports/profile_1_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded/reports/profile_2_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded/reports/profile_3_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded/reports/profile_4_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded/reports/profile_5_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded/reports/profile_6_per_gpu_summary.json"
+        ]
+      },
+      "profile_rows": [
+        {
+          "aggregate_stable_rate_unit_s": 0.29543708999999996,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.14771854499999998,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 1,
+          "running_count": 2,
+          "stable_rate_ready_count": 2,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 2
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded/reports/profile_1_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.28739975250000005,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.071849938125,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 2,
+          "running_count": 4,
+          "stable_rate_ready_count": 4,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 4
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded/reports/profile_2_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.2866185776,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.047769762933333335,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 3,
+          "running_count": 6,
+          "stable_rate_ready_count": 6,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 6
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded/reports/profile_3_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.2861770265,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.0357721283125,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 4,
+          "running_count": 8,
+          "stable_rate_ready_count": 8,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 8
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded/reports/profile_4_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.28818002659999997,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.02881800266,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 5,
+          "running_count": 10,
+          "stable_rate_ready_count": 10,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 10
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded/reports/profile_5_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.41333111079999996,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.03444425923333334,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 6,
+          "running_count": 12,
+          "stable_rate_ready_count": 12,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 12
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded/reports/profile_6_per_gpu_summary.json"
+        }
+      ],
+      "profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "reason": "",
+      "resident_mix": "same_workload_to_capacity_boundary",
+      "resource_state": "full_loaded",
+      "row_id": "gpu_3080ti_12gb_dual|q11_high_cpu_high_gpu|hybrid_rl_resac_halfcheetah|halfcheetah|full_loaded|same_workload_to_capacity_boundary",
+      "run_id": "ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded",
+      "workload_env": "halfcheetah",
+      "workload_key": "hybrid_rl_resac_halfcheetah"
+    },
+    {
+      "boundary_closed_profiles": [],
+      "capacity_boundary_profiles": [],
+      "config": {
+        "cwd": "/home/erzhu419/mine_code/RE-SAC",
+        "gpus": [
+          0,
+          1
+        ],
+        "max_iters": 200,
+        "node": "jtl110gpu",
+        "stable_cycle_units": 5,
+        "template": "resac_env_real_venv.cmd.tpl",
+        "template_values": {
+          "mujoco_env": "Hopper-v2"
+        },
+        "timeout_s": 2400
+      },
+      "eta_source_required": "tqdm/progress",
+      "family": "hybrid_rl",
+      "hardware_group": "gpu_3080ti_12gb_dual",
+      "launch_ready": true,
+      "launched": true,
+      "legacy_scheduler_limits_bypassed": true,
+      "measurement_valid": true,
+      "node": "jtl110gpu",
+      "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+      "pending_reason": "",
+      "probe_result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1
+        ],
+        "node": "jtl110gpu",
+        "pass": true,
+        "profiles": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "rate_count": 42,
+        "run_id": "ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded",
+        "stable_rate_ready_count": 42,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded/reports/profile_1_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded/reports/profile_2_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded/reports/profile_3_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded/reports/profile_4_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded/reports/profile_5_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded/reports/profile_6_per_gpu_summary.json"
+        ]
+      },
+      "profile_rows": [
+        {
+          "aggregate_stable_rate_unit_s": 0.90909091,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.454545455,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 1,
+          "running_count": 2,
+          "stable_rate_ready_count": 2,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 2
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded/reports/profile_1_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 1.1202639570000001,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.28006598925,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 2,
+          "running_count": 4,
+          "stable_rate_ready_count": 4,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 4
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded/reports/profile_2_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.8945535500000001,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.14909225833333334,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 3,
+          "running_count": 6,
+          "stable_rate_ready_count": 6,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 6
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded/reports/profile_3_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.895271334,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.11190891675,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 4,
+          "running_count": 8,
+          "stable_rate_ready_count": 8,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 8
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded/reports/profile_4_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 1.5462810230999997,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.15462810231000002,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 5,
+          "running_count": 10,
+          "stable_rate_ready_count": 10,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 10
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded/reports/profile_5_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 1.4780450552,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.12317042126666666,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 6,
+          "running_count": 12,
+          "stable_rate_ready_count": 12,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 12
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded/reports/profile_6_per_gpu_summary.json"
+        }
+      ],
+      "profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "reason": "",
+      "resident_mix": "same_workload_to_capacity_boundary",
+      "resource_state": "full_loaded",
+      "row_id": "gpu_3080ti_12gb_dual|q11_high_cpu_high_gpu|hybrid_rl_resac_hopper|hopper|full_loaded|same_workload_to_capacity_boundary",
+      "run_id": "ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded",
+      "workload_env": "hopper",
+      "workload_key": "hybrid_rl_resac_hopper"
+    },
+    {
+      "boundary_closed_profiles": [],
+      "capacity_boundary_profiles": [],
+      "config": {
+        "cwd": "/home/erzhu419/mine_code/RE-SAC",
+        "gpus": [
+          0,
+          1
+        ],
+        "max_iters": 200,
+        "node": "jtl110gpu",
+        "stable_cycle_units": 5,
+        "template": "resac_env_real_venv.cmd.tpl",
+        "template_values": {
+          "mujoco_env": "Walker2d-v2"
+        },
+        "timeout_s": 2400
+      },
+      "eta_source_required": "tqdm/progress",
+      "family": "hybrid_rl",
+      "hardware_group": "gpu_3080ti_12gb_dual",
+      "launch_ready": true,
+      "launched": true,
+      "legacy_scheduler_limits_bypassed": true,
+      "measurement_valid": true,
+      "node": "jtl110gpu",
+      "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+      "pending_reason": "",
+      "probe_result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1
+        ],
+        "node": "jtl110gpu",
+        "pass": true,
+        "profiles": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "rate_count": 42,
+        "run_id": "ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded",
+        "stable_rate_ready_count": 42,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded/reports/profile_1_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded/reports/profile_2_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded/reports/profile_3_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded/reports/profile_4_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded/reports/profile_5_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded/reports/profile_6_per_gpu_summary.json"
+        ]
+      },
+      "profile_rows": [
+        {
+          "aggregate_stable_rate_unit_s": 0.952467344,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.476233672,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 1,
+          "running_count": 2,
+          "stable_rate_ready_count": 2,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 2
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded/reports/profile_1_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.915384733,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.22884618325,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 2,
+          "running_count": 4,
+          "stable_rate_ready_count": 4,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 4
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded/reports/profile_2_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 1.0754858569999999,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.17924764283333333,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 3,
+          "running_count": 6,
+          "stable_rate_ready_count": 6,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 6
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded/reports/profile_3_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 1.0375067,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.1296883375,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 4,
+          "running_count": 8,
+          "stable_rate_ready_count": 8,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 8
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded/reports/profile_4_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 1.8090590018000001,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.18090590018,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 5,
+          "running_count": 10,
+          "stable_rate_ready_count": 10,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 10
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded/reports/profile_5_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 1.8209829706000003,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.15174858088333334,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 6,
+          "running_count": 12,
+          "stable_rate_ready_count": 12,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 12
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded/reports/profile_6_per_gpu_summary.json"
+        }
+      ],
+      "profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "reason": "",
+      "resident_mix": "same_workload_to_capacity_boundary",
+      "resource_state": "full_loaded",
+      "row_id": "gpu_3080ti_12gb_dual|q11_high_cpu_high_gpu|hybrid_rl_resac_walker2d|walker2d|full_loaded|same_workload_to_capacity_boundary",
+      "run_id": "ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded",
+      "workload_env": "walker2d",
+      "workload_key": "hybrid_rl_resac_walker2d"
+    }
+  ],
+  "allow_launch": true,
+  "boundary_count": 0,
+  "boundary_rows": [],
+  "gate": "full_factorial_eta_probe_runner",
+  "launched_count": 5,
+  "max_profiles": 0,
+  "pass": true,
+  "resource_state": "full_loaded",
+  "rows": [
+    {
+      "boundary_closed_profiles": [],
+      "capacity_boundary_profiles": [],
+      "config": {
+        "cwd": "/home/erzhu419/mine_code/RE-SAC",
+        "gpus": [
+          0,
+          1
+        ],
+        "max_iters": 200,
+        "node": "jtl110gpu",
+        "stable_cycle_units": 5,
+        "template": "resac_env_real_venv.cmd.tpl",
+        "template_values": {
+          "mujoco_env": "Ant-v2"
+        },
+        "timeout_s": 2400
+      },
+      "eta_source_required": "tqdm/progress",
+      "family": "hybrid_rl",
+      "hardware_group": "gpu_3080ti_12gb_dual",
+      "launch_ready": true,
+      "launched": true,
+      "legacy_scheduler_limits_bypassed": true,
+      "measurement_valid": false,
+      "node": "jtl110gpu",
+      "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+      "pending_reason": "",
+      "probe_result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1
+        ],
+        "node": "jtl110gpu",
+        "pass": false,
+        "profiles": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "rate_count": 30,
+        "run_id": "ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_ant_ant_full_loaded",
+        "stable_rate_ready_count": 30,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_ant_ant_full_loaded/reports/profile_1_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_ant_ant_full_loaded/reports/profile_2_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_ant_ant_full_loaded/reports/profile_3_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_ant_ant_full_loaded/reports/profile_4_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_ant_ant_full_loaded/reports/profile_5_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_ant_ant_full_loaded/reports/profile_6_per_gpu_summary.json"
+        ]
+      },
+      "profile_rows": [
+        {
+          "aggregate_stable_rate_unit_s": 0.560228485,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.2801142425,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 1,
+          "running_count": 2,
+          "stable_rate_ready_count": 2,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 2
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_ant_ant_full_loaded/reports/profile_1_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.54722512,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.13680628,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 2,
+          "running_count": 4,
+          "stable_rate_ready_count": 4,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 4
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_ant_ant_full_loaded/reports/profile_2_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.550502283,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.0917503805,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 3,
+          "running_count": 6,
+          "stable_rate_ready_count": 6,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 6
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_ant_ant_full_loaded/reports/profile_3_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.8897946080000001,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.111224326,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 4,
+          "running_count": 8,
+          "stable_rate_ready_count": 8,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 8
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_ant_ant_full_loaded/reports/profile_4_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.7725805162000001,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.07725805162,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 5,
+          "running_count": 10,
+          "stable_rate_ready_count": 10,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 10
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_ant_ant_full_loaded/reports/profile_5_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.0,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.0,
+          "measurement_valid": false,
+          "path_exists": true,
+          "profile": 6,
+          "running_count": 12,
+          "stable_rate_ready_count": 0,
+          "status_counts": {
+            "missing_rate": 12,
+            "sampled": 0
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_ant_ant_full_loaded/reports/profile_6_per_gpu_summary.json"
+        }
+      ],
+      "profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "reason": "one_or_more_profiles_unstable_or_capacity_boundary",
+      "resident_mix": "same_workload_to_capacity_boundary",
+      "resource_state": "full_loaded",
+      "row_id": "gpu_3080ti_12gb_dual|q11_high_cpu_high_gpu|hybrid_rl_resac_ant|ant|full_loaded|same_workload_to_capacity_boundary",
+      "run_id": "ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_ant_ant_full_loaded",
+      "workload_env": "ant",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "boundary_closed_profiles": [],
+      "capacity_boundary_profiles": [],
+      "config": {
+        "cwd": "/home/erzhu419/mine_code/RE-SAC",
+        "gpus": [
+          0,
+          1
+        ],
+        "max_iters": 200,
+        "node": "jtl110gpu",
+        "stable_cycle_units": 5,
+        "template": "resac_env_real_venv.cmd.tpl",
+        "template_values": {
+          "mujoco_env": "HalfCheetah-v2"
+        },
+        "timeout_s": 2400
+      },
+      "eta_source_required": "tqdm/progress",
+      "family": "hybrid_rl",
+      "hardware_group": "gpu_3080ti_12gb_dual",
+      "launch_ready": true,
+      "launched": true,
+      "legacy_scheduler_limits_bypassed": true,
+      "measurement_valid": true,
+      "node": "jtl110gpu",
+      "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+      "pending_reason": "",
+      "probe_result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1
+        ],
+        "node": "jtl110gpu",
+        "pass": true,
+        "profiles": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "rate_count": 42,
+        "run_id": "ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded",
+        "stable_rate_ready_count": 42,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded/reports/profile_1_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded/reports/profile_2_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded/reports/profile_3_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded/reports/profile_4_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded/reports/profile_5_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded/reports/profile_6_per_gpu_summary.json"
+        ]
+      },
+      "profile_rows": [
+        {
+          "aggregate_stable_rate_unit_s": 0.29543708999999996,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.14771854499999998,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 1,
+          "running_count": 2,
+          "stable_rate_ready_count": 2,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 2
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded/reports/profile_1_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.28739975250000005,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.071849938125,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 2,
+          "running_count": 4,
+          "stable_rate_ready_count": 4,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 4
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded/reports/profile_2_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.2866185776,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.047769762933333335,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 3,
+          "running_count": 6,
+          "stable_rate_ready_count": 6,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 6
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded/reports/profile_3_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.2861770265,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.0357721283125,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 4,
+          "running_count": 8,
+          "stable_rate_ready_count": 8,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 8
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded/reports/profile_4_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.28818002659999997,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.02881800266,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 5,
+          "running_count": 10,
+          "stable_rate_ready_count": 10,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 10
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded/reports/profile_5_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.41333111079999996,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.03444425923333334,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 6,
+          "running_count": 12,
+          "stable_rate_ready_count": 12,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 12
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded/reports/profile_6_per_gpu_summary.json"
+        }
+      ],
+      "profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "reason": "",
+      "resident_mix": "same_workload_to_capacity_boundary",
+      "resource_state": "full_loaded",
+      "row_id": "gpu_3080ti_12gb_dual|q11_high_cpu_high_gpu|hybrid_rl_resac_halfcheetah|halfcheetah|full_loaded|same_workload_to_capacity_boundary",
+      "run_id": "ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded",
+      "workload_env": "halfcheetah",
+      "workload_key": "hybrid_rl_resac_halfcheetah"
+    },
+    {
+      "boundary_closed_profiles": [],
+      "capacity_boundary_profiles": [],
+      "config": {
+        "cwd": "/home/erzhu419/mine_code/RE-SAC",
+        "gpus": [
+          0,
+          1
+        ],
+        "max_iters": 200,
+        "node": "jtl110gpu",
+        "stable_cycle_units": 5,
+        "template": "resac_env_real_venv.cmd.tpl",
+        "template_values": {
+          "mujoco_env": "Hopper-v2"
+        },
+        "timeout_s": 2400
+      },
+      "eta_source_required": "tqdm/progress",
+      "family": "hybrid_rl",
+      "hardware_group": "gpu_3080ti_12gb_dual",
+      "launch_ready": true,
+      "launched": true,
+      "legacy_scheduler_limits_bypassed": true,
+      "measurement_valid": true,
+      "node": "jtl110gpu",
+      "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+      "pending_reason": "",
+      "probe_result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1
+        ],
+        "node": "jtl110gpu",
+        "pass": true,
+        "profiles": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "rate_count": 42,
+        "run_id": "ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded",
+        "stable_rate_ready_count": 42,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded/reports/profile_1_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded/reports/profile_2_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded/reports/profile_3_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded/reports/profile_4_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded/reports/profile_5_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded/reports/profile_6_per_gpu_summary.json"
+        ]
+      },
+      "profile_rows": [
+        {
+          "aggregate_stable_rate_unit_s": 0.90909091,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.454545455,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 1,
+          "running_count": 2,
+          "stable_rate_ready_count": 2,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 2
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded/reports/profile_1_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 1.1202639570000001,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.28006598925,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 2,
+          "running_count": 4,
+          "stable_rate_ready_count": 4,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 4
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded/reports/profile_2_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.8945535500000001,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.14909225833333334,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 3,
+          "running_count": 6,
+          "stable_rate_ready_count": 6,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 6
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded/reports/profile_3_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.895271334,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.11190891675,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 4,
+          "running_count": 8,
+          "stable_rate_ready_count": 8,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 8
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded/reports/profile_4_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 1.5462810230999997,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.15462810231000002,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 5,
+          "running_count": 10,
+          "stable_rate_ready_count": 10,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 10
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded/reports/profile_5_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 1.4780450552,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.12317042126666666,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 6,
+          "running_count": 12,
+          "stable_rate_ready_count": 12,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 12
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded/reports/profile_6_per_gpu_summary.json"
+        }
+      ],
+      "profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "reason": "",
+      "resident_mix": "same_workload_to_capacity_boundary",
+      "resource_state": "full_loaded",
+      "row_id": "gpu_3080ti_12gb_dual|q11_high_cpu_high_gpu|hybrid_rl_resac_hopper|hopper|full_loaded|same_workload_to_capacity_boundary",
+      "run_id": "ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded",
+      "workload_env": "hopper",
+      "workload_key": "hybrid_rl_resac_hopper"
+    },
+    {
+      "boundary_closed_profiles": [],
+      "capacity_boundary_profiles": [],
+      "config": {
+        "cwd": "/home/erzhu419/mine_code/RE-SAC",
+        "gpus": [
+          0,
+          1
+        ],
+        "max_iters": 200,
+        "node": "jtl110gpu",
+        "stable_cycle_units": 5,
+        "template": "resac_env_real_venv.cmd.tpl",
+        "template_values": {
+          "mujoco_env": "Walker2d-v2"
+        },
+        "timeout_s": 2400
+      },
+      "eta_source_required": "tqdm/progress",
+      "family": "hybrid_rl",
+      "hardware_group": "gpu_3080ti_12gb_dual",
+      "launch_ready": true,
+      "launched": true,
+      "legacy_scheduler_limits_bypassed": true,
+      "measurement_valid": true,
+      "node": "jtl110gpu",
+      "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+      "pending_reason": "",
+      "probe_result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1
+        ],
+        "node": "jtl110gpu",
+        "pass": true,
+        "profiles": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "rate_count": 42,
+        "run_id": "ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded",
+        "stable_rate_ready_count": 42,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded/reports/profile_1_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded/reports/profile_2_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded/reports/profile_3_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded/reports/profile_4_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded/reports/profile_5_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded/reports/profile_6_per_gpu_summary.json"
+        ]
+      },
+      "profile_rows": [
+        {
+          "aggregate_stable_rate_unit_s": 0.952467344,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.476233672,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 1,
+          "running_count": 2,
+          "stable_rate_ready_count": 2,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 2
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded/reports/profile_1_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.915384733,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.22884618325,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 2,
+          "running_count": 4,
+          "stable_rate_ready_count": 4,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 4
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded/reports/profile_2_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 1.0754858569999999,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.17924764283333333,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 3,
+          "running_count": 6,
+          "stable_rate_ready_count": 6,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 6
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded/reports/profile_3_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 1.0375067,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.1296883375,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 4,
+          "running_count": 8,
+          "stable_rate_ready_count": 8,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 8
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded/reports/profile_4_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 1.8090590018000001,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.18090590018,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 5,
+          "running_count": 10,
+          "stable_rate_ready_count": 10,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 10
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded/reports/profile_5_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 1.8209829706000003,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.15174858088333334,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 6,
+          "running_count": 12,
+          "stable_rate_ready_count": 12,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 12
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded/reports/profile_6_per_gpu_summary.json"
+        }
+      ],
+      "profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "reason": "",
+      "resident_mix": "same_workload_to_capacity_boundary",
+      "resource_state": "full_loaded",
+      "row_id": "gpu_3080ti_12gb_dual|q11_high_cpu_high_gpu|hybrid_rl_resac_walker2d|walker2d|full_loaded|same_workload_to_capacity_boundary",
+      "run_id": "ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded",
+      "workload_env": "walker2d",
+      "workload_key": "hybrid_rl_resac_walker2d"
+    },
+    {
+      "boundary_closed_profiles": [],
+      "capacity_boundary_profiles": [],
+      "config": {
+        "cwd": "/home/erzhu419/mine_code/BAPR",
+        "gpus": [
+          0,
+          1
+        ],
+        "max_iters": 200,
+        "node": "jtl110gpu",
+        "stable_cycle_units": 5,
+        "template": "bapr_ant_real.cmd.tpl",
+        "template_values": {},
+        "timeout_s": 2400
+      },
+      "eta_source_required": "tqdm/progress",
+      "family": "hybrid_rl",
+      "hardware_group": "gpu_3080ti_12gb_dual",
+      "launch_ready": true,
+      "launched": true,
+      "legacy_scheduler_limits_bypassed": true,
+      "measurement_valid": false,
+      "node": "jtl110gpu",
+      "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+      "pending_reason": "",
+      "probe_result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1
+        ],
+        "node": "jtl110gpu",
+        "pass": false,
+        "profiles": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "rate_count": 34,
+        "run_id": "ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_bapr_ant_bapr_ant_full_loaded",
+        "stable_rate_ready_count": 34,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_1_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_2_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_3_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_4_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_5_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_6_per_gpu_summary.json"
+        ]
+      },
+      "profile_rows": [
+        {
+          "aggregate_stable_rate_unit_s": 0.348436286,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.174218143,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 1,
+          "running_count": 2,
+          "stable_rate_ready_count": 2,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 2
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_1_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.4357690657,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.108942266425,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 2,
+          "running_count": 4,
+          "stable_rate_ready_count": 4,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 4
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_2_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.4185240753,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.06975401255,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 3,
+          "running_count": 6,
+          "stable_rate_ready_count": 6,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 6
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_3_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.0,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.0,
+          "measurement_valid": false,
+          "path_exists": true,
+          "profile": 4,
+          "running_count": 8,
+          "stable_rate_ready_count": 0,
+          "status_counts": {
+            "missing_rate": 8,
+            "sampled": 0
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_4_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.6677147724000001,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.06677147724,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 5,
+          "running_count": 10,
+          "stable_rate_ready_count": 10,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 10
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_5_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.6250446397,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.05208705330833333,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 6,
+          "running_count": 12,
+          "stable_rate_ready_count": 12,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 12
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_6_per_gpu_summary.json"
+        }
+      ],
+      "profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "reason": "one_or_more_profiles_unstable_or_capacity_boundary",
+      "resident_mix": "same_workload_to_capacity_boundary",
+      "resource_state": "full_loaded",
+      "row_id": "gpu_3080ti_12gb_dual|q11_high_cpu_high_gpu|hybrid_rl_bapr_ant|bapr_ant|full_loaded|same_workload_to_capacity_boundary",
+      "run_id": "ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_bapr_ant_bapr_ant_full_loaded",
+      "workload_env": "bapr_ant",
+      "workload_key": "hybrid_rl_bapr_ant"
+    }
+  ],
+  "run_prefix": "ff_eta_t0_full_rl_jtl110gpu_20260630",
+  "scope": "Controlled full-factorial ETA probes.  Launches bypass the legacy scheduler dispatch path and require task-native tqdm/progress.  Invalid profiles are retained as scoped capacity/instability boundaries for the exact node/workload/state.",
+  "selected_count": 5,
+  "service_cache_snapshot": {
+    "capacity_boundaries": [],
+    "records": [
+      {
+        "aggregate_rate": 0.174218143,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+        "per_task_rates": [
+          0.174825175,
+          0.173611111
+        ],
+        "profile": 1,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_1_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "bapr_ant",
+        "workload_key": "hybrid_rl_bapr_ant"
+      },
+      {
+        "aggregate_rate": 0.21788453285,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+        "per_task_rates": [
+          0.0847457627,
+          0.119047619,
+          0.08,
+          0.151975684
+        ],
+        "profile": 2,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_2_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "bapr_ant",
+        "workload_key": "hybrid_rl_bapr_ant"
+      },
+      {
+        "aggregate_rate": 0.20926203765,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+        "per_task_rates": [
+          0.0589622642,
+          0.058685446,
+          0.0569476082,
+          0.0524109015,
+          0.0490677134,
+          0.142450142
+        ],
+        "profile": 3,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_3_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "bapr_ant",
+        "workload_key": "hybrid_rl_bapr_ant"
+      },
+      {
+        "aggregate_rate": 0.33385738620000005,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+        "per_task_rates": [
+          0.0357398142,
+          0.0338983051,
+          0.0552486188,
+          0.0706214689,
+          0.167785235,
+          0.167785235,
+          0.0342935528,
+          0.0334224599,
+          0.0346500347,
+          0.034270048
+        ],
+        "profile": 5,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_5_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "bapr_ant",
+        "workload_key": "hybrid_rl_bapr_ant"
+      },
+      {
+        "aggregate_rate": 0.31252231985,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+        "per_task_rates": [
+          0.0291885581,
+          0.0281690141,
+          0.0846023689,
+          0.0291715286,
+          0.0792393027,
+          0.0288350634,
+          0.0807754443,
+          0.149253731,
+          0.0284252416,
+          0.0291036088,
+          0.0294290759,
+          0.0288517023
+        ],
+        "profile": 6,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_6_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "bapr_ant",
+        "workload_key": "hybrid_rl_bapr_ant"
+      },
+      {
+        "aggregate_rate": 0.2801142425,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+        "per_task_rates": [
+          0.280898876,
+          0.279329609
+        ],
+        "profile": 1,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_ant_ant_full_loaded/reports/profile_1_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "ant",
+        "workload_key": "hybrid_rl_resac_ant"
+      },
+      {
+        "aggregate_rate": 0.27361256,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+        "per_task_rates": [
+          0.136986301,
+          0.137741047,
+          0.137362637,
+          0.135135135
+        ],
+        "profile": 2,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_ant_ant_full_loaded/reports/profile_2_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "ant",
+        "workload_key": "hybrid_rl_resac_ant"
+      },
+      {
+        "aggregate_rate": 0.2752511415,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+        "per_task_rates": [
+          0.0941619586,
+          0.0909090909,
+          0.0943396226,
+          0.0904159132,
+          0.0897666068,
+          0.0909090909
+        ],
+        "profile": 3,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_ant_ant_full_loaded/reports/profile_3_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "ant",
+        "workload_key": "hybrid_rl_resac_ant"
+      },
+      {
+        "aggregate_rate": 0.44489730400000005,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+        "per_task_rates": [
+          0.0694444444,
+          0.0680272109,
+          0.136986301,
+          0.136612022,
+          0.0670241287,
+          0.070323488,
+          0.069637883,
+          0.27173913
+        ],
+        "profile": 4,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_ant_ant_full_loaded/reports/profile_4_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "ant",
+        "workload_key": "hybrid_rl_resac_ant"
+      },
+      {
+        "aggregate_rate": 0.38629025810000006,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+        "per_task_rates": [
+          0.0548245614,
+          0.0570776256,
+          0.0564334086,
+          0.0562429696,
+          0.0545851528,
+          0.277777778,
+          0.0537056928,
+          0.0543478261,
+          0.0536480687,
+          0.0539374326
+        ],
+        "profile": 5,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_ant_ant_full_loaded/reports/profile_5_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "ant",
+        "workload_key": "hybrid_rl_resac_ant"
+      },
+      {
+        "aggregate_rate": 0.14771854499999998,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+        "per_task_rates": [
+          0.148809524,
+          0.146627566
+        ],
+        "profile": 1,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded/reports/profile_1_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "halfcheetah",
+        "workload_key": "hybrid_rl_resac_halfcheetah"
+      },
+      {
+        "aggregate_rate": 0.14369987625000002,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+        "per_task_rates": [
+          0.0718390805,
+          0.0729927007,
+          0.0720461095,
+          0.0705218618
+        ],
+        "profile": 2,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded/reports/profile_2_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "halfcheetah",
+        "workload_key": "hybrid_rl_resac_halfcheetah"
+      },
+      {
+        "aggregate_rate": 0.1433092888,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+        "per_task_rates": [
+          0.0480307397,
+          0.0477554919,
+          0.048828125,
+          0.0476190476,
+          0.0470366886,
+          0.0473484848
+        ],
+        "profile": 3,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded/reports/profile_3_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "halfcheetah",
+        "workload_key": "hybrid_rl_resac_halfcheetah"
+      },
+      {
+        "aggregate_rate": 0.14308851325,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+        "per_task_rates": [
+          0.0362056481,
+          0.0358422939,
+          0.0361532899,
+          0.0360230548,
+          0.0358680057,
+          0.0356125356,
+          0.0352112676,
+          0.0352609309
+        ],
+        "profile": 4,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded/reports/profile_4_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "halfcheetah",
+        "workload_key": "hybrid_rl_resac_halfcheetah"
+      },
+      {
+        "aggregate_rate": 0.14409001329999999,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+        "per_task_rates": [
+          0.0290191526,
+          0.0289351852,
+          0.0286204923,
+          0.0289519398,
+          0.0287852619,
+          0.0288350634,
+          0.0281214848,
+          0.0286861733,
+          0.0292397661,
+          0.0289855072
+        ],
+        "profile": 5,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded/reports/profile_5_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "halfcheetah",
+        "workload_key": "hybrid_rl_resac_halfcheetah"
+      },
+      {
+        "aggregate_rate": 0.20666555539999998,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+        "per_task_rates": [
+          0.0242365487,
+          0.0244021474,
+          0.149253731,
+          0.0240500241,
+          0.0239348971,
+          0.0243309002,
+          0.023551578,
+          0.0241545894,
+          0.0239693193,
+          0.0234852043,
+          0.0239005736,
+          0.0240615977
+        ],
+        "profile": 6,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_halfcheetah_halfcheetah_full_loaded/reports/profile_6_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "halfcheetah",
+        "workload_key": "hybrid_rl_resac_halfcheetah"
+      },
+      {
+        "aggregate_rate": 0.454545455,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+        "per_task_rates": [
+          0.454545455,
+          0.454545455
+        ],
+        "profile": 1,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded/reports/profile_1_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "hopper",
+        "workload_key": "hybrid_rl_resac_hopper"
+      },
+      {
+        "aggregate_rate": 0.5601319785000001,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+        "per_task_rates": [
+          0.454545455,
+          0.221238938,
+          0.220264317,
+          0.224215247
+        ],
+        "profile": 2,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded/reports/profile_2_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "hopper",
+        "workload_key": "hybrid_rl_resac_hopper"
+      },
+      {
+        "aggregate_rate": 0.44727677500000007,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+        "per_task_rates": [
+          0.148367953,
+          0.152439024,
+          0.153846154,
+          0.145772595,
+          0.147928994,
+          0.14619883
+        ],
+        "profile": 3,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded/reports/profile_3_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "hopper",
+        "workload_key": "hybrid_rl_resac_hopper"
+      },
+      {
+        "aggregate_rate": 0.447635667,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+        "per_task_rates": [
+          0.112359551,
+          0.112612613,
+          0.111111111,
+          0.110864745,
+          0.113378685,
+          0.113636364,
+          0.112612613,
+          0.108695652
+        ],
+        "profile": 4,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded/reports/profile_4_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "hopper",
+        "workload_key": "hybrid_rl_resac_hopper"
+      },
+      {
+        "aggregate_rate": 0.7731405115499999,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+        "per_task_rates": [
+          0.0888099467,
+          0.0924214418,
+          0.0927643785,
+          0.434782609,
+          0.222222222,
+          0.0871080139,
+          0.0904159132,
+          0.145348837,
+          0.145348837,
+          0.147058824
+        ],
+        "profile": 5,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded/reports/profile_5_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "hopper",
+        "workload_key": "hybrid_rl_resac_hopper"
+      },
+      {
+        "aggregate_rate": 0.7390225276,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+        "per_task_rates": [
+          0.0744047619,
+          0.147492625,
+          0.0737463127,
+          0.149253731,
+          0.148367953,
+          0.0759878419,
+          0.0726744186,
+          0.0749625187,
+          0.0759878419,
+          0.434782609,
+          0.0746268657,
+          0.0757575758
+        ],
+        "profile": 6,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded/reports/profile_6_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "hopper",
+        "workload_key": "hybrid_rl_resac_hopper"
+      },
+      {
+        "aggregate_rate": 0.476233672,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+        "per_task_rates": [
+          0.480769231,
+          0.471698113
+        ],
+        "profile": 1,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded/reports/profile_1_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "walker2d",
+        "workload_key": "hybrid_rl_resac_walker2d"
+      },
+      {
+        "aggregate_rate": 0.4576923665,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+        "per_task_rates": [
+          0.229357798,
+          0.231481481,
+          0.227272727,
+          0.227272727
+        ],
+        "profile": 2,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded/reports/profile_2_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "walker2d",
+        "workload_key": "hybrid_rl_resac_walker2d"
+      },
+      {
+        "aggregate_rate": 0.5377429284999999,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+        "per_task_rates": [
+          0.153846154,
+          0.15625,
+          0.158730159,
+          0.226244344,
+          0.151057402,
+          0.229357798
+        ],
+        "profile": 3,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded/reports/profile_3_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "walker2d",
+        "workload_key": "hybrid_rl_resac_walker2d"
+      },
+      {
+        "aggregate_rate": 0.51875335,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+        "per_task_rates": [
+          0.114416476,
+          0.118764846,
+          0.117924528,
+          0.119904077,
+          0.151515152,
+          0.112866817,
+          0.151057402,
+          0.151057402
+        ],
+        "profile": 4,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded/reports/profile_4_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "walker2d",
+        "workload_key": "hybrid_rl_resac_walker2d"
+      },
+      {
+        "aggregate_rate": 0.9045295009000001,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+        "per_task_rates": [
+          0.458715596,
+          0.0957854406,
+          0.0922509225,
+          0.0954198473,
+          0.0915750916,
+          0.0899280576,
+          0.471698113,
+          0.226244344,
+          0.0938086304,
+          0.0936329588
+        ],
+        "profile": 5,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded/reports/profile_5_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "walker2d",
+        "workload_key": "hybrid_rl_resac_walker2d"
+      },
+      {
+        "aggregate_rate": 0.9104914853000001,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+        "per_task_rates": [
+          0.114678899,
+          0.117096019,
+          0.0762195122,
+          0.0784929356,
+          0.480769231,
+          0.11627907,
+          0.45045045,
+          0.078369906,
+          0.0769230769,
+          0.0749625187,
+          0.0786163522,
+          0.078125
+        ],
+        "profile": 6,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_walker2d_walker2d_full_loaded/reports/profile_6_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "walker2d",
+        "workload_key": "hybrid_rl_resac_walker2d"
+      }
+    ]
+  },
+  "status": "PROBE_RUNNER_LAUNCHED",
+  "tier": "T0_core_curve"
+}

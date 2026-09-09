@@ -1,0 +1,184 @@
+{
+  "B": 11209514.968004718,
+  "L": 2984.3716349999995,
+  "Lrho": 0.0,
+  "N_claimed": 136810386,
+  "P0": 0.0,
+  "action_profile_domains": {
+    "cpu_heavy_local_bench": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "gpu_cnn_torch_resnet50": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "gpu_heavy_jax_matmul": [
+      1,
+      2,
+      3
+    ],
+    "gpu_llm_distilgpt2": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      8
+    ],
+    "hybrid_rl_resac_ant": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  "all_components_theorem_usable": true,
+  "alpha": 1.0,
+  "alpha0": 0.0,
+  "alpha1": 0.0,
+  "beta": 0.0,
+  "cache_source": "default_cache+live_overlay:md/experiment_artifacts/service_cache_v2_live_merged_20260701.json",
+  "candidate_action_count": 4725,
+  "certificate_scope": "measured finite service-action slice; not a production-arrival or unmeasured-global-action certificate",
+  "component_inputs": {
+    "capacity": {
+      "classes": [
+        "cpu_heavy_local_bench",
+        "gpu_cnn_torch_resnet50",
+        "gpu_heavy_jax_matmul",
+        "gpu_llm_distilgpt2",
+        "hybrid_rl_resac_ant"
+      ],
+      "delta": 0.08193468613333338,
+      "mix": {
+        "profile_combo:cpu_heavy_local_bench=1,gpu_cnn_torch_resnet50=2,gpu_heavy_jax_matmul=1,gpu_llm_distilgpt2=8,hybrid_rl_resac_ant=5": 0.18737227749683552,
+        "profile_combo:cpu_heavy_local_bench=1,gpu_cnn_torch_resnet50=5,gpu_heavy_jax_matmul=2,gpu_llm_distilgpt2=1,hybrid_rl_resac_ant=5": 0.039651753246247035,
+        "profile_combo:cpu_heavy_local_bench=8,gpu_cnn_torch_resnet50=1,gpu_heavy_jax_matmul=2,gpu_llm_distilgpt2=2,hybrid_rl_resac_ant=5": 0.22125758706309215,
+        "profile_combo:cpu_heavy_local_bench=8,gpu_cnn_torch_resnet50=3,gpu_heavy_jax_matmul=1,gpu_llm_distilgpt2=8,hybrid_rl_resac_ant=5": 0.5517183821938254
+      },
+      "status": "optimal",
+      "usable_for_theorem": true
+    },
+    "fabric": {
+      "L": 2984.3716349999995,
+      "Lrho": 0.0,
+      "candidate_count": 4725,
+      "cover_domain": "measured_finite_slice_exact",
+      "full_count": 4725,
+      "rho": 0.0,
+      "status": "candidate_action_family_equals_measured_full_slice",
+      "usable_for_theorem": true
+    },
+    "moment": {
+      "B": 11209514.968004718,
+      "status": "finite_support_bound_from_measured_action_slice_and_declared_load",
+      "usable_for_theorem": true
+    },
+    "oracle": {
+      "alpha0": 0.0,
+      "alpha1": 0.0,
+      "live_greedy_scheduler_audit_claimed": false,
+      "status": "exact_candidate_maxweight_oracle_by_construction",
+      "usable_for_theorem": true
+    },
+    "penalty": {
+      "P0": 0.0,
+      "beta": 0.0,
+      "fit_method": "finite_max_envelope",
+      "max_residual_violation": 0.0,
+      "penalty_key": "penalty_units",
+      "point_count": 2,
+      "q_key": "q_norm",
+      "usable_for_theorem": true,
+      "worst_violation": null
+    },
+    "service": {
+      "epsilon_est": 0.0,
+      "statistical_generalization_claimed": false,
+      "status": "measured_service_map_used_as_lower_service_for_this_finite_slice",
+      "usable_for_theorem": true
+    }
+  },
+  "component_status": [
+    {
+      "name": "fabric",
+      "status": "candidate_action_family_equals_measured_full_slice",
+      "usable_for_theorem": true
+    },
+    {
+      "name": "service",
+      "status": "measured_service_map_used_as_lower_service_for_this_finite_slice",
+      "usable_for_theorem": true
+    },
+    {
+      "name": "penalty",
+      "status": "finite_max_envelope",
+      "usable_for_theorem": true
+    },
+    {
+      "name": "oracle",
+      "status": "exact_candidate_maxweight_oracle_by_construction",
+      "usable_for_theorem": true
+    },
+    {
+      "name": "capacity",
+      "status": "optimal",
+      "usable_for_theorem": true
+    },
+    {
+      "name": "moment",
+      "status": "finite_support_bound_from_measured_action_slice_and_declared_load",
+      "usable_for_theorem": true
+    }
+  ],
+  "condition": "eta > 0 and B+P0+alpha0+alpha <= eta*N",
+  "delta": 0.08193468613333338,
+  "drift_additive_constant": 11209514.968004718,
+  "epsilon_est": 0.0,
+  "eta": 0.08193468613333338,
+  "finite_set_threshold_N": 136810386,
+  "full_action_count": 4725,
+  "lambda": {
+    "cpu_heavy_local_bench": 43.82368280000001,
+    "gpu_cnn_torch_resnet50": 83.29316601066667,
+    "gpu_heavy_jax_matmul": 74.8970092,
+    "gpu_llm_distilgpt2": 2955.3321816,
+    "hybrid_rl_resac_ant": 0.32773874453333335
+  },
+  "load_fraction": 0.8,
+  "paper_condition": "delta > Lrho + epsilon_est + beta + alpha1",
+  "policy": "scheduleurm_sota_union_pareto_slack",
+  "rho": 0.0,
+  "selected_action_id": "profile_combo:cpu_heavy_local_bench=8,gpu_cnn_torch_resnet50=4,gpu_heavy_jax_matmul=1,gpu_llm_distilgpt2=8,hybrid_rl_resac_ant=5",
+  "selected_profiles": {
+    "cpu_heavy_local_bench": 8,
+    "gpu_cnn_torch_resnet50": 4,
+    "gpu_heavy_jax_matmul": 1,
+    "gpu_llm_distilgpt2": 8,
+    "hybrid_rl_resac_ant": 5
+  },
+  "selected_service_vector": {
+    "cpu_heavy_local_bench": 54.77960350000001,
+    "gpu_cnn_torch_resnet50": 104.11645751333333,
+    "gpu_heavy_jax_matmul": 93.6212615,
+    "gpu_llm_distilgpt2": 3694.1652269999995,
+    "hybrid_rl_resac_ant": 0.40967343066666667
+  },
+  "slack_consumed": 0.0,
+  "slack_ratio": 0.0,
+  "taskset": "hybrid_research_portfolio",
+  "usable_for_theorem": true
+}

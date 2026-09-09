@@ -1,0 +1,71 @@
+{
+  "capacity_boundaries": [],
+  "records": [
+    {
+      "aggregate_rate": 6.05961568,
+      "capacity_boundary": false,
+      "command_fingerprint": "live_marginal_under_load:design_jtl311linux_gpu_cnn_torch_resnet50_cnn_mixed_colocation_cnn_plus_llm_p1",
+      "eta_source": "tqdm/progress",
+      "gpu_count_observed": 1,
+      "hardware_class": "gpu_rtx2080_8gb_dual_cpu_fast",
+      "node_bucket": "jtl311linux:gpu_rtx2080_8gb_dual_cpu_fast",
+      "per_task_rates": [
+        6.05961568
+      ],
+      "profile": 1,
+      "resident_mix": "cnn_plus_llm",
+      "resource_kind": "cnn",
+      "resource_state": "mixed_colocation",
+      "source": "live_marginal_under_load:design_jtl311linux_gpu_cnn_torch_resnet50_cnn_mixed_colocation_cnn_plus_llm_p1",
+      "stable_rate_ready": true,
+      "total_units": 120.0,
+      "unit": "step",
+      "workload_env": "cnn",
+      "workload_key": "gpu_cnn_torch_resnet50"
+    },
+    {
+      "aggregate_rate": 205.631697,
+      "capacity_boundary": false,
+      "command_fingerprint": "live_marginal_under_load:design_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_mixed_colocation_cnn_plus_llm_p1",
+      "eta_source": "tqdm/progress",
+      "gpu_count_observed": 1,
+      "hardware_class": "gpu_rtx2080_8gb_dual_cpu_fast",
+      "node_bucket": "jtl311linux:gpu_rtx2080_8gb_dual_cpu_fast",
+      "per_task_rates": [
+        205.631697
+      ],
+      "profile": 1,
+      "resident_mix": "cnn_plus_llm",
+      "resource_kind": "gpu_matmul",
+      "resource_state": "mixed_colocation",
+      "source": "live_marginal_under_load:design_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_mixed_colocation_cnn_plus_llm_p1",
+      "stable_rate_ready": true,
+      "total_units": 120.0,
+      "unit": "step",
+      "workload_env": "gpu_matmul",
+      "workload_key": "gpu_heavy_jax_matmul"
+    },
+    {
+      "aggregate_rate": 215.256196,
+      "capacity_boundary": false,
+      "command_fingerprint": "live_marginal_under_load:design_jtl311linux_gpu_llm_distilgpt2_llm_mixed_colocation_cnn_plus_llm_p1",
+      "eta_source": "tqdm/progress",
+      "gpu_count_observed": 1,
+      "hardware_class": "gpu_rtx2080_8gb_dual_cpu_fast",
+      "node_bucket": "jtl311linux:gpu_rtx2080_8gb_dual_cpu_fast",
+      "per_task_rates": [
+        215.256196
+      ],
+      "profile": 1,
+      "resident_mix": "cnn_plus_llm",
+      "resource_kind": "llm_small",
+      "resource_state": "mixed_colocation",
+      "source": "live_marginal_under_load:design_jtl311linux_gpu_llm_distilgpt2_llm_mixed_colocation_cnn_plus_llm_p1",
+      "stable_rate_ready": true,
+      "total_units": 120.0,
+      "unit": "step",
+      "workload_env": "llm",
+      "workload_key": "gpu_llm_distilgpt2"
+    }
+  ]
+}

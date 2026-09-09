@@ -51,7 +51,8 @@ tightening.
 | Organic production canary recorder gate | `algorithm/experiments/organic_production_canary_recorder_gate.py` | Verifies strict organic production admission/trace recorder readiness and keeps the launched-completion claim false until the natural-launch thresholds are met. |
 | Online/ablation interval dashboard | `algorithm/experiments/online_ablation_summary_ci.py` | Converts existing replay artifacts into reviewer-facing geomean, median, worst, 5%/95%, dominated-scenario, and loss-count summaries; no new live execution is claimed. |
 | Diagonal-scaled LCB theorem | `/home/erzhu419/mine_code/proof/Scheduleurm/DiagonalScaling.lean`, `/home/erzhu419/mine_code/proof/Scheduleurm/MainTheorems.lean` | Proves coordinate-scaled support-loss and L1-weighted LCB support bounds, then exposes `main_diagonal_scaled_lcb_support_loss` and `main_diagonal_scaled_lcb_support_loss_l1` for the manuscript.  This is the math bridge from heterogeneous service units to an LCB lower-service capacity certificate. |
-| Selected-profile holdout LCB gate | `algorithm/experiments/selected_profile_holdout_lcb_gate.py` | Tracks selected aggregate-window stochastic lower-service targets.  After CNN/LLM/RL/CPU/control probes, all 11 targets are sample-ready with 921 supplemental rates.  Absolute mean-service eta remains negative (-738.9820) and diagonal mean-service eta remains negative (-0.5587), but the theorem-facing LCB lower-service capacity certificate passes with \(\delta_{\mathrm{LCB}}=0.024712\). |
+| Finite feature-cell candidate construction | `/home/erzhu419/mine_code/proof/Scheduleurm/CandidateApprox.lean` | `finite_feature_cell_candidate_certificate` constructs candidates from active feature-cell representatives and proves candidate containment, candidate cardinality bounded by the number of cells, and support loss at most \(L\rho\).  This removes the candidate family itself from the list of unexplained primitives; nonzero empirical \(L\rho\) still requires profiling. |
+| Selected-profile holdout LCB gate | `algorithm/experiments/selected_profile_holdout_lcb_gate.py` | Tracks selected aggregate-window stochastic lower-service targets.  After CNN/LLM/RL/CPU/control probes, all 11 targets are sample-ready.  Absolute mean-service eta remains negative (-1195.9945) and diagonal mean-service eta remains negative (-0.7687), but the theorem-facing LCB lower-service capacity certificate passes with \(\delta_{\mathrm{LCB}}=0.0341241\). |
 | Global theorem dispatcher prototype | `algorithm/theorem_dispatch/global_dispatch.py`, `algorithm/experiments/global_theorem_dispatcher_prototype_gate.py` | Provides a pure bounded global robust-MaxWeight action selector with exact oracle gap over enumerated theorem rows; it is not wired as the live scheduler default. |
 | Optional algorithm upgrade gate | `algorithm/theorem_dispatch/batch_policy.py`, `algorithm/theorem_dispatch/state_service.py`, `algorithm/theorem_dispatch/eta_lcb.py`, `algorithm/experiments/or_algorithm_upgrade_gate.py`, `skill/scheduler.py` | Closes an opt-in algorithm-layer gate for five axes: global batch candidate construction, state-dependent marginal service lookup, online LCB/ETA updates, backlog-aware guarded replay, and q01 CNN/LLM/co-location non-regression.  The replay policy uses a lower-service no-upshift statewise drain: it cannot raise the base action and only lowers a profile after service and waiting-backlog guards pass.  The scheduler integration is an optional `global_theorem_maxweight_v1` soft-hint A/B hook: it builds the batch action under `algorithm/` and still leaves final placement to legacy checks.  The gate passes with 0 regressions, 4 improving tasksets, tolerance-aware SOTA Pareto safety, and no change to the legacy scheduler default. |
 | Gate status dashboard | `algorithm/experiments/gate_status_dashboard.py` | Generates the reviewer claim ladder with scoped claim, adjacent strong claim, blocker, next threshold, artifact path, and raw evidence path. |
@@ -67,11 +68,11 @@ tightening.
 | q00 `light_control_local` | 1-13 | 14 | 13 |
 | q01 `gpu_heavy_jax_matmul` | 1-8 | none in current slice | 1 replay / 4-8 support certificates |
 | q10 `cpu_heavy_local_bench` | 1-9 | 10 | 8 |
-| q11 `hybrid_rl_resac_ant` | 1-9 | 10 | 2 |
+| q11 `hybrid_rl_resac_ant` | 1-5 | 6 | 5 |
 
-The profile-10 q11 replay point is historical only.  Fresh live sanity makes it
-the first robust capacity boundary for the current node bucket, so profile 10
-and above are excluded from the current theorem-facing candidate family.
+The old profile-10 q11 replay point is historical only.  The current node007
+robust family ends at profile 5; profile 6 is the first thread/placement
+boundary, so profile 6 and above are excluded from the theorem-facing family.
 
 ## Reviewer-facing boundaries
 

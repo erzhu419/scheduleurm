@@ -17,14 +17,18 @@ universal claim into a theorem.
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import time
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Mapping
 
 from .decima_same_domain_benchmark_gate import build_decima_same_domain_benchmark_gate
 from .future_workload_protocol_gate import build_future_workload_protocol_gate
 from .multinode_original_deployment_gate import build_multinode_original_deployment_gate
+from .organic_production_canary_recorder_gate import DEFAULT_TRACE_PATH as DEFAULT_ORGANIC_TRACE
+from .production_load_certificate import _file_fingerprint
 from .production_wide_organic_trace_gate import build_production_wide_organic_trace_gate
 from .registered_sota_adapter_closure_gate import build_registered_sota_adapter_closure_gate
 
@@ -34,6 +38,34 @@ ARTIFACT_ROOT = REPO_ROOT / "md" / "experiment_artifacts"
 
 
 def build_universal_claim_closure_gate(*, probe_remotes: bool = False) -> dict[str, Any]:
+    state_dir = Path.home() / ".claude" / "scheduler"
+    queue = state_dir / "queue.json"
+    archive = state_dir / "queue_archive.jsonl"
+    trace = Path(DEFAULT_ORGANIC_TRACE).expanduser()
+    return copy.deepcopy(_cached_universal_claim_closure_gate(
+        bool(probe_remotes),
+        str(trace),
+        *_file_fingerprint(trace),
+        str(queue),
+        *_file_fingerprint(queue),
+        str(archive),
+        *_file_fingerprint(archive),
+    ))
+
+
+@lru_cache(maxsize=8)
+def _cached_universal_claim_closure_gate(
+    probe_remotes: bool,
+    trace_path: str,
+    trace_mtime_ns: int,
+    trace_size: int,
+    queue_path: str,
+    queue_mtime_ns: int,
+    queue_size: int,
+    archive_path: str,
+    archive_mtime_ns: int,
+    archive_size: int,
+) -> dict[str, Any]:
     gates = {
         "arbitrary_sota_universe": build_registered_sota_adapter_closure_gate(),
         "arbitrary_future_workload": build_future_workload_protocol_gate(),

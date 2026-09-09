@@ -1,0 +1,8 @@
+{
+  "cmd": [
+    "scheduler.run_on",
+    "node007",
+    "export BAPR_PYTHON=/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python; export LD_LIBRARY_PATH=/cm/local/apps/cuda-driver/libs/535.261.03/lib64; export PATH=/cm/local/apps/cuda-driver/libs/535.261.03/bin:/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin:/usr/local/bin:/usr/bin:/bin; export XLA_PYTHON_CLIENT_MEM_FRACTION=0.20; set +e\nfor py in /home/zhengliang01/scheduleurm_work/conda_envs/*/bin/python; do\n  [ -x \"$py\" ] || continue\n  out=$(\"$py\" - <<'EOF' 2>/dev/null\nmods=[]\nfor name in ('torch','transformers','jax'):\n try:\n  m=__import__(name); mods.append(name+'='+getattr(m,'__version__','?'))\n except Exception: pass\nprint(' '.join(mods))\nEOF\n)\n  [ -n \"$out\" ] && echo \"$py $out\"\ndone\nfind /home/zhengliang01/.cache/huggingface /home/zhengliang01/scheduleurm_work -maxdepth 6 -type d -name '*distilgpt2*' 2>/dev/null | head -n 20\n"
+  ],
+  "returncode": 0
+}

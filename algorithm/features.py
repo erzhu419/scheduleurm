@@ -70,11 +70,8 @@ def signature_prefix(task: Mapping[str, Any], depth: int = 3) -> str:
 def task_kind(task: Mapping[str, Any]) -> str:
     est_vram = as_int(task.get("est_vram_mb"), 0)
     cmd = str(task.get("cmd") or task.get("description") or "").lower()
-    slurm = any(task.get(k) for k in ("slurm_partition", "slurm_account", "slurm_qos"))
     if est_vram <= 0:
         base = "cpu"
-    elif slurm:
-        base = "slurm_gpu"
     else:
         base = "gpu"
     if any(tok in cmd for tok in ("eval", "evaluate", "test.py", "rollout")):
@@ -134,6 +131,54 @@ def _fraction_bucket(value: float, prefix: str) -> str:
 
 def _util_bucket(value: float) -> str:
     return _bucket_from_cuts(value, (0, 10, 30, 50, 70, 85, 95), "u")
+
+
+def hardware_class_for_node(node_name: Any) -> str:
+    node = compact_label(node_name)
+    if node in {"jtl110gpu", "jtl110gpu2"}:
+        return "gpu_3080ti_12gb_dual"
+    if node == "jtl311linux":
+        return "gpu_rtx2080_8gb_dual_cpu_fast"
+    if node.startswith("node007"):
+        return "gpu_node007_4x12gb"
+    if re.fullmatch(r"node00[1-6]", node):
+        return "cpu_hpc_192c"
+    if node.startswith("jtl110cpu"):
+        return "cpu_jtl110_128c"
+    return node
+
+
+def resource_state_key(
+    node_state: Mapping[str, Any],
+    gpu: Mapping[str, Any] | None = None,
+    context: Mapping[str, Any] | None = None,
+) -> str:
+    context = context or {}
+    explicit = context.get("resource_state") or (gpu or {}).get("resource_state") or node_state.get("resource_state")
+    if explicit:
+        return compact_label(explicit)
+    if gpu is None:
+        cpu_load = as_float(node_state.get("cpu_util_pct") or node_state.get("cpu_pct"), 0.0)
+        running = as_int(node_state.get("running_task_count"), 0)
+        if cpu_load >= 80.0 or running >= 64:
+            return "cpu_resident"
+        if cpu_load >= 40.0 or running > 0:
+            return "half_loaded"
+        return "empty"
+    total = max(1, as_int(gpu.get("total_mb"), 1))
+    used = max(0, as_int(gpu.get("used_mb"), 0))
+    util = max(0.0, as_float(gpu.get("util_pct"), 0.0))
+    running = max(0, as_int(gpu.get("running_task_count"), 0))
+    used_frac = float(used) / float(total)
+    if used_frac >= 0.80 and running >= 1:
+        return "high_vram_resident"
+    if running >= 6 or used_frac >= 0.75 or util >= 90.0:
+        return "full_loaded"
+    if running >= 2 or used_frac >= 0.35 or util >= 40.0:
+        return "half_loaded"
+    if running == 1 or used_frac >= 0.10:
+        return "mixed_colocation"
+    return "empty"
 
 
 def regime_key(node_state: Mapping[str, Any], gpu: Mapping[str, Any]) -> str:
@@ -199,16 +244,34 @@ def gpu_candidate_features(
     used_vram_frac = float(used) / float(total)
     task_cls = class_key(task, as_int(context.get("signature_prefix_depth"), 3))
     regime = regime_key(node_state, gpu)
+    node_label = compact_label(node_state.get("name") or node_state.get("node") or "unknown")
+    hardware_class = compact_label(context.get("hardware_class") or node_state.get("hardware_class") or hardware_class_for_node(node_label))
+    default_node_bucket = (
+        f"{node_label}:{hardware_class}"
+        if hardware_class and hardware_class != node_label
+        else node_label
+    )
+    node_bucket = compact_label(context.get("node_bucket") or node_state.get("node_bucket") or default_node_bucket)
+    resource_state = resource_state_key(node_state, gpu, context)
+    resident_mix = compact_label(
+        context.get("resident_mix")
+        or gpu.get("resident_mix")
+        or node_state.get("resident_mix"),
+        default="",
+    )
     finite = {
         "class_key": task_cls,
         "regime_key": regime,
-        "node": compact_label(node_state.get("name") or "unknown"),
+        "node": node_label,
         "gpu_idx": str(gpu.get("idx", "na")),
         "post_count_bucket": _count_bucket(post_count),
         "post_vram_bucket": _fraction_bucket(post_vram_frac, "pm"),
         "util_bucket": _util_bucket(util),
         "resource_bucket": resource_bucket(task),
         "task_kind": task_kind(task),
+        "hardware_class": hardware_class,
+        "resource_state": resource_state,
+        "resident_mix": resident_mix,
     }
     bucket = candidate_bucket_key(finite)
     return {
@@ -217,6 +280,10 @@ def gpu_candidate_features(
         "class_key": task_cls,
         "regime_key": regime,
         "node": finite["node"],
+        "node_bucket": node_bucket,
+        "hardware_class": hardware_class,
+        "resource_state": resource_state,
+        "resident_mix": resident_mix,
         "gpu_idx": gpu.get("idx"),
         "need_vram_mb": need,
         "gpu_total_mb": total,
@@ -247,6 +314,7 @@ def candidate_bucket_key(finite: Mapping[str, Any]) -> str:
         "post_count_bucket",
         "post_vram_bucket",
         "util_bucket",
+        "resident_mix",
     )
     return "bucket:v1|" + "|".join(str(finite.get(k, "")) for k in keys)
 
@@ -268,6 +336,9 @@ def finite_feature_metric(left: Mapping[str, Any], right: Mapping[str, Any]) -> 
         "util_bucket",
         "resource_bucket",
         "task_kind",
+        "hardware_class",
+        "resource_state",
+        "resident_mix",
     )
     finite_distance = sum(1.0 for k in finite_keys if lf.get(k) != rf.get(k))
     numeric_scales = {

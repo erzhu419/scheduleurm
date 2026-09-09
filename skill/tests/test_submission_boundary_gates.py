@@ -538,7 +538,10 @@ def test_production_wide_organic_trace_gate_closes_history_completion_path():
 
 
 def test_production_organic_readiness_bridge_uses_history_completion_snapshot():
-    report = build_production_organic_readiness_bridge_gate(min_shadow_tasks=0)
+    report = build_production_organic_readiness_bridge_gate(
+        min_shadow_tasks=0,
+        max_shadow_tasks=0,
+    )
 
     assert report["scoped_claim_ready"] is False
     assert report["organic_readiness_bridge_ready"] is False

@@ -7,8 +7,11 @@ uncertified result instead of an interpolated service rate.
 """
 from __future__ import annotations
 
+import hashlib
+import json
 import math
 import os
+from pathlib import Path
 import re
 from dataclasses import dataclass
 from functools import lru_cache
@@ -21,6 +24,13 @@ from ..features import as_int
 
 
 _TOKEN_RE = re.compile(r"[a-z0-9]+")
+REPO_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_THEOREM_SERVICE_CACHE_PATH = (
+    REPO_ROOT
+    / "md"
+    / "experiment_artifacts"
+    / "service_cache_v2_live_merged_pre_native_20260727.json"
+)
 _STOP_TOKENS = {
     "completed",
     "history",
@@ -53,7 +63,14 @@ class ServiceBinding:
     command_fingerprint: str = ""
     resource_kind: str = ""
     node_bucket: str = ""
+    workload_env: str = ""
+    resource_state: str = ""
+    hardware_class: str = ""
     capacity_boundary: bool = False
+    allocation_workers: int = 1
+    colocation_count: int = 1
+    resident_mix: str = ""
+    lookup_status: str = ""
 
     def lower_service_vector(self) -> dict[str, float]:
         if not self.certified or self.lower_service <= 0.0:
@@ -73,13 +90,103 @@ class ServiceBinding:
             "command_fingerprint": self.command_fingerprint,
             "resource_kind": self.resource_kind,
             "node_bucket": self.node_bucket,
+            "workload_env": self.workload_env,
+            "resource_state": self.resource_state,
+            "hardware_class": self.hardware_class,
             "capacity_boundary": self.capacity_boundary,
+            "allocation_workers": self.allocation_workers,
+            "colocation_count": self.colocation_count,
+            "resident_mix": self.resident_mix,
+            "lookup_status": self.lookup_status,
+        }
+
+
+@dataclass(frozen=True)
+class ServiceCacheIdentity:
+    path: str
+    sha256: str
+    schema_version: str
+    record_count: int
+    statewise_record_count: int
+    workload_count: int
+
+    def snapshot(self) -> dict[str, Any]:
+        return {
+            "path": self.path,
+            "sha256": self.sha256,
+            "schema_version": self.schema_version,
+            "record_count": self.record_count,
+            "statewise_record_count": self.statewise_record_count,
+            "workload_count": self.workload_count,
         }
 
 
 @lru_cache(maxsize=1)
 def default_service_cache() -> ServiceRateCache:
     return build_default_cache()
+
+
+def theorem_service_cache(
+    path: str | os.PathLike[str] | None = None,
+) -> tuple[ServiceRateCache, ServiceCacheIdentity]:
+    selected = Path(
+        path
+        or os.environ.get("SCHEDULEURM_THEOREM_SERVICE_CACHE_PATH")
+        or DEFAULT_THEOREM_SERVICE_CACHE_PATH
+    ).expanduser()
+    if not selected.is_absolute():
+        selected = (REPO_ROOT / selected).resolve()
+    else:
+        selected = selected.resolve()
+    if not selected.is_file():
+        raise FileNotFoundError(
+            "theorem service cache is required but missing: "
+            f"{selected}; set SCHEDULEURM_THEOREM_SERVICE_CACHE_PATH"
+        )
+    stat = selected.stat()
+    return _load_theorem_service_cache(
+        str(selected),
+        int(stat.st_mtime_ns),
+        int(stat.st_size),
+    )
+
+
+@lru_cache(maxsize=8)
+def _load_theorem_service_cache(
+    path: str,
+    mtime_ns: int,
+    size: int,
+) -> tuple[ServiceRateCache, ServiceCacheIdentity]:
+    del mtime_ns, size
+    selected = Path(path)
+    raw = selected.read_bytes()
+    payload = json.loads(raw.decode("utf-8"))
+    records = list(payload.get("records") or [])
+    boundaries = list(payload.get("capacity_boundaries") or [])
+    all_rows = records + boundaries
+    statewise_rows = [
+        row
+        for row in all_rows
+        if str(row.get("node_bucket") or "").strip()
+        and str(row.get("resource_state") or "").strip()
+        and str(row.get("workload_env") or "").strip()
+    ]
+    if not all_rows or not statewise_rows:
+        raise ValueError(
+            f"theorem service cache is not a statewise v2 artifact: {selected}"
+        )
+    cache = ServiceRateCache.from_snapshot(payload)
+    identity = ServiceCacheIdentity(
+        path=str(selected),
+        sha256=hashlib.sha256(raw).hexdigest(),
+        schema_version=str(
+            payload.get("schema_version") or "service_cache_v2_statewise"
+        ),
+        record_count=len(all_rows),
+        statewise_record_count=len(statewise_rows),
+        workload_count=len(cache.available_workloads()),
+    )
+    return cache, identity
 
 
 def infer_workload_key(
@@ -140,16 +247,19 @@ def infer_workload_key(
                 return "freqduet_runner_v3_c33_64_completed_history"
     if "bamor" in lower and "mujoco" in lower:
         return f"bamor_mujoco_{cpu_suffix}_completed_history"
-    if any(tok in lower for tok in ("jax", "matmul", "gpu_heavy", "gpu-bound", "gpu_bound")):
-        return "gpu_heavy_jax_matmul"
-    if any(tok in lower for tok in ("torch_cnn_progress_benchmark", "cnn_torch_gpu", "torch_cnn_progress_stack")):
-        return "gpu_cnn_torch_progress_stack"
-    if any(tok in lower for tok in ("torch_llm_progress_benchmark", "llm_torch_transformer", "torch_decoder_stack")):
-        return "gpu_llm_torch_decoder_stack"
     if any(tok in lower for tok in ("resac_ant_node007", "node007_tqdm", "node007_eta_matrix_rl")):
         return "hybrid_rl_resac_ant_node007_tqdm"
-    if any(tok in lower for tok in ("resac", "bapr", "mujoco", "ant-v", "ant_")):
+    if any(tok in lower for tok in ("resac", "re-sac", "bapr", "mujoco", "ant-v", "ant_", "halfcheetah", "hopper", "walker2d")):
+        env = infer_workload_env(task)
+        if env in {"ant", "halfcheetah", "hopper", "walker2d"}:
+            return f"hybrid_rl_resac_{env}"
         return "hybrid_rl_resac_ant"
+    if any(tok in lower for tok in ("torch_cnn_progress_benchmark", "cnn_torch_gpu", "torch_cnn_progress_stack", "resnet50")):
+        return "gpu_cnn_torch_resnet50"
+    if any(tok in lower for tok in ("torch_llm_progress_benchmark", "llm_torch_transformer", "torch_decoder_stack")):
+        return "gpu_llm_torch_decoder_stack"
+    if any(tok in lower for tok in ("jax", "matmul", "gpu_heavy", "gpu-bound", "gpu_bound")):
+        return "gpu_heavy_jax_matmul"
     if any(tok in lower for tok in ("sleep_20ms", "light_control", "control-plane", "control_plane")):
         return "light_control_local"
     if (
@@ -267,13 +377,78 @@ def bind_service(
     profile = max(1, as_int(features.get("post_task_count"), 1))
     if not selected_key:
         return _uncertified("", profile, "workload_key_not_inferred")
-    record = cache.get(selected_key, profile)
+    workload_env = infer_workload_env(task)
+    node_bucket = str(features.get("node_bucket") or features.get("node") or "")
+    resource_state = str(features.get("resource_state") or "")
+    hardware_class = str(features.get("hardware_class") or "")
+    resident_mix = str(features.get("resident_mix") or "")
+    allocation_workers = max(
+        1,
+        as_int(
+            task.get("allocation_workers")
+            or features.get("allocation_workers"),
+            1,
+        ),
+    )
+    colocation_count = max(
+        1,
+        as_int(features.get("post_task_count"), profile),
+    )
+    if hasattr(cache, "lookup_statewise_exact"):
+        lookup = cache.lookup_statewise_exact(
+            selected_key,
+            profile,
+            workload_env=workload_env,
+            node_bucket=node_bucket,
+            resource_state=resource_state,
+            allocation_workers=allocation_workers,
+            colocation_count=colocation_count,
+            resident_mix=resident_mix,
+        )
+        if lookup.is_scoped_boundary:
+            return binding_from_record(
+                lookup.boundary,
+                lookup_status=lookup.status,
+            )
+        if not lookup.is_exact:
+            return _uncertified(
+                selected_key,
+                profile,
+                "exact_statewise_profile_missing",
+                node_bucket=node_bucket,
+                workload_env=workload_env,
+                resource_state=resource_state,
+                hardware_class=hardware_class,
+                allocation_workers=allocation_workers,
+                colocation_count=colocation_count,
+                resident_mix=resident_mix,
+                lookup_status=lookup.status,
+            )
+        record = lookup.record
+    else:
+        record = None
     if record is None:
-        return _uncertified(selected_key, profile, "exact_profile_missing")
-    return binding_from_record(record)
+        return _uncertified(
+            selected_key,
+            profile,
+            "exact_statewise_lookup_unavailable",
+            node_bucket=node_bucket,
+            workload_env=workload_env,
+            resource_state=resource_state,
+            hardware_class=hardware_class,
+            allocation_workers=allocation_workers,
+            colocation_count=colocation_count,
+            resident_mix=resident_mix,
+            lookup_status="missing",
+        )
+    return binding_from_record(record, lookup_status=lookup.status)
 
 
-def binding_from_record(record: ProfileRecord) -> ServiceBinding:
+def binding_from_record(
+    record: ProfileRecord,
+    *,
+    lookup_status: str = "exact",
+) -> ServiceBinding:
     aggregate = _finite_nonnegative(record.aggregate_rate)
     mean = _finite_nonnegative(record.mean_rate)
     certified = (not record.capacity_boundary) and aggregate > 0.0
@@ -292,7 +467,14 @@ def binding_from_record(record: ProfileRecord) -> ServiceBinding:
         command_fingerprint=str(record.command_fingerprint),
         resource_kind=str(record.resource_kind),
         node_bucket=str(record.node_bucket),
+        workload_env=str(record.workload_env),
+        resource_state=str(record.resource_state),
+        hardware_class=str(record.hardware_class),
         capacity_boundary=bool(record.capacity_boundary),
+        allocation_workers=int(record.allocation_workers),
+        colocation_count=int(record.colocation_count),
+        resident_mix=str(record.resident_mix),
+        lookup_status=str(lookup_status),
     )
 
 
@@ -304,7 +486,20 @@ def available_profile_table(cache: ServiceRateCache | None = None) -> dict[str, 
     }
 
 
-def _uncertified(workload_key: str, profile: int, reason: str) -> ServiceBinding:
+def _uncertified(
+    workload_key: str,
+    profile: int,
+    reason: str,
+    *,
+    node_bucket: str = "",
+    workload_env: str = "",
+    resource_state: str = "",
+    hardware_class: str = "",
+    allocation_workers: int = 1,
+    colocation_count: int = 1,
+    resident_mix: str = "",
+    lookup_status: str = "",
+) -> ServiceBinding:
     return ServiceBinding(
         workload_key=str(workload_key or ""),
         profile=int(profile),
@@ -314,7 +509,65 @@ def _uncertified(workload_key: str, profile: int, reason: str) -> ServiceBinding
         certified=False,
         reason=reason,
         source="",
+        node_bucket=str(node_bucket),
+        workload_env=str(workload_env),
+        resource_state=str(resource_state),
+        hardware_class=str(hardware_class),
+        allocation_workers=max(1, int(allocation_workers)),
+        colocation_count=max(1, int(colocation_count)),
+        resident_mix=str(resident_mix),
+        lookup_status=str(lookup_status),
     )
+
+
+def infer_workload_env(task: Mapping[str, Any]) -> str:
+    for field in ("workload_env", "service_workload_env", "env", "mujoco_env", "gym_env"):
+        value = _canonical_env(task.get(field))
+        if value:
+            return value
+    text = _task_text(task)
+    for pattern, env in (
+        (r"half[-_ ]?cheetah(?:-v\d+)?", "halfcheetah"),
+        (r"walker[-_ ]?2d(?:-v\d+)?", "walker2d"),
+        (r"hopper(?:-v\d+)?", "hopper"),
+        (r"(?<![a-z])ant(?:-v\d+|_v\d+)?(?![a-z])", "ant"),
+    ):
+        if re.search(pattern, text, flags=re.IGNORECASE):
+            return env
+    lower = text.lower()
+    if any(tok in lower for tok in ("resac", "re-sac", "bapr", "mujoco")):
+        return "unknown_rl_env"
+    if any(tok in lower for tok in ("cnn", "resnet", "torch_cnn")):
+        return "cnn"
+    if any(tok in lower for tok in ("llm", "transformer", "gpt", "distilgpt")):
+        return "llm"
+    if any(tok in lower for tok in ("jax", "matmul", "gpu_heavy", "gpu-bound", "gpu_bound")):
+        return "gpu_matmul"
+    if any(tok in lower for tok in ("freqduet", "cpu_heavy", "prime_sieve")):
+        return "cpu"
+    return ""
+
+
+def _canonical_env(value: Any) -> str:
+    raw = str(value or "").strip().lower()
+    if not raw:
+        return ""
+    cleaned = re.sub(r"[^a-z0-9]+", "", raw)
+    aliases = {
+        "halfcheetah": "halfcheetah",
+        "halfcheetahv2": "halfcheetah",
+        "halfcheetahv3": "halfcheetah",
+        "walker2d": "walker2d",
+        "walker2dv2": "walker2d",
+        "walker2dv3": "walker2d",
+        "hopper": "hopper",
+        "hopperv2": "hopper",
+        "hopperv3": "hopper",
+        "ant": "ant",
+        "antv2": "ant",
+        "antv3": "ant",
+    }
+    return aliases.get(cleaned, raw.replace("-", "_"))
 
 
 def _explicit_workload_key(task: Mapping[str, Any], cache: ServiceRateCache) -> str:

@@ -17,8 +17,10 @@ they do not close this gate by themselves.
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import time
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -28,7 +30,7 @@ from .organic_production_canary_recorder_gate import (
 )
 from .production_launch_completion_gate import build_production_launch_completion_gate
 from .production_live_theorem_trace_gate import build_production_live_theorem_trace_gate
-from .production_load_certificate import load_scheduler_records
+from .production_load_certificate import load_scheduler_records, _file_fingerprint
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -41,7 +43,37 @@ def build_production_wide_organic_trace_gate(
     min_trace_slots: int = 32,
     allow_launch: bool = False,
 ) -> dict[str, Any]:
-    records = load_scheduler_records()
+    trace = Path(trace_path).expanduser()
+    state_dir = Path.home() / ".claude" / "scheduler"
+    queue = state_dir / "queue.json"
+    archive = state_dir / "queue_archive.jsonl"
+    return copy.deepcopy(_cached_production_wide_organic_trace_gate(
+        str(trace),
+        *_file_fingerprint(trace),
+        int(min_trace_slots),
+        bool(allow_launch),
+        str(queue),
+        *_file_fingerprint(queue),
+        str(archive),
+        *_file_fingerprint(archive),
+    ))
+
+
+@lru_cache(maxsize=8)
+def _cached_production_wide_organic_trace_gate(
+    trace_path: str,
+    trace_mtime_ns: int,
+    trace_size: int,
+    min_trace_slots: int,
+    allow_launch: bool,
+    queue_path: str,
+    queue_mtime_ns: int,
+    queue_size: int,
+    archive_path: str,
+    archive_mtime_ns: int,
+    archive_size: int,
+) -> dict[str, Any]:
+    records = load_scheduler_records(copy_records=False)
     live_trace = build_production_live_theorem_trace_gate(
         records=records,
         trace_path=trace_path,

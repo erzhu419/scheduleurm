@@ -1,0 +1,83 @@
+{
+  "clean_preflight": {
+    "active_scheduler_tasks": [],
+    "gpu_idle": {
+      "compute_process_rows": [],
+      "idle_memory_limit_mb": 512,
+      "idle_util_limit_pct": 5,
+      "ready": true,
+      "returncode": 0,
+      "selected_gpus": [
+        {
+          "index": 0,
+          "name": "NVIDIA GeForce RTX 3080 Ti",
+          "total_mb": 12288,
+          "used_mb": 157,
+          "util_pct": 0
+        },
+        {
+          "index": 1,
+          "name": "NVIDIA GeForce RTX 3080 Ti",
+          "total_mb": 12288,
+          "used_mb": 10,
+          "util_pct": 0
+        }
+      ],
+      "stderr_tail": ""
+    },
+    "sampled_at": 1786283945.4748783
+  },
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "algorithm.experiments.critical_gpu_loaded_wave_runner",
+        "--node",
+        "jtl110gpu2",
+        "--wave",
+        "7",
+        "--allow-launch"
+      ],
+      "log_path": "md/experiment_artifacts/critical_gpu_reserved_campaign_jtl110gpu2_loaded_r07_r13_20260809_00_loaded_r07.log",
+      "phase": "loaded",
+      "started_at": 1786283945.474921,
+      "wave": 7
+    }
+  ],
+  "empty_waves": [],
+  "existing_tasks_drain_naturally": true,
+  "external_manual_launches_still_rejected_by_process_audit": true,
+  "gate": "critical_gpu_reserved_campaign",
+  "legacy_scheduler_limits_bypassed_by_frozen_campaign": true,
+  "loaded_waves": [
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+  ],
+  "node": "jtl110gpu2",
+  "ordinary_running_tasks_touched": false,
+  "pass": false,
+  "reservation": {
+    "blocks_new_scheduleurm_launches_only": true,
+    "created_at": 1786278147.0151646,
+    "expires_at": 1786279947.0151646,
+    "holder_host": "FATHERSUCKERMSI",
+    "holder_pid": 2404989,
+    "holder_start_ticks": 13148348,
+    "node": "jtl110gpu2",
+    "ordinary_running_tasks_touched": false,
+    "purpose": "theorem-facing natural-completion GPU calibration",
+    "renewed_at": 1786278147.0151646,
+    "reservation_id": "measure-13864e9cd1cd40068134e15429ca0772"
+  },
+  "run_empty_gate": false,
+  "run_loaded_gate": true,
+  "schema_version": 1,
+  "started_at": 1786278147.0149345,
+  "status": "RUNNING_LOADED"
+}

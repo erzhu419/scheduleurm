@@ -1,0 +1,73 @@
+{
+  "admitted_count": 0,
+  "admitted_rows": [],
+  "allow_launch": true,
+  "gate": "full_factorial_cpu_eta_probe_runner",
+  "launched_count": 1,
+  "pass": true,
+  "resource_state": "empty",
+  "rows": [
+    {
+      "config": {
+        "log_interval": 2,
+        "mode": "cpu",
+        "steps": 80,
+        "timeout_s": 1800,
+        "use_parallel": true,
+        "work_items": 90000
+      },
+      "eta_source_required": "tqdm/progress",
+      "family": "cpu_parallel",
+      "hardware_group": "cpu_hpc_192c",
+      "launch_ready": true,
+      "launched": true,
+      "legacy_scheduler_limits_bypassed": true,
+      "measurement_valid": false,
+      "node": "node001",
+      "node_bucket": "node001:cpu_hpc_192c",
+      "pending_reason": "",
+      "profile_rows": [
+        {
+          "aggregate_stable_rate_unit_s": 0.0,
+          "eta_source": "tqdm/progress",
+          "measurement_valid": false,
+          "path_exists": true,
+          "profile": 2,
+          "returncode": 0,
+          "stable_rate_ready_count": 0,
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_node001_cpuheavy_p2p32_retry2_20260630_node001_cpu_heavy_local_bench_cpu_empty/reports/profile_2_per_resource_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.0,
+          "eta_source": "tqdm/progress",
+          "measurement_valid": false,
+          "path_exists": true,
+          "profile": 32,
+          "returncode": 0,
+          "stable_rate_ready_count": 0,
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_node001_cpuheavy_p2p32_retry2_20260630_node001_cpu_heavy_local_bench_cpu_empty/reports/profile_32_per_resource_summary.json"
+        }
+      ],
+      "profiles": [
+        2,
+        32
+      ],
+      "reason": "one_or_more_cpu_profiles_missing_stable_progress_rate",
+      "resident_mix": "none",
+      "resource_state": "empty",
+      "row_id": "cpu_hpc_192c|q10_high_cpu_low_gpu|cpu_heavy_local_bench|cpu|empty|none",
+      "run_id": "ff_eta_t0_node001_cpuheavy_p2p32_retry2_20260630_node001_cpu_heavy_local_bench_cpu_empty",
+      "workload_env": "cpu",
+      "workload_key": "cpu_heavy_local_bench"
+    }
+  ],
+  "run_prefix": "ff_eta_t0_node001_cpuheavy_p2p32_retry2_20260630",
+  "scope": "Controlled full-factorial CPU ETA probes.  Launches bypass the legacy scheduler dispatch path and accept only task-native progress/tqdm rate samples with a stable tail gate.",
+  "selected_count": 1,
+  "service_cache_snapshot": {
+    "capacity_boundaries": [],
+    "records": []
+  },
+  "status": "CPU_PROBE_RUNNER_LAUNCHED",
+  "tier": "T0_core_curve"
+}

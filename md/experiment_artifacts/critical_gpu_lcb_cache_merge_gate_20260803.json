@@ -1,0 +1,66 @@
+{
+  "base_cache_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/service_cache_v2_critical_phase_20260802.json",
+  "cache_output_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/service_cache_v2_critical_cpu_gpu_phase_20260803.json",
+  "cache_output_written": false,
+  "claim_boundary": "The final cache exists only when jtl110gpu, node007, and jtl311linux each provide a hardware-local v2 PASS certificate for all nine pre-registered empty-state GPU actions. Rows are exact workload_env x node_bucket x resource_state x profile records; they never update the legacy workload/profile fallback.",
+  "complete_cache_ready": false,
+  "expected_cells_per_node": 9,
+  "expected_total_inserted_rows": 27,
+  "final_cache_snapshot_included": false,
+  "gate": "critical_gpu_lcb_cache_merge",
+  "inserted_count": 0,
+  "inserted_rows": [],
+  "legacy_index_unchanged": false,
+  "markdown_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_lcb_cache_merge_gate_20260803.md",
+  "pass": false,
+  "preexisting_cache_output_not_modified": false,
+  "report_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_lcb_cache_merge_gate_20260803.json",
+  "required_measurement_protocol": "critical_gpu_phase_completion_v2",
+  "required_representative_nodes": [
+    "jtl110gpu",
+    "node007",
+    "jtl311linux"
+  ],
+  "resource_state": "empty",
+  "schema_version": 1,
+  "source_gate_audits": [
+    {
+      "node": "jtl110gpu",
+      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_stochastic_lcb_gate_v2_jtl110gpu_20260803.json",
+      "status": "MISSING",
+      "v2_pass": false
+    },
+    {
+      "node": "node007",
+      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_stochastic_lcb_gate_v2_node007_20260803.json",
+      "status": "MISSING",
+      "v2_pass": false
+    },
+    {
+      "node": "jtl311linux",
+      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_stochastic_lcb_gate_v2_jtl311linux_20260803.json",
+      "status": "MISSING",
+      "v2_pass": false
+    }
+  ],
+  "source_gate_contract": "v2_PASS",
+  "status": "WAIT_GPU_GATES",
+  "validation_errors": [],
+  "wait_reasons": [
+    {
+      "code": "MISSING_GPU_GATE",
+      "detail": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_stochastic_lcb_gate_v2_jtl110gpu_20260803.json",
+      "node": "jtl110gpu"
+    },
+    {
+      "code": "MISSING_GPU_GATE",
+      "detail": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_stochastic_lcb_gate_v2_node007_20260803.json",
+      "node": "node007"
+    },
+    {
+      "code": "MISSING_GPU_GATE",
+      "detail": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_stochastic_lcb_gate_v2_jtl311linux_20260803.json",
+      "node": "jtl311linux"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+LOAD 0.00, 0.01, 0.05
+USER_PROCS 3
+TOPCPU
+USER        PID %CPU %MEM CMD
+root       8401  0.5  0.0 /cm/local/apps/cmd/sbin/cmd -s -n -P /var/run/cmd.pid
+root          9  0.2  0.0 [rcu_sched]
+root          1  0.1  0.0 /usr/lib/systemd/systemd
+root       7817  0.1  0.0 /usr/sbin/irqbalance --foreground
+root          2  0.0  0.0 [kthreadd]
+root          4  0.0  0.0 [kworker/0:0H]
+root          6  0.0  0.0 [ksoftirqd/0]

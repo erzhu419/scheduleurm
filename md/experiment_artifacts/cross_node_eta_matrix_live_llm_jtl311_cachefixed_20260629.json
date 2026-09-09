@@ -1,0 +1,135 @@
+{
+  "allow_launch": true,
+  "coverage": {
+    "env_specific_rl_planned": false,
+    "history_fallback_excluded": true,
+    "jtl110_equivalence_planned": false,
+    "node007_and_jtl311_separate": false
+  },
+  "gate": "cross_node_eta_matrix",
+  "hardware_groups": [
+    {
+      "gpus": [
+        0,
+        1
+      ],
+      "name": "gpu_3080ti_12gb_dual",
+      "nodes": [
+        "jtl110gpu",
+        "jtl110gpu2"
+      ],
+      "note": "full measure one, equivalence on the other",
+      "representative": "jtl110gpu",
+      "verify_node": "jtl110gpu2"
+    },
+    {
+      "gpus": [
+        0,
+        1
+      ],
+      "name": "gpu_rtx2080_8gb_dual_cpu_fast",
+      "nodes": [
+        "jtl311linux"
+      ],
+      "note": "full measure; CPU-fast/GPU-weaker row",
+      "representative": "jtl311linux",
+      "verify_node": "jtl311linux"
+    },
+    {
+      "gpus": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "name": "gpu_node007_4x12gb",
+      "nodes": [
+        "node007-direct"
+      ],
+      "note": "separate 4-GPU node007 row",
+      "representative": "node007-direct",
+      "verify_node": "node007-direct"
+    },
+    {
+      "gpus": [],
+      "name": "cpu_hpc_192c",
+      "nodes": [
+        "node001",
+        "node002",
+        "node003",
+        "node004",
+        "node005",
+        "node006"
+      ],
+      "note": "full measure one 192-core CPU node; validate another",
+      "representative": "node001",
+      "verify_node": "node002"
+    }
+  ],
+  "launched_ready": true,
+  "launched_rows": [
+    {
+      "gate": "remote_workload_selected_profile_probe",
+      "gpus": [
+        0,
+        1
+      ],
+      "node": "jtl311linux",
+      "pass": true,
+      "profiles": [
+        1
+      ],
+      "rate_count": 2,
+      "row_id": "gpu_rtx2080_8gb_dual_cpu_fast|llm_distilgpt2",
+      "run_id": "cross_node_eta_matrix_live_llm_jtl311_cachefixed_20260629_gpu_rtx2080_8gb_dual_cpu_fast_llm_distilgpt2",
+      "stable_rate_ready_count": 2,
+      "summary_paths": [
+        "/home/erzhu419/.claude/scheduler/experiments/runs/cross_node_eta_matrix_live_llm_jtl311_cachefixed_20260629_gpu_rtx2080_8gb_dual_cpu_fast_llm_distilgpt2/reports/profile_1_per_gpu_summary.json"
+      ]
+    }
+  ],
+  "manifest_ready": true,
+  "manifest_rows": [
+    {
+      "cwd": "/home/erzhu419/mine_code/scheduleurm",
+      "eta_source_required": "tqdm/progress",
+      "gpus": [
+        0,
+        1
+      ],
+      "hardware_class": "gpu_rtx2080_8gb_dual_cpu_fast",
+      "launch_command": "python -m algorithm.experiments.cross_node_eta_matrix --allow-launch --nodes jtl311linux --workloads llm_distilgpt2",
+      "launch_ready": true,
+      "max_iters": 64,
+      "node": "jtl311linux",
+      "node_bucket": "jtl311linux:gpu_rtx2080_8gb_dual_cpu_fast",
+      "pending_reason": "",
+      "profiles": [
+        1
+      ],
+      "resource_kind": "gpu_llm",
+      "resource_states": [
+        "empty",
+        "half_loaded",
+        "full_loaded",
+        "high_vram_resident",
+        "mixed_colocation"
+      ],
+      "row_id": "gpu_rtx2080_8gb_dual_cpu_fast|llm_distilgpt2",
+      "run_id": "cross_node_eta_matrix_live_llm_jtl311_cachefixed_20260629_gpu_rtx2080_8gb_dual_cpu_fast_llm_distilgpt2",
+      "template": "/home/erzhu419/mine_code/scheduleurm/algorithm/experiments/templates/torch_llm_distilgpt2.cmd.tpl",
+      "template_vars": {},
+      "timeout_s": 420,
+      "total_units": 64.0,
+      "unit": "iter",
+      "verify_node": "jtl311linux",
+      "workload_env": "llm",
+      "workload_key": "gpu_llm_distilgpt2"
+    }
+  ],
+  "pass": true,
+  "run_id": "cross_node_eta_matrix_live_llm_jtl311_cachefixed_20260629",
+  "stable_eta_rule": "task-native tqdm/ScheduleurmStableRate only; history fallback rows excluded from theorem-facing cache",
+  "status": "LAUNCHED_PASS",
+  "workload_count": 1
+}

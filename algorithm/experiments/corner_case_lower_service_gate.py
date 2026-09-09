@@ -34,13 +34,13 @@ CANONICAL_SCENARIOS: dict[str, dict[str, str]] = {
     "node007_empty_small": {
         "workload_key": "corner_gpu_node007_empty_marginal_cuda",
         "resource_kind": "gpu_corner_empty",
-        "node_bucket": "node007-direct:4x12gb",
+        "node_bucket": "node007:4x12gb",
         "role": "empty_baseline",
     },
     "node007_30gb_add_small_stable": {
         "workload_key": "corner_gpu_node007_30gb_resident_marginal_cuda",
         "resource_kind": "gpu_corner_resident_vram",
-        "node_bucket": "node007-direct:30gb-resident",
+        "node_bucket": "node007:30gb-resident",
         "role": "co_location",
     },
     "cpu_empty_node001_single": {

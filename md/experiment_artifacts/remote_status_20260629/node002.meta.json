@@ -1,0 +1,8 @@
+{
+  "cmd": [
+    "scheduler.run_on",
+    "node002",
+    "set +e\nif command -v nvidia-smi >/dev/null 2>&1; then nvidia-smi --query-gpu=index,name,memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits; else echo NO_NVIDIA_SMI; fi\nprintf \"CPU_LOAD \"; uptime | sed 's/^.*load average: //'\nprintf \"CPU_NPROC \"; ps -u \"$USER\" -o pid= | wc -l\n"
+  ],
+  "returncode": 0
+}

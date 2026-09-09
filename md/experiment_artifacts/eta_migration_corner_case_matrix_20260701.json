@@ -1,0 +1,162 @@
+{
+  "claim_boundary": "Rows marked requires_live_probe or no_theorem_claim are engineering coverage commitments, not theorem-facing empirical claims.",
+  "gate": "eta_migration_corner_case_matrix",
+  "pass": true,
+  "rows": [
+    {
+      "category": "ETA",
+      "corner_case": "empty_gpu",
+      "gate": "cross_node_eta_matrix + live_eta_service_cache_v2_gate",
+      "status": "implemented_live_multi_node_partial",
+      "theorem_facing_ready": true
+    },
+    {
+      "category": "ETA",
+      "corner_case": "half_loaded_gpu",
+      "gate": "live_marginal_under_load_matrix",
+      "status": "implemented_live",
+      "theorem_facing_ready": true
+    },
+    {
+      "category": "ETA",
+      "corner_case": "full_loaded_gpu",
+      "gate": "live_marginal_under_load_full_mixed",
+      "status": "implemented_live",
+      "theorem_facing_ready": true
+    },
+    {
+      "category": "ETA",
+      "corner_case": "high_vram_resident",
+      "gate": "live_marginal_under_load_matrix",
+      "status": "implemented_live",
+      "theorem_facing_ready": true
+    },
+    {
+      "category": "ETA",
+      "corner_case": "cpu_resident",
+      "gate": "live_marginal_under_load_cpu_idle_nodes",
+      "status": "implemented_live_representative_and_verify",
+      "theorem_facing_ready": true
+    },
+    {
+      "category": "ETA",
+      "corner_case": "mixed_cnn_llm",
+      "gate": "live_marginal_under_load_full_mixed",
+      "status": "implemented_live",
+      "theorem_facing_ready": true
+    },
+    {
+      "category": "ETA",
+      "corner_case": "mixed_cnn_rl_llm",
+      "gate": "live_marginal_under_load_mixed_cnn_rl_llm_v5",
+      "status": "implemented_live",
+      "theorem_facing_ready": true
+    },
+    {
+      "category": "ETA",
+      "corner_case": "rl_periodic_train_eval_eta",
+      "gate": "progress_wrapper stable-cycle-units + live_cycle_jtl110_resac_ant_p2",
+      "status": "implemented_live",
+      "theorem_facing_ready": true
+    },
+    {
+      "category": "node-aware",
+      "corner_case": "jtl311_cpu_fast_gpu_weak",
+      "gate": "service_cache_v2",
+      "status": "implemented_tested",
+      "theorem_facing_ready": true
+    },
+    {
+      "category": "node-aware",
+      "corner_case": "node007_multigpu_packing",
+      "gate": "live_eta_service_cache_v2_gate",
+      "status": "implemented_live_partial",
+      "theorem_facing_ready": true
+    },
+    {
+      "category": "node-aware",
+      "corner_case": "node001_node006_cpu_packing",
+      "gate": "live_marginal_under_load_cpu_idle_nodes",
+      "status": "implemented_live_representative_and_verify",
+      "theorem_facing_ready": true
+    },
+    {
+      "category": "admission",
+      "corner_case": "unknown_env",
+      "gate": "service_registry",
+      "status": "probe_defer_required",
+      "theorem_facing_ready": false
+    },
+    {
+      "category": "admission",
+      "corner_case": "description_only_env",
+      "gate": "service_registry",
+      "status": "implemented_tested",
+      "theorem_facing_ready": true
+    },
+    {
+      "category": "admission",
+      "corner_case": "missing_tqdm",
+      "gate": "service_cache_v2",
+      "status": "history_fallback_no_theorem_claim",
+      "theorem_facing_ready": false
+    },
+    {
+      "category": "migration",
+      "corner_case": "missing_checkpoint",
+      "gate": "migration_cost_gate",
+      "status": "implemented_tested",
+      "theorem_facing_ready": true
+    },
+    {
+      "category": "migration",
+      "corner_case": "resume_path_local_only",
+      "gate": "migration_cost_gate",
+      "status": "excluded_until_staged",
+      "theorem_facing_ready": false
+    },
+    {
+      "category": "migration",
+      "corner_case": "pure_gpu_migration_25_50_75",
+      "gate": "live_checkpoint_migration_cost_gate",
+      "status": "implemented_live",
+      "theorem_facing_ready": true
+    },
+    {
+      "category": "migration",
+      "corner_case": "hybrid_rl_migration_25_50_75",
+      "gate": "live_checkpoint_migration_cost_gate",
+      "status": "implemented_live",
+      "theorem_facing_ready": true
+    },
+    {
+      "category": "migration",
+      "corner_case": "pure_cpu_migration_25_50_75",
+      "gate": "live_checkpoint_migration_cost_gate",
+      "status": "implemented_live",
+      "theorem_facing_ready": true
+    },
+    {
+      "category": "OR-generalization",
+      "corner_case": "port_reberthing",
+      "gate": "or_generalization_benchmarks",
+      "status": "implemented_simulator",
+      "theorem_facing_ready": true
+    },
+    {
+      "category": "OR-generalization",
+      "corner_case": "fjsp_reroute",
+      "gate": "or_generalization_benchmarks",
+      "status": "implemented_simulator",
+      "theorem_facing_ready": true
+    },
+    {
+      "category": "OR-generalization",
+      "corner_case": "mmrcpsp_mode_switch",
+      "gate": "or_generalization_benchmarks",
+      "status": "implemented_simulator",
+      "theorem_facing_ready": true
+    }
+  ],
+  "status": "CORNER_CASE_MATRIX_READY"
+}

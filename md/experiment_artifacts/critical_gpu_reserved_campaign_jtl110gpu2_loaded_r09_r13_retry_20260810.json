@@ -1,0 +1,105 @@
+{
+  "clean_preflight": {
+    "active_scheduler_tasks": [],
+    "gpu_idle": {
+      "compute_process_rows": [],
+      "idle_memory_limit_mb": 512,
+      "idle_util_limit_pct": 5,
+      "ready": true,
+      "returncode": 0,
+      "selected_gpus": [
+        {
+          "index": 0,
+          "name": "NVIDIA GeForce RTX 3080 Ti",
+          "total_mb": 12288,
+          "used_mb": 151,
+          "util_pct": 0
+        },
+        {
+          "index": 1,
+          "name": "NVIDIA GeForce RTX 3080 Ti",
+          "total_mb": 12288,
+          "used_mb": 10,
+          "util_pct": 0
+        }
+      ],
+      "stderr_tail": ""
+    },
+    "sampled_at": 1786325194.5861514
+  },
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "algorithm.experiments.critical_gpu_loaded_wave_runner",
+        "--node",
+        "jtl110gpu2",
+        "--wave",
+        "9",
+        "--allow-launch"
+      ],
+      "finished_at": 1786326904.580007,
+      "log_path": "md/experiment_artifacts/critical_gpu_reserved_campaign_jtl110gpu2_loaded_r09_r13_retry_20260810_00_loaded_r09.log",
+      "pass": true,
+      "phase": "loaded",
+      "returncode": 0,
+      "started_at": 1786325194.5862272,
+      "wave": 9
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "algorithm.experiments.critical_gpu_loaded_wave_runner",
+        "--node",
+        "jtl110gpu2",
+        "--wave",
+        "10",
+        "--allow-launch"
+      ],
+      "finished_at": 1786328098.0440094,
+      "log_path": "md/experiment_artifacts/critical_gpu_reserved_campaign_jtl110gpu2_loaded_r09_r13_retry_20260810_01_loaded_r10.log",
+      "pass": false,
+      "phase": "loaded",
+      "returncode": 3,
+      "started_at": 1786326905.8615794,
+      "wave": 10
+    }
+  ],
+  "empty_waves": [],
+  "existing_tasks_drain_naturally": true,
+  "external_manual_launches_still_rejected_by_process_audit": true,
+  "failed_command_index": 1,
+  "finished_at": 1786328098.0446033,
+  "gate": "critical_gpu_reserved_campaign",
+  "legacy_scheduler_limits_bypassed_by_frozen_campaign": true,
+  "loaded_waves": [
+    9,
+    10,
+    11,
+    12,
+    13
+  ],
+  "node": "jtl110gpu2",
+  "ordinary_running_tasks_touched": false,
+  "pass": false,
+  "reservation": {
+    "blocks_new_scheduleurm_launches_only": true,
+    "created_at": 1786324348.6369944,
+    "expires_at": 1786326148.6369944,
+    "holder_host": "FATHERSUCKERMSI",
+    "holder_pid": 2914027,
+    "holder_start_ticks": 17918013,
+    "node": "jtl110gpu2",
+    "ordinary_running_tasks_touched": false,
+    "purpose": "theorem-facing natural-completion GPU calibration",
+    "renewed_at": 1786324348.6369944,
+    "reservation_id": "measure-6dc17255fd0241da9b8afeb3a393cc37"
+  },
+  "run_empty_gate": false,
+  "run_loaded_gate": true,
+  "schema_version": 1,
+  "started_at": 1786324348.6366942,
+  "status": "COMMAND_FAILED"
+}

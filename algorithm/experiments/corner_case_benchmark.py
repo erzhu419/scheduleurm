@@ -108,7 +108,7 @@ def build_corner_case_plan(*, run_id: str | None = None) -> dict[str, Any]:
             "completion time without relying on stale TUI ETA."
         ),
         "resource_population": {
-            "gpu_nodes": ["jtl110gpu", "jtl110gpu2", "node007-direct"],
+            "gpu_nodes": ["jtl110gpu", "jtl110gpu2", "node007"],
             "node007_direct_gpu_shape": "4 x RTX 2080 Ti class, about 11GB each",
             "cpu_nodes": ["node001", "node002", "node003", "node004", "node005", "node006"],
             "cpu_node_shape": "192 logical cores per node",
@@ -169,7 +169,7 @@ def audit_resources(nodes: list[str] | None = None) -> dict[str, Any]:
     nodes = nodes or [
         "jtl110gpu",
         "jtl110gpu2",
-        "node007-direct",
+        "node007",
         "node001",
         "node002",
         "node003",
@@ -181,6 +181,7 @@ def audit_resources(nodes: list[str] | None = None) -> dict[str, Any]:
     shell_cmd = (
         "hostname; "
         "echo NPROC=$(nproc); "
+        "awk '{printf \"LOADAVG=%s %s %s\\n\", $1, $2, $3}' /proc/loadavg; "
         "awk '/MemTotal|MemAvailable/ {print $1$2}' /proc/meminfo; "
         "if command -v nvidia-smi >/dev/null 2>&1; then "
         "nvidia-smi --query-gpu=index,name,memory.used,memory.total,utilization.gpu "
@@ -188,7 +189,9 @@ def audit_resources(nodes: list[str] | None = None) -> dict[str, Any]:
         "elif [ -x /cm/local/apps/cuda-driver/libs/535.261.03/bin/nvidia-smi ]; then "
         "/cm/local/apps/cuda-driver/libs/535.261.03/bin/nvidia-smi "
         "--query-gpu=index,name,memory.used,memory.total,utilization.gpu "
-        "--format=csv,noheader,nounits; fi"
+        "--format=csv,noheader,nounits; fi; "
+        "echo __SCHEDULEURM_PROCESS_SNAPSHOT__; "
+        "ps -eo user=,pid=,pcpu=,pmem=,comm=,args= --sort=-pcpu | head -25"
     )
     rows = []
     for node in nodes:
@@ -199,7 +202,7 @@ def audit_resources(nodes: list[str] | None = None) -> dict[str, Any]:
                 "returncode": rc,
                 "raw_stdout": out,
                 "raw_stderr": err,
-                "parsed": _parse_resource_stdout(out),
+                "parsed": _classify_resource_snapshot(_parse_resource_stdout(out)),
                 "reachable": rc == 0,
             })
         except Exception as exc:
@@ -251,7 +254,7 @@ def _scenario_rows() -> list[dict[str, Any]]:
             "quadrant": "q01_gpu_heavy",
             "resource_state": "empty",
             "question": "Baseline pure GPU/CNN/LLM ETA on an idle GPU.",
-            "nodes": ["jtl110gpu", "jtl110gpu2", "node007-direct"],
+            "nodes": ["jtl110gpu", "jtl110gpu2", "node007"],
             "probe_commands": [
                 f"CUDA_VISIBLE_DEVICES=0 {gpu_cnn} --steps 80 --warmup 8 --log-interval 5 --label gpu_empty_cnn",
                 f"CUDA_VISIBLE_DEVICES=0 {gpu_llm} --model-id distilgpt2 --steps 60 --warmup 4 --log-interval 5 --label gpu_empty_llm",
@@ -263,7 +266,7 @@ def _scenario_rows() -> list[dict[str, Any]]:
             "quadrant": "q01_gpu_heavy",
             "resource_state": "half_loaded",
             "question": "Marginal rate of adding one GPU task when the card already has two residents.",
-            "nodes": ["jtl110gpu", "jtl110gpu2", "node007-direct"],
+            "nodes": ["jtl110gpu", "jtl110gpu2", "node007"],
             "background": f"CUDA_VISIBLE_DEVICES=0 {gpu_cnn} --steps 240 --warmup 8 --log-interval 10 --label gpu_half_bg",
             "probe_commands": [
                 f"CUDA_VISIBLE_DEVICES=0 {gpu_cnn} --steps 80 --warmup 4 --log-interval 5 --label gpu_half_add_cnn",
@@ -276,7 +279,7 @@ def _scenario_rows() -> list[dict[str, Any]]:
             "quadrant": "q01_gpu_heavy",
             "resource_state": "full_loaded",
             "question": "Marginal rate near the measured capacity boundary before memory/OOM failure.",
-            "nodes": ["jtl110gpu", "jtl110gpu2", "node007-direct"],
+            "nodes": ["jtl110gpu", "jtl110gpu2", "node007"],
             "background": f"CUDA_VISIBLE_DEVICES=0 {gpu_mem} --reserve-gb-per-gpu 8.5 --steps 240 --log-interval 10 --label gpu_full_bg",
             "probe_commands": [
                 f"CUDA_VISIBLE_DEVICES=0 {gpu_cnn} --steps 60 --warmup 4 --log-interval 5 --label gpu_full_add_cnn",
@@ -289,7 +292,7 @@ def _scenario_rows() -> list[dict[str, Any]]:
             "quadrant": "q11_cpu_gpu_coupled",
             "resource_state": "large_multigpu_resident",
             "question": "30GB-class resident LLM-style memory job over 4x12GB plus small marginal tasks.",
-            "nodes": ["node007-direct"],
+            "nodes": ["node007"],
             "background": (
                 f"CUDA_VISIBLE_DEVICES=0,1,2,3 {gpu_mem} --devices 0,1,2,3 "
                 "--reserve-gb-per-gpu 7.0 --matrix-size 1536 --steps 240 "
@@ -344,7 +347,7 @@ def _scenario_rows() -> list[dict[str, Any]]:
             "quadrant": "q11_cpu_gpu_coupled",
             "resource_state": "mixed_loaded",
             "question": "Hybrid resident job plus small GPU/CPU tasks; validates queue-aware MaxWeight over classes.",
-            "nodes": ["node007-direct", "node001"],
+            "nodes": ["node007", "node001"],
             "background": (
                 f"CUDA_VISIBLE_DEVICES=0 {gpu_cnn} --steps 180 --warmup 8 --log-interval 10 "
                 "--label mixed_gpu_bg && "
@@ -361,7 +364,7 @@ def _scenario_rows() -> list[dict[str, Any]]:
             "quadrant": "portfolio",
             "resource_state": "queued_backlog",
             "question": "Queued count, per-task ETA, eta_load, and load balancing before launch.",
-            "nodes": ["jtl110gpu", "jtl110gpu2", "node007-direct", "node001", "node002"],
+            "nodes": ["jtl110gpu", "jtl110gpu2", "node007", "node001", "node002"],
             "probe_commands": [
                 "SCHEDULEURM_ALGORITHM=theorem_maxweight_v1 python3 skill/scheduler.py status --json --brief",
                 "python3 -m algorithm.experiments.live_trace_dryrun build --algorithm theorem_maxweight_v1 --hard-rule-mode safety",
@@ -391,14 +394,31 @@ def _policy_matrix(cpu: bool = False) -> list[str]:
 
 
 def _parse_resource_stdout(text: str) -> dict[str, Any]:
-    out: dict[str, Any] = {"gpus": []}
+    out: dict[str, Any] = {"gpus": [], "processes": []}
+    in_process_snapshot = False
     for line in (text or "").splitlines():
         line = line.strip()
         if not line:
             continue
+        if line == "__SCHEDULEURM_PROCESS_SNAPSHOT__":
+            in_process_snapshot = True
+            continue
+        if in_process_snapshot:
+            proc = _parse_process_line(line)
+            if proc:
+                out["processes"].append(proc)
+            continue
         if line.startswith("NPROC="):
             try:
                 out["nproc"] = int(line.split("=", 1)[1])
+            except Exception:
+                pass
+        elif line.startswith("LOADAVG="):
+            vals = line.split("=", 1)[1].split()
+            try:
+                out["loadavg_1m"] = float(vals[0])
+                out["loadavg_5m"] = float(vals[1])
+                out["loadavg_15m"] = float(vals[2])
             except Exception:
                 pass
         elif line.startswith("MemTotal:"):
@@ -418,6 +438,81 @@ def _parse_resource_stdout(text: str) -> dict[str, Any]:
         elif "hostname" not in out:
             out["hostname"] = line
     return out
+
+
+def _parse_process_line(line: str) -> dict[str, Any] | None:
+    parts = line.split(maxsplit=5)
+    if len(parts) < 5:
+        return None
+    user = ""
+    if _looks_like_int(parts[0]):
+        pid_idx, pcpu_idx, pmem_idx, command_idx, args_idx = 0, 1, 2, 3, 4
+    else:
+        if len(parts) < 6:
+            return None
+        user = parts[0]
+        pid_idx, pcpu_idx, pmem_idx, command_idx, args_idx = 1, 2, 3, 4, 5
+    try:
+        pid = int(parts[pid_idx])
+        pcpu = float(parts[pcpu_idx])
+        pmem = float(parts[pmem_idx])
+    except Exception:
+        return None
+    return {
+        "user": user,
+        "pid": pid,
+        "pcpu": pcpu,
+        "pmem": pmem,
+        "command": parts[command_idx],
+        "args": parts[args_idx],
+        "scheduleurm_probe": bool(
+            re.search(
+                r"remote_workload_selected_profile_probe|full_factorial|live_marginal|ScheduleurmStableRate",
+                parts[args_idx],
+            )
+        ),
+    }
+
+
+def _looks_like_int(text: str) -> bool:
+    try:
+        int(str(text).strip())
+        return True
+    except Exception:
+        return False
+
+
+def _classify_resource_snapshot(parsed: dict[str, Any]) -> dict[str, Any]:
+    nproc = int(parsed.get("nproc") or 0)
+    load_1m = float(parsed.get("loadavg_1m") or 0.0)
+    gpu_rows = parsed.get("gpus") or []
+    gpu_busy = any(
+        (g.get("memory_used_mb") or 0) > max(768, 0.10 * float(g.get("memory_total_mb") or 0))
+        or (g.get("utilization_gpu_pct") or 0) >= 10
+        for g in gpu_rows
+    )
+    external_processes = [
+        p for p in parsed.get("processes", [])
+        if not p.get("scheduleurm_probe") and float(p.get("pcpu") or 0.0) >= 25.0
+        and str(p.get("command") or "") not in {"ps", "head", "awk"}
+    ]
+    cpu_busy = bool(external_processes) or (nproc > 0 and load_1m >= max(4.0, 0.20 * nproc))
+    parsed["external_busy_process_count"] = len(external_processes)
+    parsed["external_busy_processes"] = external_processes[:8]
+    parsed["gpu_busy"] = gpu_busy
+    parsed["cpu_busy"] = cpu_busy
+    parsed["safe_for_gpu_only_probe"] = not gpu_busy
+    parsed["safe_for_hybrid_probe"] = not gpu_busy and not cpu_busy
+    parsed["safe_for_cpu_probe"] = not cpu_busy
+    if gpu_busy and cpu_busy:
+        parsed["availability_class"] = "gpu_and_cpu_busy"
+    elif gpu_busy:
+        parsed["availability_class"] = "gpu_busy"
+    elif cpu_busy:
+        parsed["availability_class"] = "cpu_busy_gpu_idle"
+    else:
+        parsed["availability_class"] = "clean_idle"
+    return parsed
 
 
 def _trailing_int(text: str) -> int | None:
@@ -485,8 +580,8 @@ def _audit_markdown(report: Mapping[str, Any], json_path: Path) -> str:
         "",
         f"JSON artifact: `{json_path}`",
         "",
-        "| node | reachable | nproc | mem available GB | GPUs |",
-        "|---|---:|---:|---:|---|",
+        "| node | reachable | class | hybrid safe | cpu safe | nproc | load 1m | mem available GB | GPUs | external busy processes |",
+        "|---|---:|---|---:|---:|---:|---:|---:|---|---|",
     ]
     for row in report.get("nodes") or []:
         parsed = row.get("parsed") or {}
@@ -496,9 +591,17 @@ def _audit_markdown(report: Mapping[str, Any], json_path: Path) -> str:
             f"{g.get('index')}:{g.get('memory_used_mb')}/{g.get('memory_total_mb')}MB,{g.get('utilization_gpu_pct')}%"
             for g in gpus
         )
+        proc_text = "; ".join(
+            f"{p.get('user') or '?'}:{p.get('pid')}:{p.get('pcpu')}% {p.get('command')}"
+            for p in (parsed.get("external_busy_processes") or [])[:4]
+        )
         lines.append(
             f"| `{row.get('node')}` | {str(bool(row.get('reachable'))).lower()} | "
-            f"{parsed.get('nproc') or ''} | {mem_gb:.1f} | {gpu_text} |"
+            f"`{parsed.get('availability_class') or ''}` | "
+            f"{str(bool(parsed.get('safe_for_hybrid_probe'))).lower()} | "
+            f"{str(bool(parsed.get('safe_for_cpu_probe'))).lower()} | "
+            f"{parsed.get('nproc') or ''} | {float(parsed.get('loadavg_1m') or 0.0):.1f} | "
+            f"{mem_gb:.1f} | {gpu_text} | {proc_text} |"
         )
     lines.append("")
     return "\n".join(lines)

@@ -186,7 +186,7 @@ def test_backlog_aware_policy_improves_q01_without_regressing_cpu_or_cnn():
         assert upgraded.candidate.weighted_mean_flow_s <= current.candidate.weighted_mean_flow_s * 1.005
 
 
-def test_global_batch_policy_builds_scheduler_hint_only_certificate(tmp_path):
+def test_global_batch_policy_builds_enforced_action_certificate(tmp_path):
     queue_path = tmp_path / "queue.json"
     tasks = [
         {
@@ -207,7 +207,7 @@ def test_global_batch_policy_builds_scheduler_hint_only_certificate(tmp_path):
     queue_path.write_text(json.dumps({"tasks": tasks}), encoding="utf-8")
     nodes = [
         {
-            "name": "unit-node",
+            "name": "jtl110gpu",
             "alive": True,
             "gpus": [
                 {"idx": 0, "used_mb": 100, "free_mb": 11900, "total_mb": 12000, "util_pct": 0, "running_task_count": 0},
@@ -220,9 +220,14 @@ def test_global_batch_policy_builds_scheduler_hint_only_certificate(tmp_path):
 
     assert result.scheduler_hook_ready
     assert set(result.placements) == {"task-a", "task-b"}
+    assert all(not row["scheduler_hint_only"] for row in result.candidate_rows)
+    assert all(
+        row["scheduler_execution_contract"] == "enforced_exact_placement_v1"
+        for row in result.candidate_rows
+    )
 
 
-def test_scheduler_global_batch_hook_builds_soft_hint_plan(tmp_path, monkeypatch):
+def test_scheduler_global_batch_hook_builds_enforced_plan(tmp_path, monkeypatch):
     monkeypatch.setenv("SCHEDULEURM_ALGORITHM", "global_theorem_maxweight_v1")
     import skill.scheduler as scheduler
 
@@ -248,7 +253,7 @@ def test_scheduler_global_batch_hook_builds_soft_hint_plan(tmp_path, monkeypatch
     monkeypatch.setattr(scheduler, "QUEUE_FILE", queue_path)
     nodes = [
         {
-            "name": "unit-node",
+            "name": "jtl110gpu",
             "alive": True,
             "gpus": [
                 {"idx": 0, "used_mb": 100, "free_mb": 11900, "total_mb": 12000, "util_pct": 0, "running_task_count": 0},
@@ -261,6 +266,8 @@ def test_scheduler_global_batch_hook_builds_soft_hint_plan(tmp_path, monkeypatch
 
     assert event["type"] == "algorithm_global_batch_plan"
     assert event["scheduler_hook_ready"] is True
+    assert event["execution_contract"] == "enforced_exact_placement_v1"
+    assert event["fail_closed"] is True
     assert set(plan) == {"task-a", "task-b"}
     assert {row["gpu_idx"] for row in plan.values()} == {0, 1}
 

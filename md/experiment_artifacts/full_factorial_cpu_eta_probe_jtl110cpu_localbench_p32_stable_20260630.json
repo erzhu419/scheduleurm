@@ -1,0 +1,127 @@
+{
+  "admitted_count": 1,
+  "admitted_rows": [
+    {
+      "config": {
+        "log_interval": 2,
+        "mode": "cpu",
+        "steps": 160,
+        "timeout_s": 2400,
+        "use_parallel": true,
+        "work_items": 90000
+      },
+      "eta_source_required": "tqdm/progress",
+      "family": "cpu_parallel",
+      "hardware_group": "cpu_jtl110_128c",
+      "launch_ready": true,
+      "launched": true,
+      "legacy_scheduler_limits_bypassed": true,
+      "measurement_valid": true,
+      "node": "jtl110cpu",
+      "node_bucket": "jtl110cpu:cpu_jtl110_128c",
+      "pending_reason": "",
+      "profile_rows": [
+        {
+          "aggregate_stable_rate_unit_s": 21.04638628,
+          "eta_source": "tqdm/progress",
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 32,
+          "returncode": 0,
+          "stable_rate_ready_count": 1,
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_cpu_t0_jtl110cpu_localbench_p32_stable_20260630_jtl110cpu_cpu_heavy_local_bench_cpu_empty/reports/profile_32_per_resource_summary.json"
+        }
+      ],
+      "profiles": [
+        32
+      ],
+      "reason": "",
+      "resident_mix": "none",
+      "resource_state": "empty",
+      "row_id": "cpu_jtl110_128c|q10_high_cpu_low_gpu|cpu_heavy_local_bench|cpu|empty|none",
+      "run_id": "ff_cpu_t0_jtl110cpu_localbench_p32_stable_20260630_jtl110cpu_cpu_heavy_local_bench_cpu_empty",
+      "workload_env": "cpu",
+      "workload_key": "cpu_heavy_local_bench"
+    }
+  ],
+  "allow_launch": true,
+  "gate": "full_factorial_cpu_eta_probe_runner",
+  "launched_count": 1,
+  "pass": true,
+  "resource_state": "empty",
+  "rows": [
+    {
+      "config": {
+        "log_interval": 2,
+        "mode": "cpu",
+        "steps": 160,
+        "timeout_s": 2400,
+        "use_parallel": true,
+        "work_items": 90000
+      },
+      "eta_source_required": "tqdm/progress",
+      "family": "cpu_parallel",
+      "hardware_group": "cpu_jtl110_128c",
+      "launch_ready": true,
+      "launched": true,
+      "legacy_scheduler_limits_bypassed": true,
+      "measurement_valid": true,
+      "node": "jtl110cpu",
+      "node_bucket": "jtl110cpu:cpu_jtl110_128c",
+      "pending_reason": "",
+      "profile_rows": [
+        {
+          "aggregate_stable_rate_unit_s": 21.04638628,
+          "eta_source": "tqdm/progress",
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 32,
+          "returncode": 0,
+          "stable_rate_ready_count": 1,
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_cpu_t0_jtl110cpu_localbench_p32_stable_20260630_jtl110cpu_cpu_heavy_local_bench_cpu_empty/reports/profile_32_per_resource_summary.json"
+        }
+      ],
+      "profiles": [
+        32
+      ],
+      "reason": "",
+      "resident_mix": "none",
+      "resource_state": "empty",
+      "row_id": "cpu_jtl110_128c|q10_high_cpu_low_gpu|cpu_heavy_local_bench|cpu|empty|none",
+      "run_id": "ff_cpu_t0_jtl110cpu_localbench_p32_stable_20260630_jtl110cpu_cpu_heavy_local_bench_cpu_empty",
+      "workload_env": "cpu",
+      "workload_key": "cpu_heavy_local_bench"
+    }
+  ],
+  "run_prefix": "ff_cpu_t0_jtl110cpu_localbench_p32_stable_20260630",
+  "scope": "Controlled full-factorial CPU ETA probes.  Launches bypass the legacy scheduler dispatch path and accept only task-native progress/tqdm rate samples with a stable tail gate.",
+  "selected_count": 1,
+  "service_cache_snapshot": {
+    "capacity_boundaries": [],
+    "records": [
+      {
+        "aggregate_rate": 21.04638628,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_cpu_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 1,
+        "hardware_class": "cpu_jtl110_128c",
+        "node_bucket": "jtl110cpu:cpu_jtl110_128c",
+        "per_task_rates": [
+          21.04638628
+        ],
+        "profile": 32,
+        "resource_kind": "cpu_parallel",
+        "resource_state": "empty",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_cpu_t0_jtl110cpu_localbench_p32_stable_20260630_jtl110cpu_cpu_heavy_local_bench_cpu_empty/reports/profile_32_per_resource_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 1.0,
+        "unit": "step",
+        "workload_env": "cpu",
+        "workload_key": "cpu_heavy_local_bench"
+      }
+    ]
+  },
+  "status": "CPU_PROBE_RUNNER_LAUNCHED",
+  "tier": "T0_core_curve"
+}

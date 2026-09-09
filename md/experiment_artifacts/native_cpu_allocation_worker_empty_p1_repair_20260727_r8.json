@@ -1,0 +1,201 @@
+{
+  "accepted_cell_counts": {
+    "cpu_external_idle|w1": 1
+  },
+  "accepted_count": 1,
+  "allow_launch": true,
+  "artifact_sha256": "f890a93683bea7209e6f5b848bbc5c5d9f51d1bbb2bbdf2d2f045d74f858f260",
+  "coverage_ready": true,
+  "deferred_count": 0,
+  "deploy_rows": [
+    {
+      "error": null,
+      "node": "node001",
+      "ready": true
+    }
+  ],
+  "dispatch_survey_rows": [
+    {
+      "dispatch_external_cpu_fraction": 0.0004052385625872115,
+      "dispatch_external_cpu_fraction_p95": 0.0019743336623889436,
+      "dispatch_external_cpu_regime": "cpu_external_idle",
+      "dispatch_sample_count": 5,
+      "measurement_protocol": "dispatch_multisample_and_run_window_v3",
+      "node": "node001",
+      "ready": true,
+      "returncode": 0,
+      "stderr_tail": ""
+    }
+  ],
+  "elapsed_wall_s": 50.80040144920349,
+  "failed_count": 0,
+  "gate": "native_cpu_allocation_worker_state_campaign",
+  "idle_replicate_offset": 8,
+  "idle_replicates": 1,
+  "launched_count": 1,
+  "loaded_replicate_offset": 100,
+  "loaded_replicates": 1,
+  "measurement_contract": {
+    "completion_components": [
+      "startup",
+      "outer_loop",
+      "periodic_checkpoint",
+      "final_save"
+    ],
+    "dispatch_state_protocol": "five_window_exact_regime_preflight",
+    "eta_source": "task_native_tqdm_plus_natural_completion_model",
+    "legacy_scheduler_limits_bypassed": true,
+    "non_idle_capacity_rule": "workers <= logical_cpus - dispatch_external_cpu_core_equiv_p95 - safety_reserve_cores"
+  },
+  "nodes": [
+    "node001"
+  ],
+  "planned_count": 1,
+  "profiles": [
+    1
+  ],
+  "progress_deploy_rows": [
+    {
+      "error": null,
+      "node": "node001",
+      "ready": true
+    }
+  ],
+  "required_cell_counts": {
+    "cpu_external_idle|w1": 1
+  },
+  "rows": [
+    {
+      "cell_id": "cpu_external_idle_w1_r8",
+      "checkpoint_bytes": 8388608,
+      "checkpoint_interval": 40,
+      "child_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/cpu_worker_empty_p1_repair_20260727_r8_r8_node001_cpu_external_idle_w1_r8/raw/profile_1_per_gpu/gpu0_0.log",
+      "completion_model": {
+        "amortized_unit_s": 0.033752002582378406,
+        "base_unit_s": 0.03239075746387243,
+        "checkpoint_observed_s": 0.11749957618303597,
+        "child_returncode": 0,
+        "completion_model_ready": true,
+        "completion_unit_s": 0.033752002582378406,
+        "counter_offset": 0,
+        "finalization_after_last_progress_s": 0.059785651974380016,
+        "first_progress_unit": 2,
+        "interval_sample_count": 79,
+        "last_progress_unit": 160,
+        "loop_observed_units": 158,
+        "loop_wall_s": 5.332816408015788,
+        "model_abs_error_s": 0.0,
+        "model_relative_error": 0.0,
+        "natural_exit": true,
+        "periodic_extra_s": 0.21507672872394323,
+        "phase_durations_s": {
+          "checkpoint": [
+            0.029471438145264983,
+            0.0268744679633528,
+            0.028167719021439552,
+            0.032985951052978635
+          ],
+          "final_save": [
+            0.029468833934515715
+          ],
+          "initialization": [
+            0.0001970559824258089
+          ],
+          "outer_loop": [
+            5.441043358063325
+          ]
+        },
+        "predicted_total_s": 5.585791211109608,
+        "progress_observation_count": 80,
+        "readiness_reason": "ready",
+        "save_observed_s": 0.029468833934515715,
+        "schema_version": 1,
+        "startup_overhead_s": 0.125685145954684,
+        "startup_to_first_progress_s": 0.1931891511194408,
+        "stopped_on_stable": false,
+        "terminal_overhead_s": 0.059785651974380016,
+        "total_units": 160,
+        "total_wall_s": 5.585791211109608,
+        "unit": "step"
+      },
+      "completion_model_ready": true,
+      "declared_external_load_snapshot": 0.0,
+      "dispatch_preflight": {
+        "dispatch_external_cpu_fraction": 0.0,
+        "dispatch_external_cpu_fraction_p95": 0.0,
+        "dispatch_external_cpu_regime": "cpu_external_idle",
+        "dispatch_sample_count": 5,
+        "measurement_protocol": "dispatch_multisample_and_run_window_v3",
+        "node": "node001",
+        "ready": true,
+        "returncode": 0,
+        "stderr_tail": ""
+      },
+      "external_cpu_bucket": "external_c0_2",
+      "external_cpu_core_equiv": 0.09406364096200126,
+      "launched": true,
+      "measurement_valid": true,
+      "node": "node001",
+      "observed_external_load": 0.0,
+      "observed_resource_state": {
+        "external_cpu_core_equiv": 0.09406364096200126,
+        "load1_end": 0.42,
+        "load1_start": 0.4,
+        "load5_end": 3.48,
+        "load5_start": 3.59,
+        "logical_cpus": 192,
+        "measurement_wall_s": 5.442873751977459,
+        "own_cpu_core_equiv": 0.9847738978058511,
+        "own_cpu_s": 5.359999999999999,
+        "schema_version": 1,
+        "system_busy_core_equiv": 1.0788375387678524,
+        "system_busy_fraction": 0.005618945514415898,
+        "workers": 1
+      },
+      "probe_result": {
+        "completion_model_ready_count": 1,
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0
+        ],
+        "node": "node001",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 1,
+        "run_id": "cpu_worker_empty_p1_repair_20260727_r8_r8_node001_cpu_external_idle_w1_r8",
+        "stable_rate_ready_count": 1,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/cpu_worker_empty_p1_repair_20260727_r8_r8_node001_cpu_external_idle_w1_r8/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "replicate": 8,
+      "resource_state": "empty",
+      "resource_telemetry_ready": true,
+      "run_id": "cpu_worker_empty_p1_repair_20260727_r8_r8_node001_cpu_external_idle_w1_r8",
+      "status": "READY",
+      "steps": 160,
+      "storage_class": "shared_home",
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/cpu_worker_empty_p1_repair_20260727_r8_r8_node001_cpu_external_idle_w1_r8/reports/profile_1_per_gpu_summary.json",
+      "target_regime": "cpu_external_idle",
+      "work_items": 90000,
+      "workers": 1,
+      "workload_key": "cpu_heavy_local_bench",
+      "workload_label": "cpu"
+    }
+  ],
+  "safe_profiles_by_node": {
+    "node001": [
+      1
+    ]
+  },
+  "safety_reserve_cores": 8,
+  "schema_version": 1,
+  "selection_independence": "The plan is fixed from node identity, worker profile, replicate index, and pre-dispatch load state. No completion time, ETA, or service-rate observation is read when assigning later cells.",
+  "status": "PASS",
+  "tag": "cpu_worker_empty_p1_repair_20260727_r8",
+  "target_regimes": {
+    "node001": "cpu_external_idle"
+  }
+}

@@ -1,0 +1,1891 @@
+{
+  "created_at_unix": 1782891050.5807934,
+  "gate": "corner_case_resource_audit",
+  "nodes": [
+    {
+      "node": "jtl110gpu",
+      "parsed": {
+        "availability_class": "cpu_busy_gpu_idle",
+        "cpu_busy": true,
+        "external_busy_process_count": 1,
+        "external_busy_processes": [
+          {
+            "args": "coredns",
+            "command": "0.0",
+            "pcpu": 2751746.0,
+            "pid": 65532,
+            "pmem": 0.3,
+            "scheduleurm_probe": false,
+            "user": ""
+          }
+        ],
+        "gpu_busy": false,
+        "gpus": [
+          {
+            "index": 0,
+            "memory_total_mb": 12288,
+            "memory_used_mb": 10,
+            "name": "NVIDIA GeForce RTX 3080 Ti",
+            "utilization_gpu_pct": 0
+          },
+          {
+            "index": 1,
+            "memory_total_mb": 12288,
+            "memory_used_mb": 259,
+            "name": "NVIDIA GeForce RTX 3080 Ti",
+            "utilization_gpu_pct": 0
+          }
+        ],
+        "hostname": "huiwei-Super-Server",
+        "loadavg_15m": 0.32,
+        "loadavg_1m": 0.14,
+        "loadavg_5m": 0.27,
+        "mem_available_kb": 521183800,
+        "mem_total_kb": 527787692,
+        "nproc": 24,
+        "processes": [
+          {
+            "args": "/tmp/scheduleurm-k3s/bin/k3s server",
+            "command": "k3s-server",
+            "pcpu": 13.1,
+            "pid": 31905,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "gpushare-device-plugin -logtostderr --v=5 --memory-unit=GiB",
+            "command": "gpushare-device",
+            "pcpu": 8.1,
+            "pid": 2985880,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock",
+            "command": "dockerd",
+            "pcpu": 3.5,
+            "pid": 31381,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/local/bin/etcd --listen-client-urls=http://0.0.0.0:2379 --advertise-client-urls=http://iadeep-etcd.iadeep.svc.cluster.local:2379",
+            "command": "etcd",
+            "pcpu": 1.0,
+            "pid": 2750936,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/u48:1-p]",
+            "command": "kworker/u48:1-p",
+            "pcpu": 0.7,
+            "pid": 3074652,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "gpushare-sche-extender",
+            "command": "gpushare-sche-e",
+            "pcpu": 0.6,
+            "pid": 2750630,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/u48:0-e]",
+            "command": "kworker/u48:0-e",
+            "pcpu": 0.5,
+            "pid": 3083956,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/bin/containerd",
+            "command": "containerd",
+            "pcpu": 0.4,
+            "pid": 8529,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "kube-scheduler --config=/etc/kubernetes/scheduler-config.yaml --v=3 --secure-port=10269",
+            "command": "kube-scheduler",
+            "pcpu": 0.4,
+            "pid": 2750935,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/home/huiwei/frpembed/frpc -c /home/huiwei/frpembed/frpc.toml",
+            "command": "frpc",
+            "pcpu": 0.3,
+            "pid": 7544,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "coredns",
+            "command": "0.0",
+            "pcpu": 2751746.0,
+            "pid": 65532,
+            "pmem": 0.3,
+            "scheduleurm_probe": false,
+            "user": ""
+          },
+          {
+            "args": "[kworker/u48:2-e]",
+            "command": "kworker/u48:2-e",
+            "pcpu": 0.3,
+            "pid": 3077889,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[irq/191-nvidia]",
+            "command": "irq/191-nvidia",
+            "pcpu": 0.2,
+            "pid": 1379,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[irq/192-nvidia]",
+            "command": "irq/192-nvidia",
+            "pcpu": 0.2,
+            "pid": 1430,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kswapd0]",
+            "command": "kswapd0",
+            "pcpu": 0.1,
+            "pid": 244,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[nvidia-modeset/]",
+            "command": "nvidia-modeset/",
+            "pcpu": 0.1,
+            "pid": 793,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/bin/gnome-shell",
+            "command": "gnome-shell",
+            "pcpu": 0.1,
+            "pid": 1502,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "gdm"
+          },
+          {
+            "args": "/usr/lib/gnome-settings-daemon/gsd-color",
+            "command": "gsd-color",
+            "pcpu": 0.1,
+            "pid": 1588,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "gdm"
+          },
+          {
+            "args": "/usr/bin/gnome-shell",
+            "command": "gnome-shell",
+            "pcpu": 0.1,
+            "pid": 32417,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "erzhu419"
+          },
+          {
+            "args": "/usr/lib/gnome-settings-daemon/gsd-color",
+            "command": "gsd-color",
+            "pcpu": 0.1,
+            "pid": 32627,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "erzhu419"
+          },
+          {
+            "args": "/usr/bin/containerd-shim-runc-v2 -namespace moby -id 01e0b409ad516ed0272f09571ad337fb069ad7e99ac6f660f2a1c936e305d474 -address /run/containerd/containerd.sock",
+            "command": "containerd-shim",
+            "pcpu": 0.1,
+            "pid": 2985852,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "sshd: erzhu419@notty",
+            "command": "sshd",
+            "pcpu": 0.1,
+            "pid": 2991603,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "erzhu419"
+          },
+          {
+            "args": "/sbin/init splash",
+            "command": "systemd",
+            "pcpu": 0.0,
+            "pid": 1,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kthreadd]",
+            "command": "kthreadd",
+            "pcpu": 0.0,
+            "pid": 2,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[rcu_gp]",
+            "command": "rcu_gp",
+            "pcpu": 0.0,
+            "pid": 3,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          }
+        ],
+        "safe_for_cpu_probe": false,
+        "safe_for_gpu_only_probe": true,
+        "safe_for_hybrid_probe": false
+      },
+      "raw_stderr": "",
+      "raw_stdout": "huiwei-Super-Server\nNPROC=24\nLOADAVG=0.14 0.27 0.32\nMemTotal:527787692\nMemAvailable:521183800\n0, NVIDIA GeForce RTX 3080 Ti, 10, 12288, 0\n1, NVIDIA GeForce RTX 3080 Ti, 259, 12288, 0\n__SCHEDULEURM_PROCESS_SNAPSHOT__\nroot       31905 13.1  0.0 k3s-server      /tmp/scheduleurm-k3s/bin/k3s server\nroot     2985880  8.1  0.0 gpushare-device gpushare-device-plugin -logtostderr --v=5 --memory-unit=GiB\nroot       31381  3.5  0.0 dockerd         /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock\nroot     2750936  1.0  0.0 etcd            /usr/local/bin/etcd --listen-client-urls=http://0.0.0.0:2379 --advertise-client-urls=http://iadeep-etcd.iadeep.svc.cluster.local:2379\nroot     3074652  0.7  0.0 kworker/u48:1-p [kworker/u48:1-p]\nroot     2750630  0.6  0.0 gpushare-sche-e gpushare-sche-extender\nroot     3083956  0.5  0.0 kworker/u48:0-e [kworker/u48:0-e]\nroot        8529  0.4  0.0 containerd      /usr/bin/containerd\nroot     2750935  0.4  0.0 kube-scheduler  kube-scheduler --config=/etc/kubernetes/scheduler-config.yaml --v=3 --secure-port=10269\nroot        7544  0.3  0.0 frpc            /home/huiwei/frpembed/frpc -c /home/huiwei/frpembed/frpc.toml\n65532    2751746  0.3  0.0 coredns         /coredns -conf /etc/coredns/Corefile\nroot     3077889  0.3  0.0 kworker/u48:2-e [kworker/u48:2-e]\nroot        1379  0.2  0.0 irq/191-nvidia  [irq/191-nvidia]\nroot        1430  0.2  0.0 irq/192-nvidia  [irq/192-nvidia]\nroot         244  0.1  0.0 kswapd0         [kswapd0]\nroot         793  0.1  0.0 nvidia-modeset/ [nvidia-modeset/]\ngdm         1502  0.1  0.0 gnome-shell     /usr/bin/gnome-shell\ngdm         1588  0.1  0.0 gsd-color       /usr/lib/gnome-settings-daemon/gsd-color\nerzhu419   32417  0.1  0.0 gnome-shell     /usr/bin/gnome-shell\nerzhu419   32627  0.1  0.0 gsd-color       /usr/lib/gnome-settings-daemon/gsd-color\nroot     2985852  0.1  0.0 containerd-shim /usr/bin/containerd-shim-runc-v2 -namespace moby -id 01e0b409ad516ed0272f09571ad337fb069ad7e99ac6f660f2a1c936e305d474 -address /run/containerd/containerd.sock\nerzhu419 2991603  0.1  0.0 sshd            sshd: erzhu419@notty\nroot           1  0.0  0.0 systemd         /sbin/init splash\nroot           2  0.0  0.0 kthreadd        [kthreadd]\nroot           3  0.0  0.0 rcu_gp          [rcu_gp]\n",
+      "reachable": true,
+      "returncode": 0
+    },
+    {
+      "node": "jtl110gpu2",
+      "parsed": {
+        "availability_class": "clean_idle",
+        "cpu_busy": false,
+        "external_busy_process_count": 0,
+        "external_busy_processes": [],
+        "gpu_busy": false,
+        "gpus": [
+          {
+            "index": 0,
+            "memory_total_mb": 12288,
+            "memory_used_mb": 152,
+            "name": "NVIDIA GeForce RTX 3080 Ti",
+            "utilization_gpu_pct": 0
+          },
+          {
+            "index": 1,
+            "memory_total_mb": 12288,
+            "memory_used_mb": 10,
+            "name": "NVIDIA GeForce RTX 3080 Ti",
+            "utilization_gpu_pct": 0
+          }
+        ],
+        "hostname": "erzhu419-Super-Server",
+        "loadavg_15m": 0.24,
+        "loadavg_1m": 0.27,
+        "loadavg_5m": 0.23,
+        "mem_available_kb": 520843080,
+        "mem_total_kb": 527766788,
+        "nproc": 24,
+        "processes": [
+          {
+            "args": "/snap/snapd/current/usr/bin/snap run --timer=00:00-24:00/8 firmware-updater.firmware-notifier",
+            "command": "snap",
+            "pcpu": 7.2,
+            "pid": 3737011,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "erzhu419"
+          },
+          {
+            "args": "/home/erzhu419/frpembed/frpc -c /home/erzhu419/frpembed/frpc.toml",
+            "command": "frpc",
+            "pcpu": 0.8,
+            "pid": 1016393,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "sshd: erzhu419@notty",
+            "command": "sshd",
+            "pcpu": 0.6,
+            "pid": 3724550,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "erzhu419"
+          },
+          {
+            "args": "phy [mt76-usb-rx phy0]",
+            "command": "mt76-usb-rx",
+            "pcpu": 0.3,
+            "pid": 902,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/bin/gnome-shell",
+            "command": "gnome-shell",
+            "pcpu": 0.3,
+            "pid": 2317,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "erzhu419"
+          },
+          {
+            "args": "[kworker/u96:3-mt76]",
+            "command": "kworker/u96:3-m",
+            "pcpu": 0.2,
+            "pid": 3736722,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "phy0    [mt76-tx phy0]",
+            "command": "mt76-tx",
+            "pcpu": 0.2,
+            "pid": 1127,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/u96:0-phy0]",
+            "command": "kworker/u96:0-p",
+            "pcpu": 0.1,
+            "pid": 3707047,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/u96:5-flush-259:0]",
+            "command": "kworker/u96:5-f",
+            "pcpu": 0.1,
+            "pid": 3725211,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/u96:2-flush-259:0]",
+            "command": "kworker/u96:2-f",
+            "pcpu": 0.1,
+            "pid": 3662922,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[mt76-usb-status phy0]",
+            "command": "mt76-usb-status",
+            "pcpu": 0.1,
+            "pid": 903,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/sbin/slurmctld --systemd",
+            "command": "slurmctld",
+            "pcpu": 0.1,
+            "pid": 2964,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "slurm"
+          },
+          {
+            "args": "[kworker/u96:1-mt76]",
+            "command": "kworker/u96:1-m",
+            "pcpu": 0.0,
+            "pid": 3733877,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[irq/207-nvidia]",
+            "command": "irq/207-nvidia",
+            "pcpu": 0.0,
+            "pid": 932,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/lib/systemd/systemd --user",
+            "command": "systemd",
+            "pcpu": 0.0,
+            "pid": 1878,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "erzhu419"
+          },
+          {
+            "args": "[irq/208-nvidia]",
+            "command": "irq/208-nvidia",
+            "pcpu": 0.0,
+            "pid": 1130,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[rcu_preempt]",
+            "command": "rcu_preempt",
+            "pcpu": 0.0,
+            "pid": 15,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/lib/systemd/systemd-oomd",
+            "command": "systemd-oomd",
+            "pcpu": 0.0,
+            "pid": 1523,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "systemd+"
+          },
+          {
+            "args": "/usr/lib/systemd/systemd-journald",
+            "command": "systemd-journal",
+            "pcpu": 0.0,
+            "pid": 528,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "@dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only",
+            "command": "dbus-daemon",
+            "pcpu": 0.0,
+            "pid": 1536,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "message+"
+          },
+          {
+            "args": "[nvidia-modeset/kthread_q]",
+            "command": "nvidia-modeset/",
+            "pcpu": 0.0,
+            "pid": 928,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/sbin/init splash",
+            "command": "systemd",
+            "pcpu": 0.0,
+            "pid": 1,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/snap/snapd/current/usr/lib/snapd/snapd",
+            "command": "snapd",
+            "pcpu": 0.0,
+            "pid": 1552,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/sbin/NetworkManager --no-daemon",
+            "command": "NetworkManager",
+            "pcpu": 0.0,
+            "pid": 1599,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/home/erzhu419/frpembed/frpembed -c /home/erzhu419/frpembed/frpc.toml",
+            "command": "frpembed",
+            "pcpu": 0.0,
+            "pid": 1828,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          }
+        ],
+        "safe_for_cpu_probe": true,
+        "safe_for_gpu_only_probe": true,
+        "safe_for_hybrid_probe": true
+      },
+      "raw_stderr": "",
+      "raw_stdout": "erzhu419-Super-Server\nNPROC=24\nLOADAVG=0.27 0.23 0.24\nMemTotal:527766788\nMemAvailable:520843080\n0, NVIDIA GeForce RTX 3080 Ti, 152, 12288, 0\n1, NVIDIA GeForce RTX 3080 Ti, 10, 12288, 0\n__SCHEDULEURM_PROCESS_SNAPSHOT__\nerzhu419 3737011  7.2  0.0 snap            /snap/snapd/current/usr/bin/snap run --timer=00:00-24:00/8 firmware-updater.firmware-notifier\nroot     1016393  0.8  0.0 frpc            /home/erzhu419/frpembed/frpc -c /home/erzhu419/frpembed/frpc.toml\nerzhu419 3724550  0.6  0.0 sshd            sshd: erzhu419@notty\nroot         902  0.3  0.0 mt76-usb-rx phy [mt76-usb-rx phy0]\nerzhu419    2317  0.3  0.0 gnome-shell     /usr/bin/gnome-shell\nroot     3736722  0.2  0.0 kworker/u96:3-m [kworker/u96:3-mt76]\nroot        1127  0.2  0.0 mt76-tx phy0    [mt76-tx phy0]\nroot     3707047  0.1  0.0 kworker/u96:0-p [kworker/u96:0-phy0]\nroot     3725211  0.1  0.0 kworker/u96:5-f [kworker/u96:5-flush-259:0]\nroot     3662922  0.1  0.0 kworker/u96:2-f [kworker/u96:2-flush-259:0]\nroot         903  0.1  0.0 mt76-usb-status [mt76-usb-status phy0]\nslurm       2964  0.1  0.0 slurmctld       /usr/sbin/slurmctld --systemd\nroot     3733877  0.0  0.0 kworker/u96:1-m [kworker/u96:1-mt76]\nroot         932  0.0  0.0 irq/207-nvidia  [irq/207-nvidia]\nerzhu419    1878  0.0  0.0 systemd         /usr/lib/systemd/systemd --user\nroot        1130  0.0  0.0 irq/208-nvidia  [irq/208-nvidia]\nroot          15  0.0  0.0 rcu_preempt     [rcu_preempt]\nsystemd+    1523  0.0  0.0 systemd-oomd    /usr/lib/systemd/systemd-oomd\nroot         528  0.0  0.0 systemd-journal /usr/lib/systemd/systemd-journald\nmessage+    1536  0.0  0.0 dbus-daemon     @dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only\nroot         928  0.0  0.0 nvidia-modeset/ [nvidia-modeset/kthread_q]\nroot           1  0.0  0.0 systemd         /sbin/init splash\nroot        1552  0.0  0.0 snapd           /snap/snapd/current/usr/lib/snapd/snapd\nroot        1599  0.0  0.0 NetworkManager  /usr/sbin/NetworkManager --no-daemon\nroot        1828  0.0  0.0 frpembed        /home/erzhu419/frpembed/frpembed -c /home/erzhu419/frpembed/frpc.toml\n",
+      "reachable": true,
+      "returncode": 0
+    },
+    {
+      "node": "jtl311linux",
+      "parsed": {
+        "availability_class": "cpu_busy_gpu_idle",
+        "cpu_busy": true,
+        "external_busy_process_count": 1,
+        "external_busy_processes": [
+          {
+            "args": "/home/zhengliang/tanyue/multi_sim_fee_v1/multi_sim_fee/.venv_linux312/bin/python /home/zhengliang/tanyue/multi_sim_fee_v1/multi_sim_fee/D_main_experiment/B_BDRSO_experiment.py",
+            "command": "python",
+            "pcpu": 99.9,
+            "pid": 2000014,
+            "pmem": 1.0,
+            "scheduleurm_probe": false,
+            "user": "zhengli+"
+          }
+        ],
+        "gpu_busy": false,
+        "gpus": [
+          {
+            "index": 0,
+            "memory_total_mb": 8192,
+            "memory_used_mb": 58,
+            "name": "NVIDIA GeForce RTX 2080",
+            "utilization_gpu_pct": 0
+          },
+          {
+            "index": 1,
+            "memory_total_mb": 8192,
+            "memory_used_mb": 6,
+            "name": "NVIDIA GeForce RTX 2080",
+            "utilization_gpu_pct": 0
+          }
+        ],
+        "hostname": "zhengliang-C246-WU4",
+        "loadavg_15m": 1.07,
+        "loadavg_1m": 1.06,
+        "loadavg_5m": 1.15,
+        "mem_available_kb": 22510000,
+        "mem_total_kb": 65736724,
+        "nproc": 16,
+        "processes": [
+          {
+            "args": "/home/zhengliang/tanyue/multi_sim_fee_v1/multi_sim_fee/.venv_linux312/bin/python /home/zhengliang/tanyue/multi_sim_fee_v1/multi_sim_fee/D_main_experiment/B_BDRSO_experiment.py",
+            "command": "python",
+            "pcpu": 99.9,
+            "pid": 2000014,
+            "pmem": 1.0,
+            "scheduleurm_probe": false,
+            "user": "zhengli+"
+          },
+          {
+            "args": "sshd: zhengliang@notty",
+            "command": "sshd",
+            "pcpu": 0.6,
+            "pid": 1992285,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "zhengli+"
+          },
+          {
+            "args": "/home/zhengliang/frpembed/frpc -c /home/zhengliang/frpembed/frpc.toml",
+            "command": "frpc",
+            "pcpu": 0.2,
+            "pid": 2580,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/lib/openssh/sftp-server",
+            "command": "sftp-server",
+            "pcpu": 0.1,
+            "pid": 1992286,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "zhengli+"
+          },
+          {
+            "args": "/usr/lib/xorg/Xorg vt1 -displayfd 3 -auth /run/user/120/gdm/Xauthority -nolisten tcp -background none -noreset -keeptty -novtswitch -verbose 3",
+            "command": "Xorg",
+            "pcpu": 0.0,
+            "pid": 1981,
+            "pmem": 0.1,
+            "scheduleurm_probe": false,
+            "user": "gdm"
+          },
+          {
+            "args": "[nvidia-modeset/kthread_q]",
+            "command": "nvidia-modeset/",
+            "pcpu": 0.0,
+            "pid": 818,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/home/zhengliang/tanyue/multi_sim_fee_v1/multi_sim_fee/.venv_linux312/bin/python /home/zhengliang/tanyue/multi_sim_fee_v1/multi_sim_fee/D_main_experiment/B_BDRSO_experiment.py",
+            "command": "python",
+            "pcpu": 0.0,
+            "pid": 3942409,
+            "pmem": 0.1,
+            "scheduleurm_probe": false,
+            "user": "zhengli+"
+          },
+          {
+            "args": "sshd: erzhu419@notty",
+            "command": "sshd",
+            "pcpu": 0.0,
+            "pid": 1929083,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "erzhu419"
+          },
+          {
+            "args": "/usr/bin/gnome-shell",
+            "command": "gnome-shell",
+            "pcpu": 0.0,
+            "pid": 2166,
+            "pmem": 0.4,
+            "scheduleurm_probe": false,
+            "user": "gdm"
+          },
+          {
+            "args": "[z_wr_iss]",
+            "command": "z_wr_iss",
+            "pcpu": 0.0,
+            "pid": 2004200,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[z_wr_iss]",
+            "command": "z_wr_iss",
+            "pcpu": 0.0,
+            "pid": 2007253,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/libexec/udisks2/udisksd",
+            "command": "udisksd",
+            "pcpu": 0.0,
+            "pid": 1634,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/lib/systemd/systemd-oomd",
+            "command": "systemd-oomd",
+            "pcpu": 0.0,
+            "pid": 59353,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "systemd+"
+          },
+          {
+            "args": "[z_wr_iss]",
+            "command": "z_wr_iss",
+            "pcpu": 0.0,
+            "pid": 2005710,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/snap/snapd/current/usr/lib/snapd/snapd",
+            "command": "snapd",
+            "pcpu": 0.0,
+            "pid": 109386,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/home/zhengliang/frpembed/frpembed -c /home/zhengliang/frpembed/frpc.toml",
+            "command": "frpembed",
+            "pcpu": 0.0,
+            "pid": 1907,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[rcu_preempt]",
+            "command": "rcu_preempt",
+            "pcpu": 0.0,
+            "pid": 15,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[z_wr_iss]",
+            "command": "z_wr_iss",
+            "pcpu": 0.0,
+            "pid": 2006323,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[z_wr_iss]",
+            "command": "z_wr_iss",
+            "pcpu": 0.0,
+            "pid": 2007042,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[z_wr_iss]",
+            "command": "z_wr_iss",
+            "pcpu": 0.0,
+            "pid": 2005850,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kcompactd0]",
+            "command": "kcompactd0",
+            "pcpu": 0.0,
+            "pid": 121,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[txg_sync]",
+            "command": "txg_sync",
+            "pcpu": 0.0,
+            "pid": 1335,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/lib/systemd/systemd --system --deserialize=96 splash",
+            "command": "systemd",
+            "pcpu": 0.0,
+            "pid": 1,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/0:1-events]",
+            "command": "kworker/0:1-eve",
+            "pcpu": 0.0,
+            "pid": 385263,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/9:2-mm_percpu_wq]",
+            "command": "kworker/9:2-mm_",
+            "pcpu": 0.0,
+            "pid": 1760575,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          }
+        ],
+        "safe_for_cpu_probe": false,
+        "safe_for_gpu_only_probe": true,
+        "safe_for_hybrid_probe": false
+      },
+      "raw_stderr": "",
+      "raw_stdout": "zhengliang-C246-WU4\nNPROC=16\nLOADAVG=1.06 1.15 1.07\nMemTotal:65736724\nMemAvailable:22510000\n0, NVIDIA GeForce RTX 2080, 58, 8192, 0\n1, NVIDIA GeForce RTX 2080, 6, 8192, 0\n__SCHEDULEURM_PROCESS_SNAPSHOT__\nzhengli+ 2000014 99.9  1.0 python          /home/zhengliang/tanyue/multi_sim_fee_v1/multi_sim_fee/.venv_linux312/bin/python /home/zhengliang/tanyue/multi_sim_fee_v1/multi_sim_fee/D_main_experiment/B_BDRSO_experiment.py\nzhengli+ 1992285  0.6  0.0 sshd            sshd: zhengliang@notty\nroot        2580  0.2  0.0 frpc            /home/zhengliang/frpembed/frpc -c /home/zhengliang/frpembed/frpc.toml\nzhengli+ 1992286  0.1  0.0 sftp-server     /usr/lib/openssh/sftp-server\ngdm         1981  0.0  0.1 Xorg            /usr/lib/xorg/Xorg vt1 -displayfd 3 -auth /run/user/120/gdm/Xauthority -nolisten tcp -background none -noreset -keeptty -novtswitch -verbose 3\nroot         818  0.0  0.0 nvidia-modeset/ [nvidia-modeset/kthread_q]\nzhengli+ 3942409  0.0  0.1 python          /home/zhengliang/tanyue/multi_sim_fee_v1/multi_sim_fee/.venv_linux312/bin/python /home/zhengliang/tanyue/multi_sim_fee_v1/multi_sim_fee/D_main_experiment/B_BDRSO_experiment.py\nerzhu419 1929083  0.0  0.0 sshd            sshd: erzhu419@notty\ngdm         2166  0.0  0.4 gnome-shell     /usr/bin/gnome-shell\nroot     2004200  0.0  0.0 z_wr_iss        [z_wr_iss]\nroot     2007253  0.0  0.0 z_wr_iss        [z_wr_iss]\nroot        1634  0.0  0.0 udisksd         /usr/libexec/udisks2/udisksd\nsystemd+   59353  0.0  0.0 systemd-oomd    /usr/lib/systemd/systemd-oomd\nroot     2005710  0.0  0.0 z_wr_iss        [z_wr_iss]\nroot      109386  0.0  0.0 snapd           /snap/snapd/current/usr/lib/snapd/snapd\nroot        1907  0.0  0.0 frpembed        /home/zhengliang/frpembed/frpembed -c /home/zhengliang/frpembed/frpc.toml\nroot          15  0.0  0.0 rcu_preempt     [rcu_preempt]\nroot     2006323  0.0  0.0 z_wr_iss        [z_wr_iss]\nroot     2007042  0.0  0.0 z_wr_iss        [z_wr_iss]\nroot     2005850  0.0  0.0 z_wr_iss        [z_wr_iss]\nroot         121  0.0  0.0 kcompactd0      [kcompactd0]\nroot        1335  0.0  0.0 txg_sync        [txg_sync]\nroot           1  0.0  0.0 systemd         /usr/lib/systemd/systemd --system --deserialize=96 splash\nroot      385263  0.0  0.0 kworker/0:1-eve [kworker/0:1-events]\nroot     1760575  0.0  0.0 kworker/9:2-mm_ [kworker/9:2-mm_percpu_wq]\n",
+      "reachable": true,
+      "returncode": 0
+    },
+    {
+      "node": "node007-direct",
+      "parsed": {
+        "availability_class": "gpu_and_cpu_busy",
+        "cpu_busy": true,
+        "external_busy_process_count": 1,
+        "external_busy_processes": [
+          {
+            "args": "/home/zhengliang01/scheduleurm_work/conda_envs/scomp-py310/bin/python scripts/revision/stage1_l5_ablation.py --best-summary figures/revision/stage1_fullscale/stage1_simbench_power_best_summary.csv --summary-prefix stage1_l5_simbench_power --scale-id simbench_power_L1 --layer5-collapse stable --n-modes-max 800 --solver eigsh-sm",
+            "command": "python",
+            "pcpu": 1033.0,
+            "pid": 124745,
+            "pmem": 2.0,
+            "scheduleurm_probe": false,
+            "user": "zhengli+"
+          }
+        ],
+        "gpu_busy": true,
+        "gpus": [
+          {
+            "index": 0,
+            "memory_total_mb": 11264,
+            "memory_used_mb": 1,
+            "name": "NVIDIA GeForce RTX 2080 Ti",
+            "utilization_gpu_pct": 0
+          },
+          {
+            "index": 1,
+            "memory_total_mb": 11264,
+            "memory_used_mb": 1,
+            "name": "NVIDIA GeForce RTX 2080 Ti",
+            "utilization_gpu_pct": 0
+          },
+          {
+            "index": 2,
+            "memory_total_mb": 11264,
+            "memory_used_mb": 749,
+            "name": "NVIDIA GeForce RTX 2080 Ti",
+            "utilization_gpu_pct": 100
+          },
+          {
+            "index": 3,
+            "memory_total_mb": 11264,
+            "memory_used_mb": 1,
+            "name": "NVIDIA GeForce RTX 2080 Ti",
+            "utilization_gpu_pct": 0
+          }
+        ],
+        "hostname": "node007",
+        "loadavg_15m": 14.61,
+        "loadavg_1m": 12.9,
+        "loadavg_5m": 14.66,
+        "mem_available_kb": 232256972,
+        "mem_total_kb": 247242112,
+        "nproc": 64,
+        "processes": [
+          {
+            "args": "/home/zhengliang01/scheduleurm_work/conda_envs/scomp-py310/bin/python scripts/revision/stage1_l5_ablation.py --best-summary figures/revision/stage1_fullscale/stage1_simbench_power_best_summary.csv --summary-prefix stage1_l5_simbench_power --scale-id simbench_power_L1 --layer5-collapse stable --n-modes-max 800 --solver eigsh-sm",
+            "command": "python",
+            "pcpu": 1033.0,
+            "pid": 124745,
+            "pmem": 2.0,
+            "scheduleurm_probe": false,
+            "user": "zhengli+"
+          },
+          {
+            "args": "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700005 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_2_per_gpu_gpu2_5",
+            "command": "python",
+            "pcpu": 107.0,
+            "pid": 141897,
+            "pmem": 0.5,
+            "scheduleurm_probe": true,
+            "user": "zhengli+"
+          },
+          {
+            "args": "/cm/local/apps/cuda-dcgm/current/bin/nv-hostengine --no-daemon",
+            "command": "nv-hostengine",
+            "pcpu": 0.3,
+            "pid": 17326,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/cm/local/apps/cmd/sbin/cmd -s -n -P /var/run/cmd.pid",
+            "command": "cmd",
+            "pcpu": 0.3,
+            "pid": 17852,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/lib/systemd/systemd",
+            "command": "systemd",
+            "pcpu": 0.1,
+            "pid": 1,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[nvidia-modeset/]",
+            "command": "nvidia-modeset/",
+            "pcpu": 0.1,
+            "pid": 3462,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/bin/dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation",
+            "command": "dbus-daemon",
+            "pcpu": 0.1,
+            "pid": 17283,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "dbus"
+          },
+          {
+            "args": "/usr/sbin/nslcd",
+            "command": "nslcd",
+            "pcpu": 0.1,
+            "pid": 17814,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "nslcd"
+          },
+          {
+            "args": "[kthreadd]",
+            "command": "kthreadd",
+            "pcpu": 0.0,
+            "pid": 2,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/0:0H]",
+            "command": "kworker/0:0H",
+            "pcpu": 0.0,
+            "pid": 4,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[ksoftirqd/0]",
+            "command": "ksoftirqd/0",
+            "pcpu": 0.0,
+            "pid": 6,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[migration/0]",
+            "command": "migration/0",
+            "pcpu": 0.0,
+            "pid": 7,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[rcu_bh]",
+            "command": "rcu_bh",
+            "pcpu": 0.0,
+            "pid": 8,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[rcu_sched]",
+            "command": "rcu_sched",
+            "pcpu": 0.0,
+            "pid": 9,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[lru-add-drain]",
+            "command": "lru-add-drain",
+            "pcpu": 0.0,
+            "pid": 10,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/0]",
+            "command": "watchdog/0",
+            "pcpu": 0.0,
+            "pid": 11,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/1]",
+            "command": "watchdog/1",
+            "pcpu": 0.0,
+            "pid": 12,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[migration/1]",
+            "command": "migration/1",
+            "pcpu": 0.0,
+            "pid": 13,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[ksoftirqd/1]",
+            "command": "ksoftirqd/1",
+            "pcpu": 0.0,
+            "pid": 14,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/1:0H]",
+            "command": "kworker/1:0H",
+            "pcpu": 0.0,
+            "pid": 16,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/2]",
+            "command": "watchdog/2",
+            "pcpu": 0.0,
+            "pid": 18,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[migration/2]",
+            "command": "migration/2",
+            "pcpu": 0.0,
+            "pid": 19,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[ksoftirqd/2]",
+            "command": "ksoftirqd/2",
+            "pcpu": 0.0,
+            "pid": 20,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/2:0H]",
+            "command": "kworker/2:0H",
+            "pcpu": 0.0,
+            "pid": 22,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/3]",
+            "command": "watchdog/3",
+            "pcpu": 0.0,
+            "pid": 23,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          }
+        ],
+        "safe_for_cpu_probe": false,
+        "safe_for_gpu_only_probe": false,
+        "safe_for_hybrid_probe": false
+      },
+      "raw_stderr": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n",
+      "raw_stdout": "node007\nNPROC=64\nLOADAVG=12.90 14.66 14.61\nMemTotal:247242112\nMemAvailable:232256972\n0, NVIDIA GeForce RTX 2080 Ti, 1, 11264, 0\n1, NVIDIA GeForce RTX 2080 Ti, 1, 11264, 0\n2, NVIDIA GeForce RTX 2080 Ti, 749, 11264, 100\n3, NVIDIA GeForce RTX 2080 Ti, 1, 11264, 0\n__SCHEDULEURM_PROCESS_SNAPSHOT__\nzhengli+ 124745 1033  2.0 python          /home/zhengliang01/scheduleurm_work/conda_envs/scomp-py310/bin/python scripts/revision/stage1_l5_ablation.py --best-summary figures/revision/stage1_fullscale/stage1_simbench_power_best_summary.csv --summary-prefix stage1_l5_simbench_power --scale-id simbench_power_L1 --layer5-collapse stable --n-modes-max 800 --solver eigsh-sm\nzhengli+ 141897  107  0.5 python          /home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700005 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_2_per_gpu_gpu2_5\nroot      17326  0.3  0.0 nv-hostengine   /cm/local/apps/cuda-dcgm/current/bin/nv-hostengine --no-daemon\nroot      17852  0.3  0.0 cmd             /cm/local/apps/cmd/sbin/cmd -s -n -P /var/run/cmd.pid\nroot          1  0.1  0.0 systemd         /usr/lib/systemd/systemd\nroot       3462  0.1  0.0 nvidia-modeset/ [nvidia-modeset/]\ndbus      17283  0.1  0.0 dbus-daemon     /usr/bin/dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation\nnslcd     17814  0.1  0.0 nslcd           /usr/sbin/nslcd\nroot          2  0.0  0.0 kthreadd        [kthreadd]\nroot          4  0.0  0.0 kworker/0:0H    [kworker/0:0H]\nroot          6  0.0  0.0 ksoftirqd/0     [ksoftirqd/0]\nroot          7  0.0  0.0 migration/0     [migration/0]\nroot          8  0.0  0.0 rcu_bh          [rcu_bh]\nroot          9  0.0  0.0 rcu_sched       [rcu_sched]\nroot         10  0.0  0.0 lru-add-drain   [lru-add-drain]\nroot         11  0.0  0.0 watchdog/0      [watchdog/0]\nroot         12  0.0  0.0 watchdog/1      [watchdog/1]\nroot         13  0.0  0.0 migration/1     [migration/1]\nroot         14  0.0  0.0 ksoftirqd/1     [ksoftirqd/1]\nroot         16  0.0  0.0 kworker/1:0H    [kworker/1:0H]\nroot         18  0.0  0.0 watchdog/2      [watchdog/2]\nroot         19  0.0  0.0 migration/2     [migration/2]\nroot         20  0.0  0.0 ksoftirqd/2     [ksoftirqd/2]\nroot         22  0.0  0.0 kworker/2:0H    [kworker/2:0H]\nroot         23  0.0  0.0 watchdog/3      [watchdog/3]\n",
+      "reachable": true,
+      "returncode": 0
+    },
+    {
+      "node": "jtl110cpu",
+      "parsed": {},
+      "raw_stderr": "RuntimeError('run_on() bash path called for Windows node jtl110cpu; use _run_windows_ps')",
+      "raw_stdout": "",
+      "reachable": false,
+      "returncode": null
+    },
+    {
+      "node": "jtl110cpu2",
+      "parsed": {},
+      "raw_stderr": "RuntimeError('run_on() bash path called for Windows node jtl110cpu2; use _run_windows_ps')",
+      "raw_stdout": "",
+      "reachable": false,
+      "returncode": null
+    },
+    {
+      "node": "node003",
+      "parsed": {
+        "availability_class": "clean_idle",
+        "cpu_busy": false,
+        "external_busy_process_count": 0,
+        "external_busy_processes": [],
+        "gpu_busy": false,
+        "gpus": [],
+        "hostname": "node003",
+        "loadavg_15m": 0.05,
+        "loadavg_1m": 0.01,
+        "loadavg_5m": 0.02,
+        "mem_available_kb": 187712520,
+        "mem_total_kb": 197420912,
+        "nproc": 192,
+        "processes": [
+          {
+            "args": "sshd: root@notty",
+            "command": "sshd",
+            "pcpu": 3.0,
+            "pid": 306315,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "su zhengliang01 -s /bin/bash -c bash -c 'hostname; echo NPROC=$(nproc); awk '\"'\"'{printf \"LOADAVG=%s %s %s\\n\", $1, $2, $3}'\"'\"' /proc/loadavg; awk '\"'\"'/MemTotal|MemAvailable/ {print $1$2}'\"'\"' /proc/meminfo; if command -v nvidia-smi >/dev/null 2>&1; then nvidia-smi --query-gpu=index,name,memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits; elif [ -x /cm/local/apps/cuda-driver/libs/535.261.03/bin/nvidia-smi ]; then /cm/local/apps/cuda-driver/libs/535.261.03/bin/nvidia-smi --query-gpu=index,name,memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits; fi; echo __SCHEDULEURM_PROCESS_SNAPSHOT__; ps -eo user=,pid=,pcpu=,pmem=,comm=,args= --sort=-pcpu | head -25'",
+            "command": "su",
+            "pcpu": 3.0,
+            "pid": 306317,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "bash -c hostname; echo NPROC=$(nproc); awk '{printf \"LOADAVG=%s %s %s\\n\", $1, $2, $3}' /proc/loadavg; awk '/MemTotal|MemAvailable/ {print $1$2}' /proc/meminfo; if command -v nvidia-smi >/dev/null 2>&1; then nvidia-smi --query-gpu=index,name,memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits; elif [ -x /cm/local/apps/cuda-driver/libs/535.261.03/bin/nvidia-smi ]; then /cm/local/apps/cuda-driver/libs/535.261.03/bin/nvidia-smi --query-gpu=index,name,memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits; fi; echo __SCHEDULEURM_PROCESS_SNAPSHOT__; ps -eo user=,pid=,pcpu=,pmem=,comm=,args= --sort=-pcpu | head -25",
+            "command": "bash",
+            "pcpu": 2.0,
+            "pid": 306336,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "zhengli+"
+          },
+          {
+            "args": "/cm/local/apps/cmd/sbin/cmd -s -n -P /var/run/cmd.pid",
+            "command": "cmd",
+            "pcpu": 0.4,
+            "pid": 8382,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/lib/systemd/systemd",
+            "command": "systemd",
+            "pcpu": 0.1,
+            "pid": 1,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[rcu_sched]",
+            "command": "rcu_sched",
+            "pcpu": 0.1,
+            "pid": 9,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/sbin/irqbalance --foreground",
+            "command": "irqbalance",
+            "pcpu": 0.1,
+            "pid": 7824,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kthreadd]",
+            "command": "kthreadd",
+            "pcpu": 0.0,
+            "pid": 2,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/0:0H]",
+            "command": "kworker/0:0H",
+            "pcpu": 0.0,
+            "pid": 4,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[ksoftirqd/0]",
+            "command": "ksoftirqd/0",
+            "pcpu": 0.0,
+            "pid": 6,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[migration/0]",
+            "command": "migration/0",
+            "pcpu": 0.0,
+            "pid": 7,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[rcu_bh]",
+            "command": "rcu_bh",
+            "pcpu": 0.0,
+            "pid": 8,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[lru-add-drain]",
+            "command": "lru-add-drain",
+            "pcpu": 0.0,
+            "pid": 10,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/0]",
+            "command": "watchdog/0",
+            "pcpu": 0.0,
+            "pid": 11,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/1]",
+            "command": "watchdog/1",
+            "pcpu": 0.0,
+            "pid": 12,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[migration/1]",
+            "command": "migration/1",
+            "pcpu": 0.0,
+            "pid": 13,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[ksoftirqd/1]",
+            "command": "ksoftirqd/1",
+            "pcpu": 0.0,
+            "pid": 14,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/1:0H]",
+            "command": "kworker/1:0H",
+            "pcpu": 0.0,
+            "pid": 16,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/2]",
+            "command": "watchdog/2",
+            "pcpu": 0.0,
+            "pid": 18,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[migration/2]",
+            "command": "migration/2",
+            "pcpu": 0.0,
+            "pid": 19,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[ksoftirqd/2]",
+            "command": "ksoftirqd/2",
+            "pcpu": 0.0,
+            "pid": 20,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/3]",
+            "command": "watchdog/3",
+            "pcpu": 0.0,
+            "pid": 23,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[migration/3]",
+            "command": "migration/3",
+            "pcpu": 0.0,
+            "pid": 24,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[ksoftirqd/3]",
+            "command": "ksoftirqd/3",
+            "pcpu": 0.0,
+            "pid": 25,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/3:0H]",
+            "command": "kworker/3:0H",
+            "pcpu": 0.0,
+            "pid": 27,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          }
+        ],
+        "safe_for_cpu_probe": true,
+        "safe_for_gpu_only_probe": true,
+        "safe_for_hybrid_probe": true
+      },
+      "raw_stderr": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n",
+      "raw_stdout": "node003\nNPROC=192\nLOADAVG=0.01 0.02 0.05\nMemTotal:197420912\nMemAvailable:187712520\n__SCHEDULEURM_PROCESS_SNAPSHOT__\nroot     306315  3.0  0.0 sshd            sshd: root@notty\nroot     306317  3.0  0.0 su              su zhengliang01 -s /bin/bash -c bash -c 'hostname; echo NPROC=$(nproc); awk '\"'\"'{printf \"LOADAVG=%s %s %s\\n\", $1, $2, $3}'\"'\"' /proc/loadavg; awk '\"'\"'/MemTotal|MemAvailable/ {print $1$2}'\"'\"' /proc/meminfo; if command -v nvidia-smi >/dev/null 2>&1; then nvidia-smi --query-gpu=index,name,memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits; elif [ -x /cm/local/apps/cuda-driver/libs/535.261.03/bin/nvidia-smi ]; then /cm/local/apps/cuda-driver/libs/535.261.03/bin/nvidia-smi --query-gpu=index,name,memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits; fi; echo __SCHEDULEURM_PROCESS_SNAPSHOT__; ps -eo user=,pid=,pcpu=,pmem=,comm=,args= --sort=-pcpu | head -25'\nzhengli+ 306336  2.0  0.0 bash            bash -c hostname; echo NPROC=$(nproc); awk '{printf \"LOADAVG=%s %s %s\\n\", $1, $2, $3}' /proc/loadavg; awk '/MemTotal|MemAvailable/ {print $1$2}' /proc/meminfo; if command -v nvidia-smi >/dev/null 2>&1; then nvidia-smi --query-gpu=index,name,memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits; elif [ -x /cm/local/apps/cuda-driver/libs/535.261.03/bin/nvidia-smi ]; then /cm/local/apps/cuda-driver/libs/535.261.03/bin/nvidia-smi --query-gpu=index,name,memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits; fi; echo __SCHEDULEURM_PROCESS_SNAPSHOT__; ps -eo user=,pid=,pcpu=,pmem=,comm=,args= --sort=-pcpu | head -25\nroot       8382  0.4  0.0 cmd             /cm/local/apps/cmd/sbin/cmd -s -n -P /var/run/cmd.pid\nroot          1  0.1  0.0 systemd         /usr/lib/systemd/systemd\nroot          9  0.1  0.0 rcu_sched       [rcu_sched]\nroot       7824  0.1  0.0 irqbalance      /usr/sbin/irqbalance --foreground\nroot          2  0.0  0.0 kthreadd        [kthreadd]\nroot          4  0.0  0.0 kworker/0:0H    [kworker/0:0H]\nroot          6  0.0  0.0 ksoftirqd/0     [ksoftirqd/0]\nroot          7  0.0  0.0 migration/0     [migration/0]\nroot          8  0.0  0.0 rcu_bh          [rcu_bh]\nroot         10  0.0  0.0 lru-add-drain   [lru-add-drain]\nroot         11  0.0  0.0 watchdog/0      [watchdog/0]\nroot         12  0.0  0.0 watchdog/1      [watchdog/1]\nroot         13  0.0  0.0 migration/1     [migration/1]\nroot         14  0.0  0.0 ksoftirqd/1     [ksoftirqd/1]\nroot         16  0.0  0.0 kworker/1:0H    [kworker/1:0H]\nroot         18  0.0  0.0 watchdog/2      [watchdog/2]\nroot         19  0.0  0.0 migration/2     [migration/2]\nroot         20  0.0  0.0 ksoftirqd/2     [ksoftirqd/2]\nroot         23  0.0  0.0 watchdog/3      [watchdog/3]\nroot         24  0.0  0.0 migration/3     [migration/3]\nroot         25  0.0  0.0 ksoftirqd/3     [ksoftirqd/3]\nroot         27  0.0  0.0 kworker/3:0H    [kworker/3:0H]\n",
+      "reachable": true,
+      "returncode": 0
+    },
+    {
+      "node": "node005",
+      "parsed": {
+        "availability_class": "clean_idle",
+        "cpu_busy": false,
+        "external_busy_process_count": 0,
+        "external_busy_processes": [],
+        "gpu_busy": false,
+        "gpus": [],
+        "hostname": "node005",
+        "loadavg_15m": 0.06,
+        "loadavg_1m": 0.19,
+        "loadavg_5m": 0.08,
+        "mem_available_kb": 187507592,
+        "mem_total_kb": 197420908,
+        "nproc": 192,
+        "processes": [
+          {
+            "args": "sshd: root@notty",
+            "command": "sshd",
+            "pcpu": 3.0,
+            "pid": 370893,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/cm/local/apps/cmd/sbin/cmd -s -n -P /var/run/cmd.pid",
+            "command": "cmd",
+            "pcpu": 0.5,
+            "pid": 8401,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[rcu_sched]",
+            "command": "rcu_sched",
+            "pcpu": 0.2,
+            "pid": 9,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/lib/systemd/systemd",
+            "command": "systemd",
+            "pcpu": 0.1,
+            "pid": 1,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/sbin/irqbalance --foreground",
+            "command": "irqbalance",
+            "pcpu": 0.1,
+            "pid": 7817,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kthreadd]",
+            "command": "kthreadd",
+            "pcpu": 0.0,
+            "pid": 2,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/0:0H]",
+            "command": "kworker/0:0H",
+            "pcpu": 0.0,
+            "pid": 4,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[ksoftirqd/0]",
+            "command": "ksoftirqd/0",
+            "pcpu": 0.0,
+            "pid": 6,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[migration/0]",
+            "command": "migration/0",
+            "pcpu": 0.0,
+            "pid": 7,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[rcu_bh]",
+            "command": "rcu_bh",
+            "pcpu": 0.0,
+            "pid": 8,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[lru-add-drain]",
+            "command": "lru-add-drain",
+            "pcpu": 0.0,
+            "pid": 10,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/0]",
+            "command": "watchdog/0",
+            "pcpu": 0.0,
+            "pid": 11,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/1]",
+            "command": "watchdog/1",
+            "pcpu": 0.0,
+            "pid": 12,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[migration/1]",
+            "command": "migration/1",
+            "pcpu": 0.0,
+            "pid": 13,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[ksoftirqd/1]",
+            "command": "ksoftirqd/1",
+            "pcpu": 0.0,
+            "pid": 14,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/1:0H]",
+            "command": "kworker/1:0H",
+            "pcpu": 0.0,
+            "pid": 16,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/2]",
+            "command": "watchdog/2",
+            "pcpu": 0.0,
+            "pid": 18,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[migration/2]",
+            "command": "migration/2",
+            "pcpu": 0.0,
+            "pid": 19,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[ksoftirqd/2]",
+            "command": "ksoftirqd/2",
+            "pcpu": 0.0,
+            "pid": 20,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/2:0H]",
+            "command": "kworker/2:0H",
+            "pcpu": 0.0,
+            "pid": 22,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/3]",
+            "command": "watchdog/3",
+            "pcpu": 0.0,
+            "pid": 23,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[migration/3]",
+            "command": "migration/3",
+            "pcpu": 0.0,
+            "pid": 24,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[ksoftirqd/3]",
+            "command": "ksoftirqd/3",
+            "pcpu": 0.0,
+            "pid": 25,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/3:0H]",
+            "command": "kworker/3:0H",
+            "pcpu": 0.0,
+            "pid": 27,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/4]",
+            "command": "watchdog/4",
+            "pcpu": 0.0,
+            "pid": 28,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          }
+        ],
+        "safe_for_cpu_probe": true,
+        "safe_for_gpu_only_probe": true,
+        "safe_for_hybrid_probe": true
+      },
+      "raw_stderr": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n",
+      "raw_stdout": "node005\nNPROC=192\nLOADAVG=0.19 0.08 0.06\nMemTotal:197420908\nMemAvailable:187507592\n__SCHEDULEURM_PROCESS_SNAPSHOT__\nroot     370893  3.0  0.0 sshd            sshd: root@notty\nroot       8401  0.5  0.0 cmd             /cm/local/apps/cmd/sbin/cmd -s -n -P /var/run/cmd.pid\nroot          9  0.2  0.0 rcu_sched       [rcu_sched]\nroot          1  0.1  0.0 systemd         /usr/lib/systemd/systemd\nroot       7817  0.1  0.0 irqbalance      /usr/sbin/irqbalance --foreground\nroot          2  0.0  0.0 kthreadd        [kthreadd]\nroot          4  0.0  0.0 kworker/0:0H    [kworker/0:0H]\nroot          6  0.0  0.0 ksoftirqd/0     [ksoftirqd/0]\nroot          7  0.0  0.0 migration/0     [migration/0]\nroot          8  0.0  0.0 rcu_bh          [rcu_bh]\nroot         10  0.0  0.0 lru-add-drain   [lru-add-drain]\nroot         11  0.0  0.0 watchdog/0      [watchdog/0]\nroot         12  0.0  0.0 watchdog/1      [watchdog/1]\nroot         13  0.0  0.0 migration/1     [migration/1]\nroot         14  0.0  0.0 ksoftirqd/1     [ksoftirqd/1]\nroot         16  0.0  0.0 kworker/1:0H    [kworker/1:0H]\nroot         18  0.0  0.0 watchdog/2      [watchdog/2]\nroot         19  0.0  0.0 migration/2     [migration/2]\nroot         20  0.0  0.0 ksoftirqd/2     [ksoftirqd/2]\nroot         22  0.0  0.0 kworker/2:0H    [kworker/2:0H]\nroot         23  0.0  0.0 watchdog/3      [watchdog/3]\nroot         24  0.0  0.0 migration/3     [migration/3]\nroot         25  0.0  0.0 ksoftirqd/3     [ksoftirqd/3]\nroot         27  0.0  0.0 kworker/3:0H    [kworker/3:0H]\nroot         28  0.0  0.0 watchdog/4      [watchdog/4]\n",
+      "reachable": true,
+      "returncode": 0
+    },
+    {
+      "node": "node006",
+      "parsed": {
+        "availability_class": "clean_idle",
+        "cpu_busy": false,
+        "external_busy_process_count": 0,
+        "external_busy_processes": [],
+        "gpu_busy": false,
+        "gpus": [],
+        "hostname": "node006",
+        "loadavg_15m": 0.07,
+        "loadavg_1m": 0.07,
+        "loadavg_5m": 0.03,
+        "mem_available_kb": 185742324,
+        "mem_total_kb": 197420912,
+        "nproc": 192,
+        "processes": [
+          {
+            "args": "sshd: root@notty",
+            "command": "sshd",
+            "pcpu": 3.0,
+            "pid": 566932,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/cm/local/apps/cmd/sbin/cmd -s -n -P /var/run/cmd.pid",
+            "command": "cmd",
+            "pcpu": 0.5,
+            "pid": 8363,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[rcu_sched]",
+            "command": "rcu_sched",
+            "pcpu": 0.3,
+            "pid": 9,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/u1281:2]",
+            "command": "kworker/u1281:2",
+            "pcpu": 0.3,
+            "pid": 464748,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/lib/systemd/systemd",
+            "command": "systemd",
+            "pcpu": 0.1,
+            "pid": 1,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/sbin/irqbalance --foreground",
+            "command": "irqbalance",
+            "pcpu": 0.1,
+            "pid": 7819,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/3:0H]",
+            "command": "kworker/3:0H",
+            "pcpu": 0.1,
+            "pid": 501638,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kthreadd]",
+            "command": "kthreadd",
+            "pcpu": 0.0,
+            "pid": 2,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/0:0H]",
+            "command": "kworker/0:0H",
+            "pcpu": 0.0,
+            "pid": 4,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[ksoftirqd/0]",
+            "command": "ksoftirqd/0",
+            "pcpu": 0.0,
+            "pid": 6,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[migration/0]",
+            "command": "migration/0",
+            "pcpu": 0.0,
+            "pid": 7,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[rcu_bh]",
+            "command": "rcu_bh",
+            "pcpu": 0.0,
+            "pid": 8,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[lru-add-drain]",
+            "command": "lru-add-drain",
+            "pcpu": 0.0,
+            "pid": 10,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/0]",
+            "command": "watchdog/0",
+            "pcpu": 0.0,
+            "pid": 11,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/1]",
+            "command": "watchdog/1",
+            "pcpu": 0.0,
+            "pid": 12,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[migration/1]",
+            "command": "migration/1",
+            "pcpu": 0.0,
+            "pid": 13,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[ksoftirqd/1]",
+            "command": "ksoftirqd/1",
+            "pcpu": 0.0,
+            "pid": 14,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/1:0H]",
+            "command": "kworker/1:0H",
+            "pcpu": 0.0,
+            "pid": 16,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/2]",
+            "command": "watchdog/2",
+            "pcpu": 0.0,
+            "pid": 18,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[migration/2]",
+            "command": "migration/2",
+            "pcpu": 0.0,
+            "pid": 19,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[ksoftirqd/2]",
+            "command": "ksoftirqd/2",
+            "pcpu": 0.0,
+            "pid": 20,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/2:0H]",
+            "command": "kworker/2:0H",
+            "pcpu": 0.0,
+            "pid": 22,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/3]",
+            "command": "watchdog/3",
+            "pcpu": 0.0,
+            "pid": 23,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[migration/3]",
+            "command": "migration/3",
+            "pcpu": 0.0,
+            "pid": 24,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[ksoftirqd/3]",
+            "command": "ksoftirqd/3",
+            "pcpu": 0.0,
+            "pid": 25,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          }
+        ],
+        "safe_for_cpu_probe": true,
+        "safe_for_gpu_only_probe": true,
+        "safe_for_hybrid_probe": true
+      },
+      "raw_stderr": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n",
+      "raw_stdout": "node006\nNPROC=192\nLOADAVG=0.07 0.03 0.07\nMemTotal:197420912\nMemAvailable:185742324\n__SCHEDULEURM_PROCESS_SNAPSHOT__\nroot     566932  3.0  0.0 sshd            sshd: root@notty\nroot       8363  0.5  0.0 cmd             /cm/local/apps/cmd/sbin/cmd -s -n -P /var/run/cmd.pid\nroot          9  0.3  0.0 rcu_sched       [rcu_sched]\nroot     464748  0.3  0.0 kworker/u1281:2 [kworker/u1281:2]\nroot          1  0.1  0.0 systemd         /usr/lib/systemd/systemd\nroot       7819  0.1  0.0 irqbalance      /usr/sbin/irqbalance --foreground\nroot     501638  0.1  0.0 kworker/3:0H    [kworker/3:0H]\nroot          2  0.0  0.0 kthreadd        [kthreadd]\nroot          4  0.0  0.0 kworker/0:0H    [kworker/0:0H]\nroot          6  0.0  0.0 ksoftirqd/0     [ksoftirqd/0]\nroot          7  0.0  0.0 migration/0     [migration/0]\nroot          8  0.0  0.0 rcu_bh          [rcu_bh]\nroot         10  0.0  0.0 lru-add-drain   [lru-add-drain]\nroot         11  0.0  0.0 watchdog/0      [watchdog/0]\nroot         12  0.0  0.0 watchdog/1      [watchdog/1]\nroot         13  0.0  0.0 migration/1     [migration/1]\nroot         14  0.0  0.0 ksoftirqd/1     [ksoftirqd/1]\nroot         16  0.0  0.0 kworker/1:0H    [kworker/1:0H]\nroot         18  0.0  0.0 watchdog/2      [watchdog/2]\nroot         19  0.0  0.0 migration/2     [migration/2]\nroot         20  0.0  0.0 ksoftirqd/2     [ksoftirqd/2]\nroot         22  0.0  0.0 kworker/2:0H    [kworker/2:0H]\nroot         23  0.0  0.0 watchdog/3      [watchdog/3]\nroot         24  0.0  0.0 migration/3     [migration/3]\nroot         25  0.0  0.0 ksoftirqd/3     [ksoftirqd/3]\n",
+      "reachable": true,
+      "returncode": 0
+    }
+  ],
+  "pass": false
+}

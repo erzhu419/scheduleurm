@@ -1,0 +1,50 @@
+{
+  "admitted_count": 0,
+  "admitted_rows": [],
+  "allow_launch": false,
+  "gate": "full_factorial_cpu_eta_probe_runner",
+  "launched_count": 0,
+  "pass": true,
+  "resource_state": "empty",
+  "rows": [
+    {
+      "config": {
+        "log_interval": 2,
+        "mode": "light",
+        "steps": 160,
+        "timeout_s": 600,
+        "use_parallel": false,
+        "work_items": 8000
+      },
+      "eta_source_required": "tqdm/progress",
+      "family": "light_control",
+      "hardware_group": "gpu_rtx2080_8gb_dual_cpu_fast",
+      "launch_ready": true,
+      "launched": false,
+      "legacy_scheduler_limits_bypassed": true,
+      "measurement_valid": false,
+      "node": "jtl311linux",
+      "node_bucket": "jtl311linux:gpu_rtx2080_8gb_dual_cpu_fast",
+      "pending_reason": "",
+      "profiles": [
+        1,
+        2
+      ],
+      "resident_mix": "none",
+      "resource_state": "empty",
+      "row_id": "gpu_rtx2080_8gb_dual_cpu_fast|q00_low_cpu_low_gpu|light_control_local|light|empty|none",
+      "run_id": "dry_cpu_runner_light_v2_20260630_jtl311linux_light_control_local_light_empty",
+      "workload_env": "light",
+      "workload_key": "light_control_local"
+    }
+  ],
+  "run_prefix": "dry_cpu_runner_light_v2_20260630",
+  "scope": "Controlled full-factorial CPU ETA probes.  Launches bypass the legacy scheduler dispatch path and accept only task-native progress/tqdm rate samples with a stable tail gate.",
+  "selected_count": 1,
+  "service_cache_snapshot": {
+    "capacity_boundaries": [],
+    "records": []
+  },
+  "status": "CPU_PROBE_RUNNER_MANIFEST",
+  "tier": "T0_core_curve"
+}

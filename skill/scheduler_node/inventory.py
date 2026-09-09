@@ -91,6 +91,7 @@ NODES = {
         "max_tasks_per_gpu": 4,
         "gpu_util_saturation_pct": None,
         "capabilities": ["cpu", "cuda", "torch_cuda", "jax_cuda"],
+        "blocked_gpu_projects": ["BAPR"],
         "cmd_rewrites": BUS_TORCH_CMD_REWRITES,
     },
     "jtl110gpu": {

@@ -1,0 +1,643 @@
+{
+  "algorithm_path": "controlled_theorem_measurement_direct",
+  "allow_launch": true,
+  "campaign_id": "critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803",
+  "capacity_boundary_count": 0,
+  "environment_gate": {
+    "ready": true,
+    "reason": "",
+    "returncode": 0,
+    "stderr_tail": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n",
+    "stdout_tail": "ENV_READY\nRESAC_READY\n"
+  },
+  "gate": "critical_gpu_completion_campaign",
+  "legacy_scheduler_limits_bypassed": true,
+  "measurement_protocol": "critical_gpu_phase_completion_v1",
+  "natural_completion_required": true,
+  "node": "node007",
+  "node_spec": {
+    "bapr_python": "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python",
+    "gpus": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "hardware_class": "NVIDIA_RTX_2080Ti_11GB",
+    "hf_cache_dir": "/home/zhengliang01/scheduleurm_work/model_cache/huggingface",
+    "node": "node007",
+    "node_bucket": "gpu_2080ti_11gb_quad",
+    "output_root": "/tmp/scheduleurm_critical_gpu_completion",
+    "role": "representative",
+    "torch_python": "/home/zhengliang01/scheduleurm_work/venvs/scheduleurm-gpu-eta-py310/bin/python",
+    "workload_pythonpath": "/home/zhengliang01/scheduleurm_work/runtime_patches:/home/zhengliang01/scheduleurm_work/RE-SAC"
+  },
+  "pass": true,
+  "planned_cells": [
+    {
+      "cell_id": "node007_gpu_heavy_jax_matmul_p1_r00",
+      "gpus": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "hardware_class": "NVIDIA_RTX_2080Ti_11GB",
+      "max_iters": 40,
+      "node": "node007",
+      "node_bucket": "gpu_2080ti_11gb_quad",
+      "node_role": "representative",
+      "profile": 1,
+      "profile_axis": "tasks_per_gpu",
+      "quadrant": "q01",
+      "split_role": "smoke_excluded",
+      "timeout_s": 1800,
+      "total_task_count": 4,
+      "wave": 0,
+      "workload_env": "jax_matmul_8192",
+      "workload_key": "gpu_heavy_jax_matmul"
+    }
+  ],
+  "pre_registered_split": {
+    "calibration": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "holdout": 13,
+    "smoke_excluded": 0,
+    "training": [
+      1,
+      2,
+      3
+    ]
+  },
+  "ready_row_count": 1,
+  "real_checkpoint_allocation_required": true,
+  "rows": [
+    {
+      "artifact_audit": {
+        "allocated_file_count": 12,
+        "file_count": 12,
+        "files": [
+          {
+            "allocated_blocks_512": 16384,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1/checkpoints/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu1_1/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu1_1_checkpoint_20.bin",
+            "size_bytes": 8388608
+          },
+          {
+            "allocated_blocks_512": 16384,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1/checkpoints/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu1_1/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu1_1_checkpoint_40.bin",
+            "size_bytes": 8388608
+          },
+          {
+            "allocated_blocks_512": 16384,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1/checkpoints/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu1_1/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu1_1_final_save_40.bin",
+            "size_bytes": 8388608
+          },
+          {
+            "allocated_blocks_512": 16384,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1/checkpoints/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu2_2/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu2_2_checkpoint_20.bin",
+            "size_bytes": 8388608
+          },
+          {
+            "allocated_blocks_512": 16384,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1/checkpoints/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu2_2/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu2_2_checkpoint_40.bin",
+            "size_bytes": 8388608
+          },
+          {
+            "allocated_blocks_512": 16384,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1/checkpoints/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu2_2/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu2_2_final_save_40.bin",
+            "size_bytes": 8388608
+          },
+          {
+            "allocated_blocks_512": 16384,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1/checkpoints/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu0_0/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu0_0_checkpoint_20.bin",
+            "size_bytes": 8388608
+          },
+          {
+            "allocated_blocks_512": 16384,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1/checkpoints/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu0_0/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu0_0_checkpoint_40.bin",
+            "size_bytes": 8388608
+          },
+          {
+            "allocated_blocks_512": 16384,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1/checkpoints/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu0_0/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu0_0_final_save_40.bin",
+            "size_bytes": 8388608
+          },
+          {
+            "allocated_blocks_512": 16384,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1/checkpoints/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu3_3/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu3_3_checkpoint_20.bin",
+            "size_bytes": 8388608
+          },
+          {
+            "allocated_blocks_512": 16384,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1/checkpoints/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu3_3/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu3_3_checkpoint_40.bin",
+            "size_bytes": 8388608
+          },
+          {
+            "allocated_blocks_512": 16384,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1/checkpoints/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu3_3/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu3_3_final_save_40.bin",
+            "size_bytes": 8388608
+          }
+        ],
+        "ready": true,
+        "returncode": 0,
+        "stderr_tail": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n",
+        "total_allocated_bytes": 100663296,
+        "total_size_bytes": 100663296
+      },
+      "backend_audit": {
+        "accepted_task_count": 4,
+        "expected_task_count": 4,
+        "markers": [
+          "BENCH_START label=critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu0_0 backend=jax device=[CudaDevice(id=0)] pid=85069 cuda_visible=0",
+          "BENCH_START label=critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu1_1 backend=jax device=[CudaDevice(id=0)] pid=85070 cuda_visible=1",
+          "BENCH_START label=critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu2_2 backend=jax device=[CudaDevice(id=0)] pid=85068 cuda_visible=2",
+          "BENCH_START label=critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu3_3 backend=jax device=[CudaDevice(id=0)] pid=85067 cuda_visible=3"
+        ],
+        "ready": true
+      },
+      "capacity_boundary": false,
+      "cell_id": "node007_gpu_heavy_jax_matmul_p1_r00",
+      "checkpoint_allocation_ready": true,
+      "completion_audit": {
+        "all_completion_models_ready": true,
+        "all_natural_exit": true,
+        "checkpoint_or_finalization_observed": true,
+        "ready": true,
+        "task_count": 4
+      },
+      "elapsed_wall_s": 74.68562722206116,
+      "gpus": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "hardware_class": "NVIDIA_RTX_2080Ti_11GB",
+      "max_iters": 40,
+      "measurement_protocol": "critical_gpu_phase_completion_v1",
+      "node": "node007",
+      "node_bucket": "gpu_2080ti_11gb_quad",
+      "node_role": "representative",
+      "preflight": {
+        "compute_process_rows": [],
+        "idle_memory_limit_mb": 512,
+        "idle_util_limit_pct": 5,
+        "ready": true,
+        "returncode": 0,
+        "selected_gpus": [
+          {
+            "index": 0,
+            "name": "NVIDIA GeForce RTX 2080 Ti",
+            "total_mb": 11264,
+            "used_mb": 1,
+            "util_pct": 0
+          },
+          {
+            "index": 1,
+            "name": "NVIDIA GeForce RTX 2080 Ti",
+            "total_mb": 11264,
+            "used_mb": 1,
+            "util_pct": 0
+          },
+          {
+            "index": 2,
+            "name": "NVIDIA GeForce RTX 2080 Ti",
+            "total_mb": 11264,
+            "used_mb": 1,
+            "util_pct": 0
+          },
+          {
+            "index": 3,
+            "name": "NVIDIA GeForce RTX 2080 Ti",
+            "total_mb": 11264,
+            "used_mb": 1,
+            "util_pct": 0
+          }
+        ],
+        "stderr_tail": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n"
+      },
+      "probe_result": {
+        "completion_model_ready_count": 4,
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "node": "node007",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 4,
+        "run_id": "critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1",
+        "stable_rate_ready_count": 4,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "profile": 1,
+      "profile_axis": "tasks_per_gpu",
+      "quadrant": "q01",
+      "ready": true,
+      "remote_cleanup": {
+        "ready": true,
+        "returncode": 0,
+        "stderr": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n",
+        "stdout": ""
+      },
+      "remote_output_root": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1",
+      "run_id": "critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1",
+      "split_role": "smoke_excluded",
+      "status": "READY",
+      "summary": {
+        "aggregate_active_rate_unit_s": 50.57000000000001,
+        "aggregate_stable_rate_unit_s": 50.440220000000004,
+        "all_completion_models_ready": true,
+        "all_stable_rate_ready": true,
+        "blocked_count": 0,
+        "capacity_boundary": false,
+        "completion_model_count": 4,
+        "completion_model_ready_count": 4,
+        "coordinated_profile_launch": true,
+        "elapsed_wall_s": 37.585341453552246,
+        "eviction_count": 0,
+        "expected_per_gpu_running": {
+          "0": 1,
+          "1": 1,
+          "2": 1,
+          "3": 1
+        },
+        "gpus": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "max_iters": 40,
+        "mean_active_rate_unit_s": 12.6425,
+        "mean_stable_rate_unit_s": 12.610055,
+        "measurement_aggregate_rate_unit_s_median": 50.57000000000001,
+        "measurement_valid": true,
+        "min_rate_samples": 6,
+        "node": "node007",
+        "per_gpu_running": {
+          "0": 1,
+          "1": 1,
+          "2": 1,
+          "3": 1
+        },
+        "phase": "profile_1_per_gpu",
+        "placement_issues": [],
+        "placement_valid": true,
+        "probe": "remote_workload_selected_profile_probe",
+        "profile": 1,
+        "rate_units": [
+          "step"
+        ],
+        "rates_unit_s": [
+          12.52,
+          12.91,
+          12.8,
+          12.34
+        ],
+        "require_completion_model": true,
+        "require_stable_rate": true,
+        "returncode_acceptance_rule": "strict_zero_or_stable_required_rate",
+        "returncode_accepted_count": 4,
+        "returncode_valid_count": 4,
+        "rows": [
+          {
+            "completion_model": {
+              "amortized_unit_s": 0.08002672856673598,
+              "base_unit_s": 0.07675447617657483,
+              "checkpoint_observed_s": 0.11369227105751634,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 0.08002672856673598,
+              "counter_offset": 0,
+              "finalization_after_last_progress_s": 0.34453499293886125,
+              "first_progress_unit": 1,
+              "interval_sample_count": 39,
+              "last_progress_unit": 40,
+              "loop_observed_units": 39,
+              "loop_wall_s": 3.1210424141027033,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 0.1276178432162851,
+              "phase_durations_s": {
+                "checkpoint": [
+                  0.05884771212004125,
+                  0.054844558937475085
+                ],
+                "final_save": [
+                  0.04291035910136998
+                ],
+                "initialization": [
+                  10.623620569938794
+                ],
+                "outer_loop": [
+                  3.219753476092592
+                ]
+              },
+              "predicted_total_s": 14.258511896943673,
+              "progress_observation_count": 40,
+              "readiness_reason": "ready",
+              "save_observed_s": 0.04291035910136998,
+              "schema_version": 1,
+              "startup_overhead_s": 10.712907761335373,
+              "startup_to_first_progress_s": 10.792934489902109,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 0.34453499293886125,
+              "total_units": 40,
+              "total_wall_s": 14.258511896943673,
+              "unit": "step"
+            },
+            "completion_model_ready": true,
+            "global_index": 0,
+            "gpu": 0,
+            "idx": 0,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1/raw/profile_1_per_gpu/gpu0_0.log",
+            "rate": 12.52,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu0_0",
+            "seed": 830000,
+            "stable_cv": 0.00293246724,
+            "stable_last_two_relative_delta": 0.00321533261,
+            "stable_mean_rate": 12.63975,
+            "stable_rate": 12.683511,
+            "stable_rate_ready": true,
+            "stable_samples": 6,
+            "stable_tail_rates": [
+              12.592879,
+              12.64286,
+              12.683511
+            ],
+            "unit": "step"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 0.07754706115557407,
+              "base_unit_s": 0.07590263802558184,
+              "checkpoint_observed_s": 0.05926172807812691,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 0.07754706115557407,
+              "counter_offset": 0,
+              "finalization_after_last_progress_s": 0.3478407028596848,
+              "first_progress_unit": 1,
+              "interval_sample_count": 39,
+              "last_progress_unit": 40,
+              "loop_observed_units": 39,
+              "loop_wall_s": 3.0243353850673884,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 0.06413250206969678,
+              "phase_durations_s": {
+                "checkpoint": [
+                  0.030323975021019578,
+                  0.02893775305710733
+                ],
+                "final_save": [
+                  0.027400918072089553
+                ],
+                "initialization": [
+                  10.521816054126248
+                ],
+                "outer_loop": [
+                  3.1247751840855926
+                ]
+              },
+              "predicted_total_s": 14.084608469856903,
+              "progress_observation_count": 40,
+              "readiness_reason": "ready",
+              "save_observed_s": 0.027400918072089553,
+              "schema_version": 1,
+              "startup_overhead_s": 10.634885320774256,
+              "startup_to_first_progress_s": 10.71243238192983,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 0.3478407028596848,
+              "total_units": 40,
+              "total_wall_s": 14.084608469856903,
+              "unit": "step"
+            },
+            "completion_model_ready": true,
+            "global_index": 1,
+            "gpu": 1,
+            "idx": 0,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1/raw/profile_1_per_gpu/gpu1_0.log",
+            "rate": 12.91,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu1_1",
+            "seed": 830001,
+            "stable_cv": 0.00333853492,
+            "stable_last_two_relative_delta": 0.00364699442,
+            "stable_mean_rate": 12.7380467,
+            "stable_rate": 12.788194,
+            "stable_rate_ready": true,
+            "stable_samples": 6,
+            "stable_tail_rates": [
+              12.684221,
+              12.741725,
+              12.788194
+            ],
+            "unit": "step"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 0.078237287974797,
+              "base_unit_s": 0.07567268190905452,
+              "checkpoint_observed_s": 0.09321425086818635,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 0.078237287974797,
+              "counter_offset": 0,
+              "finalization_after_last_progress_s": 0.3578661079518497,
+              "first_progress_unit": 1,
+              "interval_sample_count": 39,
+              "last_progress_unit": 40,
+              "loop_observed_units": 39,
+              "loop_wall_s": 3.051254231017083,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 0.10001963656395674,
+              "phase_durations_s": {
+                "checkpoint": [
+                  0.0652750909794122,
+                  0.027939159888774157
+                ],
+                "final_save": [
+                  0.04205694794654846
+                ],
+                "initialization": [
+                  10.6262242551893
+                ],
+                "outer_loop": [
+                  3.155856966972351
+                ]
+              },
+              "predicted_total_s": 14.218687897082418,
+              "progress_observation_count": 40,
+              "readiness_reason": "ready",
+              "save_observed_s": 0.04205694794654846,
+              "schema_version": 1,
+              "startup_overhead_s": 10.731330270138688,
+              "startup_to_first_progress_s": 10.809567558113486,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 0.3578661079518497,
+              "total_units": 40,
+              "total_wall_s": 14.218687897082418,
+              "unit": "step"
+            },
+            "completion_model_ready": true,
+            "global_index": 2,
+            "gpu": 2,
+            "idx": 0,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1/raw/profile_1_per_gpu/gpu2_0.log",
+            "rate": 12.8,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu2_2",
+            "seed": 830002,
+            "stable_cv": 0.00378014199,
+            "stable_last_two_relative_delta": 0.00418178005,
+            "stable_mean_rate": 12.6746173,
+            "stable_rate": 12.731351,
+            "stable_rate_ready": true,
+            "stable_samples": 6,
+            "stable_tail_rates": [
+              12.614168,
+              12.678333,
+              12.731351
+            ],
+            "unit": "step"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 0.08112750351070784,
+              "base_unit_s": 0.07883772114291787,
+              "checkpoint_observed_s": 0.08491719397716224,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 0.08112750351070784,
+              "counter_offset": 0,
+              "finalization_after_last_progress_s": 0.4666309431195259,
+              "first_progress_unit": 1,
+              "interval_sample_count": 39,
+              "last_progress_unit": 40,
+              "loop_observed_units": 39,
+              "loop_wall_s": 3.163972636917606,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 0.08930151234380901,
+              "phase_durations_s": {
+                "checkpoint": [
+                  0.056170338997617364,
+                  0.028746854979544878
+                ],
+                "final_save": [
+                  0.040466342121362686
+                ],
+                "initialization": [
+                  10.579361700918525
+                ],
+                "outer_loop": [
+                  3.273629622068256
+                ]
+              },
+              "predicted_total_s": 14.398474340094253,
+              "progress_observation_count": 40,
+              "readiness_reason": "ready",
+              "save_observed_s": 0.040466342121362686,
+              "schema_version": 1,
+              "startup_overhead_s": 10.686743256546414,
+              "startup_to_first_progress_s": 10.767870760057122,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 0.4666309431195259,
+              "total_units": 40,
+              "total_wall_s": 14.398474340094253,
+              "unit": "step"
+            },
+            "completion_model_ready": true,
+            "global_index": 3,
+            "gpu": 3,
+            "idx": 0,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1/raw/profile_1_per_gpu/gpu3_0.log",
+            "rate": 12.34,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1_profile_1_per_gpu_gpu3_3",
+            "seed": 830003,
+            "stable_cv": 0.00382529382,
+            "stable_last_two_relative_delta": 0.00436342745,
+            "stable_mean_rate": 12.181425,
+            "stable_rate": 12.237164,
+            "stable_rate_ready": true,
+            "stable_samples": 6,
+            "stable_tail_rates": [
+              12.123111,
+              12.184,
+              12.237164
+            ],
+            "unit": "step"
+          }
+        ],
+        "run_id": "critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1",
+        "running_count": 4,
+        "running_with_rate_count": 4,
+        "stable_cv_threshold": 0.1,
+        "stable_cycle_units": 0,
+        "stable_rate_ready_count": 4,
+        "stable_rates_unit_s": [
+          12.683511,
+          12.788194,
+          12.731351,
+          12.237164
+        ],
+        "stable_rel_delta_threshold": 0.08,
+        "stable_skip_samples": 4,
+        "stable_windows": 3,
+        "status_counts": {
+          "missing_rate": 0,
+          "sampled": 4
+        },
+        "terminate_on_stable": false,
+        "timeout_s": 1800,
+        "transport_mode": "foreground_ssh"
+      },
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_node007_r00_gpu_heavy_jax_matmul_p1_20260803_gpu_heavy_jax_matmul_p1/reports/profile_1_per_gpu_summary.json",
+      "timeout_s": 1800,
+      "total_task_count": 4,
+      "wave": 0,
+      "workload_env": "jax_matmul_8192",
+      "workload_key": "gpu_heavy_jax_matmul"
+    }
+  ],
+  "selection": {
+    "filtered": true,
+    "profiles": [
+      1
+    ],
+    "workload_keys": [
+      "gpu_heavy_jax_matmul"
+    ]
+  },
+  "split_role": "smoke_excluded",
+  "status": "PASS",
+  "task_native_progress_required": true,
+  "terminate_on_stable": false,
+  "wait_row_count": 0,
+  "wave": 0
+}

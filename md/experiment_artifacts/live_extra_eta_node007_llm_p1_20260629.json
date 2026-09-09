@@ -1,0 +1,203 @@
+{
+  "admitted_count": 1,
+  "admitted_rows": [
+    {
+      "cwd": "/home/erzhu419/mine_code/scheduleurm",
+      "eta_source_required": "tqdm/progress",
+      "gpus": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "hard_rule_mode": "clean_bench_direct_remote",
+      "hardware_class": "gpu_node007_4x12gb",
+      "launched": true,
+      "legacy_scheduler_limits_bypassed": true,
+      "measurement_valid": true,
+      "node": "node007-direct",
+      "node_bucket": "node007-direct:gpu_node007_4x12gb",
+      "probe_result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "node": "node007-direct",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 4,
+        "run_id": "live_extra_eta_node007_llm_p1_20260629_node007_llm_p1",
+        "stable_rate_ready_count": 4,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/live_extra_eta_node007_llm_p1_20260629_node007_llm_p1/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "profile_rows": [
+        {
+          "aggregate_stable_rate_unit_s": 1311.4701759999998,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 327.86754399999995,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 1,
+          "running_count": 4,
+          "stable_rate_ready_count": 4,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 4
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/live_extra_eta_node007_llm_p1_20260629_node007_llm_p1/reports/profile_1_per_gpu_summary.json"
+        }
+      ],
+      "profiles": [
+        1
+      ],
+      "reason": "",
+      "resource_kind": "gpu_llm",
+      "resource_state": "empty",
+      "run_id": "live_extra_eta_node007_llm_p1_20260629_node007_llm_p1",
+      "run_prefix": "live_extra_eta_node007_llm_p1_20260629",
+      "spec_id": "node007_llm_p1",
+      "stable_gate": {
+        "min_rate_samples": 8,
+        "require_stable_rate": true,
+        "stable_cv": 0.08,
+        "stable_cycle_units": 0,
+        "stable_rel_delta": 0.05,
+        "stable_skip_samples": 5,
+        "stable_windows": 5,
+        "terminate_on_stable": false
+      },
+      "template": "/home/erzhu419/mine_code/scheduleurm/algorithm/experiments/templates/torch_llm_distilgpt2.cmd.tpl",
+      "total_units": 96.0,
+      "unit": "iter",
+      "workload_env": "llm",
+      "workload_key": "gpu_llm_distilgpt2"
+    }
+  ],
+  "allow_launch": true,
+  "boundary_count": 0,
+  "boundary_rows": [],
+  "gate": "live_extra_eta_measurements",
+  "pass": true,
+  "pending_count": 0,
+  "pending_rows": [],
+  "row_count": 1,
+  "rows": [
+    {
+      "cwd": "/home/erzhu419/mine_code/scheduleurm",
+      "eta_source_required": "tqdm/progress",
+      "gpus": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "hard_rule_mode": "clean_bench_direct_remote",
+      "hardware_class": "gpu_node007_4x12gb",
+      "launched": true,
+      "legacy_scheduler_limits_bypassed": true,
+      "measurement_valid": true,
+      "node": "node007-direct",
+      "node_bucket": "node007-direct:gpu_node007_4x12gb",
+      "probe_result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "node": "node007-direct",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 4,
+        "run_id": "live_extra_eta_node007_llm_p1_20260629_node007_llm_p1",
+        "stable_rate_ready_count": 4,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/live_extra_eta_node007_llm_p1_20260629_node007_llm_p1/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "profile_rows": [
+        {
+          "aggregate_stable_rate_unit_s": 1311.4701759999998,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 327.86754399999995,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 1,
+          "running_count": 4,
+          "stable_rate_ready_count": 4,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 4
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/live_extra_eta_node007_llm_p1_20260629_node007_llm_p1/reports/profile_1_per_gpu_summary.json"
+        }
+      ],
+      "profiles": [
+        1
+      ],
+      "reason": "",
+      "resource_kind": "gpu_llm",
+      "resource_state": "empty",
+      "run_id": "live_extra_eta_node007_llm_p1_20260629_node007_llm_p1",
+      "run_prefix": "live_extra_eta_node007_llm_p1_20260629",
+      "spec_id": "node007_llm_p1",
+      "stable_gate": {
+        "min_rate_samples": 8,
+        "require_stable_rate": true,
+        "stable_cv": 0.08,
+        "stable_cycle_units": 0,
+        "stable_rel_delta": 0.05,
+        "stable_skip_samples": 5,
+        "stable_windows": 5,
+        "terminate_on_stable": false
+      },
+      "template": "/home/erzhu419/mine_code/scheduleurm/algorithm/experiments/templates/torch_llm_distilgpt2.cmd.tpl",
+      "total_units": 96.0,
+      "unit": "iter",
+      "workload_env": "llm",
+      "workload_key": "gpu_llm_distilgpt2"
+    }
+  ],
+  "run_prefix": "live_extra_eta_node007_llm_p1_20260629",
+  "scope": "Controlled extra task-native ETA rows for equivalent hardware checks and node/env-aware RL service. Legacy scheduler hard limits are bypassed; ordinary user tasks are never launched or migrated by this gate.",
+  "service_cache_snapshot": {
+    "capacity_boundaries": [],
+    "records": [
+      {
+        "aggregate_rate": 327.86754399999995,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_extra_eta:node007_llm_p1",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 4,
+        "hardware_class": "gpu_node007_4x12gb",
+        "node_bucket": "node007-direct:gpu_node007_4x12gb",
+        "per_task_rates": [
+          284.861994,
+          396.68942,
+          287.68402,
+          342.234742
+        ],
+        "profile": 1,
+        "resource_kind": "gpu_llm",
+        "resource_state": "empty",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/live_extra_eta_node007_llm_p1_20260629_node007_llm_p1/reports/profile_1_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 96.0,
+        "unit": "step",
+        "workload_env": "llm",
+        "workload_key": "gpu_llm_distilgpt2"
+      }
+    ]
+  },
+  "status": "LIVE_EXTRA_ETA_READY"
+}

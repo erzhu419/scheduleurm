@@ -1,0 +1,438 @@
+{
+  "algorithm_path": "controlled_theorem_measurement_direct",
+  "allow_launch": true,
+  "campaign_id": "critical_gpu_completion_jtl110gpu_r00_20260803",
+  "capacity_boundary_count": 0,
+  "environment_gate": {
+    "ready": true,
+    "reason": "",
+    "returncode": 0,
+    "stderr_tail": "",
+    "stdout_tail": "ENV_READY\nRESAC_READY\n"
+  },
+  "gate": "critical_gpu_completion_campaign",
+  "legacy_scheduler_limits_bypassed": true,
+  "measurement_protocol": "critical_gpu_phase_completion_v1",
+  "natural_completion_required": true,
+  "node": "jtl110gpu",
+  "node_spec": {
+    "bapr_python": "/home/erzhu419/.venvs/resac-jax-gpu1-0438/bin/python",
+    "gpus": [
+      0,
+      1
+    ],
+    "hardware_class": "NVIDIA_RTX_3080Ti_12GB",
+    "hf_cache_dir": "/home/erzhu419/.cache/huggingface/hub",
+    "node": "jtl110gpu",
+    "node_bucket": "gpu_3080ti_12gb_dual",
+    "output_root": "/tmp/scheduleurm_critical_gpu_completion",
+    "role": "representative",
+    "torch_python": "/home/erzhu419/.venvs/scheduleurm-torch-bench/bin/python",
+    "workload_pythonpath": "/home/erzhu419/.claude/scheduler/runtime_patches:/home/erzhu419/mine_code/RE-SAC"
+  },
+  "pass": true,
+  "planned_cells": [
+    {
+      "cell_id": "jtl110gpu_gpu_llm_distilgpt2_p1_r00",
+      "gpus": [
+        0,
+        1
+      ],
+      "hardware_class": "NVIDIA_RTX_3080Ti_12GB",
+      "max_iters": 40,
+      "node": "jtl110gpu",
+      "node_bucket": "gpu_3080ti_12gb_dual",
+      "node_role": "representative",
+      "profile": 1,
+      "profile_axis": "tasks_per_gpu",
+      "quadrant": "q01",
+      "split_role": "smoke_excluded",
+      "timeout_s": 5400,
+      "total_task_count": 2,
+      "wave": 0,
+      "workload_env": "distilgpt2_forward_fp16_b2_s128",
+      "workload_key": "gpu_llm_distilgpt2"
+    }
+  ],
+  "pre_registered_split": {
+    "calibration": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "holdout": 13,
+    "smoke_excluded": 0,
+    "training": [
+      1,
+      2,
+      3
+    ]
+  },
+  "ready_row_count": 1,
+  "real_checkpoint_allocation_required": true,
+  "rows": [
+    {
+      "artifact_audit": {
+        "allocated_file_count": 6,
+        "file_count": 6,
+        "files": [
+          {
+            "allocated_blocks_512": 320032,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_jtl110gpu_r00_20260803_gpu_llm_distilgpt2_p1/checkpoints/critical_gpu_completion_jtl110gpu_r00_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu1_1/critical_gpu_completion_jtl110gpu_r00_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu1_1_final_save_40.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320032,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_jtl110gpu_r00_20260803_gpu_llm_distilgpt2_p1/checkpoints/critical_gpu_completion_jtl110gpu_r00_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu1_1/critical_gpu_completion_jtl110gpu_r00_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu1_1_checkpoint_40.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320032,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_jtl110gpu_r00_20260803_gpu_llm_distilgpt2_p1/checkpoints/critical_gpu_completion_jtl110gpu_r00_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu1_1/critical_gpu_completion_jtl110gpu_r00_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu1_1_checkpoint_20.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320032,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_jtl110gpu_r00_20260803_gpu_llm_distilgpt2_p1/checkpoints/critical_gpu_completion_jtl110gpu_r00_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu0_0/critical_gpu_completion_jtl110gpu_r00_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu0_0_final_save_40.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320032,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_jtl110gpu_r00_20260803_gpu_llm_distilgpt2_p1/checkpoints/critical_gpu_completion_jtl110gpu_r00_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu0_0/critical_gpu_completion_jtl110gpu_r00_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu0_0_checkpoint_40.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320032,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_jtl110gpu_r00_20260803_gpu_llm_distilgpt2_p1/checkpoints/critical_gpu_completion_jtl110gpu_r00_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu0_0/critical_gpu_completion_jtl110gpu_r00_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu0_0_checkpoint_20.pt",
+            "size_bytes": 163853170
+          }
+        ],
+        "ready": true,
+        "returncode": 0,
+        "stderr_tail": "",
+        "total_allocated_bytes": 983138304,
+        "total_size_bytes": 983119020
+      },
+      "backend_audit": {
+        "accepted_task_count": 2,
+        "expected_task_count": 2,
+        "markers": [
+          "BENCH_START backend=torch_transformers device='NVIDIA GeForce RTX 3080 Ti' model_id=distilgpt2 mode=forward batch=2 seq_len=128 dtype=float16 label=critical_gpu_completion_jtl110gpu_r00_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu0_0",
+          "BENCH_START backend=torch_transformers device='NVIDIA GeForce RTX 3080 Ti' model_id=distilgpt2 mode=forward batch=2 seq_len=128 dtype=float16 label=critical_gpu_completion_jtl110gpu_r00_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu1_1"
+        ],
+        "ready": true
+      },
+      "capacity_boundary": false,
+      "cell_id": "jtl110gpu_gpu_llm_distilgpt2_p1_r00",
+      "checkpoint_allocation_ready": true,
+      "completion_audit": {
+        "all_completion_models_ready": true,
+        "all_natural_exit": true,
+        "checkpoint_or_finalization_observed": true,
+        "ready": true,
+        "task_count": 2
+      },
+      "elapsed_wall_s": 83.39952850341797,
+      "gpus": [
+        0,
+        1
+      ],
+      "hardware_class": "NVIDIA_RTX_3080Ti_12GB",
+      "max_iters": 40,
+      "measurement_protocol": "critical_gpu_phase_completion_v1",
+      "node": "jtl110gpu",
+      "node_bucket": "gpu_3080ti_12gb_dual",
+      "node_role": "representative",
+      "preflight": {
+        "compute_process_rows": [],
+        "idle_memory_limit_mb": 512,
+        "idle_util_limit_pct": 5,
+        "ready": true,
+        "returncode": 0,
+        "selected_gpus": [
+          {
+            "index": 0,
+            "name": "NVIDIA GeForce RTX 3080 Ti",
+            "total_mb": 12288,
+            "used_mb": 15,
+            "util_pct": 0
+          },
+          {
+            "index": 1,
+            "name": "NVIDIA GeForce RTX 3080 Ti",
+            "total_mb": 12288,
+            "used_mb": 428,
+            "util_pct": 0
+          }
+        ],
+        "stderr_tail": ""
+      },
+      "probe_result": {
+        "completion_model_ready_count": 2,
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1
+        ],
+        "node": "jtl110gpu",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 2,
+        "run_id": "critical_gpu_completion_jtl110gpu_r00_20260803_gpu_llm_distilgpt2_p1",
+        "stable_rate_ready_count": 2,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_jtl110gpu_r00_20260803_gpu_llm_distilgpt2_p1/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "profile": 1,
+      "profile_axis": "tasks_per_gpu",
+      "quadrant": "q01",
+      "ready": true,
+      "remote_cleanup": {
+        "ready": true,
+        "returncode": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "remote_output_root": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_jtl110gpu_r00_20260803_gpu_llm_distilgpt2_p1",
+      "run_id": "critical_gpu_completion_jtl110gpu_r00_20260803_gpu_llm_distilgpt2_p1",
+      "split_role": "smoke_excluded",
+      "status": "READY",
+      "summary": {
+        "aggregate_active_rate_unit_s": 136.97,
+        "aggregate_stable_rate_unit_s": 746.937212,
+        "all_completion_models_ready": true,
+        "all_stable_rate_ready": true,
+        "blocked_count": 0,
+        "capacity_boundary": false,
+        "completion_model_count": 2,
+        "completion_model_ready_count": 2,
+        "coordinated_profile_launch": true,
+        "elapsed_wall_s": 38.2932870388031,
+        "eviction_count": 0,
+        "expected_per_gpu_running": {
+          "0": 1,
+          "1": 1
+        },
+        "gpus": [
+          0,
+          1
+        ],
+        "max_iters": 40,
+        "mean_active_rate_unit_s": 68.485,
+        "mean_stable_rate_unit_s": 373.468606,
+        "measurement_aggregate_rate_unit_s_median": 136.97,
+        "measurement_valid": true,
+        "min_rate_samples": 5,
+        "node": "jtl110gpu",
+        "per_gpu_running": {
+          "0": 1,
+          "1": 1
+        },
+        "phase": "profile_1_per_gpu",
+        "placement_issues": [],
+        "placement_valid": true,
+        "probe": "remote_workload_selected_profile_probe",
+        "profile": 1,
+        "rate_units": [
+          "step"
+        ],
+        "rates_unit_s": [
+          69.53,
+          67.44
+        ],
+        "require_completion_model": true,
+        "require_stable_rate": true,
+        "returncode_acceptance_rule": "strict_zero_or_stable_required_rate",
+        "returncode_accepted_count": 2,
+        "returncode_valid_count": 2,
+        "rows": [
+          {
+            "completion_model": {
+              "amortized_unit_s": 0.016058727027848364,
+              "base_unit_s": 0.0027150369947776198,
+              "checkpoint_observed_s": 0.4629753631306812,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 0.016058727027848364,
+              "counter_offset": 0,
+              "finalization_after_last_progress_s": 1.0496913800016046,
+              "first_progress_unit": 5,
+              "interval_sample_count": 7,
+              "last_progress_unit": 40,
+              "loop_observed_units": 35,
+              "loop_wall_s": 0.5620554459746927,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 0.467029151157476,
+              "phase_durations_s": {
+                "checkpoint": [
+                  0.23477504507172853,
+                  0.2282003180589527
+                ],
+                "final_save": [
+                  0.2166787509340793
+                ],
+                "initialization": [
+                  8.58681947295554
+                ],
+                "outer_loop": [
+                  0.575906406971626
+                ],
+                "warmup": [
+                  1.379572720034048
+                ]
+              },
+              "predicted_total_s": 11.6376812789822,
+              "progress_observation_count": 8,
+              "readiness_reason": "ready",
+              "save_observed_s": 0.2166787509340793,
+              "schema_version": 1,
+              "startup_overhead_s": 9.94564081786666,
+              "startup_to_first_progress_s": 10.025934453005902,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 1.0496913800016046,
+              "total_units": 40,
+              "total_wall_s": 11.6376812789822,
+              "unit": "step"
+            },
+            "completion_model_ready": true,
+            "global_index": 0,
+            "gpu": 0,
+            "idx": 0,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_jtl110gpu_r00_20260803_gpu_llm_distilgpt2_p1/raw/profile_1_per_gpu/gpu0_0.log",
+            "rate": 69.53,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_jtl110gpu_r00_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu0_0",
+            "seed": 830000,
+            "stable_cv": 0.0152815999,
+            "stable_last_two_relative_delta": 0.0336380948,
+            "stable_mean_rate": 376.900185,
+            "stable_rate": 381.162115,
+            "stable_rate_ready": true,
+            "stable_samples": 7,
+            "stable_tail_rates": [
+              380.780634,
+              368.757805,
+              381.162115
+            ],
+            "unit": "step"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 0.016528282314538956,
+              "base_unit_s": 0.0028996799839660524,
+              "checkpoint_observed_s": 0.4726720500038937,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 0.016528282314538956,
+              "counter_offset": 0,
+              "finalization_after_last_progress_s": 1.108007503906265,
+              "first_progress_unit": 5,
+              "interval_sample_count": 7,
+              "last_progress_unit": 40,
+              "loop_observed_units": 35,
+              "loop_wall_s": 0.5784898810088634,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 0.4770010815700516,
+              "phase_durations_s": {
+                "checkpoint": [
+                  0.24864966794848442,
+                  0.22402238205540925
+                ],
+                "final_save": [
+                  0.23951339500490576
+                ],
+                "initialization": [
+                  7.280391967971809
+                ],
+                "outer_loop": [
+                  0.5939474490005523
+                ],
+                "warmup": [
+                  1.3899043650599197
+                ]
+              },
+              "predicted_total_s": 10.417625524918549,
+              "progress_observation_count": 8,
+              "readiness_reason": "ready",
+              "save_observed_s": 0.23951339500490576,
+              "schema_version": 1,
+              "startup_overhead_s": 8.648486728430726,
+              "startup_to_first_progress_s": 8.73112814000342,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 1.108007503906265,
+              "total_units": 40,
+              "total_wall_s": 10.417625524918549,
+              "unit": "step"
+            },
+            "completion_model_ready": true,
+            "global_index": 1,
+            "gpu": 1,
+            "idx": 0,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_jtl110gpu_r00_20260803_gpu_llm_distilgpt2_p1/raw/profile_1_per_gpu/gpu1_0.log",
+            "rate": 67.44,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_jtl110gpu_r00_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu1_1",
+            "seed": 830001,
+            "stable_cv": 0.0389881052,
+            "stable_last_two_relative_delta": 0.0597182749,
+            "stable_mean_rate": 347.94501,
+            "stable_rate": 365.775097,
+            "stable_rate_ready": true,
+            "stable_samples": 7,
+            "stable_tail_rates": [
+              332.897349,
+              345.162583,
+              365.775097
+            ],
+            "unit": "step"
+          }
+        ],
+        "run_id": "critical_gpu_completion_jtl110gpu_r00_20260803_gpu_llm_distilgpt2_p1",
+        "running_count": 2,
+        "running_with_rate_count": 2,
+        "stable_cv_threshold": 0.1,
+        "stable_cycle_units": 0,
+        "stable_rate_ready_count": 2,
+        "stable_rates_unit_s": [
+          381.162115,
+          365.775097
+        ],
+        "stable_rel_delta_threshold": 0.08,
+        "stable_skip_samples": 1,
+        "stable_windows": 3,
+        "status_counts": {
+          "missing_rate": 0,
+          "sampled": 2
+        },
+        "terminate_on_stable": false,
+        "timeout_s": 5400,
+        "transport_mode": "foreground_ssh"
+      },
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_jtl110gpu_r00_20260803_gpu_llm_distilgpt2_p1/reports/profile_1_per_gpu_summary.json",
+      "timeout_s": 5400,
+      "total_task_count": 2,
+      "wave": 0,
+      "workload_env": "distilgpt2_forward_fp16_b2_s128",
+      "workload_key": "gpu_llm_distilgpt2"
+    }
+  ],
+  "split_role": "smoke_excluded",
+  "status": "PASS",
+  "task_native_progress_required": true,
+  "terminate_on_stable": false,
+  "wait_row_count": 0,
+  "wave": 0
+}

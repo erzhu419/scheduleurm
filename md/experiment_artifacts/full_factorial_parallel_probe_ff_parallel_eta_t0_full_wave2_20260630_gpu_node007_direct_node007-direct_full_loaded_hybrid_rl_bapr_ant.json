@@ -1,0 +1,521 @@
+{
+  "admitted_count": 0,
+  "admitted_rows": [],
+  "allow_launch": true,
+  "boundary_count": 1,
+  "boundary_rows": [
+    {
+      "boundary_closed_profiles": [],
+      "capacity_boundary_profiles": [
+        5
+      ],
+      "config": {
+        "cwd": "/home/erzhu419/mine_code/BAPR",
+        "gpus": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "max_iters": 200,
+        "node": "node007-direct",
+        "stable_cycle_units": 5,
+        "template": "bapr_ant_real.cmd.tpl",
+        "template_values": {},
+        "timeout_s": 2400
+      },
+      "eta_source_required": "tqdm/progress",
+      "family": "hybrid_rl",
+      "hardware_group": "gpu_node007_4x11gb",
+      "launch_ready": true,
+      "launched": true,
+      "legacy_scheduler_limits_bypassed": true,
+      "measurement_valid": false,
+      "node": "node007-direct",
+      "node_bucket": "node007-direct:gpu_node007_4x12gb",
+      "pending_reason": "",
+      "probe_result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "node": "node007-direct",
+        "pass": false,
+        "profiles": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "rate_count": 79,
+        "run_id": "ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded",
+        "stable_rate_ready_count": 79,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_1_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_2_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_3_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_4_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_5_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_6_per_gpu_summary.json"
+        ]
+      },
+      "profile_rows": [
+        {
+          "aggregate_stable_rate_unit_s": 0.5693784129999999,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.14234460325,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 1,
+          "running_count": 4,
+          "stable_rate_ready_count": 4,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 4
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_1_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.6275777909,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.0784472238625,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 2,
+          "running_count": 8,
+          "stable_rate_ready_count": 8,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 8
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_2_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.7257315207,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.060477626725000004,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 3,
+          "running_count": 12,
+          "stable_rate_ready_count": 12,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 12
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_3_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.7566695255999998,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.04729184535,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 4,
+          "running_count": 16,
+          "stable_rate_ready_count": 16,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 16
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_4_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.7527745217,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.03961971166842105,
+          "measurement_valid": false,
+          "path_exists": true,
+          "profile": 5,
+          "running_count": 20,
+          "stable_rate_ready_count": 19,
+          "status_counts": {
+            "missing_rate": 1,
+            "sampled": 19
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_5_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.8112036639,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.040560183195,
+          "measurement_valid": false,
+          "path_exists": true,
+          "profile": 6,
+          "running_count": 24,
+          "stable_rate_ready_count": 20,
+          "status_counts": {
+            "missing_rate": 4,
+            "sampled": 20
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_6_per_gpu_summary.json"
+        }
+      ],
+      "profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "reason": "one_or_more_profiles_unstable_or_capacity_boundary",
+      "resident_mix": "same_workload_to_capacity_boundary",
+      "resource_state": "full_loaded",
+      "row_id": "gpu_node007_4x11gb|q11_high_cpu_high_gpu|hybrid_rl_bapr_ant|bapr_ant|full_loaded|same_workload_to_capacity_boundary",
+      "run_id": "ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded",
+      "workload_env": "bapr_ant",
+      "workload_key": "hybrid_rl_bapr_ant"
+    }
+  ],
+  "gate": "full_factorial_eta_probe_runner",
+  "launched_count": 1,
+  "max_profiles": 0,
+  "pass": true,
+  "resource_state": "full_loaded",
+  "rows": [
+    {
+      "boundary_closed_profiles": [],
+      "capacity_boundary_profiles": [
+        5
+      ],
+      "config": {
+        "cwd": "/home/erzhu419/mine_code/BAPR",
+        "gpus": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "max_iters": 200,
+        "node": "node007-direct",
+        "stable_cycle_units": 5,
+        "template": "bapr_ant_real.cmd.tpl",
+        "template_values": {},
+        "timeout_s": 2400
+      },
+      "eta_source_required": "tqdm/progress",
+      "family": "hybrid_rl",
+      "hardware_group": "gpu_node007_4x11gb",
+      "launch_ready": true,
+      "launched": true,
+      "legacy_scheduler_limits_bypassed": true,
+      "measurement_valid": false,
+      "node": "node007-direct",
+      "node_bucket": "node007-direct:gpu_node007_4x12gb",
+      "pending_reason": "",
+      "probe_result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "node": "node007-direct",
+        "pass": false,
+        "profiles": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "rate_count": 79,
+        "run_id": "ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded",
+        "stable_rate_ready_count": 79,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_1_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_2_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_3_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_4_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_5_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_6_per_gpu_summary.json"
+        ]
+      },
+      "profile_rows": [
+        {
+          "aggregate_stable_rate_unit_s": 0.5693784129999999,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.14234460325,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 1,
+          "running_count": 4,
+          "stable_rate_ready_count": 4,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 4
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_1_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.6275777909,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.0784472238625,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 2,
+          "running_count": 8,
+          "stable_rate_ready_count": 8,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 8
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_2_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.7257315207,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.060477626725000004,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 3,
+          "running_count": 12,
+          "stable_rate_ready_count": 12,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 12
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_3_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.7566695255999998,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.04729184535,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 4,
+          "running_count": 16,
+          "stable_rate_ready_count": 16,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 16
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_4_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.7527745217,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.03961971166842105,
+          "measurement_valid": false,
+          "path_exists": true,
+          "profile": 5,
+          "running_count": 20,
+          "stable_rate_ready_count": 19,
+          "status_counts": {
+            "missing_rate": 1,
+            "sampled": 19
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_5_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.8112036639,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.040560183195,
+          "measurement_valid": false,
+          "path_exists": true,
+          "profile": 6,
+          "running_count": 24,
+          "stable_rate_ready_count": 20,
+          "status_counts": {
+            "missing_rate": 4,
+            "sampled": 20
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_6_per_gpu_summary.json"
+        }
+      ],
+      "profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "reason": "one_or_more_profiles_unstable_or_capacity_boundary",
+      "resident_mix": "same_workload_to_capacity_boundary",
+      "resource_state": "full_loaded",
+      "row_id": "gpu_node007_4x11gb|q11_high_cpu_high_gpu|hybrid_rl_bapr_ant|bapr_ant|full_loaded|same_workload_to_capacity_boundary",
+      "run_id": "ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded",
+      "workload_env": "bapr_ant",
+      "workload_key": "hybrid_rl_bapr_ant"
+    }
+  ],
+  "run_prefix": "ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant",
+  "scope": "Controlled full-factorial ETA probes.  Launches bypass the legacy scheduler dispatch path and require task-native tqdm/progress.  Invalid profiles are retained as scoped capacity/instability boundaries for the exact node/workload/state.",
+  "selected_count": 1,
+  "service_cache_snapshot": {
+    "capacity_boundaries": [
+      {
+        "aggregate_rate": 0.188193630425,
+        "capacity_boundary": true,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 4,
+        "hardware_class": "gpu_node007_4x11gb",
+        "node_bucket": "node007-direct:gpu_node007_4x12gb",
+        "per_task_rates": [
+          0.0347947112,
+          0.0343406593,
+          0.0346740638,
+          0.034940601,
+          0.0276701716,
+          0.027593819,
+          0.0276395799,
+          0.0288683603,
+          0.0279017857,
+          0.0284252416,
+          0.0282326369,
+          0.126262626,
+          0.0282645562,
+          0.0285877644,
+          0.027027027,
+          0.0273522976,
+          0.0273522976,
+          0.125313283,
+          0.0275330396
+        ],
+        "profile": 5,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_5_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "bapr_ant",
+        "workload_key": "hybrid_rl_bapr_ant"
+      }
+    ],
+    "records": [
+      {
+        "aggregate_rate": 0.14234460324999998,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 4,
+        "hardware_class": "gpu_node007_4x11gb",
+        "node_bucket": "node007-direct:gpu_node007_4x12gb",
+        "per_task_rates": [
+          0.147058824,
+          0.125944584,
+          0.15060241,
+          0.145772595
+        ],
+        "profile": 1,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_1_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "bapr_ant",
+        "workload_key": "hybrid_rl_bapr_ant"
+      },
+      {
+        "aggregate_rate": 0.156894447725,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 4,
+        "hardware_class": "gpu_node007_4x11gb",
+        "node_bucket": "node007-direct:gpu_node007_4x12gb",
+        "per_task_rates": [
+          0.128865979,
+          0.0694444444,
+          0.0480769231,
+          0.0479846449,
+          0.0706214689,
+          0.0708215297,
+          0.12345679,
+          0.0683060109
+        ],
+        "profile": 2,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_2_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "bapr_ant",
+        "workload_key": "hybrid_rl_bapr_ant"
+      },
+      {
+        "aggregate_rate": 0.181432880175,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 4,
+        "hardware_class": "gpu_node007_4x11gb",
+        "node_bucket": "node007-direct:gpu_node007_4x12gb",
+        "per_task_rates": [
+          0.0465549348,
+          0.0469924812,
+          0.0457456542,
+          0.0474383302,
+          0.130890052,
+          0.0457875458,
+          0.0486381323,
+          0.0465983225,
+          0.130208333,
+          0.0449640288,
+          0.0461680517,
+          0.0457456542
+        ],
+        "profile": 3,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_3_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "bapr_ant",
+        "workload_key": "hybrid_rl_bapr_ant"
+      },
+      {
+        "aggregate_rate": 0.18916738139999995,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 4,
+        "hardware_class": "gpu_node007_4x11gb",
+        "node_bucket": "node007-direct:gpu_node007_4x12gb",
+        "per_task_rates": [
+          0.0352858151,
+          0.0363372093,
+          0.132275132,
+          0.0663129973,
+          0.0345065562,
+          0.0347463516,
+          0.0352609309,
+          0.0343642612,
+          0.0700280112,
+          0.0716332378,
+          0.035335689,
+          0.0348918353,
+          0.0341530055,
+          0.0342231348,
+          0.0342465753,
+          0.0330687831
+        ],
+        "profile": 4,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_node007_direct_node007-direct_full_loaded_hybrid_rl_bapr_ant_node007-direct_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_4_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "bapr_ant",
+        "workload_key": "hybrid_rl_bapr_ant"
+      }
+    ]
+  },
+  "status": "PROBE_RUNNER_LAUNCHED",
+  "tier": "T0_core_curve"
+}

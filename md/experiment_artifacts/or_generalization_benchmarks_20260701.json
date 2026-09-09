@@ -1,0 +1,91 @@
+{
+  "domains": {
+    "fjsp": {
+      "migration_analogue_present": true,
+      "pass": true,
+      "queue_vector": {
+        "q00_fjsp_light": 3.0,
+        "q01_fjsp_gpu_like": 3.0
+      },
+      "row_count": 3,
+      "selected_action": {
+        "candidate_configuration_count": 5,
+        "fallback_legacy_rows_excluded": true,
+        "global_action_dispatch_ready": true,
+        "oracle_gap_alpha0": 0.0,
+        "oracle_gap_alpha1": 0.0,
+        "score": 9.9,
+        "score_semantics": "robust_maxweight_lower_service",
+        "selected_action_ids": [
+          "fjsp:job1_op1:machine_a",
+          "fjsp:job2_op2:reroute_machine_c"
+        ],
+        "selected_task_ids": [
+          "fjsp:job1_op1",
+          "fjsp:job2_op2"
+        ]
+      }
+    },
+    "mmrcpsp": {
+      "migration_analogue_present": true,
+      "pass": true,
+      "queue_vector": {
+        "q00_rcpsp_light": 3.0,
+        "q10_rcpsp_cpu": 3.0
+      },
+      "row_count": 3,
+      "selected_action": {
+        "candidate_configuration_count": 5,
+        "fallback_legacy_rows_excluded": true,
+        "global_action_dispatch_ready": true,
+        "oracle_gap_alpha0": 0.0,
+        "oracle_gap_alpha1": 0.0,
+        "score": 8.8,
+        "score_semantics": "robust_maxweight_lower_service",
+        "selected_action_ids": [
+          "mmrcpsp:activity_1:mode_low_resource",
+          "mmrcpsp:activity_2:mode_switch_fast"
+        ],
+        "selected_task_ids": [
+          "mmrcpsp:activity_1",
+          "mmrcpsp:activity_2"
+        ]
+      }
+    },
+    "port_terminal": {
+      "migration_analogue_present": true,
+      "pass": true,
+      "queue_vector": {
+        "q10_port_yard_gate": 3.0,
+        "q11_port_berth_quay": 3.0
+      },
+      "row_count": 3,
+      "selected_action": {
+        "candidate_configuration_count": 5,
+        "fallback_legacy_rows_excluded": true,
+        "global_action_dispatch_ready": true,
+        "oracle_gap_alpha0": 0.0,
+        "oracle_gap_alpha1": 0.0,
+        "score": 10.399999999999999,
+        "score_semantics": "robust_maxweight_lower_service",
+        "selected_action_ids": [
+          "port:ship_b:berth_slow_qc1",
+          "port:ship_a:reberth_fast"
+        ],
+        "selected_task_ids": [
+          "port:ship_b",
+          "port:ship_a"
+        ]
+      }
+    }
+  },
+  "gate": "or_generalization_benchmarks",
+  "pass": true,
+  "references": {
+    "FJSPLib": "https://scheduleopt.github.io/benchmarks/fjsplib",
+    "JSPLib": "https://scheduleopt.github.io/benchmarks/jsplib/",
+    "PSPLIB": "https://www.om-db.wi.tum.de/psplib/"
+  },
+  "scope": "Simulator/replay action-model coverage for OR benchmark families; not physical-port empirical validation.",
+  "status": "OR_GENERALIZATION_SIMULATOR_PASS"
+}

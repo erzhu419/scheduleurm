@@ -1,0 +1,655 @@
+{
+  "algorithm_path": "controlled_theorem_measurement_direct",
+  "allow_launch": true,
+  "campaign_id": "critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803",
+  "capacity_boundary_count": 0,
+  "environment_gate": {
+    "ready": true,
+    "reason": "",
+    "returncode": 0,
+    "stderr_tail": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n",
+    "stdout_tail": "ENV_READY\nRESAC_READY\n"
+  },
+  "gate": "critical_gpu_completion_campaign",
+  "legacy_scheduler_limits_bypassed": true,
+  "measurement_protocol": "critical_gpu_phase_completion_v1",
+  "natural_completion_required": true,
+  "node": "node007",
+  "node_spec": {
+    "bapr_python": "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python",
+    "gpus": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "hardware_class": "NVIDIA_RTX_2080Ti_11GB",
+    "hf_cache_dir": "/home/zhengliang01/scheduleurm_work/model_cache/huggingface",
+    "node": "node007",
+    "node_bucket": "gpu_2080ti_11gb_quad",
+    "output_root": "/tmp/scheduleurm_critical_gpu_completion",
+    "role": "representative",
+    "torch_python": "/home/zhengliang01/scheduleurm_work/venvs/scheduleurm-gpu-eta-py310/bin/python",
+    "workload_pythonpath": "/home/zhengliang01/scheduleurm_work/runtime_patches:/home/zhengliang01/scheduleurm_work/RE-SAC"
+  },
+  "pass": true,
+  "planned_cells": [
+    {
+      "cell_id": "node007_gpu_llm_distilgpt2_p1_r00",
+      "gpus": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "hardware_class": "NVIDIA_RTX_2080Ti_11GB",
+      "max_iters": 120,
+      "node": "node007",
+      "node_bucket": "gpu_2080ti_11gb_quad",
+      "node_role": "representative",
+      "profile": 1,
+      "profile_axis": "tasks_per_gpu",
+      "quadrant": "q01",
+      "split_role": "smoke_excluded",
+      "timeout_s": 5400,
+      "total_task_count": 4,
+      "wave": 0,
+      "workload_env": "distilgpt2_forward_fp16_b2_s128",
+      "workload_key": "gpu_llm_distilgpt2"
+    }
+  ],
+  "pre_registered_split": {
+    "calibration": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "holdout": 13,
+    "smoke_excluded": 0,
+    "training": [
+      1,
+      2,
+      3
+    ]
+  },
+  "ready_row_count": 1,
+  "real_checkpoint_allocation_required": true,
+  "rows": [
+    {
+      "artifact_audit": {
+        "allocated_file_count": 12,
+        "file_count": 12,
+        "files": [
+          {
+            "allocated_blocks_512": 320032,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1/checkpoints/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu2_2/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu2_2_checkpoint_60.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320032,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1/checkpoints/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu2_2/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu2_2_checkpoint_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320032,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1/checkpoints/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu2_2/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu2_2_final_save_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320032,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1/checkpoints/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu3_3/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu3_3_checkpoint_60.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320032,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1/checkpoints/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu3_3/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu3_3_checkpoint_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320032,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1/checkpoints/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu3_3/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu3_3_final_save_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320032,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1/checkpoints/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu1_1/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu1_1_checkpoint_60.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320032,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1/checkpoints/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu1_1/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu1_1_checkpoint_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320032,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1/checkpoints/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu1_1/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu1_1_final_save_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320032,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1/checkpoints/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu0_0/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu0_0_checkpoint_60.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320032,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1/checkpoints/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu0_0/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu0_0_checkpoint_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320032,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1/checkpoints/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu0_0/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu0_0_final_save_120.pt",
+            "size_bytes": 163853170
+          }
+        ],
+        "ready": true,
+        "returncode": 0,
+        "stderr_tail": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n",
+        "total_allocated_bytes": 1966276608,
+        "total_size_bytes": 1966238040
+      },
+      "backend_audit": {
+        "accepted_task_count": 4,
+        "expected_task_count": 4,
+        "markers": [
+          "BENCH_START backend=torch_transformers device='NVIDIA GeForce RTX 2080 Ti' model_id=distilgpt2 mode=forward batch=2 seq_len=128 dtype=float16 label=critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu0_0",
+          "BENCH_START backend=torch_transformers device='NVIDIA GeForce RTX 2080 Ti' model_id=distilgpt2 mode=forward batch=2 seq_len=128 dtype=float16 label=critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu1_1",
+          "BENCH_START backend=torch_transformers device='NVIDIA GeForce RTX 2080 Ti' model_id=distilgpt2 mode=forward batch=2 seq_len=128 dtype=float16 label=critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu2_2",
+          "BENCH_START backend=torch_transformers device='NVIDIA GeForce RTX 2080 Ti' model_id=distilgpt2 mode=forward batch=2 seq_len=128 dtype=float16 label=critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu3_3"
+        ],
+        "ready": true
+      },
+      "capacity_boundary": false,
+      "cell_id": "node007_gpu_llm_distilgpt2_p1_r00",
+      "checkpoint_allocation_ready": true,
+      "completion_audit": {
+        "all_completion_models_ready": true,
+        "all_natural_exit": true,
+        "checkpoint_or_finalization_observed": true,
+        "ready": true,
+        "task_count": 4
+      },
+      "elapsed_wall_s": 169.92629194259644,
+      "gpus": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "hardware_class": "NVIDIA_RTX_2080Ti_11GB",
+      "max_iters": 120,
+      "measurement_protocol": "critical_gpu_phase_completion_v1",
+      "node": "node007",
+      "node_bucket": "gpu_2080ti_11gb_quad",
+      "node_role": "representative",
+      "preflight": {
+        "compute_process_rows": [],
+        "idle_memory_limit_mb": 512,
+        "idle_util_limit_pct": 5,
+        "ready": true,
+        "returncode": 0,
+        "selected_gpus": [
+          {
+            "index": 0,
+            "name": "NVIDIA GeForce RTX 2080 Ti",
+            "total_mb": 11264,
+            "used_mb": 1,
+            "util_pct": 0
+          },
+          {
+            "index": 1,
+            "name": "NVIDIA GeForce RTX 2080 Ti",
+            "total_mb": 11264,
+            "used_mb": 1,
+            "util_pct": 0
+          },
+          {
+            "index": 2,
+            "name": "NVIDIA GeForce RTX 2080 Ti",
+            "total_mb": 11264,
+            "used_mb": 1,
+            "util_pct": 0
+          },
+          {
+            "index": 3,
+            "name": "NVIDIA GeForce RTX 2080 Ti",
+            "total_mb": 11264,
+            "used_mb": 1,
+            "util_pct": 0
+          }
+        ],
+        "stderr_tail": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n"
+      },
+      "probe_result": {
+        "completion_model_ready_count": 4,
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "node": "node007",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 4,
+        "run_id": "critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1",
+        "stable_rate_ready_count": 4,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "profile": 1,
+      "profile_axis": "tasks_per_gpu",
+      "quadrant": "q01",
+      "ready": true,
+      "remote_cleanup": {
+        "ready": true,
+        "returncode": 0,
+        "stderr": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n",
+        "stdout": ""
+      },
+      "remote_output_root": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1",
+      "run_id": "critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1",
+      "split_role": "smoke_excluded",
+      "status": "READY",
+      "summary": {
+        "aggregate_active_rate_unit_s": 180.9,
+        "aggregate_stable_rate_unit_s": 781.8046790000001,
+        "all_completion_models_ready": true,
+        "all_stable_rate_ready": true,
+        "blocked_count": 0,
+        "capacity_boundary": false,
+        "completion_model_count": 4,
+        "completion_model_ready_count": 4,
+        "coordinated_profile_launch": true,
+        "elapsed_wall_s": 37.33570981025696,
+        "eviction_count": 0,
+        "expected_per_gpu_running": {
+          "0": 1,
+          "1": 1,
+          "2": 1,
+          "3": 1
+        },
+        "gpus": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "max_iters": 120,
+        "mean_active_rate_unit_s": 45.225,
+        "mean_stable_rate_unit_s": 195.45116975,
+        "measurement_aggregate_rate_unit_s_median": 180.9,
+        "measurement_valid": true,
+        "min_rate_samples": 12,
+        "node": "node007",
+        "per_gpu_running": {
+          "0": 1,
+          "1": 1,
+          "2": 1,
+          "3": 1
+        },
+        "phase": "profile_1_per_gpu",
+        "placement_issues": [],
+        "placement_valid": true,
+        "probe": "remote_workload_selected_profile_probe",
+        "profile": 1,
+        "rate_units": [
+          "step"
+        ],
+        "rates_unit_s": [
+          33.17,
+          45.85,
+          45.83,
+          56.05
+        ],
+        "require_completion_model": true,
+        "require_stable_rate": true,
+        "returncode_acceptance_rule": "strict_zero_or_stable_required_rate",
+        "returncode_accepted_count": 4,
+        "returncode_valid_count": 4,
+        "rows": [
+          {
+            "completion_model": {
+              "amortized_unit_s": 0.04032880620798096,
+              "base_unit_s": 0.004885454406030476,
+              "checkpoint_observed_s": 2.9939184461254627,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 0.04032880620798096,
+              "counter_offset": 0,
+              "finalization_after_last_progress_s": 1.7828048109076917,
+              "first_progress_unit": 0,
+              "interval_sample_count": 24,
+              "last_progress_unit": 120,
+              "loop_observed_units": 120,
+              "loop_wall_s": 4.839456744957715,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 4.253202216234058,
+              "phase_durations_s": {
+                "checkpoint": [
+                  1.3560055932030082,
+                  1.6379128529224545
+                ],
+                "final_save": [
+                  0.6989227561280131
+                ],
+                "initialization": [
+                  7.374265101039782
+                ],
+                "outer_loop": [
+                  3.6195964568760246
+                ],
+                "warmup": [
+                  0.8940724448766559
+                ]
+              },
+              "predicted_total_s": 13.75745971291326,
+              "progress_observation_count": 25,
+              "readiness_reason": "ready",
+              "save_observed_s": 0.6989227561280131,
+              "schema_version": 1,
+              "startup_overhead_s": 7.135198157047853,
+              "startup_to_first_progress_s": 7.135198157047853,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 1.7828048109076917,
+              "total_units": 120,
+              "total_wall_s": 13.75745971291326,
+              "unit": "step"
+            },
+            "completion_model_ready": true,
+            "global_index": 0,
+            "gpu": 0,
+            "idx": 0,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1/raw/profile_1_per_gpu/gpu0_0.log",
+            "rate": 33.17,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu0_0",
+            "seed": 830000,
+            "stable_cv": 0.0681211647,
+            "stable_last_two_relative_delta": 0.0774132936,
+            "stable_mean_rate": 188.33133,
+            "stable_rate": 203.676533,
+            "stable_rate_ready": true,
+            "stable_samples": 15,
+            "stable_tail_rates": [
+              172.2753,
+              189.042157,
+              203.676533
+            ],
+            "unit": "step"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 0.032065154383114226,
+              "base_unit_s": 0.005030397605150938,
+              "checkpoint_observed_s": 2.046130490023643,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 0.032065154383114226,
+              "counter_offset": 0,
+              "finalization_after_last_progress_s": 2.4673909321427345,
+              "first_progress_unit": 0,
+              "interval_sample_count": 24,
+              "last_progress_unit": 120,
+              "loop_observed_units": 120,
+              "loop_wall_s": 3.8478185259737074,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 3.244170813355595,
+              "phase_durations_s": {
+                "checkpoint": [
+                  1.315905479947105,
+                  0.7302250100765377
+                ],
+                "final_save": [
+                  1.235957738943398
+                ],
+                "initialization": [
+                  7.364736185176298
+                ],
+                "outer_loop": [
+                  2.61868333700113
+                ],
+                "warmup": [
+                  0.8894073299597949
+                ]
+              },
+              "predicted_total_s": 13.387834344990551,
+              "progress_observation_count": 25,
+              "readiness_reason": "ready",
+              "save_observed_s": 1.235957738943398,
+              "schema_version": 1,
+              "startup_overhead_s": 7.0726248868741095,
+              "startup_to_first_progress_s": 7.0726248868741095,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 2.4673909321427345,
+              "total_units": 120,
+              "total_wall_s": 13.387834344990551,
+              "unit": "step"
+            },
+            "completion_model_ready": true,
+            "global_index": 1,
+            "gpu": 1,
+            "idx": 0,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1/raw/profile_1_per_gpu/gpu1_0.log",
+            "rate": 45.85,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu1_1",
+            "seed": 830001,
+            "stable_cv": 0.0701951081,
+            "stable_last_two_relative_delta": 0.0750664035,
+            "stable_mean_rate": 181.95686,
+            "stable_rate": 196.944974,
+            "stable_rate_ready": true,
+            "stable_samples": 15,
+            "stable_tail_rates": [
+              165.732296,
+              183.193311,
+              196.944974
+            ],
+            "unit": "step"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 0.029972191967923816,
+              "base_unit_s": 0.004780986602418125,
+              "checkpoint_observed_s": 2.0933804700616747,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 0.029972191967923816,
+              "counter_offset": 0,
+              "finalization_after_last_progress_s": 2.681841742945835,
+              "first_progress_unit": 0,
+              "interval_sample_count": 24,
+              "last_progress_unit": 120,
+              "loop_observed_units": 120,
+              "loop_wall_s": 3.596663036150858,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 3.022944643860683,
+              "phase_durations_s": {
+                "checkpoint": [
+                  0.5338125629350543,
+                  1.5595679071266204
+                ],
+                "final_save": [
+                  1.676787368953228
+                ],
+                "initialization": [
+                  6.938799004070461
+                ],
+                "outer_loop": [
+                  2.6201625829562545
+                ],
+                "warmup": [
+                  0.7417714779730886
+                ]
+              },
+              "predicted_total_s": 13.031284495955333,
+              "progress_observation_count": 25,
+              "readiness_reason": "ready",
+              "save_observed_s": 1.676787368953228,
+              "schema_version": 1,
+              "startup_overhead_s": 6.75277971685864,
+              "startup_to_first_progress_s": 6.75277971685864,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 2.681841742945835,
+              "total_units": 120,
+              "total_wall_s": 13.031284495955333,
+              "unit": "step"
+            },
+            "completion_model_ready": true,
+            "global_index": 2,
+            "gpu": 2,
+            "idx": 0,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1/raw/profile_1_per_gpu/gpu2_0.log",
+            "rate": 45.83,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu2_2",
+            "seed": 830002,
+            "stable_cv": 0.0739520253,
+            "stable_last_two_relative_delta": 0.0791998608,
+            "stable_mean_rate": 190.432221,
+            "stable_rate": 206.96746,
+            "stable_rate_ready": true,
+            "stable_samples": 14,
+            "stable_tail_rates": [
+              172.550584,
+              191.77862,
+              206.96746
+            ],
+            "unit": "step"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 0.026814414981830244,
+              "base_unit_s": 0.005705397995188832,
+              "checkpoint_observed_s": 1.5684830241370946,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 0.026814414981830244,
+              "counter_offset": 0,
+              "finalization_after_last_progress_s": 2.7467902721837163,
+              "first_progress_unit": 0,
+              "interval_sample_count": 24,
+              "last_progress_unit": 120,
+              "loop_observed_units": 120,
+              "loop_wall_s": 3.2177297978196293,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 2.5330820383969694,
+              "phase_durations_s": {
+                "checkpoint": [
+                  0.6311372700147331,
+                  0.9373457541223615
+                ],
+                "final_save": [
+                  1.7158251290675253
+                ],
+                "initialization": [
+                  7.387884990079328
+                ],
+                "outer_loop": [
+                  2.1421828309539706
+                ],
+                "warmup": [
+                  0.7255051031243056
+                ]
+              },
+              "predicted_total_s": 13.084148803027347,
+              "progress_observation_count": 25,
+              "readiness_reason": "ready",
+              "save_observed_s": 1.7158251290675253,
+              "schema_version": 1,
+              "startup_overhead_s": 7.119628733024001,
+              "startup_to_first_progress_s": 7.119628733024001,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 2.7467902721837163,
+              "total_units": 120,
+              "total_wall_s": 13.084148803027347,
+              "unit": "step"
+            },
+            "completion_model_ready": true,
+            "global_index": 3,
+            "gpu": 3,
+            "idx": 0,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1/raw/profile_1_per_gpu/gpu3_0.log",
+            "rate": 56.05,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1_profile_1_per_gpu_gpu3_3",
+            "seed": 830003,
+            "stable_cv": 0.0661037885,
+            "stable_last_two_relative_delta": 0.0381026415,
+            "stable_mean_rate": 163.597679,
+            "stable_rate": 174.215712,
+            "stable_rate_ready": true,
+            "stable_samples": 14,
+            "stable_tail_rates": [
+              148.756047,
+              167.821278,
+              174.215712
+            ],
+            "unit": "step"
+          }
+        ],
+        "run_id": "critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1",
+        "running_count": 4,
+        "running_with_rate_count": 4,
+        "stable_cv_threshold": 0.1,
+        "stable_cycle_units": 0,
+        "stable_rate_ready_count": 4,
+        "stable_rates_unit_s": [
+          203.676533,
+          196.944974,
+          206.96746,
+          174.215712
+        ],
+        "stable_rel_delta_threshold": 0.08,
+        "stable_skip_samples": 2,
+        "stable_windows": 3,
+        "status_counts": {
+          "missing_rate": 0,
+          "sampled": 4
+        },
+        "terminate_on_stable": false,
+        "timeout_s": 5400,
+        "transport_mode": "foreground_ssh"
+      },
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_node007_r00_gpu_llm_distilgpt2_p1_20260803_gpu_llm_distilgpt2_p1/reports/profile_1_per_gpu_summary.json",
+      "timeout_s": 5400,
+      "total_task_count": 4,
+      "wave": 0,
+      "workload_env": "distilgpt2_forward_fp16_b2_s128",
+      "workload_key": "gpu_llm_distilgpt2"
+    }
+  ],
+  "selection": {
+    "filtered": true,
+    "profiles": [
+      1
+    ],
+    "workload_keys": [
+      "gpu_llm_distilgpt2"
+    ]
+  },
+  "split_role": "smoke_excluded",
+  "status": "PASS",
+  "task_native_progress_required": true,
+  "terminate_on_stable": false,
+  "wait_row_count": 0,
+  "wave": 0
+}

@@ -1,0 +1,337 @@
+{
+  "admitted_count": 1,
+  "admitted_rows": [
+    {
+      "cwd": "/home/erzhu419/mine_code/scheduleurm",
+      "eta_source_required": "tqdm/progress",
+      "gpus": [
+        0,
+        1
+      ],
+      "hard_rule_mode": "clean_bench_direct_remote",
+      "hardware_class": "gpu_3080ti_12gb_dual",
+      "launched": true,
+      "legacy_scheduler_limits_bypassed": true,
+      "measurement_valid": true,
+      "node": "jtl110gpu2",
+      "node_bucket": "jtl110gpu2:gpu_3080ti_12gb_dual",
+      "probe_result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1
+        ],
+        "node": "jtl110gpu2",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 2,
+        "run_id": "live_extra_eta_jtl110gpu2_equiv_retry_20260629_jtl110gpu2_llm_equiv",
+        "stable_rate_ready_count": 2,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/live_extra_eta_jtl110gpu2_equiv_retry_20260629_jtl110gpu2_llm_equiv/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "profile_rows": [
+        {
+          "aggregate_stable_rate_unit_s": 993.109776,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 496.554888,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 1,
+          "running_count": 2,
+          "stable_rate_ready_count": 2,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 2
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/live_extra_eta_jtl110gpu2_equiv_retry_20260629_jtl110gpu2_llm_equiv/reports/profile_1_per_gpu_summary.json"
+        }
+      ],
+      "profiles": [
+        1
+      ],
+      "reason": "",
+      "resource_kind": "gpu_llm",
+      "resource_state": "empty",
+      "run_id": "live_extra_eta_jtl110gpu2_equiv_retry_20260629_jtl110gpu2_llm_equiv",
+      "run_prefix": "live_extra_eta_jtl110gpu2_equiv_retry_20260629",
+      "spec_id": "jtl110gpu2_llm_equiv",
+      "template": "/home/erzhu419/mine_code/scheduleurm/algorithm/experiments/templates/torch_llm_distilgpt2.cmd.tpl",
+      "total_units": 64.0,
+      "unit": "iter",
+      "workload_env": "llm",
+      "workload_key": "gpu_llm_distilgpt2"
+    }
+  ],
+  "allow_launch": true,
+  "boundary_count": 1,
+  "boundary_rows": [
+    {
+      "cwd": "/home/erzhu419/mine_code/scheduleurm",
+      "eta_source_required": "tqdm/progress",
+      "gpus": [
+        0,
+        1
+      ],
+      "hard_rule_mode": "clean_bench_direct_remote",
+      "hardware_class": "gpu_3080ti_12gb_dual",
+      "launched": true,
+      "legacy_scheduler_limits_bypassed": true,
+      "measurement_valid": false,
+      "node": "jtl110gpu2",
+      "node_bucket": "jtl110gpu2:gpu_3080ti_12gb_dual",
+      "probe_result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1
+        ],
+        "node": "jtl110gpu2",
+        "pass": false,
+        "profiles": [
+          1,
+          2
+        ],
+        "rate_count": 0,
+        "run_id": "live_extra_eta_jtl110gpu2_equiv_retry_20260629_jtl110gpu2_cnn_equiv",
+        "stable_rate_ready_count": 0,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/live_extra_eta_jtl110gpu2_equiv_retry_20260629_jtl110gpu2_cnn_equiv/reports/profile_1_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/live_extra_eta_jtl110gpu2_equiv_retry_20260629_jtl110gpu2_cnn_equiv/reports/profile_2_per_gpu_summary.json"
+        ]
+      },
+      "profile_rows": [
+        {
+          "aggregate_stable_rate_unit_s": 0.0,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.0,
+          "measurement_valid": false,
+          "path_exists": true,
+          "profile": 1,
+          "running_count": 2,
+          "stable_rate_ready_count": 0,
+          "status_counts": {
+            "missing_rate": 2,
+            "sampled": 0
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/live_extra_eta_jtl110gpu2_equiv_retry_20260629_jtl110gpu2_cnn_equiv/reports/profile_1_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.0,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.0,
+          "measurement_valid": false,
+          "path_exists": true,
+          "profile": 2,
+          "running_count": 4,
+          "stable_rate_ready_count": 0,
+          "status_counts": {
+            "missing_rate": 4,
+            "sampled": 0
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/live_extra_eta_jtl110gpu2_equiv_retry_20260629_jtl110gpu2_cnn_equiv/reports/profile_2_per_gpu_summary.json"
+        }
+      ],
+      "profiles": [
+        1,
+        2
+      ],
+      "reason": "one_or_more_profiles_unstable_or_missing",
+      "resource_kind": "gpu_cnn",
+      "resource_state": "empty",
+      "run_id": "live_extra_eta_jtl110gpu2_equiv_retry_20260629_jtl110gpu2_cnn_equiv",
+      "run_prefix": "live_extra_eta_jtl110gpu2_equiv_retry_20260629",
+      "spec_id": "jtl110gpu2_cnn_equiv",
+      "template": "/home/erzhu419/mine_code/scheduleurm/algorithm/experiments/templates/torch_cnn_resnet50.cmd.tpl",
+      "total_units": 80.0,
+      "unit": "iter",
+      "workload_env": "cnn",
+      "workload_key": "gpu_cnn_torch_resnet50"
+    }
+  ],
+  "gate": "live_extra_eta_measurements",
+  "pass": false,
+  "pending_count": 0,
+  "pending_rows": [],
+  "row_count": 2,
+  "rows": [
+    {
+      "cwd": "/home/erzhu419/mine_code/scheduleurm",
+      "eta_source_required": "tqdm/progress",
+      "gpus": [
+        0,
+        1
+      ],
+      "hard_rule_mode": "clean_bench_direct_remote",
+      "hardware_class": "gpu_3080ti_12gb_dual",
+      "launched": true,
+      "legacy_scheduler_limits_bypassed": true,
+      "measurement_valid": false,
+      "node": "jtl110gpu2",
+      "node_bucket": "jtl110gpu2:gpu_3080ti_12gb_dual",
+      "probe_result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1
+        ],
+        "node": "jtl110gpu2",
+        "pass": false,
+        "profiles": [
+          1,
+          2
+        ],
+        "rate_count": 0,
+        "run_id": "live_extra_eta_jtl110gpu2_equiv_retry_20260629_jtl110gpu2_cnn_equiv",
+        "stable_rate_ready_count": 0,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/live_extra_eta_jtl110gpu2_equiv_retry_20260629_jtl110gpu2_cnn_equiv/reports/profile_1_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/live_extra_eta_jtl110gpu2_equiv_retry_20260629_jtl110gpu2_cnn_equiv/reports/profile_2_per_gpu_summary.json"
+        ]
+      },
+      "profile_rows": [
+        {
+          "aggregate_stable_rate_unit_s": 0.0,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.0,
+          "measurement_valid": false,
+          "path_exists": true,
+          "profile": 1,
+          "running_count": 2,
+          "stable_rate_ready_count": 0,
+          "status_counts": {
+            "missing_rate": 2,
+            "sampled": 0
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/live_extra_eta_jtl110gpu2_equiv_retry_20260629_jtl110gpu2_cnn_equiv/reports/profile_1_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.0,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.0,
+          "measurement_valid": false,
+          "path_exists": true,
+          "profile": 2,
+          "running_count": 4,
+          "stable_rate_ready_count": 0,
+          "status_counts": {
+            "missing_rate": 4,
+            "sampled": 0
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/live_extra_eta_jtl110gpu2_equiv_retry_20260629_jtl110gpu2_cnn_equiv/reports/profile_2_per_gpu_summary.json"
+        }
+      ],
+      "profiles": [
+        1,
+        2
+      ],
+      "reason": "one_or_more_profiles_unstable_or_missing",
+      "resource_kind": "gpu_cnn",
+      "resource_state": "empty",
+      "run_id": "live_extra_eta_jtl110gpu2_equiv_retry_20260629_jtl110gpu2_cnn_equiv",
+      "run_prefix": "live_extra_eta_jtl110gpu2_equiv_retry_20260629",
+      "spec_id": "jtl110gpu2_cnn_equiv",
+      "template": "/home/erzhu419/mine_code/scheduleurm/algorithm/experiments/templates/torch_cnn_resnet50.cmd.tpl",
+      "total_units": 80.0,
+      "unit": "iter",
+      "workload_env": "cnn",
+      "workload_key": "gpu_cnn_torch_resnet50"
+    },
+    {
+      "cwd": "/home/erzhu419/mine_code/scheduleurm",
+      "eta_source_required": "tqdm/progress",
+      "gpus": [
+        0,
+        1
+      ],
+      "hard_rule_mode": "clean_bench_direct_remote",
+      "hardware_class": "gpu_3080ti_12gb_dual",
+      "launched": true,
+      "legacy_scheduler_limits_bypassed": true,
+      "measurement_valid": true,
+      "node": "jtl110gpu2",
+      "node_bucket": "jtl110gpu2:gpu_3080ti_12gb_dual",
+      "probe_result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1
+        ],
+        "node": "jtl110gpu2",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 2,
+        "run_id": "live_extra_eta_jtl110gpu2_equiv_retry_20260629_jtl110gpu2_llm_equiv",
+        "stable_rate_ready_count": 2,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/live_extra_eta_jtl110gpu2_equiv_retry_20260629_jtl110gpu2_llm_equiv/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "profile_rows": [
+        {
+          "aggregate_stable_rate_unit_s": 993.109776,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 496.554888,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 1,
+          "running_count": 2,
+          "stable_rate_ready_count": 2,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 2
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/live_extra_eta_jtl110gpu2_equiv_retry_20260629_jtl110gpu2_llm_equiv/reports/profile_1_per_gpu_summary.json"
+        }
+      ],
+      "profiles": [
+        1
+      ],
+      "reason": "",
+      "resource_kind": "gpu_llm",
+      "resource_state": "empty",
+      "run_id": "live_extra_eta_jtl110gpu2_equiv_retry_20260629_jtl110gpu2_llm_equiv",
+      "run_prefix": "live_extra_eta_jtl110gpu2_equiv_retry_20260629",
+      "spec_id": "jtl110gpu2_llm_equiv",
+      "template": "/home/erzhu419/mine_code/scheduleurm/algorithm/experiments/templates/torch_llm_distilgpt2.cmd.tpl",
+      "total_units": 64.0,
+      "unit": "iter",
+      "workload_env": "llm",
+      "workload_key": "gpu_llm_distilgpt2"
+    }
+  ],
+  "run_prefix": "live_extra_eta_jtl110gpu2_equiv_retry_20260629",
+  "scope": "Controlled extra task-native ETA rows for equivalent hardware checks and node/env-aware RL service. Legacy scheduler hard limits are bypassed; ordinary user tasks are never launched or migrated by this gate.",
+  "service_cache_snapshot": {
+    "records": [
+      {
+        "aggregate_rate": 496.554888,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_extra_eta:jtl110gpu2_llm_equiv",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "node_bucket": "jtl110gpu2:gpu_3080ti_12gb_dual",
+        "per_task_rates": [
+          452.516297,
+          540.593479
+        ],
+        "profile": 1,
+        "resource_kind": "gpu_llm",
+        "resource_state": "empty",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/live_extra_eta_jtl110gpu2_equiv_retry_20260629_jtl110gpu2_llm_equiv/reports/profile_1_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 64.0,
+        "unit": "step",
+        "workload_env": "llm",
+        "workload_key": "gpu_llm_distilgpt2"
+      }
+    ]
+  },
+  "status": "LIVE_EXTRA_ETA_OPEN"
+}

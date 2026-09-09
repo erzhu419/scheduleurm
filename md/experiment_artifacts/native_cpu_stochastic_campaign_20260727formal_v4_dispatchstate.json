@@ -1,0 +1,217 @@
+{
+  "all_waves_ready": true,
+  "allow_launch": true,
+  "campaign": "native_cpu_stochastic_calibration",
+  "claim_boundary": "All six node001-node006 lanes are used in every wave. Training, calibration, and holdout seeds are disjoint, and all admitted rows use a paired seed across same-workload nodes within each wave. They must use task-native durable progress in the same dispatch-time load and warm-cache cell. Full-run external load is retained as an outcome audit and is never used to select the conformal stratum.",
+  "completed_wave_count": 13,
+  "deployment_ready": true,
+  "deployment_rows": [
+    {
+      "node": "node001",
+      "ready": true
+    },
+    {
+      "node": "node002",
+      "ready": true
+    },
+    {
+      "node": "node003",
+      "ready": true
+    },
+    {
+      "node": "node004",
+      "ready": true
+    },
+    {
+      "node": "node005",
+      "ready": true
+    },
+    {
+      "node": "node006",
+      "ready": true
+    }
+  ],
+  "dispatch_cpu_sample_window_s": 1.0,
+  "elapsed_wall_s": 2217.2777812480927,
+  "force": false,
+  "gate_pass": false,
+  "gate_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/native_cpu_stochastic_lcb_gate_20260727formal_v4_dispatchstate.json",
+  "measurement_protocol": "dispatch_snapshot_and_run_window_v2",
+  "miscoverage_alpha": 0.1,
+  "paired_seed_within_workload_wave": true,
+  "schema_version": 1,
+  "status": "GATE_FAIL",
+  "tag": "20260727formal_v4_dispatchstate",
+  "wave_count": 13,
+  "waves": [
+    {
+      "action": "LAUNCHED",
+      "admitted_count": 6,
+      "elapsed_wall_s": 163.64687943458557,
+      "ordinal": 1,
+      "output": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/native_cpu_stochastic_training_r01_20260727formal_v4_dispatchstate.json",
+      "ready": true,
+      "replicate": 1,
+      "role": "training",
+      "run_id": "native_cpu_stochastic_training_r01_20260727formal_v4_dispatchstate",
+      "seed_offset": 1000,
+      "selected_count": 6
+    },
+    {
+      "action": "LAUNCHED",
+      "admitted_count": 6,
+      "elapsed_wall_s": 157.56586360931396,
+      "ordinal": 2,
+      "output": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/native_cpu_stochastic_training_r02_20260727formal_v4_dispatchstate.json",
+      "ready": true,
+      "replicate": 2,
+      "role": "training",
+      "run_id": "native_cpu_stochastic_training_r02_20260727formal_v4_dispatchstate",
+      "seed_offset": 2000,
+      "selected_count": 6
+    },
+    {
+      "action": "LAUNCHED",
+      "admitted_count": 6,
+      "elapsed_wall_s": 179.8402214050293,
+      "ordinal": 3,
+      "output": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/native_cpu_stochastic_training_r03_20260727formal_v4_dispatchstate.json",
+      "ready": true,
+      "replicate": 3,
+      "role": "training",
+      "run_id": "native_cpu_stochastic_training_r03_20260727formal_v4_dispatchstate",
+      "seed_offset": 3000,
+      "selected_count": 6
+    },
+    {
+      "action": "LAUNCHED",
+      "admitted_count": 6,
+      "elapsed_wall_s": 175.12508130073547,
+      "ordinal": 4,
+      "output": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/native_cpu_stochastic_calibration_r01_20260727formal_v4_dispatchstate.json",
+      "ready": true,
+      "replicate": 1,
+      "role": "calibration",
+      "run_id": "native_cpu_stochastic_calibration_r01_20260727formal_v4_dispatchstate",
+      "seed_offset": 4000,
+      "selected_count": 6
+    },
+    {
+      "action": "LAUNCHED",
+      "admitted_count": 6,
+      "elapsed_wall_s": 175.94179606437683,
+      "ordinal": 5,
+      "output": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/native_cpu_stochastic_calibration_r02_20260727formal_v4_dispatchstate.json",
+      "ready": true,
+      "replicate": 2,
+      "role": "calibration",
+      "run_id": "native_cpu_stochastic_calibration_r02_20260727formal_v4_dispatchstate",
+      "seed_offset": 5000,
+      "selected_count": 6
+    },
+    {
+      "action": "LAUNCHED",
+      "admitted_count": 6,
+      "elapsed_wall_s": 179.30070781707764,
+      "ordinal": 6,
+      "output": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/native_cpu_stochastic_calibration_r03_20260727formal_v4_dispatchstate.json",
+      "ready": true,
+      "replicate": 3,
+      "role": "calibration",
+      "run_id": "native_cpu_stochastic_calibration_r03_20260727formal_v4_dispatchstate",
+      "seed_offset": 6000,
+      "selected_count": 6
+    },
+    {
+      "action": "LAUNCHED",
+      "admitted_count": 6,
+      "elapsed_wall_s": 180.32319283485413,
+      "ordinal": 7,
+      "output": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/native_cpu_stochastic_calibration_r04_20260727formal_v4_dispatchstate.json",
+      "ready": true,
+      "replicate": 4,
+      "role": "calibration",
+      "run_id": "native_cpu_stochastic_calibration_r04_20260727formal_v4_dispatchstate",
+      "seed_offset": 7000,
+      "selected_count": 6
+    },
+    {
+      "action": "LAUNCHED",
+      "admitted_count": 6,
+      "elapsed_wall_s": 146.61556220054626,
+      "ordinal": 8,
+      "output": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/native_cpu_stochastic_calibration_r05_20260727formal_v4_dispatchstate.json",
+      "ready": true,
+      "replicate": 5,
+      "role": "calibration",
+      "run_id": "native_cpu_stochastic_calibration_r05_20260727formal_v4_dispatchstate",
+      "seed_offset": 8000,
+      "selected_count": 6
+    },
+    {
+      "action": "LAUNCHED",
+      "admitted_count": 6,
+      "elapsed_wall_s": 168.66937804222107,
+      "ordinal": 9,
+      "output": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/native_cpu_stochastic_calibration_r06_20260727formal_v4_dispatchstate.json",
+      "ready": true,
+      "replicate": 6,
+      "role": "calibration",
+      "run_id": "native_cpu_stochastic_calibration_r06_20260727formal_v4_dispatchstate",
+      "seed_offset": 9000,
+      "selected_count": 6
+    },
+    {
+      "action": "LAUNCHED",
+      "admitted_count": 6,
+      "elapsed_wall_s": 187.36135911941528,
+      "ordinal": 10,
+      "output": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/native_cpu_stochastic_calibration_r07_20260727formal_v4_dispatchstate.json",
+      "ready": true,
+      "replicate": 7,
+      "role": "calibration",
+      "run_id": "native_cpu_stochastic_calibration_r07_20260727formal_v4_dispatchstate",
+      "seed_offset": 10000,
+      "selected_count": 6
+    },
+    {
+      "action": "LAUNCHED",
+      "admitted_count": 6,
+      "elapsed_wall_s": 163.52019381523132,
+      "ordinal": 11,
+      "output": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/native_cpu_stochastic_calibration_r08_20260727formal_v4_dispatchstate.json",
+      "ready": true,
+      "replicate": 8,
+      "role": "calibration",
+      "run_id": "native_cpu_stochastic_calibration_r08_20260727formal_v4_dispatchstate",
+      "seed_offset": 11000,
+      "selected_count": 6
+    },
+    {
+      "action": "LAUNCHED",
+      "admitted_count": 6,
+      "elapsed_wall_s": 162.33226013183594,
+      "ordinal": 12,
+      "output": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/native_cpu_stochastic_calibration_r09_20260727formal_v4_dispatchstate.json",
+      "ready": true,
+      "replicate": 9,
+      "role": "calibration",
+      "run_id": "native_cpu_stochastic_calibration_r09_20260727formal_v4_dispatchstate",
+      "seed_offset": 12000,
+      "selected_count": 6
+    },
+    {
+      "action": "LAUNCHED",
+      "admitted_count": 6,
+      "elapsed_wall_s": 162.2770209312439,
+      "ordinal": 13,
+      "output": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/native_cpu_stochastic_holdout_r01_20260727formal_v4_dispatchstate.json",
+      "ready": true,
+      "replicate": 1,
+      "role": "holdout",
+      "run_id": "native_cpu_stochastic_holdout_r01_20260727formal_v4_dispatchstate",
+      "seed_offset": 13000,
+      "selected_count": 6
+    }
+  ]
+}

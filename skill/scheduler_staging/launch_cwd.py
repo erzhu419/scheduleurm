@@ -205,7 +205,7 @@ def _launch_input_paths(task: dict) -> list[str]:
         if str(path).strip()
     ]
     if explicit:
-        return list(dict.fromkeys(explicit))
+        return _minimal_directory_roots(explicit)
     # Backward compatibility for queued dependency chains created before
     # stage_input_paths existed: a ready prerequisite file is an input, so
     # stage its smallest meaningful containing directory.  Keep this scoped
@@ -227,7 +227,25 @@ def _launch_input_paths(task: dict) -> list[str]:
         except ValueError:
             continue
         inferred.append(str(parent))
-    return list(dict.fromkeys(inferred))
+    return _minimal_directory_roots(inferred)
+
+
+def _minimal_directory_roots(paths: list[str]) -> list[str]:
+    """Collapse duplicate and nested launch inputs to their shallowest roots."""
+    canonical = list(dict.fromkeys(
+        os.path.realpath(os.path.abspath(os.path.expanduser(str(path))))
+        for path in paths
+        if str(path).strip()
+    ))
+    roots: list[Path] = []
+    for candidate_text in sorted(
+            canonical, key=lambda value: (len(Path(value).parts), value)):
+        candidate = Path(candidate_text)
+        if any(candidate == root or candidate.is_relative_to(root)
+               for root in roots):
+            continue
+        roots.append(candidate)
+    return [str(root) for root in roots]
 
 
 def launch_input_stage_state(

@@ -1,0 +1,336 @@
+{
+  "all_completion_models_ready": true,
+  "allow_launch": true,
+  "claim_boundary": "These are natural-completion calibration cells. FreqDuet and SUMO rows remain explicit surrogates until their native checkpointable commands are run. External resident load is observational and is never relabelled as an empty-state cell.",
+  "completion_model_ready_count": 3,
+  "elapsed_wall_s": 184.83157467842102,
+  "gate": "phase_aware_cpu_completion_matrix",
+  "hardware_group": "gpu_rtx2080_8gb_dual_cpu_fast",
+  "matrix": "jtl311_cpu_curve",
+  "node_equivalence_contract": "jtl311linux is its own 8-core CPU-fast hardware class",
+  "repeat_index": 1,
+  "rows": [
+    {
+      "cell_id": "jtl311_cpu_p2",
+      "checkpoint_bytes": 8388608,
+      "checkpoint_interval": 40,
+      "child_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_jtl311_cpu_curve_long_holdout_20260727_r1_jtl311linux_jtl311_cpu_p2/raw/profile_1_per_gpu/gpu0_0.log",
+      "completion_model": {
+        "amortized_unit_s": 0.3110855257911703,
+        "base_unit_s": 0.31052065200492507,
+        "checkpoint_observed_s": 0.10047023599327076,
+        "child_returncode": 0,
+        "completion_model_ready": true,
+        "completion_unit_s": 0.3110855257911703,
+        "counter_offset": 0,
+        "finalization_after_last_progress_s": 0.055177208996610716,
+        "first_progress_unit": 2,
+        "interval_sample_count": 79,
+        "last_progress_unit": 160,
+        "loop_observed_units": 158,
+        "loop_wall_s": 49.151513075004914,
+        "model_abs_error_s": 0.0,
+        "model_relative_error": 0.0,
+        "natural_exit": true,
+        "periodic_extra_s": 0.08925005822675303,
+        "phase_durations_s": {
+          "checkpoint": [
+            0.02065210699220188,
+            0.025619549007387832,
+            0.023756153997965157,
+            0.030442425995715894
+          ],
+          "final_save": [
+            0.015167154997470789
+          ],
+          "initialization": [
+            3.080199530813843e-05
+          ],
+          "outer_loop": [
+            49.80729182199866
+          ]
+        },
+        "predicted_total_s": 49.86613408899575,
+        "progress_observation_count": 80,
+        "readiness_reason": "ready",
+        "save_observed_s": 0.015167154997470789,
+        "schema_version": 1,
+        "startup_overhead_s": 0.03727275341188485,
+        "startup_to_first_progress_s": 0.6594438049942255,
+        "stopped_on_stable": false,
+        "terminal_overhead_s": 0.055177208996610716,
+        "total_units": 160,
+        "total_wall_s": 49.86613408899575,
+        "unit": "step"
+      },
+      "completion_model_ready": true,
+      "declared_external_load_snapshot": 0.0,
+      "external_cpu_bucket": "external_c0_2",
+      "external_cpu_core_equiv": 0.017269916006376285,
+      "launched": true,
+      "measurement_valid": true,
+      "node": "jtl311linux",
+      "observed_external_load": 0.0,
+      "observed_resource_state": {
+        "external_cpu_core_equiv": 0.017269916006376285,
+        "load1_end": 1.28564453125,
+        "load1_start": 0.3505859375,
+        "load5_end": 1.55322265625,
+        "load5_start": 1.46923828125,
+        "logical_cpus": 16,
+        "measurement_wall_s": 49.80749425900285,
+        "own_cpu_core_equiv": 1.9918689240639225,
+        "own_cpu_s": 99.21000000000001,
+        "schema_version": 1,
+        "system_busy_core_equiv": 2.0091388400702987,
+        "system_busy_fraction": 0.12557117750439367,
+        "workers": 2
+      },
+      "probe_result": {
+        "completion_model_ready_count": 1,
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0
+        ],
+        "node": "jtl311linux",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 1,
+        "run_id": "phase_jtl311_cpu_curve_long_holdout_20260727_r1_jtl311linux_jtl311_cpu_p2",
+        "stable_rate_ready_count": 1,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/phase_jtl311_cpu_curve_long_holdout_20260727_r1_jtl311linux_jtl311_cpu_p2/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "resource_state": "empty",
+      "resource_telemetry_ready": true,
+      "run_id": "phase_jtl311_cpu_curve_long_holdout_20260727_r1_jtl311linux_jtl311_cpu_p2",
+      "status": "READY",
+      "steps": 160,
+      "storage_class": "shared_home",
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_jtl311_cpu_curve_long_holdout_20260727_r1_jtl311linux_jtl311_cpu_p2/reports/profile_1_per_gpu_summary.json",
+      "work_items": 1800000,
+      "workers": 2,
+      "workload_key": "cpu_heavy_local_bench",
+      "workload_label": "cpu"
+    },
+    {
+      "cell_id": "jtl311_cpu_p4",
+      "checkpoint_bytes": 8388608,
+      "checkpoint_interval": 40,
+      "child_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_jtl311_cpu_curve_long_holdout_20260727_r1_jtl311linux_jtl311_cpu_p4/raw/profile_1_per_gpu/gpu0_0.log",
+      "completion_model": {
+        "amortized_unit_s": 0.31452901224046503,
+        "base_unit_s": 0.31354797550011426,
+        "checkpoint_observed_s": 0.11776451799960341,
+        "child_returncode": 0,
+        "completion_model_ready": true,
+        "completion_unit_s": 0.31452901224046503,
+        "counter_offset": 0,
+        "finalization_after_last_progress_s": 0.05557578800653573,
+        "first_progress_unit": 2,
+        "interval_sample_count": 79,
+        "last_progress_unit": 160,
+        "loop_observed_units": 158,
+        "loop_wall_s": 49.695583933993476,
+        "model_abs_error_s": 7.105427357601002e-15,
+        "model_relative_error": 1.4093730635024706e-16,
+        "natural_exit": true,
+        "periodic_extra_s": 0.1550038049754221,
+        "phase_durations_s": {
+          "checkpoint": [
+            0.029678134000278078,
+            0.02744025699212216,
+            0.030128619007882662,
+            0.030517507999320515
+          ],
+          "final_save": [
+            0.015144287011935376
+          ],
+          "initialization": [
+            3.206299152225256e-05
+          ],
+          "outer_loop": [
+            50.35669566100114
+          ]
+        },
+        "predicted_total_s": 50.41551837199949,
+        "progress_observation_count": 80,
+        "readiness_reason": "ready",
+        "save_observed_s": 0.015144287011935376,
+        "schema_version": 1,
+        "startup_overhead_s": 0.035300625518555284,
+        "startup_to_first_progress_s": 0.6643586499994854,
+        "stopped_on_stable": false,
+        "terminal_overhead_s": 0.05557578800653573,
+        "total_units": 160,
+        "total_wall_s": 50.4155183719995,
+        "unit": "step"
+      },
+      "completion_model_ready": true,
+      "declared_external_load_snapshot": 0.0,
+      "external_cpu_bucket": "external_c0_2",
+      "external_cpu_core_equiv": 0.006799507727364151,
+      "launched": true,
+      "measurement_valid": true,
+      "node": "jtl311linux",
+      "observed_external_load": 0.0,
+      "observed_resource_state": {
+        "external_cpu_core_equiv": 0.006799507727364151,
+        "load1_end": 2.73828125,
+        "load1_start": 1.087890625,
+        "load5_end": 1.88916015625,
+        "load5_start": 1.501953125,
+        "logical_cpus": 16,
+        "measurement_wall_s": 50.35691959700489,
+        "own_cpu_core_equiv": 3.9780034522189993,
+        "own_cpu_s": 200.32000000000002,
+        "schema_version": 1,
+        "system_busy_core_equiv": 3.9848029599463635,
+        "system_busy_fraction": 0.24905018499664772,
+        "workers": 4
+      },
+      "probe_result": {
+        "completion_model_ready_count": 1,
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0
+        ],
+        "node": "jtl311linux",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 1,
+        "run_id": "phase_jtl311_cpu_curve_long_holdout_20260727_r1_jtl311linux_jtl311_cpu_p4",
+        "stable_rate_ready_count": 1,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/phase_jtl311_cpu_curve_long_holdout_20260727_r1_jtl311linux_jtl311_cpu_p4/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "resource_state": "empty",
+      "resource_telemetry_ready": true,
+      "run_id": "phase_jtl311_cpu_curve_long_holdout_20260727_r1_jtl311linux_jtl311_cpu_p4",
+      "status": "READY",
+      "steps": 160,
+      "storage_class": "shared_home",
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_jtl311_cpu_curve_long_holdout_20260727_r1_jtl311linux_jtl311_cpu_p4/reports/profile_1_per_gpu_summary.json",
+      "work_items": 1800000,
+      "workers": 4,
+      "workload_key": "cpu_heavy_local_bench",
+      "workload_label": "cpu"
+    },
+    {
+      "cell_id": "jtl311_cpu_p8",
+      "checkpoint_bytes": 8388608,
+      "checkpoint_interval": 40,
+      "child_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_jtl311_cpu_curve_long_holdout_20260727_r1_jtl311linux_jtl311_cpu_p8/raw/profile_1_per_gpu/gpu0_0.log",
+      "completion_model": {
+        "amortized_unit_s": 0.3649963625316962,
+        "base_unit_s": 0.367304826999316,
+        "checkpoint_observed_s": 0.09748775900516193,
+        "child_returncode": 0,
+        "completion_model_ready": true,
+        "completion_unit_s": 0.3649963625316962,
+        "counter_offset": 0,
+        "finalization_after_last_progress_s": 0.05003986299561802,
+        "first_progress_unit": 2,
+        "interval_sample_count": 79,
+        "last_progress_unit": 160,
+        "loop_observed_units": 158,
+        "loop_wall_s": 57.669425280008,
+        "model_abs_error_s": 7.105427357601002e-15,
+        "model_relative_error": 1.215640083528842e-16,
+        "natural_exit": true,
+        "periodic_extra_s": 0.0,
+        "phase_durations_s": {
+          "checkpoint": [
+            0.022537170007126406,
+            0.023313269994105212,
+            0.02593817400338594,
+            0.025699145000544377
+          ],
+          "final_save": [
+            0.01437739199900534
+          ],
+          "initialization": [
+            4.0031998651102185e-05
+          ],
+          "outer_loop": [
+            58.392421715005185
+          ]
+        },
+        "predicted_total_s": 58.45009105799546,
+        "progress_observation_count": 80,
+        "readiness_reason": "ready",
+        "save_observed_s": 0.01437739199900534,
+        "schema_version": 1,
+        "startup_overhead_s": 0.0006331899284408582,
+        "startup_to_first_progress_s": 0.7306259149918333,
+        "stopped_on_stable": false,
+        "terminal_overhead_s": 0.05003986299561802,
+        "total_units": 160,
+        "total_wall_s": 58.45009105799545,
+        "unit": "step"
+      },
+      "completion_model_ready": true,
+      "declared_external_load_snapshot": 0.0,
+      "external_cpu_bucket": "external_c0_2",
+      "external_cpu_core_equiv": 0.015076924078734066,
+      "launched": true,
+      "measurement_valid": true,
+      "node": "jtl311linux",
+      "observed_external_load": 0.0,
+      "observed_resource_state": {
+        "external_cpu_core_equiv": 0.015076924078734066,
+        "load1_end": 5.98779296875,
+        "load1_start": 2.5185546875,
+        "load5_end": 2.9775390625,
+        "load5_start": 1.857421875,
+        "logical_cpus": 16,
+        "measurement_wall_s": 58.39272154899663,
+        "own_cpu_core_equiv": 7.893620776233886,
+        "own_cpu_s": 460.93,
+        "schema_version": 1,
+        "system_busy_core_equiv": 7.90869770031262,
+        "system_busy_fraction": 0.4942936062695388,
+        "workers": 8
+      },
+      "probe_result": {
+        "completion_model_ready_count": 1,
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0
+        ],
+        "node": "jtl311linux",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 1,
+        "run_id": "phase_jtl311_cpu_curve_long_holdout_20260727_r1_jtl311linux_jtl311_cpu_p8",
+        "stable_rate_ready_count": 1,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/phase_jtl311_cpu_curve_long_holdout_20260727_r1_jtl311linux_jtl311_cpu_p8/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "resource_state": "empty",
+      "resource_telemetry_ready": true,
+      "run_id": "phase_jtl311_cpu_curve_long_holdout_20260727_r1_jtl311linux_jtl311_cpu_p8",
+      "status": "READY",
+      "steps": 160,
+      "storage_class": "shared_home",
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_jtl311_cpu_curve_long_holdout_20260727_r1_jtl311linux_jtl311_cpu_p8/reports/profile_1_per_gpu_summary.json",
+      "work_items": 1800000,
+      "workers": 8,
+      "workload_key": "cpu_heavy_local_bench",
+      "workload_label": "cpu"
+    }
+  ],
+  "run_prefix": "phase_jtl311_cpu_curve_long_holdout_20260727",
+  "schema_version": 1,
+  "selected_count": 3,
+  "status": "COMPLETE"
+}

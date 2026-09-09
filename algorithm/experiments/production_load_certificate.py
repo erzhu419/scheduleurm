@@ -14,12 +14,19 @@ tasks are unmapped or only representative-mapped.
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import math
 import time
 from collections import Counter
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Iterable, Mapping
+
+try:
+    import orjson as _orjson
+except Exception:  # optional speedup; stdlib json remains the portable fallback
+    _orjson = None
 
 from simulation.defaults import build_default_cache
 from simulation.tasksets import TaskSetMember, taskset_by_name
@@ -805,10 +812,39 @@ def load_scheduler_records(
     *,
     queue_path: str | Path | None = None,
     archive_path: str | Path | None = None,
+    copy_records: bool = True,
 ) -> list[dict[str, Any]]:
     state_dir = Path.home() / ".claude" / "scheduler"
     queue = Path(queue_path).expanduser() if queue_path else state_dir / "queue.json"
     archive = Path(archive_path).expanduser() if archive_path else state_dir / "queue_archive.jsonl"
+    rows = _cached_scheduler_records(
+        str(queue),
+        *_file_fingerprint(queue),
+        str(archive),
+        *_file_fingerprint(archive),
+    )
+    return copy.deepcopy(rows) if copy_records else rows
+
+
+def _file_fingerprint(path: Path) -> tuple[int, int]:
+    try:
+        st = path.stat()
+    except OSError:
+        return (0, 0)
+    return (int(st.st_mtime_ns), int(st.st_size))
+
+
+@lru_cache(maxsize=16)
+def _cached_scheduler_records(
+    queue_path: str,
+    queue_mtime_ns: int,
+    queue_size: int,
+    archive_path: str,
+    archive_mtime_ns: int,
+    archive_size: int,
+) -> list[dict[str, Any]]:
+    queue = Path(queue_path)
+    archive = Path(archive_path)
     rows: list[dict[str, Any]] = []
     if archive.exists():
         with archive.open("r", encoding="utf-8") as f:
@@ -818,7 +854,7 @@ def load_scheduler_records(
                     rows.append(payload)
     if queue.exists():
         try:
-            payload = json.loads(queue.read_text(encoding="utf-8"))
+            payload = _loads_json(queue.read_text(encoding="utf-8"))
         except json.JSONDecodeError:
             payload = []
         tasks = payload.get("tasks", payload if isinstance(payload, list) else [])
@@ -833,10 +869,19 @@ def _parse_scheduler_json_line(line: str) -> dict[str, Any] | None:
     if not stripped.startswith("{"):
         return None
     try:
-        payload = json.loads(stripped)
+        payload = _loads_json(stripped)
     except json.JSONDecodeError:
         return None
     return dict(payload) if isinstance(payload, Mapping) else None
+
+
+def _loads_json(text: str):
+    if _orjson is not None:
+        try:
+            return _orjson.loads(text)
+        except _orjson.JSONDecodeError as exc:
+            raise json.JSONDecodeError(str(exc), text, 0) from exc
+    return json.loads(text)
 
 
 def _members_for_tasksets(taskset_names: Iterable[str]) -> tuple[TaskSetMember, ...]:

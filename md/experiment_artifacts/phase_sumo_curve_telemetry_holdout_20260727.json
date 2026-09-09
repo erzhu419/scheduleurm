@@ -1,0 +1,654 @@
+{
+  "all_completion_models_ready": true,
+  "allow_launch": true,
+  "claim_boundary": "These are natural-completion calibration cells. FreqDuet and SUMO rows remain explicit surrogates until their native checkpointable commands are run. External resident load is observational and is never relabelled as an empty-state cell.",
+  "completion_model_ready_count": 6,
+  "elapsed_wall_s": 34.119914293289185,
+  "gate": "phase_aware_cpu_completion_matrix",
+  "hardware_group": "cpu_hpc_192c",
+  "matrix": "sumo_curve",
+  "node_equivalence_contract": "node001-node006 are homogeneous 3x64-core nodes",
+  "repeat_index": 0,
+  "rows": [
+    {
+      "cell_id": "sumo_p16",
+      "checkpoint_bytes": 8388608,
+      "checkpoint_interval": 40,
+      "child_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_sumo_curve_telemetry_holdout_20260727_r0_node003_sumo_p16/raw/profile_1_per_gpu/gpu0_0.log",
+      "completion_model": {
+        "amortized_unit_s": 0.044587381188521936,
+        "base_unit_s": 0.0471029169857502,
+        "checkpoint_observed_s": 0.11195522453635931,
+        "child_returncode": 0,
+        "completion_model_ready": true,
+        "completion_unit_s": 0.044587381188521936,
+        "counter_offset": 0,
+        "finalization_after_last_progress_s": 0.05272641801275313,
+        "first_progress_unit": 2,
+        "interval_sample_count": 79,
+        "last_progress_unit": 160,
+        "loop_observed_units": 158,
+        "loop_wall_s": 7.0448062277864665,
+        "model_abs_error_s": 8.881784197001252e-16,
+        "model_relative_error": 1.2169872362627571e-16,
+        "natural_exit": true,
+        "periodic_extra_s": 0.0,
+        "phase_durations_s": {
+          "checkpoint": [
+            0.033762277802452445,
+            0.026040595956146717,
+            0.027542810887098312,
+            0.024609539890661836
+          ],
+          "final_save": [
+            0.022770921932533383
+          ],
+          "initialization": [
+            0.00021068891510367393
+          ],
+          "outer_loop": [
+            7.176385544007644
+          ]
+        },
+        "predicted_total_s": 7.2981736639048895,
+        "progress_observation_count": 80,
+        "readiness_reason": "ready",
+        "save_observed_s": 0.022770921932533383,
+        "schema_version": 1,
+        "startup_overhead_s": 0.11146625572862694,
+        "startup_to_first_progress_s": 0.2006410181056708,
+        "stopped_on_stable": false,
+        "terminal_overhead_s": 0.05272641801275313,
+        "total_units": 160,
+        "total_wall_s": 7.29817366390489,
+        "unit": "step"
+      },
+      "completion_model_ready": true,
+      "declared_external_load_snapshot": 0.0,
+      "external_cpu_bucket": "external_c0_2",
+      "external_cpu_core_equiv": 0.03295302257515864,
+      "launched": true,
+      "measurement_valid": true,
+      "node": "node003",
+      "observed_external_load": 0.0,
+      "observed_resource_state": {
+        "external_cpu_core_equiv": 0.03295302257515864,
+        "load1_end": 0.56,
+        "load1_start": 0.43,
+        "load5_end": 0.82,
+        "load5_start": 0.8,
+        "logical_cpus": 192,
+        "measurement_wall_s": 7.1777689778245986,
+        "own_cpu_core_equiv": 11.396298801579922,
+        "own_cpu_s": 81.80000000000001,
+        "schema_version": 1,
+        "system_busy_core_equiv": 11.429251824155081,
+        "system_busy_fraction": 0.05952735325080771,
+        "workers": 16
+      },
+      "probe_result": {
+        "completion_model_ready_count": 1,
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0
+        ],
+        "node": "node003",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 1,
+        "run_id": "phase_sumo_curve_telemetry_holdout_20260727_r0_node003_sumo_p16",
+        "stable_rate_ready_count": 1,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/phase_sumo_curve_telemetry_holdout_20260727_r0_node003_sumo_p16/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "resource_state": "empty",
+      "resource_telemetry_ready": true,
+      "run_id": "phase_sumo_curve_telemetry_holdout_20260727_r0_node003_sumo_p16",
+      "status": "READY",
+      "steps": 160,
+      "storage_class": "shared_home",
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_sumo_curve_telemetry_holdout_20260727_r0_node003_sumo_p16/reports/profile_1_per_gpu_summary.json",
+      "work_items": 70000,
+      "workers": 16,
+      "workload_key": "sumo_eval_cpu",
+      "workload_label": "sumo_surrogate"
+    },
+    {
+      "cell_id": "sumo_p2",
+      "checkpoint_bytes": 8388608,
+      "checkpoint_interval": 40,
+      "child_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_sumo_curve_telemetry_holdout_20260727_r0_node001_sumo_p2/raw/profile_1_per_gpu/gpu0_0.log",
+      "completion_model": {
+        "amortized_unit_s": 0.030939947557340884,
+        "base_unit_s": 0.02757785003632307,
+        "checkpoint_observed_s": 0.10862242407165468,
+        "child_returncode": 0,
+        "completion_model_ready": true,
+        "completion_unit_s": 0.030939947557340884,
+        "counter_offset": 0,
+        "finalization_after_last_progress_s": 0.05356037197634578,
+        "first_progress_unit": 2,
+        "interval_sample_count": 79,
+        "last_progress_unit": 160,
+        "loop_observed_units": 158,
+        "loop_wall_s": 4.8885117140598595,
+        "model_abs_error_s": 0.0,
+        "model_relative_error": 0.0,
+        "natural_exit": true,
+        "periodic_extra_s": 0.5312114083208144,
+        "phase_durations_s": {
+          "checkpoint": [
+            0.02164057013578713,
+            0.030142158968374133,
+            0.02957476512528956,
+            0.027264929842203856
+          ],
+          "final_save": [
+            0.026712825056165457
+          ],
+          "initialization": [
+            0.00016180193051695824
+          ],
+          "outer_loop": [
+            4.997612099861726
+          ]
+        },
+        "predicted_total_s": 5.12464098399505,
+        "progress_observation_count": 80,
+        "readiness_reason": "ready",
+        "save_observed_s": 0.026712825056165457,
+        "schema_version": 1,
+        "startup_overhead_s": 0.12068900284416313,
+        "startup_to_first_progress_s": 0.1825688979588449,
+        "stopped_on_stable": false,
+        "terminal_overhead_s": 0.05356037197634578,
+        "total_units": 160,
+        "total_wall_s": 5.12464098399505,
+        "unit": "step"
+      },
+      "completion_model_ready": true,
+      "declared_external_load_snapshot": 0.0,
+      "external_cpu_bucket": "external_c0_2",
+      "external_cpu_core_equiv": 0.021090771463823765,
+      "launched": true,
+      "measurement_valid": true,
+      "node": "node001",
+      "observed_external_load": 0.0,
+      "observed_resource_state": {
+        "external_cpu_core_equiv": 0.021090771463823765,
+        "load1_end": 0.13,
+        "load1_start": 0.14,
+        "load5_end": 0.1,
+        "load5_start": 0.1,
+        "logical_cpus": 192,
+        "measurement_wall_s": 4.999018813949078,
+        "own_cpu_core_equiv": 1.8363603622343778,
+        "own_cpu_s": 9.18,
+        "schema_version": 1,
+        "system_busy_core_equiv": 1.8574511336982016,
+        "system_busy_fraction": 0.009674224654678133,
+        "workers": 2
+      },
+      "probe_result": {
+        "completion_model_ready_count": 1,
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0
+        ],
+        "node": "node001",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 1,
+        "run_id": "phase_sumo_curve_telemetry_holdout_20260727_r0_node001_sumo_p2",
+        "stable_rate_ready_count": 1,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/phase_sumo_curve_telemetry_holdout_20260727_r0_node001_sumo_p2/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "resource_state": "empty",
+      "resource_telemetry_ready": true,
+      "run_id": "phase_sumo_curve_telemetry_holdout_20260727_r0_node001_sumo_p2",
+      "status": "READY",
+      "steps": 160,
+      "storage_class": "shared_home",
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_sumo_curve_telemetry_holdout_20260727_r0_node001_sumo_p2/reports/profile_1_per_gpu_summary.json",
+      "work_items": 70000,
+      "workers": 2,
+      "workload_key": "sumo_eval_cpu",
+      "workload_label": "sumo_surrogate"
+    },
+    {
+      "cell_id": "sumo_p32_external",
+      "checkpoint_bytes": 8388608,
+      "checkpoint_interval": 40,
+      "child_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_sumo_curve_telemetry_holdout_20260727_r0_node004_sumo_p32_external/raw/profile_1_per_gpu/gpu0_0.log",
+      "completion_model": {
+        "amortized_unit_s": 0.04920472509575465,
+        "base_unit_s": 0.048942987457849085,
+        "checkpoint_observed_s": 0.09912396990694106,
+        "child_returncode": 0,
+        "completion_model_ready": true,
+        "completion_unit_s": 0.04920472509575465,
+        "counter_offset": 0,
+        "finalization_after_last_progress_s": 0.06239025783725083,
+        "first_progress_unit": 2,
+        "interval_sample_count": 79,
+        "last_progress_unit": 160,
+        "loop_observed_units": 158,
+        "loop_wall_s": 7.774346565129235,
+        "model_abs_error_s": 0.0,
+        "model_relative_error": 0.0,
+        "natural_exit": true,
+        "periodic_extra_s": 0.041354546789079905,
+        "phase_durations_s": {
+          "checkpoint": [
+            0.02726106997579336,
+            0.02482609893195331,
+            0.024080554023385048,
+            0.022956246975809336
+          ],
+          "final_save": [
+            0.02659848495386541
+          ],
+          "initialization": [
+            0.00019674492068588734
+          ],
+          "outer_loop": [
+            7.986766249174252
+          ]
+        },
+        "predicted_total_s": 8.123123998986557,
+        "progress_observation_count": 80,
+        "readiness_reason": "ready",
+        "save_observed_s": 0.02659848495386541,
+        "schema_version": 1,
+        "startup_overhead_s": 0.1879777258285616,
+        "startup_to_first_progress_s": 0.2863871760200709,
+        "stopped_on_stable": false,
+        "terminal_overhead_s": 0.06239025783725083,
+        "total_units": 160,
+        "total_wall_s": 8.123123998986557,
+        "unit": "step"
+      },
+      "completion_model_ready": true,
+      "declared_external_load_snapshot": 48.1,
+      "external_cpu_bucket": "external_c33_64",
+      "external_cpu_core_equiv": 48.09586090604898,
+      "launched": true,
+      "measurement_valid": true,
+      "node": "node004",
+      "observed_external_load": 48.1,
+      "observed_resource_state": {
+        "external_cpu_core_equiv": 48.09586090604898,
+        "load1_end": 49.78,
+        "load1_start": 49.77,
+        "load5_end": 50.71,
+        "load5_start": 50.72,
+        "logical_cpus": 192,
+        "measurement_wall_s": 7.9885771460831165,
+        "own_cpu_core_equiv": 21.623375081843736,
+        "own_cpu_s": 172.74,
+        "schema_version": 1,
+        "system_busy_core_equiv": 69.71923598789272,
+        "system_busy_fraction": 0.3631210207702745,
+        "workers": 32
+      },
+      "probe_result": {
+        "completion_model_ready_count": 1,
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0
+        ],
+        "node": "node004",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 1,
+        "run_id": "phase_sumo_curve_telemetry_holdout_20260727_r0_node004_sumo_p32_external",
+        "stable_rate_ready_count": 1,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/phase_sumo_curve_telemetry_holdout_20260727_r0_node004_sumo_p32_external/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "resource_state": "cpu_resident_external",
+      "resource_telemetry_ready": true,
+      "run_id": "phase_sumo_curve_telemetry_holdout_20260727_r0_node004_sumo_p32_external",
+      "status": "READY",
+      "steps": 160,
+      "storage_class": "shared_home",
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_sumo_curve_telemetry_holdout_20260727_r0_node004_sumo_p32_external/reports/profile_1_per_gpu_summary.json",
+      "work_items": 70000,
+      "workers": 32,
+      "workload_key": "sumo_eval_cpu",
+      "workload_label": "sumo_surrogate"
+    },
+    {
+      "cell_id": "sumo_p64",
+      "checkpoint_bytes": 8388608,
+      "checkpoint_interval": 40,
+      "child_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_sumo_curve_telemetry_holdout_20260727_r0_node005_sumo_p64/raw/profile_1_per_gpu/gpu0_0.log",
+      "completion_model": {
+        "amortized_unit_s": 0.07045484565734816,
+        "base_unit_s": 0.06704427895601839,
+        "checkpoint_observed_s": 0.11743620201013982,
+        "child_returncode": 0,
+        "completion_model_ready": true,
+        "completion_unit_s": 0.07045484565734816,
+        "counter_offset": 0,
+        "finalization_after_last_progress_s": 0.07382209110073745,
+        "first_progress_unit": 2,
+        "interval_sample_count": 79,
+        "last_progress_unit": 160,
+        "loop_observed_units": 158,
+        "loop_wall_s": 11.13186561386101,
+        "model_abs_error_s": 0.0,
+        "model_relative_error": 0.0,
+        "natural_exit": true,
+        "periodic_extra_s": 0.5388695388101041,
+        "phase_durations_s": {
+          "checkpoint": [
+            0.028278332902118564,
+            0.03069478995166719,
+            0.030057664029300213,
+            0.028405415127053857
+          ],
+          "final_save": [
+            0.03062473493628204
+          ],
+          "initialization": [
+            0.0002290110569447279
+          ],
+          "outer_loop": [
+            11.399151135934517
+          ]
+        },
+        "predicted_total_s": 11.528595543000847,
+        "progress_observation_count": 80,
+        "readiness_reason": "ready",
+        "save_observed_s": 0.03062473493628204,
+        "schema_version": 1,
+        "startup_overhead_s": 0.18199814672440384,
+        "startup_to_first_progress_s": 0.32290783803910017,
+        "stopped_on_stable": false,
+        "terminal_overhead_s": 0.07382209110073745,
+        "total_units": 160,
+        "total_wall_s": 11.528595543000847,
+        "unit": "step"
+      },
+      "completion_model_ready": true,
+      "declared_external_load_snapshot": 0.0,
+      "external_cpu_bucket": "external_c0_2",
+      "external_cpu_core_equiv": 0.07918220977101242,
+      "launched": true,
+      "measurement_valid": true,
+      "node": "node005",
+      "observed_external_load": 0.0,
+      "observed_resource_state": {
+        "external_cpu_core_equiv": 0.07918220977101242,
+        "load1_end": 10.42,
+        "load1_start": 2.91,
+        "load5_end": 6.56,
+        "load5_start": 5.03,
+        "logical_cpus": 192,
+        "measurement_wall_s": 11.40080197993666,
+        "own_cpu_core_equiv": 34.23969653073202,
+        "own_cpu_s": 390.35999999999996,
+        "schema_version": 1,
+        "system_busy_core_equiv": 34.31887874050303,
+        "system_busy_fraction": 0.17874416010678662,
+        "workers": 64
+      },
+      "probe_result": {
+        "completion_model_ready_count": 1,
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0
+        ],
+        "node": "node005",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 1,
+        "run_id": "phase_sumo_curve_telemetry_holdout_20260727_r0_node005_sumo_p64",
+        "stable_rate_ready_count": 1,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/phase_sumo_curve_telemetry_holdout_20260727_r0_node005_sumo_p64/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "resource_state": "empty",
+      "resource_telemetry_ready": true,
+      "run_id": "phase_sumo_curve_telemetry_holdout_20260727_r0_node005_sumo_p64",
+      "status": "READY",
+      "steps": 160,
+      "storage_class": "shared_home",
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_sumo_curve_telemetry_holdout_20260727_r0_node005_sumo_p64/reports/profile_1_per_gpu_summary.json",
+      "work_items": 70000,
+      "workers": 64,
+      "workload_key": "sumo_eval_cpu",
+      "workload_label": "sumo_surrogate"
+    },
+    {
+      "cell_id": "sumo_p8",
+      "checkpoint_bytes": 8388608,
+      "checkpoint_interval": 40,
+      "child_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_sumo_curve_telemetry_holdout_20260727_r0_node002_sumo_p8/raw/profile_1_per_gpu/gpu0_0.log",
+      "completion_model": {
+        "amortized_unit_s": 0.043646104912320745,
+        "base_unit_s": 0.04517766798380762,
+        "checkpoint_observed_s": 0.12380922702141106,
+        "child_returncode": 0,
+        "completion_model_ready": true,
+        "completion_unit_s": 0.043646104912320745,
+        "counter_offset": 0,
+        "finalization_after_last_progress_s": 0.056519025936722755,
+        "first_progress_unit": 2,
+        "interval_sample_count": 79,
+        "last_progress_unit": 160,
+        "loop_observed_units": 158,
+        "loop_wall_s": 6.896084576146677,
+        "model_abs_error_s": 0.0,
+        "model_relative_error": 0.0,
+        "natural_exit": true,
+        "periodic_extra_s": 0.0,
+        "phase_durations_s": {
+          "checkpoint": [
+            0.03009636700153351,
+            0.029436236014589667,
+            0.03105786698870361,
+            0.03321875701658428
+          ],
+          "final_save": [
+            0.027262415969744325
+          ],
+          "initialization": [
+            0.00015957513824105263
+          ],
+          "outer_loop": [
+            7.00122956209816
+          ]
+        },
+        "predicted_total_s": 7.1316863829270005,
+        "progress_observation_count": 80,
+        "readiness_reason": "ready",
+        "save_observed_s": 0.027262415969744325,
+        "schema_version": 1,
+        "startup_overhead_s": 0.09179057101895914,
+        "startup_to_first_progress_s": 0.17908278084360063,
+        "stopped_on_stable": false,
+        "terminal_overhead_s": 0.056519025936722755,
+        "total_units": 160,
+        "total_wall_s": 7.1316863829270005,
+        "unit": "step"
+      },
+      "completion_model_ready": true,
+      "declared_external_load_snapshot": 0.0,
+      "external_cpu_bucket": "external_c0_2",
+      "external_cpu_core_equiv": 0.05803271827407386,
+      "launched": true,
+      "measurement_valid": true,
+      "node": "node002",
+      "observed_external_load": 0.0,
+      "observed_resource_state": {
+        "external_cpu_core_equiv": 0.05803271827407386,
+        "load1_end": 1.12,
+        "load1_start": 0.67,
+        "load5_end": 0.57,
+        "load5_start": 0.47,
+        "logical_cpus": 192,
+        "measurement_wall_s": 7.00280812708661,
+        "own_cpu_core_equiv": 5.980458016264885,
+        "own_cpu_s": 41.88,
+        "schema_version": 1,
+        "system_busy_core_equiv": 6.038490734538959,
+        "system_busy_fraction": 0.03145047257572375,
+        "workers": 8
+      },
+      "probe_result": {
+        "completion_model_ready_count": 1,
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0
+        ],
+        "node": "node002",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 1,
+        "run_id": "phase_sumo_curve_telemetry_holdout_20260727_r0_node002_sumo_p8",
+        "stable_rate_ready_count": 1,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/phase_sumo_curve_telemetry_holdout_20260727_r0_node002_sumo_p8/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "resource_state": "empty",
+      "resource_telemetry_ready": true,
+      "run_id": "phase_sumo_curve_telemetry_holdout_20260727_r0_node002_sumo_p8",
+      "status": "READY",
+      "steps": 160,
+      "storage_class": "shared_home",
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_sumo_curve_telemetry_holdout_20260727_r0_node002_sumo_p8/reports/profile_1_per_gpu_summary.json",
+      "work_items": 70000,
+      "workers": 8,
+      "workload_key": "sumo_eval_cpu",
+      "workload_label": "sumo_surrogate"
+    },
+    {
+      "cell_id": "sumo_p96_external",
+      "checkpoint_bytes": 8388608,
+      "checkpoint_interval": 40,
+      "child_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_sumo_curve_telemetry_holdout_20260727_r0_node006_sumo_p96_external/raw/profile_1_per_gpu/gpu0_0.log",
+      "completion_model": {
+        "amortized_unit_s": 0.09010511667827215,
+        "base_unit_s": 0.08926070749294013,
+        "checkpoint_observed_s": 0.11681903759017587,
+        "child_returncode": 0,
+        "completion_model_ready": true,
+        "completion_unit_s": 0.09010511667827215,
+        "counter_offset": 0,
+        "finalization_after_last_progress_s": 0.07263437588699162,
+        "first_progress_unit": 2,
+        "interval_sample_count": 79,
+        "last_progress_unit": 160,
+        "loop_observed_units": 158,
+        "loop_wall_s": 14.236608435167,
+        "model_abs_error_s": 0.0,
+        "model_relative_error": 0.0,
+        "natural_exit": true,
+        "periodic_extra_s": 0.1334166512824595,
+        "phase_durations_s": {
+          "checkpoint": [
+            0.03132861293852329,
+            0.027753254864364862,
+            0.026868709828704596,
+            0.030868459958583117
+          ],
+          "final_save": [
+            0.026167593197897077
+          ],
+          "initialization": [
+            0.00016453303396701813
+          ],
+          "outer_loop": [
+            14.630339297931641
+          ]
+        },
+        "predicted_total_s": 14.747362271882594,
+        "progress_observation_count": 80,
+        "readiness_reason": "ready",
+        "save_observed_s": 0.026167593197897077,
+        "schema_version": 1,
+        "startup_overhead_s": 0.257909227472058,
+        "startup_to_first_progress_s": 0.4381194608286023,
+        "stopped_on_stable": false,
+        "terminal_overhead_s": 0.07263437588699162,
+        "total_units": 160,
+        "total_wall_s": 14.747362271882594,
+        "unit": "step"
+      },
+      "completion_model_ready": true,
+      "declared_external_load_snapshot": 28.6,
+      "external_cpu_bucket": "external_c3_16",
+      "external_cpu_core_equiv": 12.13174730396804,
+      "launched": true,
+      "measurement_valid": true,
+      "node": "node006",
+      "observed_external_load": 28.6,
+      "observed_resource_state": {
+        "external_cpu_core_equiv": 12.13174730396804,
+        "load1_end": 16.42,
+        "load1_start": 11.87,
+        "load5_end": 24.35,
+        "load5_start": 23.93,
+        "logical_cpus": 192,
+        "measurement_wall_s": 14.631785252830014,
+        "own_cpu_core_equiv": 51.432548181668075,
+        "own_cpu_s": 752.5500000000001,
+        "schema_version": 1,
+        "system_busy_core_equiv": 63.564295485636116,
+        "system_busy_fraction": 0.3310640389876881,
+        "workers": 96
+      },
+      "probe_result": {
+        "completion_model_ready_count": 1,
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0
+        ],
+        "node": "node006",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 1,
+        "run_id": "phase_sumo_curve_telemetry_holdout_20260727_r0_node006_sumo_p96_external",
+        "stable_rate_ready_count": 1,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/phase_sumo_curve_telemetry_holdout_20260727_r0_node006_sumo_p96_external/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "resource_state": "cpu_resident_external",
+      "resource_telemetry_ready": true,
+      "run_id": "phase_sumo_curve_telemetry_holdout_20260727_r0_node006_sumo_p96_external",
+      "status": "READY",
+      "steps": 160,
+      "storage_class": "shared_home",
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_sumo_curve_telemetry_holdout_20260727_r0_node006_sumo_p96_external/reports/profile_1_per_gpu_summary.json",
+      "work_items": 70000,
+      "workers": 96,
+      "workload_key": "sumo_eval_cpu",
+      "workload_label": "sumo_surrogate"
+    }
+  ],
+  "run_prefix": "phase_sumo_curve_telemetry_holdout_20260727",
+  "schema_version": 1,
+  "selected_count": 6,
+  "status": "COMPLETE"
+}

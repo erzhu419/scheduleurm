@@ -1,0 +1,247 @@
+{
+  "cache_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/service_cache_v2_live_merged_20260629.json",
+  "checks": [
+    {
+      "expected_key": "hybrid_rl_resac_halfcheetah",
+      "inferred_key": "hybrid_rl_resac_halfcheetah",
+      "name": "env_specific_workload_key",
+      "pass": true
+    },
+    {
+      "jtl110": {
+        "aggregate_rate": 24.6681287,
+        "capacity_boundary": false,
+        "certified": true,
+        "command_fingerprint": "live_tqdm_service_cache_v2_noearly_20260629",
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "lower_service": 24.6681287,
+        "mean_rate": 24.6681287,
+        "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+        "profile": 1,
+        "reason": "",
+        "resource_kind": "gpu_cnn",
+        "resource_state": "empty",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/cross_node_eta_matrix_noearly_jtl110_cnn_20260629_gpu_3080ti_12gb_dual_cnn_resnet50/reports/profile_1_per_gpu_summary.json",
+        "workload_env": "cnn",
+        "workload_key": "gpu_cnn_torch_resnet50"
+      },
+      "jtl311": {
+        "aggregate_rate": 13.25066665,
+        "capacity_boundary": false,
+        "certified": true,
+        "command_fingerprint": "live_tqdm_service_cache_v2_noearly_20260629",
+        "hardware_class": "gpu_rtx2080_8gb_dual_cpu_fast",
+        "lower_service": 13.25066665,
+        "mean_rate": 13.25066665,
+        "node_bucket": "jtl311linux:gpu_rtx2080_8gb_dual_cpu_fast",
+        "profile": 1,
+        "reason": "",
+        "resource_kind": "gpu_cnn",
+        "resource_state": "empty",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/cross_node_eta_matrix_noearly_jtl311_cnn_20260629_gpu_rtx2080_8gb_dual_cpu_fast_cnn_resnet50/reports/profile_1_per_gpu_summary.json",
+        "workload_env": "cnn",
+        "workload_key": "gpu_cnn_torch_resnet50"
+      },
+      "name": "node_specific_empty_cnn_lookup",
+      "pass": true
+    },
+    {
+      "expected_selected": "launch:halfcheetah-to-jtl110:jtl110gpu:0",
+      "jtl110": {
+        "aggregate_rate": 0.185185185,
+        "capacity_boundary": false,
+        "certified": true,
+        "command_fingerprint": "live_rl_env:halfcheetah",
+        "hardware_class": "gpu_3080ti_12gb_dual",
+        "lower_service": 0.185185185,
+        "mean_rate": 0.185185185,
+        "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+        "profile": 1,
+        "reason": "",
+        "resource_kind": "hybrid_rl",
+        "resource_state": "empty",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/cross_node_eta_matrix_live_resac_halfcheetah_jtl110_p1_20260629/reports/profile_1_per_gpu_summary.json",
+        "workload_env": "halfcheetah",
+        "workload_key": "hybrid_rl_resac_halfcheetah"
+      },
+      "jtl311": {
+        "aggregate_rate": 0.14306006500000001,
+        "capacity_boundary": false,
+        "certified": true,
+        "command_fingerprint": "live_extra_eta:jtl311_resac_halfcheetah_p1",
+        "hardware_class": "gpu_rtx2080_8gb_dual_cpu_fast",
+        "lower_service": 0.14306006500000001,
+        "mean_rate": 0.14306006500000001,
+        "node_bucket": "jtl311linux:gpu_rtx2080_8gb_dual_cpu_fast",
+        "profile": 1,
+        "reason": "",
+        "resource_kind": "hybrid_rl",
+        "resource_state": "empty",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/live_extra_eta_jtl311_resac_20260629_jtl311_resac_halfcheetah_p1/reports/profile_1_per_gpu_summary.json",
+        "workload_env": "halfcheetah",
+        "workload_key": "hybrid_rl_resac_halfcheetah"
+      },
+      "name": "rl_env_node_specific_assignment",
+      "pass": true,
+      "selected": {
+        "candidate_configuration_count": 2,
+        "fallback_legacy_rows_excluded": true,
+        "global_action_dispatch_ready": true,
+        "oracle_gap_alpha0": 0.0,
+        "oracle_gap_alpha1": 0.0,
+        "score": 1.85185185,
+        "score_semantics": "robust_maxweight_lower_service",
+        "selected_action_ids": [
+          "launch:halfcheetah-to-jtl110:jtl110gpu:0"
+        ],
+        "selected_task_ids": [
+          "halfcheetah-to-jtl110"
+        ]
+      }
+    },
+    {
+      "cpu_resident": {
+        "certified": true,
+        "fallback_used": false,
+        "load_state": "cpu_resident",
+        "profile": 1,
+        "reason": "state_exact",
+        "record": {
+          "aggregate_rate": 16.392399,
+          "capacity_boundary": false,
+          "command_fingerprint": "live_marginal_under_load:node005_cpu_half_resident_add_cpu",
+          "eta_source": "tqdm/progress",
+          "gpu_count_observed": 1,
+          "hardware_class": "cpu_hpc_192c",
+          "node_bucket": "node005:cpu_hpc_192c",
+          "per_task_rates": [
+            16.392399
+          ],
+          "profile": 1,
+          "resource_kind": "cpu_heavy",
+          "resource_state": "cpu_resident",
+          "source": "live_marginal_under_load:node005_cpu_half_resident_add_cpu",
+          "stable_rate_ready": true,
+          "total_units": 40.0,
+          "unit": "step",
+          "workload_env": "cpu",
+          "workload_key": "cpu_heavy_local_bench"
+        },
+        "workload_key": "marginal_cpu"
+      },
+      "high_vram": {
+        "certified": true,
+        "fallback_used": false,
+        "load_state": "high_vram_resident",
+        "profile": 1,
+        "reason": "state_exact",
+        "record": {
+          "aggregate_rate": 28.9301104,
+          "capacity_boundary": false,
+          "command_fingerprint": "live_marginal_under_load:jtl110_cnn_high_vram_resident_add_cnn",
+          "eta_source": "tqdm/progress",
+          "gpu_count_observed": 1,
+          "hardware_class": "gpu_3080ti_12gb_dual",
+          "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+          "per_task_rates": [
+            28.9301104
+          ],
+          "profile": 1,
+          "resource_kind": "gpu_cnn",
+          "resource_state": "high_vram_resident",
+          "source": "live_marginal_under_load:jtl110_cnn_high_vram_resident_add_cnn",
+          "stable_rate_ready": true,
+          "total_units": 80.0,
+          "unit": "step",
+          "workload_env": "cnn",
+          "workload_key": "gpu_cnn_torch_resnet50"
+        },
+        "workload_key": "marginal_cuda"
+      },
+      "jtl110_half_loaded_rate": 15.2028297,
+      "name": "resource_state_marginal_lookup",
+      "pass": true
+    },
+    {
+      "candidate_rows": [
+        {
+          "action_id": "launch:cnn-a:jtl110gpu:0",
+          "lower_service": {
+            "gpu_cnn_torch_resnet50": 24.6681287
+          },
+          "penalty_units": 0.0,
+          "resource_id": "jtl110gpu:0",
+          "score_semantics": "robust_maxweight_lower_service",
+          "service_binding": {
+            "aggregate_rate": 24.6681287,
+            "capacity_boundary": false,
+            "certified": true,
+            "command_fingerprint": "live_tqdm_service_cache_v2_noearly_20260629",
+            "hardware_class": "gpu_3080ti_12gb_dual",
+            "lower_service": 24.6681287,
+            "mean_rate": 24.6681287,
+            "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+            "profile": 1,
+            "reason": "",
+            "resource_kind": "gpu_cnn",
+            "resource_state": "empty",
+            "source": "/home/erzhu419/.claude/scheduler/experiments/runs/cross_node_eta_matrix_noearly_jtl110_cnn_20260629_gpu_3080ti_12gb_dual_cnn_resnet50/reports/profile_1_per_gpu_summary.json",
+            "workload_env": "cnn",
+            "workload_key": "gpu_cnn_torch_resnet50"
+          },
+          "task_id": "cnn-a",
+          "theorem_ready": true
+        },
+        {
+          "action_id": "launch:cnn-b:jtl311linux:0",
+          "lower_service": {
+            "gpu_cnn_torch_resnet50": 13.25066665
+          },
+          "penalty_units": 0.0,
+          "resource_id": "jtl311linux:0",
+          "score_semantics": "robust_maxweight_lower_service",
+          "service_binding": {
+            "aggregate_rate": 13.25066665,
+            "capacity_boundary": false,
+            "certified": true,
+            "command_fingerprint": "live_tqdm_service_cache_v2_noearly_20260629",
+            "hardware_class": "gpu_rtx2080_8gb_dual_cpu_fast",
+            "lower_service": 13.25066665,
+            "mean_rate": 13.25066665,
+            "node_bucket": "jtl311linux:gpu_rtx2080_8gb_dual_cpu_fast",
+            "profile": 1,
+            "reason": "",
+            "resource_kind": "gpu_cnn",
+            "resource_state": "empty",
+            "source": "/home/erzhu419/.claude/scheduler/experiments/runs/cross_node_eta_matrix_noearly_jtl311_cnn_20260629_gpu_rtx2080_8gb_dual_cpu_fast_cnn_resnet50/reports/profile_1_per_gpu_summary.json",
+            "workload_env": "cnn",
+            "workload_key": "gpu_cnn_torch_resnet50"
+          },
+          "task_id": "cnn-b",
+          "theorem_ready": true
+        }
+      ],
+      "name": "global_maxweight_selects_higher_lower_service",
+      "pass": true,
+      "selected": {
+        "candidate_configuration_count": 2,
+        "fallback_legacy_rows_excluded": true,
+        "global_action_dispatch_ready": true,
+        "oracle_gap_alpha0": 0.0,
+        "oracle_gap_alpha1": 0.0,
+        "score": 246.681287,
+        "score_semantics": "robust_maxweight_lower_service",
+        "selected_action_ids": [
+          "launch:cnn-a:jtl110gpu:0"
+        ],
+        "selected_task_ids": [
+          "cnn-a"
+        ]
+      }
+    }
+  ],
+  "claim_boundary": "This is an algorithm-alignment gate over the measured live v2 cache. It proves that dispatch lookup and scoring consume env/node/state keys; it is not a new live production launch trace.",
+  "gate": "live_v2_dispatch_alignment_gate",
+  "pass": true,
+  "status": "LIVE_V2_DISPATCH_ALIGNMENT_PASS"
+}

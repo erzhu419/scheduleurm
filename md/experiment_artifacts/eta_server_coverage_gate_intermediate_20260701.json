@@ -1,0 +1,502 @@
+{
+  "cache_path": "md/experiment_artifacts/service_cache_v2_live_merged_intermediate_20260701.json",
+  "claim_boundary": "This gate audits measured ETA coverage.  A measured representative or equivalence row does not imply every hardware/workload/load-state combination is globally certified.",
+  "gate": "eta_server_coverage_gate",
+  "measured_count": 26,
+  "missing_count": 0,
+  "partial_count": 0,
+  "pass": true,
+  "pending_rows": [],
+  "required_missing_count": 0,
+  "required_missing_rows": [],
+  "row_count": 26,
+  "rows": [
+    {
+      "missing_profiles": [],
+      "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+      "present_profiles": [
+        1,
+        2
+      ],
+      "profiles": [
+        1,
+        2
+      ],
+      "rationale": "jtl110gpu is the representative 3080Ti node.",
+      "requirement": "representative_full",
+      "resident_mix": "",
+      "resource_state": "empty",
+      "status": "measured",
+      "theorem_facing_ready": true,
+      "workload_env": "cnn",
+      "workload_key": "gpu_cnn_torch_resnet50"
+    },
+    {
+      "missing_profiles": [],
+      "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+      "present_profiles": [
+        2
+      ],
+      "profiles": [
+        2
+      ],
+      "rationale": "CNN marginal ETA under one resident CNN.",
+      "requirement": "representative_full",
+      "resident_mix": "same_workload_half_capacity",
+      "resource_state": "half_loaded",
+      "status": "measured",
+      "theorem_facing_ready": true,
+      "workload_env": "cnn",
+      "workload_key": "gpu_cnn_torch_resnet50"
+    },
+    {
+      "missing_profiles": [],
+      "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+      "present_profiles": [
+        4
+      ],
+      "profiles": [
+        4
+      ],
+      "rationale": "CNN marginal ETA under high same-workload occupancy.",
+      "requirement": "representative_full",
+      "resident_mix": "same_workload_to_capacity_boundary",
+      "resource_state": "full_loaded",
+      "status": "measured",
+      "theorem_facing_ready": true,
+      "workload_env": "cnn",
+      "workload_key": "gpu_cnn_torch_resnet50"
+    },
+    {
+      "missing_profiles": [],
+      "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+      "present_profiles": [
+        1
+      ],
+      "profiles": [
+        1
+      ],
+      "rationale": "CNN marginal ETA under high-VRAM resident pressure.",
+      "requirement": "representative_full",
+      "resident_mix": "llm_or_memory_resident",
+      "resource_state": "high_vram_resident",
+      "status": "measured",
+      "theorem_facing_ready": true,
+      "workload_env": "cnn",
+      "workload_key": "gpu_cnn_torch_resnet50"
+    },
+    {
+      "missing_profiles": [],
+      "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+      "present_profiles": [
+        2
+      ],
+      "profiles": [
+        2
+      ],
+      "rationale": "CNN marginal ETA under LLM resident pressure.",
+      "requirement": "representative_full",
+      "resident_mix": "cnn_plus_llm",
+      "resource_state": "mixed_colocation",
+      "status": "measured",
+      "theorem_facing_ready": true,
+      "workload_env": "cnn",
+      "workload_key": "gpu_cnn_torch_resnet50"
+    },
+    {
+      "missing_profiles": [],
+      "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+      "present_profiles": [
+        3
+      ],
+      "profiles": [
+        3
+      ],
+      "rationale": "CNN marginal ETA under LLM+RL resident pressure.",
+      "requirement": "representative_full",
+      "resident_mix": "cnn_plus_llm_plus_hybrid_rl",
+      "resource_state": "mixed_colocation",
+      "status": "measured",
+      "theorem_facing_ready": true,
+      "workload_env": "cnn",
+      "workload_key": "gpu_cnn_torch_resnet50"
+    },
+    {
+      "missing_profiles": [],
+      "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+      "present_profiles": [
+        1,
+        2
+      ],
+      "profiles": [
+        1,
+        2
+      ],
+      "rationale": "Small LLM forward-pass ETA on the representative 3080Ti node.",
+      "requirement": "representative_full",
+      "resident_mix": "",
+      "resource_state": "empty",
+      "status": "measured",
+      "theorem_facing_ready": true,
+      "workload_env": "llm",
+      "workload_key": "gpu_llm_distilgpt2"
+    },
+    {
+      "missing_profiles": [],
+      "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+      "present_profiles": [
+        1,
+        2
+      ],
+      "profiles": [
+        1,
+        2
+      ],
+      "rationale": "RE-SAC Ant env-specific ETA.",
+      "requirement": "representative_full",
+      "resident_mix": "",
+      "resource_state": "empty",
+      "status": "measured",
+      "theorem_facing_ready": true,
+      "workload_env": "ant",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "missing_profiles": [],
+      "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+      "present_profiles": [
+        1,
+        2
+      ],
+      "profiles": [
+        1,
+        2
+      ],
+      "rationale": "RE-SAC HalfCheetah env-specific ETA.",
+      "requirement": "representative_full",
+      "resident_mix": "",
+      "resource_state": "empty",
+      "status": "measured",
+      "theorem_facing_ready": true,
+      "workload_env": "halfcheetah",
+      "workload_key": "hybrid_rl_resac_halfcheetah"
+    },
+    {
+      "missing_profiles": [],
+      "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+      "present_profiles": [
+        1
+      ],
+      "profiles": [
+        1
+      ],
+      "rationale": "RE-SAC Hopper env-specific ETA.",
+      "requirement": "representative_full",
+      "resident_mix": "",
+      "resource_state": "empty",
+      "status": "measured",
+      "theorem_facing_ready": true,
+      "workload_env": "hopper",
+      "workload_key": "hybrid_rl_resac_hopper"
+    },
+    {
+      "missing_profiles": [],
+      "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+      "present_profiles": [
+        1
+      ],
+      "profiles": [
+        1
+      ],
+      "rationale": "RE-SAC Walker2d env-specific ETA.",
+      "requirement": "representative_full",
+      "resident_mix": "",
+      "resource_state": "empty",
+      "status": "measured",
+      "theorem_facing_ready": true,
+      "workload_env": "walker2d",
+      "workload_key": "hybrid_rl_resac_walker2d"
+    },
+    {
+      "missing_profiles": [],
+      "node_bucket": "jtl110gpu2:gpu_3080ti_12gb_dual",
+      "present_profiles": [
+        1,
+        2
+      ],
+      "profiles": [
+        1,
+        2
+      ],
+      "rationale": "jtl110gpu2 should match the 3080Ti representative up to equivalence tolerance.",
+      "requirement": "homogeneous_equivalence",
+      "resident_mix": "",
+      "resource_state": "empty",
+      "status": "measured",
+      "theorem_facing_ready": true,
+      "workload_env": "cnn",
+      "workload_key": "gpu_cnn_torch_resnet50"
+    },
+    {
+      "missing_profiles": [],
+      "node_bucket": "jtl110gpu2:gpu_3080ti_12gb_dual",
+      "present_profiles": [
+        1
+      ],
+      "profiles": [
+        1
+      ],
+      "rationale": "LLM smoke/equivalence row for the second 3080Ti node.",
+      "requirement": "homogeneous_equivalence",
+      "resident_mix": "",
+      "resource_state": "empty",
+      "status": "measured",
+      "theorem_facing_ready": true,
+      "workload_env": "llm",
+      "workload_key": "gpu_llm_distilgpt2"
+    },
+    {
+      "missing_profiles": [],
+      "node_bucket": "jtl311linux:gpu_rtx2080_8gb_dual_cpu_fast",
+      "present_profiles": [
+        1,
+        2
+      ],
+      "profiles": [
+        1,
+        2
+      ],
+      "rationale": "jtl311linux has a different GPU and must not share jtl110 rates.",
+      "requirement": "node_specific",
+      "resident_mix": "",
+      "resource_state": "empty",
+      "status": "measured",
+      "theorem_facing_ready": true,
+      "workload_env": "cnn",
+      "workload_key": "gpu_cnn_torch_resnet50"
+    },
+    {
+      "missing_profiles": [],
+      "node_bucket": "jtl311linux:gpu_rtx2080_8gb_dual_cpu_fast",
+      "present_profiles": [
+        2
+      ],
+      "profiles": [
+        2
+      ],
+      "rationale": "jtl311linux add-one CNN under resident CNN.",
+      "requirement": "node_specific",
+      "resident_mix": "same_workload_half_capacity",
+      "resource_state": "half_loaded",
+      "status": "measured",
+      "theorem_facing_ready": true,
+      "workload_env": "cnn",
+      "workload_key": "gpu_cnn_torch_resnet50"
+    },
+    {
+      "missing_profiles": [],
+      "node_bucket": "jtl311linux:gpu_rtx2080_8gb_dual_cpu_fast",
+      "present_profiles": [
+        1
+      ],
+      "profiles": [
+        1
+      ],
+      "rationale": "jtl311linux LLM row; p2 remains optional because of 8GB VRAM.",
+      "requirement": "node_specific",
+      "resident_mix": "",
+      "resource_state": "empty",
+      "status": "measured",
+      "theorem_facing_ready": true,
+      "workload_env": "llm",
+      "workload_key": "gpu_llm_distilgpt2"
+    },
+    {
+      "missing_profiles": [],
+      "node_bucket": "jtl311linux:gpu_rtx2080_8gb_dual_cpu_fast",
+      "present_profiles": [
+        1
+      ],
+      "profiles": [
+        1
+      ],
+      "rationale": "jtl311linux Ant row captures CPU-fast/GPU-weaker behavior.",
+      "requirement": "node_specific",
+      "resident_mix": "",
+      "resource_state": "empty",
+      "status": "measured",
+      "theorem_facing_ready": true,
+      "workload_env": "ant",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "missing_profiles": [],
+      "node_bucket": "jtl311linux:gpu_rtx2080_8gb_dual_cpu_fast",
+      "present_profiles": [
+        1,
+        2
+      ],
+      "profiles": [
+        1,
+        2
+      ],
+      "rationale": "jtl311linux HalfCheetah p1/p2 rows test env and node awareness.",
+      "requirement": "node_specific",
+      "resident_mix": "",
+      "resource_state": "empty",
+      "status": "measured",
+      "theorem_facing_ready": true,
+      "workload_env": "halfcheetah",
+      "workload_key": "hybrid_rl_resac_halfcheetah"
+    },
+    {
+      "missing_profiles": [],
+      "node_bucket": "jtl311linux:gpu_rtx2080_8gb_dual_cpu_fast",
+      "present_profiles": [
+        1
+      ],
+      "profiles": [
+        1
+      ],
+      "rationale": "Still needed if paper claims all four RE-SAC envs on jtl311linux.",
+      "requirement": "node_specific_pending",
+      "resident_mix": "",
+      "resource_state": "empty",
+      "status": "measured",
+      "theorem_facing_ready": false,
+      "workload_env": "hopper",
+      "workload_key": "hybrid_rl_resac_hopper"
+    },
+    {
+      "missing_profiles": [],
+      "node_bucket": "jtl311linux:gpu_rtx2080_8gb_dual_cpu_fast",
+      "present_profiles": [
+        1
+      ],
+      "profiles": [
+        1
+      ],
+      "rationale": "Still needed if paper claims all four RE-SAC envs on jtl311linux.",
+      "requirement": "node_specific_pending",
+      "resident_mix": "",
+      "resource_state": "empty",
+      "status": "measured",
+      "theorem_facing_ready": false,
+      "workload_env": "walker2d",
+      "workload_key": "hybrid_rl_resac_walker2d"
+    },
+    {
+      "missing_profiles": [],
+      "node_bucket": "node007-direct:gpu_node007_4x12gb",
+      "present_profiles": [
+        1,
+        2,
+        4
+      ],
+      "profiles": [
+        1,
+        2,
+        4
+      ],
+      "rationale": "node007 has four 12GB GPUs; p4 should be measured or marked boundary.",
+      "requirement": "node_specific",
+      "resident_mix": "",
+      "resource_state": "empty",
+      "status": "measured",
+      "theorem_facing_ready": true,
+      "workload_env": "cnn",
+      "workload_key": "gpu_cnn_torch_resnet50"
+    },
+    {
+      "missing_profiles": [],
+      "node_bucket": "node007-direct:gpu_node007_4x12gb",
+      "present_profiles": [
+        1
+      ],
+      "profiles": [
+        1
+      ],
+      "rationale": "Needed before claiming node007 LLM ETA.",
+      "requirement": "node_specific_pending",
+      "resident_mix": "",
+      "resource_state": "empty",
+      "status": "measured",
+      "theorem_facing_ready": false,
+      "workload_env": "llm",
+      "workload_key": "gpu_llm_distilgpt2"
+    },
+    {
+      "missing_profiles": [],
+      "node_bucket": "node007-direct:gpu_node007_4x12gb",
+      "present_profiles": [
+        1
+      ],
+      "profiles": [
+        1
+      ],
+      "rationale": "Needed before claiming node007 RL ETA.",
+      "requirement": "node_specific_pending",
+      "resident_mix": "",
+      "resource_state": "empty",
+      "status": "measured",
+      "theorem_facing_ready": false,
+      "workload_env": "ant",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "missing_profiles": [],
+      "node_bucket": "node001:cpu_hpc_192c",
+      "present_profiles": [
+        1
+      ],
+      "profiles": [
+        1
+      ],
+      "rationale": "Representative CPU-resident add-one row.",
+      "requirement": "cpu_representative",
+      "resident_mix": "cpu_worker_resident",
+      "resource_state": "cpu_resident",
+      "status": "measured",
+      "theorem_facing_ready": true,
+      "workload_env": "cpu",
+      "workload_key": "cpu_heavy_local_bench"
+    },
+    {
+      "missing_profiles": [],
+      "node_bucket": "node003:cpu_hpc_192c",
+      "present_profiles": [
+        1
+      ],
+      "profiles": [
+        1
+      ],
+      "rationale": "Full-resident 192-core CPU representative row.",
+      "requirement": "cpu_representative",
+      "resident_mix": "cpu_worker_resident",
+      "resource_state": "cpu_resident",
+      "status": "measured",
+      "theorem_facing_ready": true,
+      "workload_env": "cpu",
+      "workload_key": "cpu_heavy_local_bench"
+    },
+    {
+      "missing_profiles": [],
+      "node_bucket": "node005:cpu_hpc_192c",
+      "present_profiles": [
+        1
+      ],
+      "profiles": [
+        1
+      ],
+      "rationale": "Second CPU-node equivalence row.",
+      "requirement": "cpu_equivalence",
+      "resident_mix": "cpu_worker_resident",
+      "resource_state": "cpu_resident",
+      "status": "measured",
+      "theorem_facing_ready": true,
+      "workload_env": "cpu",
+      "workload_key": "cpu_heavy_local_bench"
+    }
+  ],
+  "status": "ETA_SERVER_COVERAGE_REQUIRED_READY"
+}

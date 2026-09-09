@@ -1,0 +1,127 @@
+{
+  "admitted_count": 0,
+  "admitted_rows": [],
+  "allow_launch": true,
+  "gate": "full_factorial_cpu_eta_probe_runner",
+  "launched_count": 1,
+  "pass": true,
+  "resource_state": "empty",
+  "rows": [
+    {
+      "config": {
+        "log_interval": 2,
+        "mode": "cpu",
+        "steps": 80,
+        "timeout_s": 2400,
+        "use_parallel": true,
+        "work_items": 130000
+      },
+      "eta_source_required": "tqdm/progress",
+      "family": "freqduet_cpu",
+      "hardware_group": "cpu_hpc_192c",
+      "launch_ready": true,
+      "launched": true,
+      "legacy_scheduler_limits_bypassed": true,
+      "measurement_valid": false,
+      "node": "node001",
+      "node_bucket": "node001:cpu_hpc_192c",
+      "pending_reason": "",
+      "profile_rows": [
+        {
+          "aggregate_stable_rate_unit_s": 0.0,
+          "eta_source": "tqdm/progress",
+          "measurement_valid": false,
+          "path_exists": true,
+          "profile": 2,
+          "returncode": 0,
+          "stable_rate_ready_count": 0,
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_node001_freqduet_missing_retry_20260630_node001_freqduet_cpu_ablation_c17_32_freqduet_empty/reports/profile_2_per_resource_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 5.702801722,
+          "eta_source": "tqdm/progress",
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 128,
+          "returncode": 0,
+          "stable_rate_ready_count": 1,
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_node001_freqduet_missing_retry_20260630_node001_freqduet_cpu_ablation_c17_32_freqduet_empty/reports/profile_128_per_resource_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 4.59427806,
+          "eta_source": "tqdm/progress",
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 192,
+          "returncode": 0,
+          "stable_rate_ready_count": 1,
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_node001_freqduet_missing_retry_20260630_node001_freqduet_cpu_ablation_c17_32_freqduet_empty/reports/profile_192_per_resource_summary.json"
+        }
+      ],
+      "profiles": [
+        2,
+        128,
+        192
+      ],
+      "reason": "one_or_more_cpu_profiles_missing_stable_progress_rate",
+      "resident_mix": "none",
+      "resource_state": "empty",
+      "row_id": "cpu_hpc_192c|q10_high_cpu_low_gpu|freqduet_cpu_ablation_c17_32|freqduet|empty|none",
+      "run_id": "ff_eta_t0_node001_freqduet_missing_retry_20260630_node001_freqduet_cpu_ablation_c17_32_freqduet_empty",
+      "workload_env": "freqduet",
+      "workload_key": "freqduet_cpu_ablation_c17_32"
+    }
+  ],
+  "run_prefix": "ff_eta_t0_node001_freqduet_missing_retry_20260630",
+  "scope": "Controlled full-factorial CPU ETA probes.  Launches bypass the legacy scheduler dispatch path and accept only task-native progress/tqdm rate samples with a stable tail gate.",
+  "selected_count": 1,
+  "service_cache_snapshot": {
+    "capacity_boundaries": [],
+    "records": [
+      {
+        "aggregate_rate": 5.702801722,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_cpu_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 1,
+        "hardware_class": "cpu_hpc_192c",
+        "node_bucket": "node001:cpu_hpc_192c",
+        "per_task_rates": [
+          5.702801722
+        ],
+        "profile": 128,
+        "resource_kind": "freqduet_cpu",
+        "resource_state": "empty",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_node001_freqduet_missing_retry_20260630_node001_freqduet_cpu_ablation_c17_32_freqduet_empty/reports/profile_128_per_resource_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 1.0,
+        "unit": "step",
+        "workload_env": "freqduet",
+        "workload_key": "freqduet_cpu_ablation_c17_32"
+      },
+      {
+        "aggregate_rate": 4.59427806,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_cpu_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 1,
+        "hardware_class": "cpu_hpc_192c",
+        "node_bucket": "node001:cpu_hpc_192c",
+        "per_task_rates": [
+          4.59427806
+        ],
+        "profile": 192,
+        "resource_kind": "freqduet_cpu",
+        "resource_state": "empty",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_node001_freqduet_missing_retry_20260630_node001_freqduet_cpu_ablation_c17_32_freqduet_empty/reports/profile_192_per_resource_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 1.0,
+        "unit": "step",
+        "workload_env": "freqduet",
+        "workload_key": "freqduet_cpu_ablation_c17_32"
+      }
+    ]
+  },
+  "status": "CPU_PROBE_RUNNER_LAUNCHED",
+  "tier": "T0_core_curve"
+}

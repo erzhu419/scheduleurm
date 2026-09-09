@@ -1,0 +1,16 @@
+# Live Marginal Under-Load Matrix
+
+- Status: `LIVE_MARGINAL_DESIGN_READY`
+- Allow launch: `true`
+- Pass: `true`
+- Admitted rows: `4`
+- Boundary rows: `0`
+
+| Scenario | Node | State | Workload | Stable rate | Valid | Reason |
+|---|---|---|---|---:|---:|---|
+| `design_jtl110gpu2_gpu_heavy_jax_matmul_gpu_matmul_cpu_resident_cpu_worker_resident_p1` | `jtl110gpu2` | `cpu_resident` | `gpu_heavy_jax_matmul` | 290.327 | true | `` |
+| `design_jtl110gpu2_gpu_heavy_jax_matmul_gpu_matmul_mixed_colocation_cnn_plus_hybrid_rl_p1` | `jtl110gpu2` | `mixed_colocation` | `gpu_heavy_jax_matmul` | 1110.09 | true | `` |
+| `design_jtl110gpu2_gpu_heavy_jax_matmul_gpu_matmul_mixed_colocation_llm_plus_hybrid_rl_p1` | `jtl110gpu2` | `mixed_colocation` | `gpu_heavy_jax_matmul` | 985.311 | true | `` |
+| `design_jtl110gpu2_gpu_heavy_jax_matmul_gpu_matmul_mixed_colocation_cnn_plus_llm_plus_hybrid_rl_p1` | `jtl110gpu2` | `mixed_colocation` | `gpu_heavy_jax_matmul` | 980.856 | true | `` |
+
+Generated from full-factorial T2 design rows. Each selected row uses a resident/mixed-load harness and task-native progress ETA.

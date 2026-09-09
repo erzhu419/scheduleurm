@@ -1,0 +1,8 @@
+{
+  "cmd": [
+    "scheduler.run_on",
+    "node007",
+    "export BAPR_PYTHON=/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python; export LD_LIBRARY_PATH=/cm/local/apps/cuda-driver/libs/535.261.03/lib64; export PATH=/cm/local/apps/cuda-driver/libs/535.261.03/bin:/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin:/usr/local/bin:/usr/bin:/bin; export XLA_PYTHON_CLIENT_MEM_FRACTION=0.20; set -e\nV=/home/zhengliang01/scheduleurm_work/venvs/scheduleurm-gpu-eta-py310\nC=/home/zhengliang01/scheduleurm_work/model_cache/huggingface\nexport HF_HOME=\"$C\" HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1\nCUDA_VISIBLE_DEVICES=0 \"$V/bin/python\" - <<'EOF'\nimport torch, transformers, tokenizers, safetensors\nprint(\"ENV\",torch.__version__,transformers.__version__,tokenizers.__version__,safetensors.__version__)\nprint(\"CUDA\",torch.cuda.is_available(),torch.cuda.get_device_name(0))\nfrom transformers import AutoConfig,AutoModelForCausalLM\nc=AutoConfig.from_pretrained(\"distilgpt2\",cache_dir=\"/home/zhengliang01/scheduleurm_work/model_cache/huggingface\",local_files_only=True)\nm=AutoModelForCausalLM.from_pretrained(\"distilgpt2\",cache_dir=\"/home/zhengliang01/scheduleurm_work/model_cache/huggingface\",local_files_only=True,dtype=torch.float16).cuda()\nprint(\"MODEL\",c.model_type,sum(p.numel() for p in m.parameters()))\nEOF\n"
+  ],
+  "returncode": 1
+}

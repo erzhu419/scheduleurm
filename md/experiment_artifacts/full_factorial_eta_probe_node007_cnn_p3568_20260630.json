@@ -1,0 +1,450 @@
+{
+  "admitted_count": 0,
+  "admitted_rows": [],
+  "allow_launch": true,
+  "boundary_count": 1,
+  "boundary_rows": [
+    {
+      "boundary_closed_profiles": [],
+      "config": {
+        "cwd": "/home/erzhu419/mine_code/scheduleurm",
+        "gpus": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "max_iters": 240,
+        "node": "node007-direct",
+        "stable_cycle_units": 0,
+        "template": "torch_cnn_resnet50.cmd.tpl",
+        "template_values": {},
+        "timeout_s": 1200
+      },
+      "eta_source_required": "tqdm/progress",
+      "family": "cnn",
+      "hardware_group": "gpu_node007_4x11gb",
+      "launch_ready": true,
+      "launched": true,
+      "legacy_scheduler_limits_bypassed": true,
+      "measurement_valid": false,
+      "node": "node007-direct",
+      "node_bucket": "node007-direct:gpu_node007_4x12gb",
+      "pending_reason": "",
+      "probe_result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "node": "node007-direct",
+        "pass": false,
+        "profiles": [
+          3,
+          5,
+          6,
+          8
+        ],
+        "rate_count": 87,
+        "run_id": "ff_eta_t0_node007_cnn_p3568_20260630_node007-direct_gpu_cnn_torch_resnet50_cnn_empty",
+        "stable_rate_ready_count": 87,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_node007_cnn_p3568_20260630_node007-direct_gpu_cnn_torch_resnet50_cnn_empty/reports/profile_3_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_node007_cnn_p3568_20260630_node007-direct_gpu_cnn_torch_resnet50_cnn_empty/reports/profile_5_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_node007_cnn_p3568_20260630_node007-direct_gpu_cnn_torch_resnet50_cnn_empty/reports/profile_6_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_node007_cnn_p3568_20260630_node007-direct_gpu_cnn_torch_resnet50_cnn_empty/reports/profile_8_per_gpu_summary.json"
+        ]
+      },
+      "profile_rows": [
+        {
+          "aggregate_stable_rate_unit_s": 115.48171787999999,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 9.62347649,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 3,
+          "running_count": 12,
+          "stable_rate_ready_count": 12,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 12
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_node007_cnn_p3568_20260630_node007-direct_gpu_cnn_torch_resnet50_cnn_empty/reports/profile_3_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 114.16312636,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 5.708156318,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 5,
+          "running_count": 20,
+          "stable_rate_ready_count": 20,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 20
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_node007_cnn_p3568_20260630_node007-direct_gpu_cnn_torch_resnet50_cnn_empty/reports/profile_5_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 112.95093741,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 4.70628905875,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 6,
+          "running_count": 24,
+          "stable_rate_ready_count": 24,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 24
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_node007_cnn_p3568_20260630_node007-direct_gpu_cnn_torch_resnet50_cnn_empty/reports/profile_6_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 110.65794007000001,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 3.56961097,
+          "measurement_valid": false,
+          "path_exists": true,
+          "profile": 8,
+          "running_count": 32,
+          "stable_rate_ready_count": 31,
+          "status_counts": {
+            "missing_rate": 1,
+            "sampled": 31
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_node007_cnn_p3568_20260630_node007-direct_gpu_cnn_torch_resnet50_cnn_empty/reports/profile_8_per_gpu_summary.json"
+        }
+      ],
+      "profiles": [
+        3,
+        5,
+        6,
+        8
+      ],
+      "reason": "one_or_more_profiles_unstable_or_capacity_boundary",
+      "resident_mix": "none",
+      "resource_state": "empty",
+      "row_id": "gpu_node007_4x11gb|q01_low_cpu_high_gpu|gpu_cnn_torch_resnet50|cnn|empty|none",
+      "run_id": "ff_eta_t0_node007_cnn_p3568_20260630_node007-direct_gpu_cnn_torch_resnet50_cnn_empty",
+      "workload_env": "cnn",
+      "workload_key": "gpu_cnn_torch_resnet50"
+    }
+  ],
+  "gate": "full_factorial_eta_probe_runner",
+  "launched_count": 1,
+  "pass": true,
+  "resource_state": "empty",
+  "rows": [
+    {
+      "boundary_closed_profiles": [],
+      "config": {
+        "cwd": "/home/erzhu419/mine_code/scheduleurm",
+        "gpus": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "max_iters": 240,
+        "node": "node007-direct",
+        "stable_cycle_units": 0,
+        "template": "torch_cnn_resnet50.cmd.tpl",
+        "template_values": {},
+        "timeout_s": 1200
+      },
+      "eta_source_required": "tqdm/progress",
+      "family": "cnn",
+      "hardware_group": "gpu_node007_4x11gb",
+      "launch_ready": true,
+      "launched": true,
+      "legacy_scheduler_limits_bypassed": true,
+      "measurement_valid": false,
+      "node": "node007-direct",
+      "node_bucket": "node007-direct:gpu_node007_4x12gb",
+      "pending_reason": "",
+      "probe_result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "node": "node007-direct",
+        "pass": false,
+        "profiles": [
+          3,
+          5,
+          6,
+          8
+        ],
+        "rate_count": 87,
+        "run_id": "ff_eta_t0_node007_cnn_p3568_20260630_node007-direct_gpu_cnn_torch_resnet50_cnn_empty",
+        "stable_rate_ready_count": 87,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_node007_cnn_p3568_20260630_node007-direct_gpu_cnn_torch_resnet50_cnn_empty/reports/profile_3_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_node007_cnn_p3568_20260630_node007-direct_gpu_cnn_torch_resnet50_cnn_empty/reports/profile_5_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_node007_cnn_p3568_20260630_node007-direct_gpu_cnn_torch_resnet50_cnn_empty/reports/profile_6_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_node007_cnn_p3568_20260630_node007-direct_gpu_cnn_torch_resnet50_cnn_empty/reports/profile_8_per_gpu_summary.json"
+        ]
+      },
+      "profile_rows": [
+        {
+          "aggregate_stable_rate_unit_s": 115.48171787999999,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 9.62347649,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 3,
+          "running_count": 12,
+          "stable_rate_ready_count": 12,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 12
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_node007_cnn_p3568_20260630_node007-direct_gpu_cnn_torch_resnet50_cnn_empty/reports/profile_3_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 114.16312636,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 5.708156318,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 5,
+          "running_count": 20,
+          "stable_rate_ready_count": 20,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 20
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_node007_cnn_p3568_20260630_node007-direct_gpu_cnn_torch_resnet50_cnn_empty/reports/profile_5_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 112.95093741,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 4.70628905875,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 6,
+          "running_count": 24,
+          "stable_rate_ready_count": 24,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 24
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_node007_cnn_p3568_20260630_node007-direct_gpu_cnn_torch_resnet50_cnn_empty/reports/profile_6_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 110.65794007000001,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 3.56961097,
+          "measurement_valid": false,
+          "path_exists": true,
+          "profile": 8,
+          "running_count": 32,
+          "stable_rate_ready_count": 31,
+          "status_counts": {
+            "missing_rate": 1,
+            "sampled": 31
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_node007_cnn_p3568_20260630_node007-direct_gpu_cnn_torch_resnet50_cnn_empty/reports/profile_8_per_gpu_summary.json"
+        }
+      ],
+      "profiles": [
+        3,
+        5,
+        6,
+        8
+      ],
+      "reason": "one_or_more_profiles_unstable_or_capacity_boundary",
+      "resident_mix": "none",
+      "resource_state": "empty",
+      "row_id": "gpu_node007_4x11gb|q01_low_cpu_high_gpu|gpu_cnn_torch_resnet50|cnn|empty|none",
+      "run_id": "ff_eta_t0_node007_cnn_p3568_20260630_node007-direct_gpu_cnn_torch_resnet50_cnn_empty",
+      "workload_env": "cnn",
+      "workload_key": "gpu_cnn_torch_resnet50"
+    }
+  ],
+  "run_prefix": "ff_eta_t0_node007_cnn_p3568_20260630",
+  "scope": "Controlled full-factorial ETA probes.  Launches bypass the legacy scheduler dispatch path and require task-native tqdm/progress.  Invalid profiles are retained as scoped capacity/instability boundaries for the exact node/workload/state.",
+  "selected_count": 1,
+  "service_cache_snapshot": {
+    "capacity_boundaries": [
+      {
+        "aggregate_rate": 27.664485017500002,
+        "capacity_boundary": true,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 4,
+        "hardware_class": "gpu_node007_4x11gb",
+        "node_bucket": "node007-direct:gpu_node007_4x12gb",
+        "per_task_rates": [
+          3.51106668,
+          3.51020357,
+          3.51061368,
+          3.29878557,
+          3.50895371,
+          3.50970174,
+          3.5089388,
+          3.11496913,
+          3.35210419,
+          3.34932037,
+          3.5625463,
+          3.56675026,
+          3.56225078,
+          3.56567243,
+          3.56245673,
+          3.56659769,
+          4.05749086,
+          3.81712173,
+          4.06008916,
+          3.81850323,
+          4.05743905,
+          4.06015933,
+          4.05921575,
+          3.31441336,
+          3.3142864,
+          3.52996041,
+          3.52931693,
+          3.52986074,
+          3.31441063,
+          3.31666027,
+          3.31808059
+        ],
+        "profile": 8,
+        "resource_kind": "cnn",
+        "resource_state": "empty",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_node007_cnn_p3568_20260630_node007-direct_gpu_cnn_torch_resnet50_cnn_empty/reports/profile_8_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 240.0,
+        "unit": "step",
+        "workload_env": "cnn",
+        "workload_key": "gpu_cnn_torch_resnet50"
+      }
+    ],
+    "records": [
+      {
+        "aggregate_rate": 28.870429469999998,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 4,
+        "hardware_class": "gpu_node007_4x11gb",
+        "node_bucket": "node007-direct:gpu_node007_4x12gb",
+        "per_task_rates": [
+          9.69323951,
+          9.69266121,
+          9.69957707,
+          9.64400407,
+          9.63735535,
+          9.63824723,
+          9.58275384,
+          9.58297698,
+          9.53993482,
+          9.59028235,
+          9.58932416,
+          9.59136129
+        ],
+        "profile": 3,
+        "resource_kind": "cnn",
+        "resource_state": "empty",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_node007_cnn_p3568_20260630_node007-direct_gpu_cnn_torch_resnet50_cnn_empty/reports/profile_3_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 240.0,
+        "unit": "step",
+        "workload_env": "cnn",
+        "workload_key": "gpu_cnn_torch_resnet50"
+      },
+      {
+        "aggregate_rate": 28.54078159,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 4,
+        "hardware_class": "gpu_node007_4x11gb",
+        "node_bucket": "node007-direct:gpu_node007_4x12gb",
+        "per_task_rates": [
+          5.70755443,
+          5.70779991,
+          5.36726409,
+          5.70146903,
+          5.70765895,
+          5.77182567,
+          5.78439959,
+          5.77238948,
+          5.77308111,
+          5.77272881,
+          5.79794763,
+          5.79163015,
+          5.79191731,
+          5.79153941,
+          5.79244416,
+          5.62637845,
+          5.62640935,
+          5.62577748,
+          5.62497408,
+          5.62793727
+        ],
+        "profile": 5,
+        "resource_kind": "cnn",
+        "resource_state": "empty",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_node007_cnn_p3568_20260630_node007-direct_gpu_cnn_torch_resnet50_cnn_empty/reports/profile_5_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 240.0,
+        "unit": "step",
+        "workload_env": "cnn",
+        "workload_key": "gpu_cnn_torch_resnet50"
+      },
+      {
+        "aggregate_rate": 28.2377343525,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 4,
+        "hardware_class": "gpu_node007_4x11gb",
+        "node_bucket": "node007-direct:gpu_node007_4x12gb",
+        "per_task_rates": [
+          4.44070644,
+          4.71937869,
+          4.71710772,
+          4.7230089,
+          4.71677198,
+          4.72370395,
+          4.75860334,
+          4.75750048,
+          4.76024455,
+          4.76313795,
+          4.75937012,
+          4.75872177,
+          4.77923933,
+          4.77982366,
+          4.7784952,
+          4.78011874,
+          4.78004688,
+          4.7806615,
+          4.6569179,
+          4.38370997,
+          4.65926017,
+          4.65920691,
+          4.65569532,
+          4.65950594
+        ],
+        "profile": 6,
+        "resource_kind": "cnn",
+        "resource_state": "empty",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_node007_cnn_p3568_20260630_node007-direct_gpu_cnn_torch_resnet50_cnn_empty/reports/profile_6_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 240.0,
+        "unit": "step",
+        "workload_env": "cnn",
+        "workload_key": "gpu_cnn_torch_resnet50"
+      }
+    ]
+  },
+  "status": "PROBE_RUNNER_LAUNCHED",
+  "tier": "T0_core_curve"
+}

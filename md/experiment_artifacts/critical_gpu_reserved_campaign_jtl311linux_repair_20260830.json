@@ -1,0 +1,108 @@
+{
+  "clean_preflight": {
+    "active_scheduler_tasks": [],
+    "gpu_idle": {
+      "compute_process_rows": [],
+      "idle_memory_limit_mb": 512,
+      "idle_util_limit_pct": 5,
+      "ready": true,
+      "returncode": 0,
+      "selected_gpus": [
+        {
+          "index": 0,
+          "name": "NVIDIA GeForce RTX 2080",
+          "total_mb": 8192,
+          "used_mb": 58,
+          "util_pct": 0
+        },
+        {
+          "index": 1,
+          "name": "NVIDIA GeForce RTX 2080",
+          "total_mb": 8192,
+          "used_mb": 6,
+          "util_pct": 0
+        }
+      ],
+      "stderr_tail": ""
+    },
+    "sampled_at": 1788054047.6645072
+  },
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "algorithm.experiments.critical_gpu_completion_campaign",
+        "--node",
+        "jtl311linux",
+        "--wave",
+        "1",
+        "--allow-launch"
+      ],
+      "attempt": 1,
+      "finished_at": 1788054174.604592,
+      "log_path": "md/experiment_artifacts/critical_gpu_reserved_campaign_jtl311linux_repair_20260830_00_empty_r01_try01.log",
+      "max_attempts": 2,
+      "pass": false,
+      "phase": "empty",
+      "returncode": 2,
+      "started_at": 1788054047.6646042,
+      "wave": 1
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "algorithm.experiments.critical_gpu_completion_campaign",
+        "--node",
+        "jtl311linux",
+        "--wave",
+        "1",
+        "--allow-launch"
+      ],
+      "attempt": 2,
+      "finished_at": 1788054320.3051114,
+      "log_path": "md/experiment_artifacts/critical_gpu_reserved_campaign_jtl311linux_repair_20260830_00_empty_r01_try02.log",
+      "max_attempts": 2,
+      "pass": false,
+      "phase": "empty",
+      "returncode": 2,
+      "started_at": 1788054219.6611402,
+      "wave": 1
+    }
+  ],
+  "empty_waves": [
+    1
+  ],
+  "existing_tasks_drain_naturally": true,
+  "external_manual_launches_still_rejected_by_process_audit": true,
+  "failed_after_attempts": 2,
+  "failed_command_index": 0,
+  "finished_at": 1788054320.3055377,
+  "gate": "critical_gpu_reserved_campaign",
+  "gates_retried": false,
+  "legacy_scheduler_limits_bypassed_by_frozen_campaign": true,
+  "loaded_waves": [],
+  "node": "jtl311linux",
+  "ordinary_running_tasks_touched": false,
+  "pass": false,
+  "reservation": {
+    "blocks_new_scheduleurm_launches_only": true,
+    "created_at": 1788053979.5182643,
+    "expires_at": 1788055179.5182643,
+    "holder_host": "FATHERSUCKERMSI",
+    "holder_pid": 1087361,
+    "holder_start_ticks": 5752697,
+    "node": "jtl311linux",
+    "ordinary_running_tasks_touched": false,
+    "purpose": "theorem-facing natural-completion GPU calibration",
+    "renewed_at": 1788053979.5182643,
+    "reservation_id": "measure-d0b6d8a707994a41953175a42ca70641"
+  },
+  "run_empty_gate": true,
+  "run_loaded_gate": false,
+  "schema_version": 1,
+  "started_at": 1788053979.5180743,
+  "status": "COMMAND_FAILED",
+  "wave_retries_after_initial_attempt": 1
+}

@@ -1,0 +1,111 @@
+{
+  "cache_record_count": 290,
+  "cache_source": "default_cache+live_overlay:md/experiment_artifacts/service_cache_v2_live_merged_20260629.json",
+  "frontier": [
+    {
+      "arrival_mode": "static",
+      "best_makespan_policy": "sota_gavel_finish_time_fairness",
+      "best_makespan_profiles": {
+        "gpu_cnn_torch_resnet50": 7
+      },
+      "best_makespan_s": 47.67779545602772,
+      "best_mean_flow_policy": "scheduleurm_sota_union_online_pareto_slack",
+      "best_mean_flow_profiles": {
+        "gpu_cnn_torch_resnet50": 5
+      },
+      "best_mean_flow_s": 26.75473142815158,
+      "candidate_profiles": {
+        "gpu_cnn_torch_resnet50": 5
+      },
+      "diagnosis": "same measured CNN profile but different statewise drain trajectory; current phase-switch/SJF/LPT bridge candidates improve flow but fail the strict makespan guard",
+      "makespan_ratio": 0.9887088747258792,
+      "mean_flow_ratio": 1.0108219384878037,
+      "pareto_slack_profiles": {
+        "gpu_cnn_torch_resnet50": 7
+      },
+      "required_action": "measure a new CNN tail/co-location service point or admit a bridge only after it improves flow without exceeding the finish-time makespan envelope",
+      "taskset": "q01_gpu_bound_cnn_resnet50"
+    },
+    {
+      "arrival_mode": "static",
+      "best_makespan_policy": "scheduleurm_sota_union_online_pareto_slack",
+      "best_makespan_profiles": {
+        "hybrid_rl_resac_ant": 5
+      },
+      "best_makespan_s": 31381.62634757745,
+      "best_mean_flow_policy": "sota_iadeep_salus_interference_guard",
+      "best_mean_flow_profiles": {
+        "hybrid_rl_resac_ant": 5
+      },
+      "best_mean_flow_s": 16059.215787509378,
+      "candidate_profiles": {
+        "hybrid_rl_resac_ant": 5
+      },
+      "diagnosis": "best makespan and best mean-flow are supplied by different policy families",
+      "makespan_ratio": 1.0,
+      "mean_flow_ratio": 0.9999833430335442,
+      "pareto_slack_profiles": {
+        "hybrid_rl_resac_ant": 5
+      },
+      "required_action": "add a finite candidate action that interpolates the two policies and certify it with the same service cache",
+      "taskset": "q11_cpu_gpu_coupled"
+    },
+    {
+      "arrival_mode": "static",
+      "best_makespan_policy": "scheduleurm_sota_union_online_pareto_slack",
+      "best_makespan_profiles": {
+        "cpu_heavy_local_bench": 8,
+        "gpu_cnn_torch_resnet50": 5,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 8,
+        "hybrid_rl_resac_ant": 5
+      },
+      "best_makespan_s": 23453.39122106031,
+      "best_mean_flow_policy": "scheduleurm_sota_union_adaptive_scalarized",
+      "best_mean_flow_profiles": {
+        "cpu_heavy_local_bench": 8,
+        "gpu_cnn_torch_resnet50": 5,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 8,
+        "hybrid_rl_resac_ant": 5
+      },
+      "best_mean_flow_s": 4225.487576371938,
+      "candidate_profiles": {
+        "cpu_heavy_local_bench": 8,
+        "gpu_cnn_torch_resnet50": 5,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 8,
+        "hybrid_rl_resac_ant": 5
+      },
+      "diagnosis": "hybrid RL profile-3 minimizes makespan while profile-2 minimizes flow",
+      "makespan_ratio": 1.0,
+      "mean_flow_ratio": 0.9998174126514441,
+      "pareto_slack_profiles": {
+        "cpu_heavy_local_bench": 8,
+        "gpu_cnn_torch_resnet50": 5,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 8,
+        "hybrid_rl_resac_ant": 5
+      },
+      "required_action": "measure or admit a hybrid RL co-location profile between current p2/p3, or add a critical-path-aware p3-to-p2 switch with a verified makespan guard",
+      "taskset": "hybrid_research_portfolio"
+    }
+  ],
+  "frontier_count": 3,
+  "gate": "sota_strict_dominance_frontier",
+  "gate_pass": false,
+  "next_probe_order": [
+    "Hybrid RL p2/p3 bridge: run RE-SAC/BAPR-like probes at 2-3 concurrent tasks under empty and high-VRAM-resident states; admit only if the LCB gives profile-3 makespan with profile-2 tail flow.",
+    "CNN tail/co-location bridge: current cache-only phase-switch, SJF, critical-SJF, and LPT-static bridge variants improve flow but miss the strict makespan envelope; run controlled ResNet-50 tail and CNN+LLM/CNN+CUDA service probes and admit only if the LCB improves flow without exceeding the finish-time makespan envelope."
+  ],
+  "pareto_tolerance": 0.005,
+  "pass": false,
+  "pass_meaning": "remaining measured-cache external-policy frontier rows require bridge actions",
+  "scope": "This certificate only diagnoses strict measured-cache policy-semantics gaps against the registered external-policy envelope. It does not claim direct full-stack SOTA binary superiority.",
+  "scoped_claim_ready": false,
+  "source_gate_status": "SOTA_CANDIDATE_UNION_NEEDS_REVIEW",
+  "status": "MEASURED_CACHE_EXTERNAL_POLICY_FRONTIER_OPEN",
+  "strict_pareto_ready": false,
+  "strong_claim_ready": false,
+  "within_tolerance_ready": false
+}

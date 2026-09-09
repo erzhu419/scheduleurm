@@ -1,0 +1,8 @@
+{
+  "cmd": [
+    "scheduler.run_on",
+    "node004",
+    "export BAPR_PYTHON=/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python; export LD_LIBRARY_PATH=/cm/local/apps/cuda-driver/libs/535.261.03/lib64; export PATH=/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin:/usr/local/bin:/usr/bin:/bin; pids=\"$(pgrep -f '[n]ative_cpu_colocation_stochastic_20260727formal_v6_multisample_p1full_' || true)\"; for pid in $pids; do kill -TERM \"$pid\" 2>/dev/null || true; done; sleep 2; pids=\"$(pgrep -f '[n]ative_cpu_colocation_stochastic_20260727formal_v6_multisample_p1full_' || true)\"; for pid in $pids; do kill -KILL \"$pid\" 2>/dev/null || true; done; sleep 1; printf 'tagged_remaining='; pgrep -fc '[n]ative_cpu_colocation_stochastic_20260727formal_v6_multisample_p1full_' || true"
+  ],
+  "returncode": 0
+}

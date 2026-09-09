@@ -1,0 +1,654 @@
+{
+  "all_completion_models_ready": true,
+  "allow_launch": true,
+  "claim_boundary": "These are natural-completion calibration cells. FreqDuet and SUMO rows remain explicit surrogates until their native checkpointable commands are run. External resident load is observational and is never relabelled as an empty-state cell.",
+  "completion_model_ready_count": 6,
+  "elapsed_wall_s": 53.40224623680115,
+  "gate": "phase_aware_cpu_completion_matrix",
+  "hardware_group": "cpu_hpc_192c",
+  "matrix": "freqduet_curve",
+  "node_equivalence_contract": "node001-node006 are homogeneous 3x64-core nodes",
+  "repeat_index": 0,
+  "rows": [
+    {
+      "cell_id": "freqduet_p16",
+      "checkpoint_bytes": 8388608,
+      "checkpoint_interval": 40,
+      "child_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_freqduet_curve_telemetry_holdout_20260727_r0_node003_freqduet_p16/raw/profile_1_per_gpu/gpu0_0.log",
+      "completion_model": {
+        "amortized_unit_s": 0.07001899791103375,
+        "base_unit_s": 0.07062603544909507,
+        "checkpoint_observed_s": 0.16534702479839325,
+        "child_returncode": 0,
+        "completion_model_ready": true,
+        "completion_unit_s": 0.07001899791103375,
+        "counter_offset": 0,
+        "finalization_after_last_progress_s": 0.064931825036183,
+        "first_progress_unit": 2,
+        "interval_sample_count": 79,
+        "last_progress_unit": 160,
+        "loop_observed_units": 158,
+        "loop_wall_s": 11.063001669943333,
+        "model_abs_error_s": 1.7763568394002505e-15,
+        "model_relative_error": 1.5497807138528899e-16,
+        "natural_exit": true,
+        "periodic_extra_s": 0.0,
+        "phase_durations_s": {
+          "checkpoint": [
+            0.03481558314524591,
+            0.05873957695439458,
+            0.02805637684650719,
+            0.04373548785224557
+          ],
+          "final_save": [
+            0.029759676894173026
+          ],
+          "initialization": [
+            0.0002182649914175272
+          ],
+          "outer_loop": [
+            11.315990294795483
+          ]
+        },
+        "predicted_total_s": 11.461988289840518,
+        "progress_observation_count": 80,
+        "readiness_reason": "ready",
+        "save_observed_s": 0.029759676894173026,
+        "schema_version": 1,
+        "startup_overhead_s": 0.19401679903893626,
+        "startup_to_first_progress_s": 0.33405479486100376,
+        "stopped_on_stable": false,
+        "terminal_overhead_s": 0.064931825036183,
+        "total_units": 160,
+        "total_wall_s": 11.46198828984052,
+        "unit": "step"
+      },
+      "completion_model_ready": true,
+      "declared_external_load_snapshot": 0.0,
+      "external_cpu_bucket": "external_c0_2",
+      "external_cpu_core_equiv": 0.035834320679258624,
+      "launched": true,
+      "measurement_valid": true,
+      "node": "node003",
+      "observed_external_load": 0.0,
+      "observed_resource_state": {
+        "external_cpu_core_equiv": 0.035834320679258624,
+        "load1_end": 2.49,
+        "load1_start": 1.17,
+        "load5_end": 1.13,
+        "load5_start": 0.85,
+        "logical_cpus": 192,
+        "measurement_wall_s": 11.317744846921414,
+        "own_cpu_core_equiv": 12.83736309354252,
+        "own_cpu_s": 145.29,
+        "schema_version": 1,
+        "system_busy_core_equiv": 12.873197414221778,
+        "system_busy_fraction": 0.06704790319907176,
+        "workers": 16
+      },
+      "probe_result": {
+        "completion_model_ready_count": 1,
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0
+        ],
+        "node": "node003",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 1,
+        "run_id": "phase_freqduet_curve_telemetry_holdout_20260727_r0_node003_freqduet_p16",
+        "stable_rate_ready_count": 1,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/phase_freqduet_curve_telemetry_holdout_20260727_r0_node003_freqduet_p16/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "resource_state": "empty",
+      "resource_telemetry_ready": true,
+      "run_id": "phase_freqduet_curve_telemetry_holdout_20260727_r0_node003_freqduet_p16",
+      "status": "READY",
+      "steps": 160,
+      "storage_class": "shared_home",
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_freqduet_curve_telemetry_holdout_20260727_r0_node003_freqduet_p16/reports/profile_1_per_gpu_summary.json",
+      "work_items": 130000,
+      "workers": 16,
+      "workload_key": "freqduet_cpu_ablation_c17_32",
+      "workload_label": "freqduet_surrogate"
+    },
+    {
+      "cell_id": "freqduet_p160_external",
+      "checkpoint_bytes": 8388608,
+      "checkpoint_interval": 40,
+      "child_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_freqduet_curve_telemetry_holdout_20260727_r0_node006_freqduet_p160_external/raw/profile_1_per_gpu/gpu0_0.log",
+      "completion_model": {
+        "amortized_unit_s": 0.18526178593688372,
+        "base_unit_s": 0.18364650406874716,
+        "checkpoint_observed_s": 0.10673834197223186,
+        "child_returncode": 0,
+        "completion_model_ready": true,
+        "completion_unit_s": 0.18526178593688372,
+        "counter_offset": 0,
+        "finalization_after_last_progress_s": 0.09278583712875843,
+        "first_progress_unit": 2,
+        "interval_sample_count": 79,
+        "last_progress_unit": 160,
+        "loop_observed_units": 158,
+        "loop_wall_s": 29.27136217802763,
+        "model_abs_error_s": 3.552713678800501e-15,
+        "model_relative_error": 1.1805721567632556e-16,
+        "natural_exit": true,
+        "periodic_extra_s": 0.2552145351655781,
+        "phase_durations_s": {
+          "checkpoint": [
+            0.029401982901617885,
+            0.027631200151517987,
+            0.026654263958334923,
+            0.02305089496076107
+          ],
+          "final_save": [
+            0.02609189599752426
+          ],
+          "initialization": [
+            0.0001502509694546461
+          ],
+          "outer_loop": [
+            29.970517260953784
+          ]
+        },
+        "predicted_total_s": 30.09315151511691,
+        "progress_observation_count": 80,
+        "readiness_reason": "ready",
+        "save_observed_s": 0.02609189599752426,
+        "schema_version": 1,
+        "startup_overhead_s": 0.3584799280867594,
+        "startup_to_first_progress_s": 0.7290034999605268,
+        "stopped_on_stable": false,
+        "terminal_overhead_s": 0.09278583712875843,
+        "total_units": 160,
+        "total_wall_s": 30.093151515116915,
+        "unit": "step"
+      },
+      "completion_model_ready": true,
+      "declared_external_load_snapshot": 28.6,
+      "external_cpu_bucket": "external_c3_16",
+      "external_cpu_core_equiv": 11.81641948414358,
+      "launched": true,
+      "measurement_valid": true,
+      "node": "node006",
+      "observed_external_load": 28.6,
+      "observed_resource_state": {
+        "external_cpu_core_equiv": 11.81641948414358,
+        "load1_end": 43.1,
+        "load1_start": 42.02,
+        "load5_end": 31.21,
+        "load5_start": 30.19,
+        "logical_cpus": 192,
+        "measurement_wall_s": 29.971743097063154,
+        "own_cpu_core_equiv": 98.48376153635294,
+        "own_cpu_s": 2951.73,
+        "schema_version": 1,
+        "system_busy_core_equiv": 110.30018102049652,
+        "system_busy_fraction": 0.5744801094817528,
+        "workers": 160
+      },
+      "probe_result": {
+        "completion_model_ready_count": 1,
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0
+        ],
+        "node": "node006",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 1,
+        "run_id": "phase_freqduet_curve_telemetry_holdout_20260727_r0_node006_freqduet_p160_external",
+        "stable_rate_ready_count": 1,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/phase_freqduet_curve_telemetry_holdout_20260727_r0_node006_freqduet_p160_external/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "resource_state": "cpu_resident_external",
+      "resource_telemetry_ready": true,
+      "run_id": "phase_freqduet_curve_telemetry_holdout_20260727_r0_node006_freqduet_p160_external",
+      "status": "READY",
+      "steps": 160,
+      "storage_class": "shared_home",
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_freqduet_curve_telemetry_holdout_20260727_r0_node006_freqduet_p160_external/reports/profile_1_per_gpu_summary.json",
+      "work_items": 130000,
+      "workers": 160,
+      "workload_key": "freqduet_cpu_ablation_c17_32",
+      "workload_label": "freqduet_surrogate"
+    },
+    {
+      "cell_id": "freqduet_p2",
+      "checkpoint_bytes": 8388608,
+      "checkpoint_interval": 40,
+      "child_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_freqduet_curve_telemetry_holdout_20260727_r0_node001_freqduet_p2/raw/profile_1_per_gpu/gpu0_0.log",
+      "completion_model": {
+        "amortized_unit_s": 0.052988573556612656,
+        "base_unit_s": 0.04949789959937334,
+        "checkpoint_observed_s": 0.12421921966597438,
+        "child_returncode": 0,
+        "completion_model_ready": true,
+        "completion_unit_s": 0.052988573556612656,
+        "counter_offset": 0,
+        "finalization_after_last_progress_s": 0.06943164300173521,
+        "first_progress_unit": 2,
+        "interval_sample_count": 79,
+        "last_progress_unit": 160,
+        "loop_observed_units": 158,
+        "loop_wall_s": 8.3721946219448,
+        "model_abs_error_s": 0.0,
+        "model_relative_error": 0.0,
+        "natural_exit": true,
+        "periodic_extra_s": 0.5515264852438122,
+        "phase_durations_s": {
+          "checkpoint": [
+            0.038223310839384794,
+            0.028796939877793193,
+            0.030144922900944948,
+            0.027054046047851443
+          ],
+          "final_save": [
+            0.040404899045825005
+          ],
+          "initialization": [
+            0.00020106183364987373
+          ],
+          "outer_loop": [
+            8.503272885922343
+          ]
+        },
+        "predicted_total_s": 8.654213804053143,
+        "progress_observation_count": 80,
+        "readiness_reason": "ready",
+        "save_observed_s": 0.040404899045825005,
+        "schema_version": 1,
+        "startup_overhead_s": 0.10661039199338213,
+        "startup_to_first_progress_s": 0.21258753910660744,
+        "stopped_on_stable": false,
+        "terminal_overhead_s": 0.06943164300173521,
+        "total_units": 160,
+        "total_wall_s": 8.654213804053143,
+        "unit": "step"
+      },
+      "completion_model_ready": true,
+      "declared_external_load_snapshot": 0.0,
+      "external_cpu_bucket": "external_c0_2",
+      "external_cpu_core_equiv": 0.04321176644629632,
+      "launched": true,
+      "measurement_valid": true,
+      "node": "node001",
+      "observed_external_load": 0.0,
+      "observed_resource_state": {
+        "external_cpu_core_equiv": 0.04321176644629632,
+        "load1_end": 0.09,
+        "load1_start": 0.09,
+        "load5_end": 0.08,
+        "load5_start": 0.09,
+        "logical_cpus": 192,
+        "measurement_wall_s": 8.504989542998374,
+        "own_cpu_core_equiv": 1.8859517603057763,
+        "own_cpu_s": 16.040000000000003,
+        "schema_version": 1,
+        "system_busy_core_equiv": 1.9291635267520726,
+        "system_busy_fraction": 0.01004772670183371,
+        "workers": 2
+      },
+      "probe_result": {
+        "completion_model_ready_count": 1,
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0
+        ],
+        "node": "node001",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 1,
+        "run_id": "phase_freqduet_curve_telemetry_holdout_20260727_r0_node001_freqduet_p2",
+        "stable_rate_ready_count": 1,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/phase_freqduet_curve_telemetry_holdout_20260727_r0_node001_freqduet_p2/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "resource_state": "empty",
+      "resource_telemetry_ready": true,
+      "run_id": "phase_freqduet_curve_telemetry_holdout_20260727_r0_node001_freqduet_p2",
+      "status": "READY",
+      "steps": 160,
+      "storage_class": "shared_home",
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_freqduet_curve_telemetry_holdout_20260727_r0_node001_freqduet_p2/reports/profile_1_per_gpu_summary.json",
+      "work_items": 130000,
+      "workers": 2,
+      "workload_key": "freqduet_cpu_ablation_c17_32",
+      "workload_label": "freqduet_surrogate"
+    },
+    {
+      "cell_id": "freqduet_p32_external",
+      "checkpoint_bytes": 8388608,
+      "checkpoint_interval": 40,
+      "child_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_freqduet_curve_telemetry_holdout_20260727_r0_node004_freqduet_p32_external/raw/profile_1_per_gpu/gpu0_0.log",
+      "completion_model": {
+        "amortized_unit_s": 0.07476769648109197,
+        "base_unit_s": 0.07374831452034414,
+        "checkpoint_observed_s": 0.11276545119471848,
+        "child_returncode": 0,
+        "completion_model_ready": true,
+        "completion_unit_s": 0.07476769648109197,
+        "counter_offset": 0,
+        "finalization_after_last_progress_s": 0.06428083800710738,
+        "first_progress_unit": 2,
+        "interval_sample_count": 79,
+        "last_progress_unit": 160,
+        "loop_observed_units": 158,
+        "loop_wall_s": 11.813296044012532,
+        "model_abs_error_s": 1.7763568394002505e-15,
+        "model_relative_error": 1.4583178932066742e-16,
+        "natural_exit": true,
+        "periodic_extra_s": 0.1610623497981578,
+        "phase_durations_s": {
+          "checkpoint": [
+            0.025469965999945998,
+            0.026938896160572767,
+            0.030144628835842013,
+            0.0302119601983577
+          ],
+          "final_save": [
+            0.02782931411638856
+          ],
+          "initialization": [
+            0.0002040599938482046
+          ],
+          "outer_loop": [
+            12.050016353838146
+          ]
+        },
+        "predicted_total_s": 12.180861578090115,
+        "progress_observation_count": 80,
+        "readiness_reason": "ready",
+        "save_observed_s": 0.02782931411638856,
+        "schema_version": 1,
+        "startup_overhead_s": 0.15374930310829343,
+        "startup_to_first_progress_s": 0.30328469607047737,
+        "stopped_on_stable": false,
+        "terminal_overhead_s": 0.06428083800710738,
+        "total_units": 160,
+        "total_wall_s": 12.180861578090116,
+        "unit": "step"
+      },
+      "completion_model_ready": true,
+      "declared_external_load_snapshot": 48.1,
+      "external_cpu_bucket": "external_c33_64",
+      "external_cpu_core_equiv": 48.09937869900331,
+      "launched": true,
+      "measurement_valid": true,
+      "node": "node004",
+      "observed_external_load": 48.1,
+      "observed_resource_state": {
+        "external_cpu_core_equiv": 48.09937869900331,
+        "load1_end": 55.47,
+        "load1_start": 51.21,
+        "load5_end": 51.66,
+        "load5_start": 50.72,
+        "logical_cpus": 192,
+        "measurement_wall_s": 12.051839818013832,
+        "own_cpu_core_equiv": 24.889145933689814,
+        "own_cpu_s": 299.96,
+        "schema_version": 1,
+        "system_busy_core_equiv": 72.98852463269313,
+        "system_busy_fraction": 0.38014856579527667,
+        "workers": 32
+      },
+      "probe_result": {
+        "completion_model_ready_count": 1,
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0
+        ],
+        "node": "node004",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 1,
+        "run_id": "phase_freqduet_curve_telemetry_holdout_20260727_r0_node004_freqduet_p32_external",
+        "stable_rate_ready_count": 1,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/phase_freqduet_curve_telemetry_holdout_20260727_r0_node004_freqduet_p32_external/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "resource_state": "cpu_resident_external",
+      "resource_telemetry_ready": true,
+      "run_id": "phase_freqduet_curve_telemetry_holdout_20260727_r0_node004_freqduet_p32_external",
+      "status": "READY",
+      "steps": 160,
+      "storage_class": "shared_home",
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_freqduet_curve_telemetry_holdout_20260727_r0_node004_freqduet_p32_external/reports/profile_1_per_gpu_summary.json",
+      "work_items": 130000,
+      "workers": 32,
+      "workload_key": "freqduet_cpu_ablation_c17_32",
+      "workload_label": "freqduet_surrogate"
+    },
+    {
+      "cell_id": "freqduet_p64",
+      "checkpoint_bytes": 8388608,
+      "checkpoint_interval": 40,
+      "child_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_freqduet_curve_telemetry_holdout_20260727_r0_node005_freqduet_p64/raw/profile_1_per_gpu/gpu0_0.log",
+      "completion_model": {
+        "amortized_unit_s": 0.09823090544919472,
+        "base_unit_s": 0.09031747444532812,
+        "checkpoint_observed_s": 0.10841680015437305,
+        "child_returncode": 0,
+        "completion_model_ready": true,
+        "completion_unit_s": 0.09823090544919472,
+        "counter_offset": 0,
+        "finalization_after_last_progress_s": 0.07624072791077197,
+        "first_progress_unit": 2,
+        "interval_sample_count": 79,
+        "last_progress_unit": 160,
+        "loop_observed_units": 158,
+        "loop_wall_s": 15.520483060972765,
+        "model_abs_error_s": 0.0,
+        "model_relative_error": 0.0,
+        "natural_exit": true,
+        "periodic_extra_s": 1.2503220986109227,
+        "phase_durations_s": {
+          "checkpoint": [
+            0.029512854060158134,
+            0.025167376035824418,
+            0.024956031935289502,
+            0.028780538123100996
+          ],
+          "final_save": [
+            0.032711376901715994
+          ],
+          "initialization": [
+            0.00016471394337713718
+          ],
+          "outer_loop": [
+            15.880254185991362
+          ]
+        },
+        "predicted_total_s": 16.01625390490517,
+        "progress_observation_count": 80,
+        "readiness_reason": "ready",
+        "save_observed_s": 0.032711376901715994,
+        "schema_version": 1,
+        "startup_overhead_s": 0.22306830512324372,
+        "startup_to_first_progress_s": 0.41953011602163315,
+        "stopped_on_stable": false,
+        "terminal_overhead_s": 0.07624072791077197,
+        "total_units": 160,
+        "total_wall_s": 16.01625390490517,
+        "unit": "step"
+      },
+      "completion_model_ready": true,
+      "declared_external_load_snapshot": 0.0,
+      "external_cpu_bucket": "external_c0_2",
+      "external_cpu_core_equiv": 0.13880396708241705,
+      "launched": true,
+      "measurement_valid": true,
+      "node": "node005",
+      "observed_external_load": 0.0,
+      "observed_resource_state": {
+        "external_cpu_core_equiv": 0.13880396708241705,
+        "load1_end": 9.22,
+        "load1_start": 6.92,
+        "load5_end": 6.54,
+        "load5_start": 6.02,
+        "logical_cpus": 192,
+        "measurement_wall_s": 15.881924074143171,
+        "own_cpu_core_equiv": 41.325597385807235,
+        "own_cpu_s": 656.33,
+        "schema_version": 1,
+        "system_busy_core_equiv": 41.46440135288965,
+        "system_busy_fraction": 0.21596042371296695,
+        "workers": 64
+      },
+      "probe_result": {
+        "completion_model_ready_count": 1,
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0
+        ],
+        "node": "node005",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 1,
+        "run_id": "phase_freqduet_curve_telemetry_holdout_20260727_r0_node005_freqduet_p64",
+        "stable_rate_ready_count": 1,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/phase_freqduet_curve_telemetry_holdout_20260727_r0_node005_freqduet_p64/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "resource_state": "empty",
+      "resource_telemetry_ready": true,
+      "run_id": "phase_freqduet_curve_telemetry_holdout_20260727_r0_node005_freqduet_p64",
+      "status": "READY",
+      "steps": 160,
+      "storage_class": "shared_home",
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_freqduet_curve_telemetry_holdout_20260727_r0_node005_freqduet_p64/reports/profile_1_per_gpu_summary.json",
+      "work_items": 130000,
+      "workers": 64,
+      "workload_key": "freqduet_cpu_ablation_c17_32",
+      "workload_label": "freqduet_surrogate"
+    },
+    {
+      "cell_id": "freqduet_p8",
+      "checkpoint_bytes": 8388608,
+      "checkpoint_interval": 40,
+      "child_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_freqduet_curve_telemetry_holdout_20260727_r0_node002_freqduet_p8/raw/profile_1_per_gpu/gpu0_0.log",
+      "completion_model": {
+        "amortized_unit_s": 0.06823196446175298,
+        "base_unit_s": 0.06854193459730595,
+        "checkpoint_observed_s": 0.1486001843586564,
+        "child_returncode": 0,
+        "completion_model_ready": true,
+        "completion_unit_s": 0.06823196446175298,
+        "counter_offset": 0,
+        "finalization_after_last_progress_s": 0.059096348006278276,
+        "first_progress_unit": 2,
+        "interval_sample_count": 79,
+        "last_progress_unit": 160,
+        "loop_observed_units": 158,
+        "loop_wall_s": 10.78065038495697,
+        "model_abs_error_s": 1.7763568394002505e-15,
+        "model_relative_error": 1.5944082950417817e-16,
+        "natural_exit": true,
+        "periodic_extra_s": 0.0,
+        "phase_durations_s": {
+          "checkpoint": [
+            0.02757561719045043,
+            0.02639961219392717,
+            0.05502932891249657,
+            0.03959562606178224
+          ],
+          "final_save": [
+            0.027236043941229582
+          ],
+          "initialization": [
+            0.0001656601671129465
+          ],
+          "outer_loop": [
+            11.008182845078409
+          ]
+        },
+        "predicted_total_s": 11.14116656896658,
+        "progress_observation_count": 80,
+        "readiness_reason": "ready",
+        "save_observed_s": 0.027236043941229582,
+        "schema_version": 1,
+        "startup_overhead_s": 0.16495590707982738,
+        "startup_to_first_progress_s": 0.30141983600333333,
+        "stopped_on_stable": false,
+        "terminal_overhead_s": 0.059096348006278276,
+        "total_units": 160,
+        "total_wall_s": 11.141166568966582,
+        "unit": "step"
+      },
+      "completion_model_ready": true,
+      "declared_external_load_snapshot": 0.0,
+      "external_cpu_bucket": "external_c0_2",
+      "external_cpu_core_equiv": 0.028261791157513372,
+      "launched": true,
+      "measurement_valid": true,
+      "node": "node002",
+      "observed_external_load": 0.0,
+      "observed_resource_state": {
+        "external_cpu_core_equiv": 0.028261791157513372,
+        "load1_end": 1.08,
+        "load1_start": 0.26,
+        "load5_end": 0.47,
+        "load5_start": 0.3,
+        "logical_cpus": 192,
+        "measurement_wall_s": 11.00977025507018,
+        "own_cpu_core_equiv": 6.432468467485616,
+        "own_cpu_s": 70.82,
+        "schema_version": 1,
+        "system_busy_core_equiv": 6.460730258643129,
+        "system_busy_fraction": 0.0336496367637663,
+        "workers": 8
+      },
+      "probe_result": {
+        "completion_model_ready_count": 1,
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0
+        ],
+        "node": "node002",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 1,
+        "run_id": "phase_freqduet_curve_telemetry_holdout_20260727_r0_node002_freqduet_p8",
+        "stable_rate_ready_count": 1,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/phase_freqduet_curve_telemetry_holdout_20260727_r0_node002_freqduet_p8/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "resource_state": "empty",
+      "resource_telemetry_ready": true,
+      "run_id": "phase_freqduet_curve_telemetry_holdout_20260727_r0_node002_freqduet_p8",
+      "status": "READY",
+      "steps": 160,
+      "storage_class": "shared_home",
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_freqduet_curve_telemetry_holdout_20260727_r0_node002_freqduet_p8/reports/profile_1_per_gpu_summary.json",
+      "work_items": 130000,
+      "workers": 8,
+      "workload_key": "freqduet_cpu_ablation_c17_32",
+      "workload_label": "freqduet_surrogate"
+    }
+  ],
+  "run_prefix": "phase_freqduet_curve_telemetry_holdout_20260727",
+  "schema_version": 1,
+  "selected_count": 6,
+  "status": "COMPLETE"
+}

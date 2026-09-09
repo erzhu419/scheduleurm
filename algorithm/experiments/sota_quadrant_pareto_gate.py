@@ -14,7 +14,9 @@ import json
 from pathlib import Path
 from typing import Any, Mapping
 
-from .sota_candidate_union_gate import PARETO_TOLERANCE, build_sota_candidate_union_gate
+from simulation.service_cache import ServiceRateCache
+
+from .sota_candidate_union_gate import PARETO_TOLERANCE, _cache_for_args, build_sota_candidate_union_gate
 from .sota_strict_dominance_frontier import build_sota_strict_dominance_frontier
 
 
@@ -36,9 +38,18 @@ QUADRANT_TASKSETS = {
 }
 
 
-def build_sota_quadrant_pareto_gate(*, strict_eps: float = 1e-12) -> dict[str, Any]:
-    gate = build_sota_candidate_union_gate()
-    frontier = build_sota_strict_dominance_frontier(strict_eps=strict_eps)
+def build_sota_quadrant_pareto_gate(
+    *,
+    strict_eps: float = 1e-12,
+    cache: ServiceRateCache | None = None,
+    cache_source: str = "simulation.defaults.build_default_cache",
+) -> dict[str, Any]:
+    gate = build_sota_candidate_union_gate(cache=cache, cache_source=cache_source)
+    frontier = build_sota_strict_dominance_frontier(
+        strict_eps=strict_eps,
+        cache=cache,
+        cache_source=cache_source,
+    )
     rows = [row for row in gate.get("scenarios") or [] if row.get("replayable", True)]
     frontier_keys = {
         (str(row.get("taskset") or ""), str(row.get("arrival_mode") or ""))
@@ -70,6 +81,8 @@ def build_sota_quadrant_pareto_gate(*, strict_eps: float = 1e-12) -> dict[str, A
         "strict_eps": float(strict_eps),
         "quadrants": quadrants,
         "strict_frontier_count": int(frontier.get("frontier_count") or 0),
+        "cache_source": str(cache_source),
+        "cache_record_count": gate.get("cache_record_count"),
         "scope": (
             "Four-quadrant measured-cache policy-semantics gate.  Strict "
             "dominance is reported separately from the 0.5% replay-tolerance "
@@ -193,8 +206,14 @@ def main() -> None:
         type=Path,
         default=REPO_ROOT / "md" / "sota_quadrant_pareto_gate_20260613.md",
     )
+    parser.add_argument(
+        "--live-cache-json",
+        default="",
+        help="Optional service-cache v2 snapshot to overlay on top of the default cache.",
+    )
     args = parser.parse_args()
-    report = build_sota_quadrant_pareto_gate()
+    cache, cache_source = _cache_for_args(args)
+    report = build_sota_quadrant_pareto_gate(cache=cache, cache_source=cache_source)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     args.markdown_output.parent.mkdir(parents=True, exist_ok=True)

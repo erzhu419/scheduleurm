@@ -1,0 +1,1875 @@
+{
+  "created_at_unix": 1782893333.3419716,
+  "gate": "corner_case_resource_audit",
+  "nodes": [
+    {
+      "node": "jtl110gpu",
+      "parsed": {
+        "availability_class": "cpu_busy_gpu_idle",
+        "cpu_busy": true,
+        "external_busy_process_count": 1,
+        "external_busy_processes": [
+          {
+            "args": "coredns",
+            "command": "0.0",
+            "pcpu": 2751746.0,
+            "pid": 65532,
+            "pmem": 0.3,
+            "scheduleurm_probe": false,
+            "user": ""
+          }
+        ],
+        "gpu_busy": false,
+        "gpus": [
+          {
+            "index": 0,
+            "memory_total_mb": 12288,
+            "memory_used_mb": 10,
+            "name": "NVIDIA GeForce RTX 3080 Ti",
+            "utilization_gpu_pct": 0
+          },
+          {
+            "index": 1,
+            "memory_total_mb": 12288,
+            "memory_used_mb": 258,
+            "name": "NVIDIA GeForce RTX 3080 Ti",
+            "utilization_gpu_pct": 0
+          }
+        ],
+        "hostname": "huiwei-Super-Server",
+        "loadavg_15m": 0.53,
+        "loadavg_1m": 0.43,
+        "loadavg_5m": 0.36,
+        "mem_available_kb": 521187912,
+        "mem_total_kb": 527787692,
+        "nproc": 24,
+        "processes": [
+          {
+            "args": "/tmp/scheduleurm-k3s/bin/k3s server",
+            "command": "k3s-server",
+            "pcpu": 13.1,
+            "pid": 31905,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "gpushare-device-plugin -logtostderr --v=5 --memory-unit=GiB",
+            "command": "gpushare-device",
+            "pcpu": 8.0,
+            "pid": 2985880,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock",
+            "command": "dockerd",
+            "pcpu": 3.5,
+            "pid": 31381,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/local/bin/etcd --listen-client-urls=http://0.0.0.0:2379 --advertise-client-urls=http://iadeep-etcd.iadeep.svc.cluster.local:2379",
+            "command": "etcd",
+            "pcpu": 1.0,
+            "pid": 2750936,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "gpushare-sche-extender",
+            "command": "gpushare-sche-e",
+            "pcpu": 0.6,
+            "pid": 2750630,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/u48:2-p]",
+            "command": "kworker/u48:2-p",
+            "pcpu": 0.6,
+            "pid": 3101660,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/u48:1-p]",
+            "command": "kworker/u48:1-p",
+            "pcpu": 0.6,
+            "pid": 3108171,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/bin/containerd",
+            "command": "containerd",
+            "pcpu": 0.4,
+            "pid": 8529,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "kube-scheduler --config=/etc/kubernetes/scheduler-config.yaml --v=3 --secure-port=10269",
+            "command": "kube-scheduler",
+            "pcpu": 0.4,
+            "pid": 2750935,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/home/huiwei/frpembed/frpc -c /home/huiwei/frpembed/frpc.toml",
+            "command": "frpc",
+            "pcpu": 0.3,
+            "pid": 7544,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "coredns",
+            "command": "0.0",
+            "pcpu": 2751746.0,
+            "pid": 65532,
+            "pmem": 0.3,
+            "scheduleurm_probe": false,
+            "user": ""
+          },
+          {
+            "args": "[irq/191-nvidia]",
+            "command": "irq/191-nvidia",
+            "pcpu": 0.2,
+            "pid": 1379,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[irq/192-nvidia]",
+            "command": "irq/192-nvidia",
+            "pcpu": 0.2,
+            "pid": 1430,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kswapd0]",
+            "command": "kswapd0",
+            "pcpu": 0.1,
+            "pid": 244,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[nvidia-modeset/]",
+            "command": "nvidia-modeset/",
+            "pcpu": 0.1,
+            "pid": 793,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/bin/gnome-shell",
+            "command": "gnome-shell",
+            "pcpu": 0.1,
+            "pid": 1502,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "gdm"
+          },
+          {
+            "args": "/usr/lib/gnome-settings-daemon/gsd-color",
+            "command": "gsd-color",
+            "pcpu": 0.1,
+            "pid": 1588,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "gdm"
+          },
+          {
+            "args": "/usr/bin/gnome-shell",
+            "command": "gnome-shell",
+            "pcpu": 0.1,
+            "pid": 32417,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "erzhu419"
+          },
+          {
+            "args": "/usr/lib/gnome-settings-daemon/gsd-color",
+            "command": "gsd-color",
+            "pcpu": 0.1,
+            "pid": 32627,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "erzhu419"
+          },
+          {
+            "args": "/usr/bin/containerd-shim-runc-v2 -namespace moby -id 01e0b409ad516ed0272f09571ad337fb069ad7e99ac6f660f2a1c936e305d474 -address /run/containerd/containerd.sock",
+            "command": "containerd-shim",
+            "pcpu": 0.1,
+            "pid": 2985852,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "sshd: erzhu419@notty",
+            "command": "sshd",
+            "pcpu": 0.1,
+            "pid": 2991603,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "erzhu419"
+          },
+          {
+            "args": "/sbin/init splash",
+            "command": "systemd",
+            "pcpu": 0.0,
+            "pid": 1,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kthreadd]",
+            "command": "kthreadd",
+            "pcpu": 0.0,
+            "pid": 2,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[rcu_gp]",
+            "command": "rcu_gp",
+            "pcpu": 0.0,
+            "pid": 3,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[rcu_par_gp]",
+            "command": "rcu_par_gp",
+            "pcpu": 0.0,
+            "pid": 4,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          }
+        ],
+        "safe_for_cpu_probe": false,
+        "safe_for_gpu_only_probe": true,
+        "safe_for_hybrid_probe": false
+      },
+      "raw_stderr": "",
+      "raw_stdout": "huiwei-Super-Server\nNPROC=24\nLOADAVG=0.43 0.36 0.53\nMemTotal:527787692\nMemAvailable:521187912\n0, NVIDIA GeForce RTX 3080 Ti, 10, 12288, 0\n1, NVIDIA GeForce RTX 3080 Ti, 258, 12288, 0\n__SCHEDULEURM_PROCESS_SNAPSHOT__\nroot       31905 13.1  0.0 k3s-server      /tmp/scheduleurm-k3s/bin/k3s server\nroot     2985880  8.0  0.0 gpushare-device gpushare-device-plugin -logtostderr --v=5 --memory-unit=GiB\nroot       31381  3.5  0.0 dockerd         /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock\nroot     2750936  1.0  0.0 etcd            /usr/local/bin/etcd --listen-client-urls=http://0.0.0.0:2379 --advertise-client-urls=http://iadeep-etcd.iadeep.svc.cluster.local:2379\nroot     2750630  0.6  0.0 gpushare-sche-e gpushare-sche-extender\nroot     3101660  0.6  0.0 kworker/u48:2-p [kworker/u48:2-p]\nroot     3108171  0.6  0.0 kworker/u48:1-p [kworker/u48:1-p]\nroot        8529  0.4  0.0 containerd      /usr/bin/containerd\nroot     2750935  0.4  0.0 kube-scheduler  kube-scheduler --config=/etc/kubernetes/scheduler-config.yaml --v=3 --secure-port=10269\nroot        7544  0.3  0.0 frpc            /home/huiwei/frpembed/frpc -c /home/huiwei/frpembed/frpc.toml\n65532    2751746  0.3  0.0 coredns         /coredns -conf /etc/coredns/Corefile\nroot        1379  0.2  0.0 irq/191-nvidia  [irq/191-nvidia]\nroot        1430  0.2  0.0 irq/192-nvidia  [irq/192-nvidia]\nroot         244  0.1  0.0 kswapd0         [kswapd0]\nroot         793  0.1  0.0 nvidia-modeset/ [nvidia-modeset/]\ngdm         1502  0.1  0.0 gnome-shell     /usr/bin/gnome-shell\ngdm         1588  0.1  0.0 gsd-color       /usr/lib/gnome-settings-daemon/gsd-color\nerzhu419   32417  0.1  0.0 gnome-shell     /usr/bin/gnome-shell\nerzhu419   32627  0.1  0.0 gsd-color       /usr/lib/gnome-settings-daemon/gsd-color\nroot     2985852  0.1  0.0 containerd-shim /usr/bin/containerd-shim-runc-v2 -namespace moby -id 01e0b409ad516ed0272f09571ad337fb069ad7e99ac6f660f2a1c936e305d474 -address /run/containerd/containerd.sock\nerzhu419 2991603  0.1  0.0 sshd            sshd: erzhu419@notty\nroot           1  0.0  0.0 systemd         /sbin/init splash\nroot           2  0.0  0.0 kthreadd        [kthreadd]\nroot           3  0.0  0.0 rcu_gp          [rcu_gp]\nroot           4  0.0  0.0 rcu_par_gp      [rcu_par_gp]\n",
+      "reachable": true,
+      "returncode": 0
+    },
+    {
+      "node": "jtl110gpu2",
+      "parsed": {
+        "availability_class": "cpu_busy_gpu_idle",
+        "cpu_busy": true,
+        "external_busy_process_count": 1,
+        "external_busy_processes": [
+          {
+            "args": "/snap/snapd/current/usr/bin/snap run --timer=00:00-24:00/8 firmware-updater.firmware-notifier",
+            "command": "snap",
+            "pcpu": 100.0,
+            "pid": 3767346,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "erzhu419"
+          }
+        ],
+        "gpu_busy": false,
+        "gpus": [
+          {
+            "index": 0,
+            "memory_total_mb": 12288,
+            "memory_used_mb": 158,
+            "name": "NVIDIA GeForce RTX 3080 Ti",
+            "utilization_gpu_pct": 0
+          },
+          {
+            "index": 1,
+            "memory_total_mb": 12288,
+            "memory_used_mb": 10,
+            "name": "NVIDIA GeForce RTX 3080 Ti",
+            "utilization_gpu_pct": 0
+          }
+        ],
+        "hostname": "erzhu419-Super-Server",
+        "loadavg_15m": 11.86,
+        "loadavg_1m": 0.45,
+        "loadavg_5m": 10.7,
+        "mem_available_kb": 520817616,
+        "mem_total_kb": 527766788,
+        "nproc": 24,
+        "processes": [
+          {
+            "args": "/snap/snapd/current/usr/bin/snap run --timer=00:00-24:00/8 firmware-updater.firmware-notifier",
+            "command": "snap",
+            "pcpu": 100.0,
+            "pid": 3767346,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "erzhu419"
+          },
+          {
+            "args": "/home/erzhu419/frpembed/frpc -c /home/erzhu419/frpembed/frpc.toml",
+            "command": "frpc",
+            "pcpu": 0.8,
+            "pid": 1016393,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "sshd: erzhu419@notty",
+            "command": "sshd",
+            "pcpu": 0.5,
+            "pid": 3724550,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "erzhu419"
+          },
+          {
+            "args": "phy [mt76-usb-rx phy0]",
+            "command": "mt76-usb-rx",
+            "pcpu": 0.3,
+            "pid": 902,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/bin/gnome-shell",
+            "command": "gnome-shell",
+            "pcpu": 0.3,
+            "pid": 2317,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "erzhu419"
+          },
+          {
+            "args": "phy0    [mt76-tx phy0]",
+            "command": "mt76-tx",
+            "pcpu": 0.2,
+            "pid": 1127,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/u96:3-efi_rts_wq]",
+            "command": "kworker/u96:3-e",
+            "pcpu": 0.2,
+            "pid": 3754951,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/u96:0-events_power_efficient]",
+            "command": "kworker/u96:0-e",
+            "pcpu": 0.1,
+            "pid": 3707047,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/u96:5-flush-259:0]",
+            "command": "kworker/u96:5-f",
+            "pcpu": 0.1,
+            "pid": 3725211,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[mt76-usb-status phy0]",
+            "command": "mt76-usb-status",
+            "pcpu": 0.1,
+            "pid": 903,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/sbin/slurmctld --systemd",
+            "command": "slurmctld",
+            "pcpu": 0.1,
+            "pid": 2964,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "slurm"
+          },
+          {
+            "args": "[kworker/u96:1-kvfree_rcu_reclaim]",
+            "command": "kworker/u96:1-k",
+            "pcpu": 0.1,
+            "pid": 3758806,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/u96:2-flush-259:0]",
+            "command": "kworker/u96:2-f",
+            "pcpu": 0.1,
+            "pid": 3751143,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[irq/207-nvidia]",
+            "command": "irq/207-nvidia",
+            "pcpu": 0.0,
+            "pid": 932,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/lib/systemd/systemd --user",
+            "command": "systemd",
+            "pcpu": 0.0,
+            "pid": 1878,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "erzhu419"
+          },
+          {
+            "args": "[irq/208-nvidia]",
+            "command": "irq/208-nvidia",
+            "pcpu": 0.0,
+            "pid": 1130,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[rcu_preempt]",
+            "command": "rcu_preempt",
+            "pcpu": 0.0,
+            "pid": 15,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/lib/systemd/systemd-oomd",
+            "command": "systemd-oomd",
+            "pcpu": 0.0,
+            "pid": 1523,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "systemd+"
+          },
+          {
+            "args": "/usr/lib/systemd/systemd-journald",
+            "command": "systemd-journal",
+            "pcpu": 0.0,
+            "pid": 528,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "@dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only",
+            "command": "dbus-daemon",
+            "pcpu": 0.0,
+            "pid": 1536,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "message+"
+          },
+          {
+            "args": "[nvidia-modeset/kthread_q]",
+            "command": "nvidia-modeset/",
+            "pcpu": 0.0,
+            "pid": 928,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/sbin/init splash",
+            "command": "systemd",
+            "pcpu": 0.0,
+            "pid": 1,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/snap/snapd/current/usr/lib/snapd/snapd",
+            "command": "snapd",
+            "pcpu": 0.0,
+            "pid": 1552,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/sbin/NetworkManager --no-daemon",
+            "command": "NetworkManager",
+            "pcpu": 0.0,
+            "pid": 1599,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/home/erzhu419/frpembed/frpembed -c /home/erzhu419/frpembed/frpc.toml",
+            "command": "frpembed",
+            "pcpu": 0.0,
+            "pid": 1828,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          }
+        ],
+        "safe_for_cpu_probe": false,
+        "safe_for_gpu_only_probe": true,
+        "safe_for_hybrid_probe": false
+      },
+      "raw_stderr": "",
+      "raw_stdout": "erzhu419-Super-Server\nNPROC=24\nLOADAVG=0.45 10.70 11.86\nMemTotal:527766788\nMemAvailable:520817616\n0, NVIDIA GeForce RTX 3080 Ti, 158, 12288, 0\n1, NVIDIA GeForce RTX 3080 Ti, 10, 12288, 0\n__SCHEDULEURM_PROCESS_SNAPSHOT__\nerzhu419 3767346  100  0.0 snap            /snap/snapd/current/usr/bin/snap run --timer=00:00-24:00/8 firmware-updater.firmware-notifier\nroot     1016393  0.8  0.0 frpc            /home/erzhu419/frpembed/frpc -c /home/erzhu419/frpembed/frpc.toml\nerzhu419 3724550  0.5  0.0 sshd            sshd: erzhu419@notty\nroot         902  0.3  0.0 mt76-usb-rx phy [mt76-usb-rx phy0]\nerzhu419    2317  0.3  0.0 gnome-shell     /usr/bin/gnome-shell\nroot        1127  0.2  0.0 mt76-tx phy0    [mt76-tx phy0]\nroot     3754951  0.2  0.0 kworker/u96:3-e [kworker/u96:3-efi_rts_wq]\nroot     3707047  0.1  0.0 kworker/u96:0-e [kworker/u96:0-events_power_efficient]\nroot     3725211  0.1  0.0 kworker/u96:5-f [kworker/u96:5-flush-259:0]\nroot         903  0.1  0.0 mt76-usb-status [mt76-usb-status phy0]\nslurm       2964  0.1  0.0 slurmctld       /usr/sbin/slurmctld --systemd\nroot     3758806  0.1  0.0 kworker/u96:1-k [kworker/u96:1-kvfree_rcu_reclaim]\nroot     3751143  0.1  0.0 kworker/u96:2-f [kworker/u96:2-flush-259:0]\nroot         932  0.0  0.0 irq/207-nvidia  [irq/207-nvidia]\nerzhu419    1878  0.0  0.0 systemd         /usr/lib/systemd/systemd --user\nroot        1130  0.0  0.0 irq/208-nvidia  [irq/208-nvidia]\nroot          15  0.0  0.0 rcu_preempt     [rcu_preempt]\nsystemd+    1523  0.0  0.0 systemd-oomd    /usr/lib/systemd/systemd-oomd\nroot         528  0.0  0.0 systemd-journal /usr/lib/systemd/systemd-journald\nmessage+    1536  0.0  0.0 dbus-daemon     @dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only\nroot         928  0.0  0.0 nvidia-modeset/ [nvidia-modeset/kthread_q]\nroot           1  0.0  0.0 systemd         /sbin/init splash\nroot        1552  0.0  0.0 snapd           /snap/snapd/current/usr/lib/snapd/snapd\nroot        1599  0.0  0.0 NetworkManager  /usr/sbin/NetworkManager --no-daemon\nroot        1828  0.0  0.0 frpembed        /home/erzhu419/frpembed/frpembed -c /home/erzhu419/frpembed/frpc.toml\n",
+      "reachable": true,
+      "returncode": 0
+    },
+    {
+      "node": "jtl311linux",
+      "parsed": {
+        "availability_class": "cpu_busy_gpu_idle",
+        "cpu_busy": true,
+        "external_busy_process_count": 1,
+        "external_busy_processes": [
+          {
+            "args": "/home/zhengliang/tanyue/multi_sim_fee_v1/multi_sim_fee/.venv_linux312/bin/python /home/zhengliang/tanyue/multi_sim_fee_v1/multi_sim_fee/D_main_experiment/B_BDRSO_experiment.py",
+            "command": "python",
+            "pcpu": 99.9,
+            "pid": 2000014,
+            "pmem": 1.0,
+            "scheduleurm_probe": false,
+            "user": "zhengli+"
+          }
+        ],
+        "gpu_busy": false,
+        "gpus": [
+          {
+            "index": 0,
+            "memory_total_mb": 8192,
+            "memory_used_mb": 58,
+            "name": "NVIDIA GeForce RTX 2080",
+            "utilization_gpu_pct": 0
+          },
+          {
+            "index": 1,
+            "memory_total_mb": 8192,
+            "memory_used_mb": 6,
+            "name": "NVIDIA GeForce RTX 2080",
+            "utilization_gpu_pct": 0
+          }
+        ],
+        "hostname": "zhengliang-C246-WU4",
+        "loadavg_15m": 1.09,
+        "loadavg_1m": 1.08,
+        "loadavg_5m": 1.1,
+        "mem_available_kb": 19198664,
+        "mem_total_kb": 65736724,
+        "nproc": 16,
+        "processes": [
+          {
+            "args": "/home/zhengliang/tanyue/multi_sim_fee_v1/multi_sim_fee/.venv_linux312/bin/python /home/zhengliang/tanyue/multi_sim_fee_v1/multi_sim_fee/D_main_experiment/B_BDRSO_experiment.py",
+            "command": "python",
+            "pcpu": 99.9,
+            "pid": 2000014,
+            "pmem": 1.0,
+            "scheduleurm_probe": false,
+            "user": "zhengli+"
+          },
+          {
+            "args": "sshd: zhengliang@notty",
+            "command": "sshd",
+            "pcpu": 1.1,
+            "pid": 2022278,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "zhengli+"
+          },
+          {
+            "args": "/usr/lib/openssh/sftp-server",
+            "command": "sftp-server",
+            "pcpu": 0.3,
+            "pid": 2022282,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "zhengli+"
+          },
+          {
+            "args": "/home/zhengliang/frpembed/frpc -c /home/zhengliang/frpembed/frpc.toml",
+            "command": "frpc",
+            "pcpu": 0.3,
+            "pid": 2580,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/lib/xorg/Xorg vt1 -displayfd 3 -auth /run/user/120/gdm/Xauthority -nolisten tcp -background none -noreset -keeptty -novtswitch -verbose 3",
+            "command": "Xorg",
+            "pcpu": 0.0,
+            "pid": 1981,
+            "pmem": 0.1,
+            "scheduleurm_probe": false,
+            "user": "gdm"
+          },
+          {
+            "args": "[nvidia-modeset/kthread_q]",
+            "command": "nvidia-modeset/",
+            "pcpu": 0.0,
+            "pid": 818,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/home/zhengliang/tanyue/multi_sim_fee_v1/multi_sim_fee/.venv_linux312/bin/python /home/zhengliang/tanyue/multi_sim_fee_v1/multi_sim_fee/D_main_experiment/B_BDRSO_experiment.py",
+            "command": "python",
+            "pcpu": 0.0,
+            "pid": 3942409,
+            "pmem": 0.1,
+            "scheduleurm_probe": false,
+            "user": "zhengli+"
+          },
+          {
+            "args": "[z_wr_iss]",
+            "command": "z_wr_iss",
+            "pcpu": 0.0,
+            "pid": 2027943,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[z_wr_iss]",
+            "command": "z_wr_iss",
+            "pcpu": 0.0,
+            "pid": 2025374,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[z_wr_iss]",
+            "command": "z_wr_iss",
+            "pcpu": 0.0,
+            "pid": 2023999,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[z_wr_iss]",
+            "command": "z_wr_iss",
+            "pcpu": 0.0,
+            "pid": 2025862,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[z_wr_iss]",
+            "command": "z_wr_iss",
+            "pcpu": 0.0,
+            "pid": 2023207,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "sshd: erzhu419@notty",
+            "command": "sshd",
+            "pcpu": 0.0,
+            "pid": 1929083,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "erzhu419"
+          },
+          {
+            "args": "[z_wr_iss]",
+            "command": "z_wr_iss",
+            "pcpu": 0.0,
+            "pid": 2026366,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[z_wr_iss]",
+            "command": "z_wr_iss",
+            "pcpu": 0.0,
+            "pid": 2026327,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/bin/gnome-shell",
+            "command": "gnome-shell",
+            "pcpu": 0.0,
+            "pid": 2166,
+            "pmem": 0.4,
+            "scheduleurm_probe": false,
+            "user": "gdm"
+          },
+          {
+            "args": "[z_wr_iss]",
+            "command": "z_wr_iss",
+            "pcpu": 0.0,
+            "pid": 2027235,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[z_wr_iss]",
+            "command": "z_wr_iss",
+            "pcpu": 0.0,
+            "pid": 2027179,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[z_wr_iss]",
+            "command": "z_wr_iss",
+            "pcpu": 0.0,
+            "pid": 2027702,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[z_wr_iss]",
+            "command": "z_wr_iss",
+            "pcpu": 0.0,
+            "pid": 2027600,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/libexec/udisks2/udisksd",
+            "command": "udisksd",
+            "pcpu": 0.0,
+            "pid": 1634,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/lib/systemd/systemd-oomd",
+            "command": "systemd-oomd",
+            "pcpu": 0.0,
+            "pid": 59353,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "systemd+"
+          },
+          {
+            "args": "/snap/snapd/current/usr/lib/snapd/snapd",
+            "command": "snapd",
+            "pcpu": 0.0,
+            "pid": 109386,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/home/zhengliang/frpembed/frpembed -c /home/zhengliang/frpembed/frpc.toml",
+            "command": "frpembed",
+            "pcpu": 0.0,
+            "pid": 1907,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[rcu_preempt]",
+            "command": "rcu_preempt",
+            "pcpu": 0.0,
+            "pid": 15,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          }
+        ],
+        "safe_for_cpu_probe": false,
+        "safe_for_gpu_only_probe": true,
+        "safe_for_hybrid_probe": false
+      },
+      "raw_stderr": "",
+      "raw_stdout": "zhengliang-C246-WU4\nNPROC=16\nLOADAVG=1.08 1.10 1.09\nMemTotal:65736724\nMemAvailable:19198664\n0, NVIDIA GeForce RTX 2080, 58, 8192, 0\n1, NVIDIA GeForce RTX 2080, 6, 8192, 0\n__SCHEDULEURM_PROCESS_SNAPSHOT__\nzhengli+ 2000014 99.9  1.0 python          /home/zhengliang/tanyue/multi_sim_fee_v1/multi_sim_fee/.venv_linux312/bin/python /home/zhengliang/tanyue/multi_sim_fee_v1/multi_sim_fee/D_main_experiment/B_BDRSO_experiment.py\nzhengli+ 2022278  1.1  0.0 sshd            sshd: zhengliang@notty\nzhengli+ 2022282  0.3  0.0 sftp-server     /usr/lib/openssh/sftp-server\nroot        2580  0.3  0.0 frpc            /home/zhengliang/frpembed/frpc -c /home/zhengliang/frpembed/frpc.toml\ngdm         1981  0.0  0.1 Xorg            /usr/lib/xorg/Xorg vt1 -displayfd 3 -auth /run/user/120/gdm/Xauthority -nolisten tcp -background none -noreset -keeptty -novtswitch -verbose 3\nroot         818  0.0  0.0 nvidia-modeset/ [nvidia-modeset/kthread_q]\nzhengli+ 3942409  0.0  0.1 python          /home/zhengliang/tanyue/multi_sim_fee_v1/multi_sim_fee/.venv_linux312/bin/python /home/zhengliang/tanyue/multi_sim_fee_v1/multi_sim_fee/D_main_experiment/B_BDRSO_experiment.py\nroot     2027943  0.0  0.0 z_wr_iss        [z_wr_iss]\nroot     2025374  0.0  0.0 z_wr_iss        [z_wr_iss]\nroot     2023999  0.0  0.0 z_wr_iss        [z_wr_iss]\nroot     2025862  0.0  0.0 z_wr_iss        [z_wr_iss]\nroot     2023207  0.0  0.0 z_wr_iss        [z_wr_iss]\nerzhu419 1929083  0.0  0.0 sshd            sshd: erzhu419@notty\nroot     2026366  0.0  0.0 z_wr_iss        [z_wr_iss]\nroot     2026327  0.0  0.0 z_wr_iss        [z_wr_iss]\ngdm         2166  0.0  0.4 gnome-shell     /usr/bin/gnome-shell\nroot     2027235  0.0  0.0 z_wr_iss        [z_wr_iss]\nroot     2027179  0.0  0.0 z_wr_iss        [z_wr_iss]\nroot     2027702  0.0  0.0 z_wr_iss        [z_wr_iss]\nroot     2027600  0.0  0.0 z_wr_iss        [z_wr_iss]\nroot        1634  0.0  0.0 udisksd         /usr/libexec/udisks2/udisksd\nsystemd+   59353  0.0  0.0 systemd-oomd    /usr/lib/systemd/systemd-oomd\nroot      109386  0.0  0.0 snapd           /snap/snapd/current/usr/lib/snapd/snapd\nroot        1907  0.0  0.0 frpembed        /home/zhengliang/frpembed/frpembed -c /home/zhengliang/frpembed/frpc.toml\nroot          15  0.0  0.0 rcu_preempt     [rcu_preempt]\n",
+      "reachable": true,
+      "returncode": 0
+    },
+    {
+      "node": "node007-direct",
+      "parsed": {
+        "availability_class": "gpu_busy",
+        "cpu_busy": false,
+        "external_busy_process_count": 0,
+        "external_busy_processes": [],
+        "gpu_busy": true,
+        "gpus": [
+          {
+            "index": 0,
+            "memory_total_mb": 11264,
+            "memory_used_mb": 3523,
+            "name": "NVIDIA GeForce RTX 2080 Ti",
+            "utilization_gpu_pct": 1
+          },
+          {
+            "index": 1,
+            "memory_total_mb": 11264,
+            "memory_used_mb": 4227,
+            "name": "NVIDIA GeForce RTX 2080 Ti",
+            "utilization_gpu_pct": 0
+          },
+          {
+            "index": 2,
+            "memory_total_mb": 11264,
+            "memory_used_mb": 4227,
+            "name": "NVIDIA GeForce RTX 2080 Ti",
+            "utilization_gpu_pct": 0
+          },
+          {
+            "index": 3,
+            "memory_total_mb": 11264,
+            "memory_used_mb": 4227,
+            "name": "NVIDIA GeForce RTX 2080 Ti",
+            "utilization_gpu_pct": 0
+          }
+        ],
+        "hostname": "node007",
+        "loadavg_15m": 14.85,
+        "loadavg_1m": 9.22,
+        "loadavg_5m": 12.35,
+        "mem_available_kb": 224926832,
+        "mem_total_kb": 247242112,
+        "nproc": 64,
+        "processes": [
+          {
+            "args": "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700013 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu2_13",
+            "command": "python",
+            "pcpu": 80.7,
+            "pid": 246126,
+            "pmem": 0.2,
+            "scheduleurm_probe": true,
+            "user": "zhengli+"
+          },
+          {
+            "args": "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700009 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu1_9",
+            "command": "python",
+            "pcpu": 80.5,
+            "pid": 246117,
+            "pmem": 0.2,
+            "scheduleurm_probe": true,
+            "user": "zhengli+"
+          },
+          {
+            "args": "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700018 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu3_18",
+            "command": "python",
+            "pcpu": 80.3,
+            "pid": 246111,
+            "pmem": 0.2,
+            "scheduleurm_probe": true,
+            "user": "zhengli+"
+          },
+          {
+            "args": "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700008 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu1_8",
+            "command": "python",
+            "pcpu": 79.7,
+            "pid": 246128,
+            "pmem": 0.2,
+            "scheduleurm_probe": true,
+            "user": "zhengli+"
+          },
+          {
+            "args": "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700014 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu2_14",
+            "command": "python",
+            "pcpu": 78.4,
+            "pid": 246121,
+            "pmem": 0.2,
+            "scheduleurm_probe": true,
+            "user": "zhengli+"
+          },
+          {
+            "args": "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700017 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu2_17",
+            "command": "python",
+            "pcpu": 78.2,
+            "pid": 246112,
+            "pmem": 0.2,
+            "scheduleurm_probe": true,
+            "user": "zhengli+"
+          },
+          {
+            "args": "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700021 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu3_21",
+            "command": "python",
+            "pcpu": 78.2,
+            "pid": 246119,
+            "pmem": 0.2,
+            "scheduleurm_probe": true,
+            "user": "zhengli+"
+          },
+          {
+            "args": "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700010 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu1_10",
+            "command": "python",
+            "pcpu": 78.0,
+            "pid": 246132,
+            "pmem": 0.2,
+            "scheduleurm_probe": true,
+            "user": "zhengli+"
+          },
+          {
+            "args": "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700011 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu1_11",
+            "command": "python",
+            "pcpu": 77.7,
+            "pid": 246122,
+            "pmem": 0.2,
+            "scheduleurm_probe": true,
+            "user": "zhengli+"
+          },
+          {
+            "args": "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700000 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu0_0",
+            "command": "python",
+            "pcpu": 77.1,
+            "pid": 246124,
+            "pmem": 0.2,
+            "scheduleurm_probe": true,
+            "user": "zhengli+"
+          },
+          {
+            "args": "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700012 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu2_12",
+            "command": "python",
+            "pcpu": 77.1,
+            "pid": 246134,
+            "pmem": 0.2,
+            "scheduleurm_probe": true,
+            "user": "zhengli+"
+          },
+          {
+            "args": "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700007 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu1_7",
+            "command": "python",
+            "pcpu": 77.0,
+            "pid": 246113,
+            "pmem": 0.2,
+            "scheduleurm_probe": true,
+            "user": "zhengli+"
+          },
+          {
+            "args": "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700023 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu3_23",
+            "command": "python",
+            "pcpu": 77.0,
+            "pid": 246116,
+            "pmem": 0.2,
+            "scheduleurm_probe": true,
+            "user": "zhengli+"
+          },
+          {
+            "args": "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700020 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu3_20",
+            "command": "python",
+            "pcpu": 77.0,
+            "pid": 246130,
+            "pmem": 0.2,
+            "scheduleurm_probe": true,
+            "user": "zhengli+"
+          },
+          {
+            "args": "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700003 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu0_3",
+            "command": "python",
+            "pcpu": 76.7,
+            "pid": 246131,
+            "pmem": 0.2,
+            "scheduleurm_probe": true,
+            "user": "zhengli+"
+          },
+          {
+            "args": "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700004 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu0_4",
+            "command": "python",
+            "pcpu": 76.5,
+            "pid": 246129,
+            "pmem": 0.2,
+            "scheduleurm_probe": true,
+            "user": "zhengli+"
+          },
+          {
+            "args": "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700006 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu1_6",
+            "command": "python",
+            "pcpu": 76.3,
+            "pid": 246133,
+            "pmem": 0.2,
+            "scheduleurm_probe": true,
+            "user": "zhengli+"
+          },
+          {
+            "args": "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700019 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu3_19",
+            "command": "python",
+            "pcpu": 76.1,
+            "pid": 246114,
+            "pmem": 0.2,
+            "scheduleurm_probe": true,
+            "user": "zhengli+"
+          },
+          {
+            "args": "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700005 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu0_5",
+            "command": "python",
+            "pcpu": 76.1,
+            "pid": 246118,
+            "pmem": 0.2,
+            "scheduleurm_probe": true,
+            "user": "zhengli+"
+          },
+          {
+            "args": "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700016 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu2_16",
+            "command": "python",
+            "pcpu": 76.0,
+            "pid": 246120,
+            "pmem": 0.2,
+            "scheduleurm_probe": true,
+            "user": "zhengli+"
+          },
+          {
+            "args": "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700001 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu0_1",
+            "command": "python",
+            "pcpu": 76.0,
+            "pid": 246125,
+            "pmem": 0.2,
+            "scheduleurm_probe": true,
+            "user": "zhengli+"
+          },
+          {
+            "args": "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700015 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu2_15",
+            "command": "python",
+            "pcpu": 75.7,
+            "pid": 246115,
+            "pmem": 0.2,
+            "scheduleurm_probe": true,
+            "user": "zhengli+"
+          },
+          {
+            "args": "[kworker/50:1H]",
+            "command": "kworker/50:1H",
+            "pcpu": 2.0,
+            "pid": 246110,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u /tmp/scheduleurm_progress_wrapper_pkg/algorithm/experiments/progress_wrapper.py --unit iter --total 200 --terminate-on-stable --stable-windows 5 --min-rate-samples 8 --stable-cv 0.06 --stable-rel-delta 0.05 --stable-skip-samples 5 --stable-cycle-units 5 -- /home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700006 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu1_6",
+            "command": "python",
+            "pcpu": 0.4,
+            "pid": 245052,
+            "pmem": 0.0,
+            "scheduleurm_probe": true,
+            "user": "zhengli+"
+          },
+          {
+            "args": "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u /tmp/scheduleurm_progress_wrapper_pkg/algorithm/experiments/progress_wrapper.py --unit iter --total 200 --terminate-on-stable --stable-windows 5 --min-rate-samples 8 --stable-cv 0.06 --stable-rel-delta 0.05 --stable-skip-samples 5 --stable-cycle-units 5 -- /home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700010 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu1_10",
+            "command": "python",
+            "pcpu": 0.4,
+            "pid": 245072,
+            "pmem": 0.0,
+            "scheduleurm_probe": true,
+            "user": "zhengli+"
+          }
+        ],
+        "safe_for_cpu_probe": true,
+        "safe_for_gpu_only_probe": false,
+        "safe_for_hybrid_probe": false
+      },
+      "raw_stderr": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n",
+      "raw_stdout": "node007\nNPROC=64\nLOADAVG=9.22 12.35 14.85\nMemTotal:247242112\nMemAvailable:224926832\n0, NVIDIA GeForce RTX 2080 Ti, 3523, 11264, 1\n1, NVIDIA GeForce RTX 2080 Ti, 4227, 11264, 0\n2, NVIDIA GeForce RTX 2080 Ti, 4227, 11264, 0\n3, NVIDIA GeForce RTX 2080 Ti, 4227, 11264, 0\n__SCHEDULEURM_PROCESS_SNAPSHOT__\nzhengli+ 246126 80.7  0.2 python          /home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700013 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu2_13\nzhengli+ 246117 80.5  0.2 python          /home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700009 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu1_9\nzhengli+ 246111 80.3  0.2 python          /home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700018 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu3_18\nzhengli+ 246128 79.7  0.2 python          /home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700008 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu1_8\nzhengli+ 246121 78.4  0.2 python          /home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700014 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu2_14\nzhengli+ 246112 78.2  0.2 python          /home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700017 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu2_17\nzhengli+ 246119 78.2  0.2 python          /home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700021 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu3_21\nzhengli+ 246132 78.0  0.2 python          /home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700010 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu1_10\nzhengli+ 246122 77.7  0.2 python          /home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700011 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu1_11\nzhengli+ 246124 77.1  0.2 python          /home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700000 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu0_0\nzhengli+ 246134 77.1  0.2 python          /home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700012 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu2_12\nzhengli+ 246113 77.0  0.2 python          /home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700007 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu1_7\nzhengli+ 246116 77.0  0.2 python          /home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700023 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu3_23\nzhengli+ 246130 77.0  0.2 python          /home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700020 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu3_20\nzhengli+ 246131 76.7  0.2 python          /home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700003 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu0_3\nzhengli+ 246129 76.5  0.2 python          /home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700004 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu0_4\nzhengli+ 246133 76.3  0.2 python          /home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700006 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu1_6\nzhengli+ 246114 76.1  0.2 python          /home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700019 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu3_19\nzhengli+ 246118 76.1  0.2 python          /home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700005 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu0_5\nzhengli+ 246120 76.0  0.2 python          /home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700016 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu2_16\nzhengli+ 246125 76.0  0.2 python          /home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700001 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu0_1\nzhengli+ 246115 75.7  0.2 python          /home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700015 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu2_15\nroot     246110  2.0  0.0 kworker/50:1H   [kworker/50:1H]\nzhengli+ 245052  0.4  0.0 python          /home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u /tmp/scheduleurm_progress_wrapper_pkg/algorithm/experiments/progress_wrapper.py --unit iter --total 200 --terminate-on-stable --stable-windows 5 --min-rate-samples 8 --stable-cv 0.06 --stable-rel-delta 0.05 --stable-skip-samples 5 --stable-cycle-units 5 -- /home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700006 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu1_6\nzhengli+ 245072  0.4  0.0 python          /home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u /tmp/scheduleurm_progress_wrapper_pkg/algorithm/experiments/progress_wrapper.py --unit iter --total 200 --terminate-on-stable --stable-windows 5 --min-rate-samples 8 --stable-cv 0.06 --stable-rel-delta 0.05 --stable-skip-samples 5 --stable-cycle-units 5 -- /home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m jax_experiments.train --algo resac --env Walker2d-v2 --seed 700010 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_node007_parallel_20260630_node007-direct_hybrid_rl_resac_walker2d_walker2d_full_loaded_profile_6_per_gpu_gpu1_10\n",
+      "reachable": true,
+      "returncode": 0
+    },
+    {
+      "node": "node003",
+      "parsed": {
+        "availability_class": "clean_idle",
+        "cpu_busy": false,
+        "external_busy_process_count": 0,
+        "external_busy_processes": [],
+        "gpu_busy": false,
+        "gpus": [],
+        "hostname": "node003",
+        "loadavg_15m": 0.05,
+        "loadavg_1m": 0.02,
+        "loadavg_5m": 0.06,
+        "mem_available_kb": 187684176,
+        "mem_total_kb": 197420912,
+        "nproc": 192,
+        "processes": [
+          {
+            "args": "sshd: root@notty",
+            "command": "sshd",
+            "pcpu": 3.0,
+            "pid": 331276,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/cm/local/apps/cmd/sbin/cmd -s -n -P /var/run/cmd.pid",
+            "command": "cmd",
+            "pcpu": 0.4,
+            "pid": 8382,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/lib/systemd/systemd",
+            "command": "systemd",
+            "pcpu": 0.1,
+            "pid": 1,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[rcu_sched]",
+            "command": "rcu_sched",
+            "pcpu": 0.1,
+            "pid": 9,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/sbin/irqbalance --foreground",
+            "command": "irqbalance",
+            "pcpu": 0.1,
+            "pid": 7824,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kthreadd]",
+            "command": "kthreadd",
+            "pcpu": 0.0,
+            "pid": 2,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/0:0H]",
+            "command": "kworker/0:0H",
+            "pcpu": 0.0,
+            "pid": 4,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[ksoftirqd/0]",
+            "command": "ksoftirqd/0",
+            "pcpu": 0.0,
+            "pid": 6,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[migration/0]",
+            "command": "migration/0",
+            "pcpu": 0.0,
+            "pid": 7,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[rcu_bh]",
+            "command": "rcu_bh",
+            "pcpu": 0.0,
+            "pid": 8,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[lru-add-drain]",
+            "command": "lru-add-drain",
+            "pcpu": 0.0,
+            "pid": 10,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/0]",
+            "command": "watchdog/0",
+            "pcpu": 0.0,
+            "pid": 11,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/1]",
+            "command": "watchdog/1",
+            "pcpu": 0.0,
+            "pid": 12,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[migration/1]",
+            "command": "migration/1",
+            "pcpu": 0.0,
+            "pid": 13,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[ksoftirqd/1]",
+            "command": "ksoftirqd/1",
+            "pcpu": 0.0,
+            "pid": 14,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/1:0H]",
+            "command": "kworker/1:0H",
+            "pcpu": 0.0,
+            "pid": 16,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/2]",
+            "command": "watchdog/2",
+            "pcpu": 0.0,
+            "pid": 18,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[migration/2]",
+            "command": "migration/2",
+            "pcpu": 0.0,
+            "pid": 19,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[ksoftirqd/2]",
+            "command": "ksoftirqd/2",
+            "pcpu": 0.0,
+            "pid": 20,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/3]",
+            "command": "watchdog/3",
+            "pcpu": 0.0,
+            "pid": 23,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[migration/3]",
+            "command": "migration/3",
+            "pcpu": 0.0,
+            "pid": 24,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[ksoftirqd/3]",
+            "command": "ksoftirqd/3",
+            "pcpu": 0.0,
+            "pid": 25,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/3:0H]",
+            "command": "kworker/3:0H",
+            "pcpu": 0.0,
+            "pid": 27,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/4]",
+            "command": "watchdog/4",
+            "pcpu": 0.0,
+            "pid": 28,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[migration/4]",
+            "command": "migration/4",
+            "pcpu": 0.0,
+            "pid": 29,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          }
+        ],
+        "safe_for_cpu_probe": true,
+        "safe_for_gpu_only_probe": true,
+        "safe_for_hybrid_probe": true
+      },
+      "raw_stderr": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n",
+      "raw_stdout": "node003\nNPROC=192\nLOADAVG=0.02 0.06 0.05\nMemTotal:197420912\nMemAvailable:187684176\n__SCHEDULEURM_PROCESS_SNAPSHOT__\nroot     331276  3.0  0.0 sshd            sshd: root@notty\nroot       8382  0.4  0.0 cmd             /cm/local/apps/cmd/sbin/cmd -s -n -P /var/run/cmd.pid\nroot          1  0.1  0.0 systemd         /usr/lib/systemd/systemd\nroot          9  0.1  0.0 rcu_sched       [rcu_sched]\nroot       7824  0.1  0.0 irqbalance      /usr/sbin/irqbalance --foreground\nroot          2  0.0  0.0 kthreadd        [kthreadd]\nroot          4  0.0  0.0 kworker/0:0H    [kworker/0:0H]\nroot          6  0.0  0.0 ksoftirqd/0     [ksoftirqd/0]\nroot          7  0.0  0.0 migration/0     [migration/0]\nroot          8  0.0  0.0 rcu_bh          [rcu_bh]\nroot         10  0.0  0.0 lru-add-drain   [lru-add-drain]\nroot         11  0.0  0.0 watchdog/0      [watchdog/0]\nroot         12  0.0  0.0 watchdog/1      [watchdog/1]\nroot         13  0.0  0.0 migration/1     [migration/1]\nroot         14  0.0  0.0 ksoftirqd/1     [ksoftirqd/1]\nroot         16  0.0  0.0 kworker/1:0H    [kworker/1:0H]\nroot         18  0.0  0.0 watchdog/2      [watchdog/2]\nroot         19  0.0  0.0 migration/2     [migration/2]\nroot         20  0.0  0.0 ksoftirqd/2     [ksoftirqd/2]\nroot         23  0.0  0.0 watchdog/3      [watchdog/3]\nroot         24  0.0  0.0 migration/3     [migration/3]\nroot         25  0.0  0.0 ksoftirqd/3     [ksoftirqd/3]\nroot         27  0.0  0.0 kworker/3:0H    [kworker/3:0H]\nroot         28  0.0  0.0 watchdog/4      [watchdog/4]\nroot         29  0.0  0.0 migration/4     [migration/4]\n",
+      "reachable": true,
+      "returncode": 0
+    },
+    {
+      "node": "node005",
+      "parsed": {
+        "availability_class": "clean_idle",
+        "cpu_busy": false,
+        "external_busy_process_count": 0,
+        "external_busy_processes": [],
+        "gpu_busy": false,
+        "gpus": [],
+        "hostname": "node005",
+        "loadavg_15m": 0.05,
+        "loadavg_1m": 0.05,
+        "loadavg_5m": 0.05,
+        "mem_available_kb": 187506516,
+        "mem_total_kb": 197420908,
+        "nproc": 192,
+        "processes": [
+          {
+            "args": "/cm/local/apps/cmd/sbin/cmd -s -n -P /var/run/cmd.pid",
+            "command": "cmd",
+            "pcpu": 0.5,
+            "pid": 8401,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[rcu_sched]",
+            "command": "rcu_sched",
+            "pcpu": 0.2,
+            "pid": 9,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/lib/systemd/systemd",
+            "command": "systemd",
+            "pcpu": 0.1,
+            "pid": 1,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/sbin/irqbalance --foreground",
+            "command": "irqbalance",
+            "pcpu": 0.1,
+            "pid": 7817,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kthreadd]",
+            "command": "kthreadd",
+            "pcpu": 0.0,
+            "pid": 2,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/0:0H]",
+            "command": "kworker/0:0H",
+            "pcpu": 0.0,
+            "pid": 4,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[ksoftirqd/0]",
+            "command": "ksoftirqd/0",
+            "pcpu": 0.0,
+            "pid": 6,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[migration/0]",
+            "command": "migration/0",
+            "pcpu": 0.0,
+            "pid": 7,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[rcu_bh]",
+            "command": "rcu_bh",
+            "pcpu": 0.0,
+            "pid": 8,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[lru-add-drain]",
+            "command": "lru-add-drain",
+            "pcpu": 0.0,
+            "pid": 10,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/0]",
+            "command": "watchdog/0",
+            "pcpu": 0.0,
+            "pid": 11,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/1]",
+            "command": "watchdog/1",
+            "pcpu": 0.0,
+            "pid": 12,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[migration/1]",
+            "command": "migration/1",
+            "pcpu": 0.0,
+            "pid": 13,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[ksoftirqd/1]",
+            "command": "ksoftirqd/1",
+            "pcpu": 0.0,
+            "pid": 14,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/1:0H]",
+            "command": "kworker/1:0H",
+            "pcpu": 0.0,
+            "pid": 16,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/2]",
+            "command": "watchdog/2",
+            "pcpu": 0.0,
+            "pid": 18,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[migration/2]",
+            "command": "migration/2",
+            "pcpu": 0.0,
+            "pid": 19,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[ksoftirqd/2]",
+            "command": "ksoftirqd/2",
+            "pcpu": 0.0,
+            "pid": 20,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/2:0H]",
+            "command": "kworker/2:0H",
+            "pcpu": 0.0,
+            "pid": 22,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/3]",
+            "command": "watchdog/3",
+            "pcpu": 0.0,
+            "pid": 23,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[migration/3]",
+            "command": "migration/3",
+            "pcpu": 0.0,
+            "pid": 24,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[ksoftirqd/3]",
+            "command": "ksoftirqd/3",
+            "pcpu": 0.0,
+            "pid": 25,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/3:0H]",
+            "command": "kworker/3:0H",
+            "pcpu": 0.0,
+            "pid": 27,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/4]",
+            "command": "watchdog/4",
+            "pcpu": 0.0,
+            "pid": 28,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[migration/4]",
+            "command": "migration/4",
+            "pcpu": 0.0,
+            "pid": 29,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          }
+        ],
+        "safe_for_cpu_probe": true,
+        "safe_for_gpu_only_probe": true,
+        "safe_for_hybrid_probe": true
+      },
+      "raw_stderr": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n",
+      "raw_stdout": "node005\nNPROC=192\nLOADAVG=0.05 0.05 0.05\nMemTotal:197420908\nMemAvailable:187506516\n__SCHEDULEURM_PROCESS_SNAPSHOT__\nroot       8401  0.5  0.0 cmd             /cm/local/apps/cmd/sbin/cmd -s -n -P /var/run/cmd.pid\nroot          9  0.2  0.0 rcu_sched       [rcu_sched]\nroot          1  0.1  0.0 systemd         /usr/lib/systemd/systemd\nroot       7817  0.1  0.0 irqbalance      /usr/sbin/irqbalance --foreground\nroot          2  0.0  0.0 kthreadd        [kthreadd]\nroot          4  0.0  0.0 kworker/0:0H    [kworker/0:0H]\nroot          6  0.0  0.0 ksoftirqd/0     [ksoftirqd/0]\nroot          7  0.0  0.0 migration/0     [migration/0]\nroot          8  0.0  0.0 rcu_bh          [rcu_bh]\nroot         10  0.0  0.0 lru-add-drain   [lru-add-drain]\nroot         11  0.0  0.0 watchdog/0      [watchdog/0]\nroot         12  0.0  0.0 watchdog/1      [watchdog/1]\nroot         13  0.0  0.0 migration/1     [migration/1]\nroot         14  0.0  0.0 ksoftirqd/1     [ksoftirqd/1]\nroot         16  0.0  0.0 kworker/1:0H    [kworker/1:0H]\nroot         18  0.0  0.0 watchdog/2      [watchdog/2]\nroot         19  0.0  0.0 migration/2     [migration/2]\nroot         20  0.0  0.0 ksoftirqd/2     [ksoftirqd/2]\nroot         22  0.0  0.0 kworker/2:0H    [kworker/2:0H]\nroot         23  0.0  0.0 watchdog/3      [watchdog/3]\nroot         24  0.0  0.0 migration/3     [migration/3]\nroot         25  0.0  0.0 ksoftirqd/3     [ksoftirqd/3]\nroot         27  0.0  0.0 kworker/3:0H    [kworker/3:0H]\nroot         28  0.0  0.0 watchdog/4      [watchdog/4]\nroot         29  0.0  0.0 migration/4     [migration/4]\n",
+      "reachable": true,
+      "returncode": 0
+    },
+    {
+      "node": "node006",
+      "parsed": {
+        "availability_class": "clean_idle",
+        "cpu_busy": false,
+        "external_busy_process_count": 0,
+        "external_busy_processes": [],
+        "gpu_busy": false,
+        "gpus": [],
+        "hostname": "node006",
+        "loadavg_15m": 0.05,
+        "loadavg_1m": 0.09,
+        "loadavg_5m": 0.05,
+        "mem_available_kb": 185729880,
+        "mem_total_kb": 197420912,
+        "nproc": 192,
+        "processes": [
+          {
+            "args": "/cm/local/apps/cmd/sbin/cmd -s -n -P /var/run/cmd.pid",
+            "command": "cmd",
+            "pcpu": 0.5,
+            "pid": 8363,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[rcu_sched]",
+            "command": "rcu_sched",
+            "pcpu": 0.3,
+            "pid": 9,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/u1281:2]",
+            "command": "kworker/u1281:2",
+            "pcpu": 0.2,
+            "pid": 464748,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/lib/systemd/systemd",
+            "command": "systemd",
+            "pcpu": 0.1,
+            "pid": 1,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "/usr/sbin/irqbalance --foreground",
+            "command": "irqbalance",
+            "pcpu": 0.1,
+            "pid": 7819,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kthreadd]",
+            "command": "kthreadd",
+            "pcpu": 0.0,
+            "pid": 2,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/0:0H]",
+            "command": "kworker/0:0H",
+            "pcpu": 0.0,
+            "pid": 4,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[ksoftirqd/0]",
+            "command": "ksoftirqd/0",
+            "pcpu": 0.0,
+            "pid": 6,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[migration/0]",
+            "command": "migration/0",
+            "pcpu": 0.0,
+            "pid": 7,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[rcu_bh]",
+            "command": "rcu_bh",
+            "pcpu": 0.0,
+            "pid": 8,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[lru-add-drain]",
+            "command": "lru-add-drain",
+            "pcpu": 0.0,
+            "pid": 10,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/0]",
+            "command": "watchdog/0",
+            "pcpu": 0.0,
+            "pid": 11,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/1]",
+            "command": "watchdog/1",
+            "pcpu": 0.0,
+            "pid": 12,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[migration/1]",
+            "command": "migration/1",
+            "pcpu": 0.0,
+            "pid": 13,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[ksoftirqd/1]",
+            "command": "ksoftirqd/1",
+            "pcpu": 0.0,
+            "pid": 14,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/1:0H]",
+            "command": "kworker/1:0H",
+            "pcpu": 0.0,
+            "pid": 16,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/2]",
+            "command": "watchdog/2",
+            "pcpu": 0.0,
+            "pid": 18,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[migration/2]",
+            "command": "migration/2",
+            "pcpu": 0.0,
+            "pid": 19,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[ksoftirqd/2]",
+            "command": "ksoftirqd/2",
+            "pcpu": 0.0,
+            "pid": 20,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[kworker/2:0H]",
+            "command": "kworker/2:0H",
+            "pcpu": 0.0,
+            "pid": 22,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/3]",
+            "command": "watchdog/3",
+            "pcpu": 0.0,
+            "pid": 23,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[migration/3]",
+            "command": "migration/3",
+            "pcpu": 0.0,
+            "pid": 24,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[ksoftirqd/3]",
+            "command": "ksoftirqd/3",
+            "pcpu": 0.0,
+            "pid": 25,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[watchdog/4]",
+            "command": "watchdog/4",
+            "pcpu": 0.0,
+            "pid": 28,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          },
+          {
+            "args": "[migration/4]",
+            "command": "migration/4",
+            "pcpu": 0.0,
+            "pid": 29,
+            "pmem": 0.0,
+            "scheduleurm_probe": false,
+            "user": "root"
+          }
+        ],
+        "safe_for_cpu_probe": true,
+        "safe_for_gpu_only_probe": true,
+        "safe_for_hybrid_probe": true
+      },
+      "raw_stderr": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n",
+      "raw_stdout": "node006\nNPROC=192\nLOADAVG=0.09 0.05 0.05\nMemTotal:197420912\nMemAvailable:185729880\n__SCHEDULEURM_PROCESS_SNAPSHOT__\nroot       8363  0.5  0.0 cmd             /cm/local/apps/cmd/sbin/cmd -s -n -P /var/run/cmd.pid\nroot          9  0.3  0.0 rcu_sched       [rcu_sched]\nroot     464748  0.2  0.0 kworker/u1281:2 [kworker/u1281:2]\nroot          1  0.1  0.0 systemd         /usr/lib/systemd/systemd\nroot       7819  0.1  0.0 irqbalance      /usr/sbin/irqbalance --foreground\nroot          2  0.0  0.0 kthreadd        [kthreadd]\nroot          4  0.0  0.0 kworker/0:0H    [kworker/0:0H]\nroot          6  0.0  0.0 ksoftirqd/0     [ksoftirqd/0]\nroot          7  0.0  0.0 migration/0     [migration/0]\nroot          8  0.0  0.0 rcu_bh          [rcu_bh]\nroot         10  0.0  0.0 lru-add-drain   [lru-add-drain]\nroot         11  0.0  0.0 watchdog/0      [watchdog/0]\nroot         12  0.0  0.0 watchdog/1      [watchdog/1]\nroot         13  0.0  0.0 migration/1     [migration/1]\nroot         14  0.0  0.0 ksoftirqd/1     [ksoftirqd/1]\nroot         16  0.0  0.0 kworker/1:0H    [kworker/1:0H]\nroot         18  0.0  0.0 watchdog/2      [watchdog/2]\nroot         19  0.0  0.0 migration/2     [migration/2]\nroot         20  0.0  0.0 ksoftirqd/2     [ksoftirqd/2]\nroot         22  0.0  0.0 kworker/2:0H    [kworker/2:0H]\nroot         23  0.0  0.0 watchdog/3      [watchdog/3]\nroot         24  0.0  0.0 migration/3     [migration/3]\nroot         25  0.0  0.0 ksoftirqd/3     [ksoftirqd/3]\nroot         28  0.0  0.0 watchdog/4      [watchdog/4]\nroot         29  0.0  0.0 migration/4     [migration/4]\n",
+      "reachable": true,
+      "returncode": 0
+    }
+  ],
+  "pass": true
+}

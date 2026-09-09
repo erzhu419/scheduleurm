@@ -5,10 +5,16 @@ import os
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Tuple
 
+from simulation.service_cache import ServiceRateCache
+
 from ..features import as_float, as_int, gpu_candidate_features
 from ..scoring import RobustScoreWeights, weights_from_env
 from .queue_state import queue_vector_for_task
-from .service_registry import ServiceBinding, bind_service, default_service_cache
+from .service_registry import (
+    ServiceBinding,
+    bind_service,
+    theorem_service_cache,
+)
 
 
 def _optional_int_env(name: str) -> int | None:
@@ -68,10 +74,31 @@ class TheoremPolicyConfig:
 class TheoremMaxWeightPlacementPolicy:
     """GPU placement policy that emits theorem-grade lower-service traces."""
 
-    def __init__(self, config: TheoremPolicyConfig | None = None):
+    def __init__(
+        self,
+        config: TheoremPolicyConfig | None = None,
+        *,
+        cache: ServiceRateCache | None = None,
+    ):
         self.config = config or theorem_policy_config()
         self.name = self.config.name
-        self._cache = default_service_cache()
+        if cache is None:
+            self._cache, cache_identity = theorem_service_cache()
+            self._cache_identity = cache_identity.snapshot()
+        else:
+            self._cache = cache
+            snapshot = cache.snapshot()
+            self._cache_identity = {
+                "path": "",
+                "sha256": "",
+                "schema_version": "injected_service_cache",
+                "record_count": (
+                    len(snapshot.get("records") or [])
+                    + len(snapshot.get("capacity_boundaries") or [])
+                ),
+                "statewise_record_count": len(snapshot.get("records") or []),
+                "workload_count": len(cache.available_workloads()),
+            }
         self._gpu_audit_cache: Dict[Tuple[str, str, str], Dict[str, Any]] = {}
         self._fallback_weights: RobustScoreWeights = weights_from_env(
             self.config.sweet_spot_tasks_per_gpu)
@@ -79,6 +106,7 @@ class TheoremMaxWeightPlacementPolicy:
     def snapshot(self) -> Dict[str, Any]:
         out = self.config.snapshot()
         out["service_cache_workload_count"] = len(self._cache.available_workloads())
+        out["service_cache_identity"] = dict(self._cache_identity)
         out["fallback_score_weights"] = self._fallback_weights.snapshot()
         return out
 
@@ -117,7 +145,13 @@ class TheoremMaxWeightPlacementPolicy:
                 )
 
         if self.config.uncertified_mode == "block":
-            features = self._features(task, {}, gpu, context)
+            node_state = node_info.get("_scheduler_node_state")
+            if not isinstance(node_state, Mapping) or not node_state:
+                return (
+                    f"algorithm:{self.name}: exact candidate node state required "
+                    "for service certification"
+                )
+            features = self._features(task, node_state, gpu, context)
             binding = bind_service(
                 task,
                 features,
@@ -218,7 +252,11 @@ class TheoremMaxWeightPlacementPolicy:
                 "post_vram_frac": features.get("post_vram_frac"),
                 "util_pct": features.get("util_pct"),
                 "running_task_count": features.get("running_task_count"),
+                "node_bucket": features.get("node_bucket"),
+                "resource_state": features.get("resource_state"),
+                "resident_mix": features.get("resident_mix"),
             },
+            "service_cache_identity": dict(self._cache_identity),
             "service_binding": binding.snapshot(),
             "lower_service": lower_vec,
             "selected_class_lower_service": float(binding.lower_service),
@@ -283,7 +321,11 @@ class TheoremMaxWeightPlacementPolicy:
 
 
 def theorem_policy_config(name: str = "theorem_maxweight_v1") -> TheoremPolicyConfig:
-    mode = str(os.environ.get("SCHEDULEURM_THEOREM_UNCERTIFIED_MODE") or "legacy").strip().lower()
+    default_mode = "block" if str(name).startswith("global_theorem") else "legacy"
+    mode = str(
+        os.environ.get("SCHEDULEURM_THEOREM_UNCERTIFIED_MODE")
+        or default_mode
+    ).strip().lower()
     if mode not in {"legacy", "block", "trace_only"}:
         mode = "legacy"
     return TheoremPolicyConfig(

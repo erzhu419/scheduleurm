@@ -1,0 +1,728 @@
+{
+  "gate": "or_algorithm_upgrade_gate",
+  "gate_pass": true,
+  "global_batch": {
+    "candidate_configuration_count": 6,
+    "global_batch_scheduler_hook_ready": true,
+    "oracle_gap_alpha0": 0.0,
+    "oracle_gap_alpha1": 0.0,
+    "selected_task_count": 2,
+    "snapshot": {
+      "action": {
+        "candidate_configuration_count": 6,
+        "fallback_legacy_rows_excluded": true,
+        "global_action_dispatch_ready": true,
+        "oracle_gap_alpha0": 0.0,
+        "oracle_gap_alpha1": 0.0,
+        "score": 47.10194727666667,
+        "score_semantics": "robust_maxweight_lower_service",
+        "selected_action_ids": [
+          "task=batch-q01;node=gate-node-a;gpu=0",
+          "task=batch-q11;node=gate-node-a;gpu=1"
+        ],
+        "selected_task_ids": [
+          "batch-q01",
+          "batch-q11"
+        ]
+      },
+      "candidate_rows": [
+        {
+          "action_id": "task=batch-q01;node=gate-node-a;gpu=0",
+          "best_score_exact_over_candidate_set": true,
+          "bounded_penalty": true,
+          "candidate_bucket": "bucket:v1|class:v1|project=scheduleurmbench|sig=bench/q01/gpu-heavy|kind=gpu_job|res=v1.r0.c0|regime:v1|node=gate-node-a|gpu=0|n0|m1|u0|n1|pm1|u0",
+          "class_key": "class:v1|project=scheduleurmbench|sig=bench/q01/gpu-heavy|kind=gpu_job|res=v1.r0.c0",
+          "eta_lcb_s": null,
+          "fallback_reason": "",
+          "features": {
+            "post_task_count": 1,
+            "post_vram_frac": 0.051,
+            "running_task_count": 0,
+            "util_pct": 0.0
+          },
+          "finite": {
+            "class_key": "class:v1|project=scheduleurmbench|sig=bench/q01/gpu-heavy|kind=gpu_job|res=v1.r0.c0",
+            "gpu_idx": "0",
+            "node": "gate-node-a",
+            "post_count_bucket": "n1",
+            "post_vram_bucket": "pm1",
+            "regime_key": "regime:v1|node=gate-node-a|gpu=0|n0|m1|u0",
+            "resource_bucket": "v1.r0.c0",
+            "task_kind": "gpu_job",
+            "util_bucket": "u0"
+          },
+          "gpu_idx": 0,
+          "lower_service": {
+            "gpu_heavy_jax_matmul": 46.81063075
+          },
+          "node": "gate-node-a",
+          "oldest_wait_s": null,
+          "penalty_units": 0.0,
+          "queue_meta": {
+            "active_task_count": 2,
+            "cached": false,
+            "error": "",
+            "loaded": true,
+            "queue_path": "/mnt/c/Users/erzhu/AppData/Local/Temp/tmp63btfr4f/queue.json",
+            "unclassified_active_count": 0
+          },
+          "queue_vector": {
+            "gpu_heavy_jax_matmul": 1.0,
+            "hybrid_rl_resac_ant": 1.0
+          },
+          "regime_key": "regime:v1|node=gate-node-a|gpu=0|n0|m1|u0",
+          "resource_id": "gate-node-a:gpu:0",
+          "resource_ids": [
+            "gate-node-a:gpu:0"
+          ],
+          "robust_maxweight_score": 46.81063075,
+          "scheduler_hint_only": true,
+          "score_semantics": "robust_maxweight_lower_service",
+          "selected_class_lower_service": 46.81063075,
+          "service_binding": {
+            "aggregate_rate": 46.81063075,
+            "capacity_boundary": false,
+            "certified": true,
+            "command_fingerprint": "jax_matmul_size8192_v1",
+            "lower_service": 46.81063075,
+            "mean_rate": 46.81063075,
+            "node_bucket": "node007:11gb",
+            "profile": 1,
+            "reason": "",
+            "resource_kind": "gpu_heavy",
+            "source": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/node007_q01_pareto_p1_20260613_profile_1_per_gpu_summary.json",
+            "workload_key": "gpu_heavy_jax_matmul"
+          },
+          "service_workload_key": "gpu_heavy_jax_matmul",
+          "task_id": "batch-q01",
+          "theorem_ready": true,
+          "uncertified_mode": "legacy",
+          "workload_key": "gpu_heavy_jax_matmul"
+        },
+        {
+          "action_id": "task=batch-q01;node=gate-node-a;gpu=1",
+          "best_score_exact_over_candidate_set": true,
+          "bounded_penalty": true,
+          "candidate_bucket": "bucket:v1|class:v1|project=scheduleurmbench|sig=bench/q01/gpu-heavy|kind=gpu_job|res=v1.r0.c0|regime:v1|node=gate-node-a|gpu=1|n0|m1|u0|n1|pm1|u0",
+          "class_key": "class:v1|project=scheduleurmbench|sig=bench/q01/gpu-heavy|kind=gpu_job|res=v1.r0.c0",
+          "eta_lcb_s": null,
+          "fallback_reason": "",
+          "features": {
+            "post_task_count": 1,
+            "post_vram_frac": 0.051,
+            "running_task_count": 0,
+            "util_pct": 0.0
+          },
+          "finite": {
+            "class_key": "class:v1|project=scheduleurmbench|sig=bench/q01/gpu-heavy|kind=gpu_job|res=v1.r0.c0",
+            "gpu_idx": "1",
+            "node": "gate-node-a",
+            "post_count_bucket": "n1",
+            "post_vram_bucket": "pm1",
+            "regime_key": "regime:v1|node=gate-node-a|gpu=1|n0|m1|u0",
+            "resource_bucket": "v1.r0.c0",
+            "task_kind": "gpu_job",
+            "util_bucket": "u0"
+          },
+          "gpu_idx": 1,
+          "lower_service": {
+            "gpu_heavy_jax_matmul": 46.81063075
+          },
+          "node": "gate-node-a",
+          "oldest_wait_s": null,
+          "penalty_units": 0.0,
+          "queue_meta": {
+            "active_task_count": 2,
+            "cached": true,
+            "error": "",
+            "loaded": true,
+            "queue_path": "/mnt/c/Users/erzhu/AppData/Local/Temp/tmp63btfr4f/queue.json",
+            "unclassified_active_count": 0
+          },
+          "queue_vector": {
+            "gpu_heavy_jax_matmul": 1.0,
+            "hybrid_rl_resac_ant": 1.0
+          },
+          "regime_key": "regime:v1|node=gate-node-a|gpu=1|n0|m1|u0",
+          "resource_id": "gate-node-a:gpu:1",
+          "resource_ids": [
+            "gate-node-a:gpu:1"
+          ],
+          "robust_maxweight_score": 46.81063075,
+          "scheduler_hint_only": true,
+          "score_semantics": "robust_maxweight_lower_service",
+          "selected_class_lower_service": 46.81063075,
+          "service_binding": {
+            "aggregate_rate": 46.81063075,
+            "capacity_boundary": false,
+            "certified": true,
+            "command_fingerprint": "jax_matmul_size8192_v1",
+            "lower_service": 46.81063075,
+            "mean_rate": 46.81063075,
+            "node_bucket": "node007:11gb",
+            "profile": 1,
+            "reason": "",
+            "resource_kind": "gpu_heavy",
+            "source": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/node007_q01_pareto_p1_20260613_profile_1_per_gpu_summary.json",
+            "workload_key": "gpu_heavy_jax_matmul"
+          },
+          "service_workload_key": "gpu_heavy_jax_matmul",
+          "task_id": "batch-q01",
+          "theorem_ready": true,
+          "uncertified_mode": "legacy",
+          "workload_key": "gpu_heavy_jax_matmul"
+        },
+        {
+          "action_id": "task=batch-q11;node=gate-node-a;gpu=0",
+          "best_score_exact_over_candidate_set": true,
+          "bounded_penalty": true,
+          "candidate_bucket": "bucket:v1|class:v1|project=bapr|sig=bapr/resac/train|kind=gpu_train|res=v1.r1.c1|regime:v1|node=gate-node-a|gpu=0|n0|m1|u0|n1|pm1|u0",
+          "class_key": "class:v1|project=bapr|sig=bapr/resac/train|kind=gpu_train|res=v1.r1.c1",
+          "eta_lcb_s": null,
+          "fallback_reason": "",
+          "features": {
+            "post_task_count": 1,
+            "post_vram_frac": 0.051,
+            "running_task_count": 0,
+            "util_pct": 0.0
+          },
+          "finite": {
+            "class_key": "class:v1|project=bapr|sig=bapr/resac/train|kind=gpu_train|res=v1.r1.c1",
+            "gpu_idx": "0",
+            "node": "gate-node-a",
+            "post_count_bucket": "n1",
+            "post_vram_bucket": "pm1",
+            "regime_key": "regime:v1|node=gate-node-a|gpu=0|n0|m1|u0",
+            "resource_bucket": "v1.r1.c1",
+            "task_kind": "gpu_train",
+            "util_bucket": "u0"
+          },
+          "gpu_idx": 0,
+          "lower_service": {
+            "hybrid_rl_resac_ant": 0.29131652666666663
+          },
+          "node": "gate-node-a",
+          "oldest_wait_s": null,
+          "penalty_units": 0.0,
+          "queue_meta": {
+            "active_task_count": 2,
+            "cached": true,
+            "error": "",
+            "loaded": true,
+            "queue_path": "/mnt/c/Users/erzhu/AppData/Local/Temp/tmp63btfr4f/queue.json",
+            "unclassified_active_count": 0
+          },
+          "queue_vector": {
+            "gpu_heavy_jax_matmul": 1.0,
+            "hybrid_rl_resac_ant": 1.0
+          },
+          "regime_key": "regime:v1|node=gate-node-a|gpu=0|n0|m1|u0",
+          "resource_id": "gate-node-a:gpu:0",
+          "resource_ids": [
+            "gate-node-a:gpu:0"
+          ],
+          "robust_maxweight_score": 0.29131652666666663,
+          "scheduler_hint_only": true,
+          "score_semantics": "robust_maxweight_lower_service",
+          "selected_class_lower_service": 0.29131652666666663,
+          "service_binding": {
+            "aggregate_rate": 0.29131652666666663,
+            "capacity_boundary": false,
+            "certified": true,
+            "command_fingerprint": "resac_ant_real_tqdm_stable_v1",
+            "lower_service": 0.29131652666666663,
+            "mean_rate": 0.29131652666666663,
+            "node_bucket": "node007-direct:3x12gb-fresh-tqdm-20260626",
+            "profile": 1,
+            "reason": "",
+            "resource_kind": "hybrid_rl",
+            "source": "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_fresh_20260626_rl_gpus1_3/reports/profile_1_per_gpu_summary.json",
+            "workload_key": "hybrid_rl_resac_ant"
+          },
+          "service_workload_key": "hybrid_rl_resac_ant",
+          "task_id": "batch-q11",
+          "theorem_ready": true,
+          "uncertified_mode": "legacy",
+          "workload_key": "hybrid_rl_resac_ant"
+        },
+        {
+          "action_id": "task=batch-q11;node=gate-node-a;gpu=1",
+          "best_score_exact_over_candidate_set": true,
+          "bounded_penalty": true,
+          "candidate_bucket": "bucket:v1|class:v1|project=bapr|sig=bapr/resac/train|kind=gpu_train|res=v1.r1.c1|regime:v1|node=gate-node-a|gpu=1|n0|m1|u0|n1|pm1|u0",
+          "class_key": "class:v1|project=bapr|sig=bapr/resac/train|kind=gpu_train|res=v1.r1.c1",
+          "eta_lcb_s": null,
+          "fallback_reason": "",
+          "features": {
+            "post_task_count": 1,
+            "post_vram_frac": 0.051,
+            "running_task_count": 0,
+            "util_pct": 0.0
+          },
+          "finite": {
+            "class_key": "class:v1|project=bapr|sig=bapr/resac/train|kind=gpu_train|res=v1.r1.c1",
+            "gpu_idx": "1",
+            "node": "gate-node-a",
+            "post_count_bucket": "n1",
+            "post_vram_bucket": "pm1",
+            "regime_key": "regime:v1|node=gate-node-a|gpu=1|n0|m1|u0",
+            "resource_bucket": "v1.r1.c1",
+            "task_kind": "gpu_train",
+            "util_bucket": "u0"
+          },
+          "gpu_idx": 1,
+          "lower_service": {
+            "hybrid_rl_resac_ant": 0.29131652666666663
+          },
+          "node": "gate-node-a",
+          "oldest_wait_s": null,
+          "penalty_units": 0.0,
+          "queue_meta": {
+            "active_task_count": 2,
+            "cached": true,
+            "error": "",
+            "loaded": true,
+            "queue_path": "/mnt/c/Users/erzhu/AppData/Local/Temp/tmp63btfr4f/queue.json",
+            "unclassified_active_count": 0
+          },
+          "queue_vector": {
+            "gpu_heavy_jax_matmul": 1.0,
+            "hybrid_rl_resac_ant": 1.0
+          },
+          "regime_key": "regime:v1|node=gate-node-a|gpu=1|n0|m1|u0",
+          "resource_id": "gate-node-a:gpu:1",
+          "resource_ids": [
+            "gate-node-a:gpu:1"
+          ],
+          "robust_maxweight_score": 0.29131652666666663,
+          "scheduler_hint_only": true,
+          "score_semantics": "robust_maxweight_lower_service",
+          "selected_class_lower_service": 0.29131652666666663,
+          "service_binding": {
+            "aggregate_rate": 0.29131652666666663,
+            "capacity_boundary": false,
+            "certified": true,
+            "command_fingerprint": "resac_ant_real_tqdm_stable_v1",
+            "lower_service": 0.29131652666666663,
+            "mean_rate": 0.29131652666666663,
+            "node_bucket": "node007-direct:3x12gb-fresh-tqdm-20260626",
+            "profile": 1,
+            "reason": "",
+            "resource_kind": "hybrid_rl",
+            "source": "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_fresh_20260626_rl_gpus1_3/reports/profile_1_per_gpu_summary.json",
+            "workload_key": "hybrid_rl_resac_ant"
+          },
+          "service_workload_key": "hybrid_rl_resac_ant",
+          "task_id": "batch-q11",
+          "theorem_ready": true,
+          "uncertified_mode": "legacy",
+          "workload_key": "hybrid_rl_resac_ant"
+        }
+      ],
+      "placements": {
+        "batch-q01": {
+          "gpu_idx": 0,
+          "node": "gate-node-a"
+        },
+        "batch-q11": {
+          "gpu_idx": 1,
+          "node": "gate-node-a"
+        }
+      },
+      "queue_vector": {
+        "gpu_heavy_jax_matmul": 1.0,
+        "hybrid_rl_resac_ant": 1.0
+      },
+      "scheduler_hook_ready": true
+    }
+  },
+  "improvement_count": 7,
+  "improvements": [
+    {
+      "metrics": [
+        "makespan"
+      ],
+      "taskset": "q01_gpu_bound_cnn_resnet50"
+    },
+    {
+      "metrics": [
+        "makespan",
+        "mean_flow"
+      ],
+      "taskset": "q01_gpu_bound_llm_inference"
+    },
+    {
+      "metrics": [
+        "makespan",
+        "mean_flow"
+      ],
+      "taskset": "node007_task_native_cnn"
+    },
+    {
+      "metrics": [
+        "makespan",
+        "mean_flow"
+      ],
+      "taskset": "node007_task_native_llm"
+    },
+    {
+      "metrics": [
+        "makespan"
+      ],
+      "taskset": "node007_task_native_eta_portfolio"
+    },
+    {
+      "metrics": [
+        "makespan"
+      ],
+      "taskset": "q11_cpu_gpu_coupled"
+    },
+    {
+      "metrics": [
+        "makespan"
+      ],
+      "taskset": "hybrid_research_portfolio"
+    }
+  ],
+  "online_lcb_eta": {
+    "dedup_key_fields_present": true,
+    "estimate": {
+      "certified": true,
+      "confidence": 0.8,
+      "eta_s": 11.08275969408714,
+      "key": "gpu_heavy_jax_matmul|1|empty|gate-node-a:12gb|unit|global_theorem_maxweight_v1",
+      "lcb_rate": 9.023023394917773,
+      "mean_rate": 10.0,
+      "probe_required": false,
+      "radius": 0.9769766050822271,
+      "reused_from_cache": false,
+      "sample_count": 5
+    },
+    "online_lcb_eta_ready": true
+  },
+  "pass": true,
+  "pass_meaning": "optional algorithm-layer upgrade validated by replay and certificates; legacy scheduler default is unchanged and direct external binary superiority is not claimed",
+  "regression_count": 0,
+  "regressions": [],
+  "rows": [
+    {
+      "current_policy": "calibrated_guarded_knee",
+      "current_profiles": {
+        "gpu_heavy_jax_matmul": 1
+      },
+      "current_vs_legacy_makespan": 1.4659340069694584,
+      "current_vs_legacy_mean_flow": 1.5422059790022133,
+      "taskset": "q01_gpu_bound_compute",
+      "upgraded_not_pareto_dominated_by_sota": true,
+      "upgraded_not_pareto_dominated_by_sota_tol": true,
+      "upgraded_pareto_dominated_by_sota": [],
+      "upgraded_pareto_dominated_by_sota_tol": [],
+      "upgraded_policy": "scheduleurm_sota_union_pareto_slack",
+      "upgraded_profiles": {
+        "gpu_heavy_jax_matmul": 1
+      },
+      "upgraded_vs_current_makespan": 1.0,
+      "upgraded_vs_current_mean_flow": 1.0,
+      "upgraded_vs_legacy_makespan": 1.4659340069694584,
+      "upgraded_vs_legacy_mean_flow": 1.5422059790022133
+    },
+    {
+      "current_policy": "calibrated_guarded_knee",
+      "current_profiles": {
+        "gpu_cnn_torch_resnet50": 3
+      },
+      "current_vs_legacy_makespan": 1.0,
+      "current_vs_legacy_mean_flow": 1.0,
+      "taskset": "q01_gpu_bound_cnn_resnet50",
+      "upgraded_not_pareto_dominated_by_sota": true,
+      "upgraded_not_pareto_dominated_by_sota_tol": true,
+      "upgraded_pareto_dominated_by_sota": [],
+      "upgraded_pareto_dominated_by_sota_tol": [],
+      "upgraded_policy": "scheduleurm_sota_union_pareto_slack",
+      "upgraded_profiles": {
+        "gpu_cnn_torch_resnet50": 3
+      },
+      "upgraded_vs_current_makespan": 1.0216842862516824,
+      "upgraded_vs_current_mean_flow": 0.9806007429639941,
+      "upgraded_vs_legacy_makespan": 1.0216842862516824,
+      "upgraded_vs_legacy_mean_flow": 0.9806007429639941
+    },
+    {
+      "current_policy": "calibrated_guarded_knee",
+      "current_profiles": {
+        "gpu_llm_distilgpt2": 10
+      },
+      "current_vs_legacy_makespan": 2.782000572104072,
+      "current_vs_legacy_mean_flow": 2.641566268165535,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "upgraded_not_pareto_dominated_by_sota": true,
+      "upgraded_not_pareto_dominated_by_sota_tol": true,
+      "upgraded_pareto_dominated_by_sota": [],
+      "upgraded_pareto_dominated_by_sota_tol": [],
+      "upgraded_policy": "scheduleurm_sota_union_pareto_slack",
+      "upgraded_profiles": {
+        "gpu_llm_distilgpt2": 10
+      },
+      "upgraded_vs_current_makespan": 1.0083966545468026,
+      "upgraded_vs_current_mean_flow": 1.0079477901915639,
+      "upgraded_vs_legacy_makespan": 2.8053600698570373,
+      "upgraded_vs_legacy_mean_flow": 2.662560882642027
+    },
+    {
+      "current_policy": "calibrated_global_guarded",
+      "current_profiles": {
+        "gpu_cnn_torch_resnet50": 3,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 10
+      },
+      "current_vs_legacy_makespan": 1.610870687855149,
+      "current_vs_legacy_mean_flow": 1.5899695685800255,
+      "taskset": "q01_gpu_model_portfolio",
+      "upgraded_not_pareto_dominated_by_sota": true,
+      "upgraded_not_pareto_dominated_by_sota_tol": true,
+      "upgraded_pareto_dominated_by_sota": [],
+      "upgraded_pareto_dominated_by_sota_tol": [],
+      "upgraded_policy": "scheduleurm_sota_union_pareto_slack",
+      "upgraded_profiles": {
+        "gpu_cnn_torch_resnet50": 3,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 10
+      },
+      "upgraded_vs_current_makespan": 1.0,
+      "upgraded_vs_current_mean_flow": 1.0005733945972772,
+      "upgraded_vs_legacy_makespan": 1.610870687855149,
+      "upgraded_vs_legacy_mean_flow": 1.5908812485404844
+    },
+    {
+      "current_policy": "calibrated_guarded_knee",
+      "current_profiles": {
+        "gpu_cnn_torch_progress_stack": 4
+      },
+      "current_vs_legacy_makespan": 1.1072711176705146,
+      "current_vs_legacy_mean_flow": 1.080482884094701,
+      "taskset": "node007_task_native_cnn",
+      "upgraded_not_pareto_dominated_by_sota": true,
+      "upgraded_not_pareto_dominated_by_sota_tol": true,
+      "upgraded_pareto_dominated_by_sota": [],
+      "upgraded_pareto_dominated_by_sota_tol": [],
+      "upgraded_policy": "scheduleurm_sota_union_pareto_slack",
+      "upgraded_profiles": {
+        "gpu_cnn_torch_progress_stack": 4
+      },
+      "upgraded_vs_current_makespan": 1.1037131501917572,
+      "upgraded_vs_current_mean_flow": 1.037076873007417,
+      "upgraded_vs_legacy_makespan": 1.2221096934004714,
+      "upgraded_vs_legacy_mean_flow": 1.1205438107749677
+    },
+    {
+      "current_policy": "calibrated_guarded_knee",
+      "current_profiles": {
+        "gpu_llm_torch_decoder_stack": 8
+      },
+      "current_vs_legacy_makespan": 1.8840325996484302,
+      "current_vs_legacy_mean_flow": 1.8369120251962214,
+      "taskset": "node007_task_native_llm",
+      "upgraded_not_pareto_dominated_by_sota": true,
+      "upgraded_not_pareto_dominated_by_sota_tol": true,
+      "upgraded_pareto_dominated_by_sota": [],
+      "upgraded_pareto_dominated_by_sota_tol": [],
+      "upgraded_policy": "scheduleurm_sota_union_pareto_slack",
+      "upgraded_profiles": {
+        "gpu_llm_torch_decoder_stack": 8
+      },
+      "upgraded_vs_current_makespan": 1.0478830535287762,
+      "upgraded_vs_current_mean_flow": 1.0059864625215047,
+      "upgraded_vs_legacy_makespan": 1.9742458334673552,
+      "upgraded_vs_legacy_mean_flow": 1.84790863019036
+    },
+    {
+      "current_policy": "calibrated_global_guarded",
+      "current_profiles": {
+        "gpu_cnn_torch_progress_stack": 4,
+        "gpu_llm_torch_decoder_stack": 8,
+        "hybrid_rl_resac_ant_node007_tqdm": 5
+      },
+      "current_vs_legacy_makespan": 1.333038085040385,
+      "current_vs_legacy_mean_flow": 1.3090668015181046,
+      "taskset": "node007_task_native_eta_portfolio",
+      "upgraded_not_pareto_dominated_by_sota": true,
+      "upgraded_not_pareto_dominated_by_sota_tol": true,
+      "upgraded_pareto_dominated_by_sota": [],
+      "upgraded_pareto_dominated_by_sota_tol": [],
+      "upgraded_policy": "scheduleurm_sota_union_pareto_slack",
+      "upgraded_profiles": {
+        "gpu_cnn_torch_progress_stack": 4,
+        "gpu_llm_torch_decoder_stack": 8,
+        "hybrid_rl_resac_ant_node007_tqdm": 5
+      },
+      "upgraded_vs_current_makespan": 1.155755055921508,
+      "upgraded_vs_current_mean_flow": 0.9934582502594643,
+      "upgraded_vs_legacy_makespan": 1.54066550652135,
+      "upgraded_vs_legacy_mean_flow": 1.3005032141089297
+    },
+    {
+      "current_policy": "calibrated_guarded_knee",
+      "current_profiles": {
+        "cpu_heavy_local_bench": 8
+      },
+      "current_vs_legacy_makespan": 1.5311444139802948,
+      "current_vs_legacy_mean_flow": 1.5351737079371133,
+      "taskset": "q10_cpu_host_bound",
+      "upgraded_not_pareto_dominated_by_sota": true,
+      "upgraded_not_pareto_dominated_by_sota_tol": true,
+      "upgraded_pareto_dominated_by_sota": [],
+      "upgraded_pareto_dominated_by_sota_tol": [],
+      "upgraded_policy": "scheduleurm_sota_union_pareto_slack",
+      "upgraded_profiles": {
+        "cpu_heavy_local_bench": 8
+      },
+      "upgraded_vs_current_makespan": 1.0,
+      "upgraded_vs_current_mean_flow": 1.0,
+      "upgraded_vs_legacy_makespan": 1.5311444139802948,
+      "upgraded_vs_legacy_mean_flow": 1.5351737079371133
+    },
+    {
+      "current_policy": "calibrated_guarded_knee",
+      "current_profiles": {
+        "hybrid_rl_resac_ant": 5
+      },
+      "current_vs_legacy_makespan": 1.0,
+      "current_vs_legacy_mean_flow": 1.0,
+      "taskset": "q11_cpu_gpu_coupled",
+      "upgraded_not_pareto_dominated_by_sota": true,
+      "upgraded_not_pareto_dominated_by_sota_tol": true,
+      "upgraded_pareto_dominated_by_sota": [],
+      "upgraded_pareto_dominated_by_sota_tol": [],
+      "upgraded_policy": "scheduleurm_sota_union_pareto_slack",
+      "upgraded_profiles": {
+        "hybrid_rl_resac_ant": 5
+      },
+      "upgraded_vs_current_makespan": 1.0096603869678653,
+      "upgraded_vs_current_mean_flow": 0.9985151932930973,
+      "upgraded_vs_legacy_makespan": 1.0096603869678653,
+      "upgraded_vs_legacy_mean_flow": 0.9985151932930973
+    },
+    {
+      "current_policy": "calibrated_global_guarded",
+      "current_profiles": {
+        "cpu_heavy_local_bench": 8,
+        "gpu_cnn_torch_resnet50": 3,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 10,
+        "hybrid_rl_resac_ant": 5
+      },
+      "current_vs_legacy_makespan": 1.0,
+      "current_vs_legacy_mean_flow": 1.1607661826334852,
+      "taskset": "hybrid_research_portfolio",
+      "upgraded_not_pareto_dominated_by_sota": true,
+      "upgraded_not_pareto_dominated_by_sota_tol": true,
+      "upgraded_pareto_dominated_by_sota": [],
+      "upgraded_pareto_dominated_by_sota_tol": [],
+      "upgraded_policy": "scheduleurm_sota_union_pareto_slack",
+      "upgraded_profiles": {
+        "cpu_heavy_local_bench": 8,
+        "gpu_cnn_torch_resnet50": 3,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 10,
+        "hybrid_rl_resac_ant": 5
+      },
+      "upgraded_vs_current_makespan": 1.0123704094693944,
+      "upgraded_vs_current_mean_flow": 1.0011126911968917,
+      "upgraded_vs_legacy_makespan": 1.0123704094693944,
+      "upgraded_vs_legacy_mean_flow": 1.162057756946551
+    }
+  ],
+  "scope": "The gate covers measured Scheduleurm replay tasksets and synthetic global-dispatch/state-cache/LCB certificates. It is not a production launch claim and not a direct Gavel/Pollux/Sia/IADeep binary result.",
+  "scoped_claim_ready": true,
+  "seed": 7,
+  "state_dependent_service_cache": {
+    "available_states": {
+      "marginal_cpu": [
+        "cpu_full_resident",
+        "cpu_half_resident",
+        "empty"
+      ],
+      "marginal_cuda": [
+        "empty",
+        "high_vram_resident"
+      ]
+    },
+    "cpu_full_resident": {
+      "certified": true,
+      "fallback_used": false,
+      "load_state": "cpu_full_resident",
+      "profile": 1,
+      "reason": "state_exact",
+      "record": {
+        "aggregate_rate": 20.469813,
+        "capacity_boundary": false,
+        "command_fingerprint": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -u cpu_progress_benchmark.py --mode cpu --steps 12 --work-items 200000 --label cpu_full_node001_add_single_v2",
+        "gpu_count_observed": 1,
+        "node_bucket": "node001:180worker-resident",
+        "per_task_rates": [
+          20.469813
+        ],
+        "profile": 1,
+        "resource_kind": "cpu_corner_resident",
+        "source": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/corner_case_live_20260613/cpu_full_node001_add_single_v2_remote_corner_case_probe.json",
+        "total_units": 12.0,
+        "unit": "step",
+        "workload_key": "corner_cpu_node001_180worker_resident_single"
+      },
+      "workload_key": "marginal_cpu"
+    },
+    "gpu_empty": {
+      "certified": true,
+      "fallback_used": false,
+      "load_state": "empty",
+      "profile": 1,
+      "reason": "state_exact",
+      "record": {
+        "aggregate_rate": 8534.69463,
+        "capacity_boundary": false,
+        "command_fingerprint": "CUDA_VISIBLE_DEVICES=0 /home/zhengliang01/scheduleurm_work/conda_envs/scomp-py310/bin/python -u gpu_multigpu_memory_progress_benchmark.py --devices 0 --reserve-gb-per-gpu 0 --matrix-size 1024 --steps 60 --log-interval 5 --label node007_empt",
+        "gpu_count_observed": 1,
+        "node_bucket": "node007-direct:4x12gb",
+        "per_task_rates": [
+          8534.69463
+        ],
+        "profile": 1,
+        "resource_kind": "gpu_corner_empty",
+        "source": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/corner_case_live_20260613/node007_empty_small_remote_corner_case_probe.json",
+        "total_units": 60.0,
+        "unit": "step",
+        "workload_key": "corner_gpu_node007_empty_marginal_cuda"
+      },
+      "workload_key": "marginal_cuda"
+    },
+    "gpu_high_vram_resident": {
+      "certified": true,
+      "fallback_used": false,
+      "load_state": "high_vram_resident",
+      "profile": 1,
+      "reason": "state_exact",
+      "record": {
+        "aggregate_rate": 9344.57235,
+        "capacity_boundary": false,
+        "command_fingerprint": "CUDA_VISIBLE_DEVICES=0 /home/zhengliang01/scheduleurm_work/conda_envs/scomp-py310/bin/python -u gpu_multigpu_memory_progress_benchmark.py --devices 0 --reserve-gb-per-gpu 0 --matrix-size 1024 --steps 60 --log-interval 5 --label node007_30gb",
+        "gpu_count_observed": 1,
+        "node_bucket": "node007-direct:30gb-resident",
+        "per_task_rates": [
+          9344.57235
+        ],
+        "profile": 1,
+        "resource_kind": "gpu_corner_resident_vram",
+        "source": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/corner_case_live_20260613/node007_30gb_add_small_stable_remote_corner_case_probe.json",
+        "total_units": 60.0,
+        "unit": "step",
+        "workload_key": "corner_gpu_node007_30gb_resident_marginal_cuda"
+      },
+      "workload_key": "marginal_cuda"
+    },
+    "state_dependent_cache_ready": true
+  },
+  "status": "OR_ALGORITHM_UPGRADE_PASS",
+  "strong_claim_ready": false,
+  "tolerance": 0.005,
+  "trials": 31
+}

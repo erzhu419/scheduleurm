@@ -1,0 +1,8 @@
+{
+  "cmd": [
+    "scheduler.run_on",
+    "node001",
+    "set -e; for p in /home/zhengliang01/*/bin/python3 /home/zhengliang01/*/*/bin/python3 /home/zhengliang01/miniconda*/bin/python3 /home/zhengliang01/anaconda*/bin/python3 /opt/conda/bin/python3 /usr/local/bin/python3; do [ -x \"$p\" ] && echo \"$p\"; done; find /home/zhengliang01 -maxdepth 4 -type f -name python3 2>/dev/null | head -20 || true"
+  ],
+  "returncode": 0
+}

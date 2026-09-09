@@ -149,6 +149,23 @@ def test_retry_clone_clears_runtime_artifacts_and_becomes_scheduler_owned():
     assert cleared == [("t0007", True)]
 
 
+def test_retry_clone_restores_explicit_declared_cpu_contract():
+    parent = _task(
+        cpu_cores=13,
+        cpu_declared_cores=12,
+        cpu_cores_explicit=True,
+    )
+    state = {"tasks": [parent], "next_id": 7}
+
+    new_id = requeue_after_crash(parent, state, deps=_deps())
+
+    assert new_id == "t0007"
+    clone = state["tasks"][-1]
+    assert clone["cpu_cores"] == 12
+    assert clone["cpu_declared_cores"] == 12
+    assert clone["cpu_cores_explicit"] is True
+
+
 def test_active_duplicate_identity_returns_existing_task_without_appending():
     parent = _task("failed")
     duplicate = _task("queued", status="queued")
@@ -263,6 +280,30 @@ def test_protocol_rollout_mismatch_escalates_without_retry():
         parent,
         state,
         deps=_deps(category="APP_BUG", escalations=escalations),
+    )
+
+    assert new_id is None
+    assert parent["failure_category"] == "PROTOCOL_INTEGRITY"
+    assert escalations == [
+        ("tParent", "PROTOCOL_INTEGRITY", parent["_diagnosis"]),
+    ]
+    assert len(state["tasks"]) == 1
+
+
+def test_missing_frozen_protocol_escalates_without_retry():
+    parent = _task(_diagnosis={
+        "is_crash": True,
+        "reason": "err_pattern: Traceback, RuntimeError",
+        "tail": "ValueError: few-shot policy lacks its frozen protocol",
+        "lifetime_s": 140,
+    })
+    state = {"tasks": [parent], "next_id": 10}
+    escalations = []
+
+    new_id = requeue_after_crash(
+        parent,
+        state,
+        deps=_deps(category="UNKNOWN", escalations=escalations),
     )
 
     assert new_id is None

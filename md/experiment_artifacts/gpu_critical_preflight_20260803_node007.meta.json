@@ -1,0 +1,8 @@
+{
+  "cmd": [
+    "scheduler.run_on",
+    "node007",
+    "export BAPR_PYTHON=/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python; export LD_LIBRARY_PATH=/cm/local/apps/cuda-driver/libs/535.261.03/lib64; export PATH=/cm/local/apps/cuda-driver/libs/535.261.03/bin:/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin:/usr/local/bin:/usr/bin:/bin; export XLA_PYTHON_CLIENT_MEM_FRACTION=0.20; set -e\necho NODE=$(hostname)\nnvidia-smi --query-gpu=index,name,memory.total,memory.used,utilization.gpu --format=csv,noheader,nounits\ndf -Pk /tmp /home/zhengliang01 | tail -n +2\nfor py in /home/zhengliang01/scheduleurm_work/conda_envs/scomp-py310/bin/python /home/zhengliang01/scheduleurm_work/conda_envs/resac-jax-gpu1-0438/bin/python; do\n  echo PY=$py\n  \"$py\" - <<'EOF'\nimport sys\nprint(sys.version.split()[0])\ntry:\n import torch\n print(\"torch\",torch.__version__,\"cuda\",torch.cuda.is_available())\nexcept Exception as e: print(\"torch_error\",repr(e))\ntry:\n import jax\n print(\"jax\",jax.__version__,jax.devices())\nexcept Exception as e: print(\"jax_error\",repr(e))\ntry:\n import transformers\n print(\"transformers\",transformers.__version__)\nexcept Exception as e: print(\"transformers_error\",repr(e))\nEOF\ndone\ntest -f /home/zhengliang01/scheduleurm_work/RE-SAC/jax_experiments/train.py\n"
+  ],
+  "returncode": 1
+}

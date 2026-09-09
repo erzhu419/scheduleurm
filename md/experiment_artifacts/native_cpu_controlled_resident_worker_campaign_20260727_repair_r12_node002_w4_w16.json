@@ -1,0 +1,338 @@
+{
+  "accepted_count": 2,
+  "allow_launch": true,
+  "coverage_ready": true,
+  "deploy_rows": [
+    {
+      "error": null,
+      "node": "node002",
+      "ready": true
+    }
+  ],
+  "failed_count": 0,
+  "gate": "native_cpu_controlled_resident_worker_campaign",
+  "initial_surveys": [
+    {
+      "dispatch_external_cpu_fraction": 0.0,
+      "dispatch_external_cpu_fraction_p95": 0.0,
+      "dispatch_external_cpu_regime": "cpu_external_idle",
+      "dispatch_sample_count": 5,
+      "measurement_protocol": "dispatch_multisample_and_run_window_v3",
+      "node": "node002",
+      "ready": true,
+      "returncode": 0,
+      "stderr_tail": ""
+    }
+  ],
+  "lane_results": [
+    {
+      "node": "node002",
+      "resident_ready": {
+        "payload": {
+          "label": "cpu_controlled_resident_worker_20260727_repair_r12_node002_w4_w16_node002_controlled_half_96",
+          "pid": 74523,
+          "ready_monotonic_s": 1143302.681539986,
+          "schema_version": 1,
+          "workers": 96
+        },
+        "ready": true
+      },
+      "resident_returncode": 0,
+      "resident_started": true,
+      "resident_stopped": true,
+      "status": "COMPLETE"
+    }
+  ],
+  "lane_specs": {
+    "node002": "controlled_half_96"
+  },
+  "launchable_nodes": [
+    "node002"
+  ],
+  "launched_count": 2,
+  "load_specs": {
+    "controlled_full_180": {
+      "expected_regime": "cpu_external_saturated",
+      "profiles": [
+        1
+      ],
+      "resident_workers": 180,
+      "resource_state": "full_loaded"
+    },
+    "controlled_half_96": {
+      "expected_regime": "cpu_external_heavy",
+      "profiles": [
+        4,
+        16
+      ],
+      "resident_workers": 96,
+      "resource_state": "half_loaded"
+    }
+  },
+  "measurement_contract": {
+    "capacity_rule": "resident_workers + target_workers <= 192",
+    "legacy_scheduler_limits_bypassed": true,
+    "no_touch_user_tasks": true,
+    "resident_progress_source": "tqdm",
+    "resident_setup_excluded_from_target_eta": true,
+    "target_eta": "startup + outer loop + checkpoint + final save of the target task",
+    "target_progress_source": "tqdm/progress_wrapper"
+  },
+  "planned_count": 2,
+  "progress_deploy_rows": [
+    {
+      "error": null,
+      "node": "node002",
+      "ready": true
+    }
+  ],
+  "replicate_offset": 12,
+  "replicates": 1,
+  "rows": [
+    {
+      "cell_id": "controlled_half_96_w4_r12",
+      "checkpoint_bytes": 8388608,
+      "checkpoint_interval": 40,
+      "child_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/cpu_controlled_resident_worker_20260727_repair_r12_node002_w4_w16_r12_node002_controlled_half_96_w4_r12/raw/profile_1_per_gpu/gpu0_0.log",
+      "completion_model": {
+        "amortized_unit_s": 0.06334015762704555,
+        "base_unit_s": 0.07238952803891152,
+        "checkpoint_observed_s": 0.09860086790286005,
+        "child_returncode": 0,
+        "completion_model_ready": true,
+        "completion_unit_s": 0.06334015762704555,
+        "counter_offset": 0,
+        "finalization_after_last_progress_s": 0.0495557130780071,
+        "first_progress_unit": 2,
+        "interval_sample_count": 79,
+        "last_progress_unit": 160,
+        "loop_observed_units": 158,
+        "loop_wall_s": 10.007744905073196,
+        "model_abs_error_s": 0.0,
+        "model_relative_error": 0.0,
+        "natural_exit": true,
+        "periodic_extra_s": 0.0,
+        "phase_durations_s": {
+          "checkpoint": [
+            0.025280080968514085,
+            0.02602223097346723,
+            0.02488795598037541,
+            0.02241059998050332
+          ],
+          "final_save": [
+            0.02504392107948661
+          ],
+          "initialization": [
+            7.067201659083366e-05
+          ],
+          "outer_loop": [
+            10.210812411038205
+          ]
+        },
+        "predicted_total_s": 10.31999056506902,
+        "progress_observation_count": 80,
+        "readiness_reason": "ready",
+        "save_observed_s": 0.02504392107948661,
+        "schema_version": 1,
+        "startup_overhead_s": 0.1360096316637259,
+        "startup_to_first_progress_s": 0.262689946917817,
+        "stopped_on_stable": false,
+        "terminal_overhead_s": 0.0495557130780071,
+        "total_units": 160,
+        "total_wall_s": 10.31999056506902,
+        "unit": "step"
+      },
+      "completion_model_ready": true,
+      "declared_external_load_snapshot": 95.97009542860962,
+      "dispatch_preflight": {
+        "dispatch_external_cpu_fraction": 0.4998442470240085,
+        "dispatch_external_cpu_fraction_p95": 0.5002857588195563,
+        "dispatch_external_cpu_regime": "cpu_external_heavy",
+        "dispatch_sample_count": 5,
+        "measurement_protocol": "dispatch_multisample_and_run_window_v3",
+        "node": "node002",
+        "ready": true,
+        "returncode": 0,
+        "stderr_tail": ""
+      },
+      "expected_regime": "cpu_external_heavy",
+      "external_cpu_bucket": "external_c65p",
+      "external_cpu_core_equiv": 96.03981723008621,
+      "launched": true,
+      "load_class": "controlled_half_96",
+      "measurement_valid": true,
+      "node": "node002",
+      "observed_external_load": 95.97009542860962,
+      "observed_resource_state": {
+        "external_cpu_core_equiv": 96.03981723008621,
+        "load1_end": 28.54,
+        "load1_start": 19.91,
+        "load5_end": 18.42,
+        "load5_start": 16.46,
+        "logical_cpus": 192,
+        "measurement_wall_s": 10.212223945884034,
+        "own_cpu_core_equiv": 3.330322580098481,
+        "own_cpu_s": 34.010000000000005,
+        "schema_version": 1,
+        "system_busy_core_equiv": 99.3701398101847,
+        "system_busy_fraction": 0.5175528115113787,
+        "workers": 4
+      },
+      "probe_result": {
+        "completion_model_ready_count": 1,
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0
+        ],
+        "node": "node002",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 1,
+        "run_id": "cpu_controlled_resident_worker_20260727_repair_r12_node002_w4_w16_r12_node002_controlled_half_96_w4_r12",
+        "stable_rate_ready_count": 1,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/cpu_controlled_resident_worker_20260727_repair_r12_node002_w4_w16_r12_node002_controlled_half_96_w4_r12/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "replicate": 12,
+      "resident_workers": 96,
+      "resource_state": "half_loaded",
+      "resource_telemetry_ready": true,
+      "run_id": "cpu_controlled_resident_worker_20260727_repair_r12_node002_w4_w16_r12_node002_controlled_half_96_w4_r12",
+      "status": "READY",
+      "steps": 160,
+      "storage_class": "shared_home",
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/cpu_controlled_resident_worker_20260727_repair_r12_node002_w4_w16_r12_node002_controlled_half_96_w4_r12/reports/profile_1_per_gpu_summary.json",
+      "work_items": 90000,
+      "workers": 4,
+      "workload_key": "cpu_heavy_local_bench",
+      "workload_label": "cpu"
+    },
+    {
+      "cell_id": "controlled_half_96_w16_r12",
+      "checkpoint_bytes": 8388608,
+      "checkpoint_interval": 40,
+      "child_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/cpu_controlled_resident_worker_20260727_repair_r12_node002_w4_w16_r12_node002_controlled_half_96_w16_r12/raw/profile_1_per_gpu/gpu0_0.log",
+      "completion_model": {
+        "amortized_unit_s": 0.08875227263315191,
+        "base_unit_s": 0.08772920747287571,
+        "checkpoint_observed_s": 0.09686035895720124,
+        "child_returncode": 0,
+        "completion_model_ready": true,
+        "completion_unit_s": 0.08875227263315191,
+        "counter_offset": 0,
+        "finalization_after_last_progress_s": 0.050135039957240224,
+        "first_progress_unit": 2,
+        "interval_sample_count": 79,
+        "last_progress_unit": 160,
+        "loop_observed_units": 158,
+        "loop_wall_s": 14.022859076038003,
+        "model_abs_error_s": 1.7763568394002505e-15,
+        "model_relative_error": 1.2346082400279954e-16,
+        "natural_exit": true,
+        "periodic_extra_s": 0.1616442953236401,
+        "phase_durations_s": {
+          "checkpoint": [
+            0.02315039001405239,
+            0.02481445693410933,
+            0.02644343813881278,
+            0.02245207387022674
+          ],
+          "final_save": [
+            0.024547304026782513
+          ],
+          "initialization": [
+            0.00012194295413792133
+          ],
+          "outer_loop": [
+            14.26266441703774
+          ]
+        },
+        "predicted_total_s": 14.388020278885959,
+        "progress_observation_count": 80,
+        "readiness_reason": "ready",
+        "save_observed_s": 0.024547304026782513,
+        "schema_version": 1,
+        "startup_overhead_s": 0.13752161762441356,
+        "startup_to_first_progress_s": 0.3150261628907174,
+        "stopped_on_stable": false,
+        "terminal_overhead_s": 0.050135039957240224,
+        "total_units": 160,
+        "total_wall_s": 14.38802027888596,
+        "unit": "step"
+      },
+      "completion_model_ready": true,
+      "declared_external_load_snapshot": 96.02093981182699,
+      "dispatch_preflight": {
+        "dispatch_external_cpu_fraction": 0.5001090615199323,
+        "dispatch_external_cpu_fraction_p95": 0.5002597132765427,
+        "dispatch_external_cpu_regime": "cpu_external_heavy",
+        "dispatch_sample_count": 5,
+        "measurement_protocol": "dispatch_multisample_and_run_window_v3",
+        "node": "node002",
+        "ready": true,
+        "returncode": 0,
+        "stderr_tail": ""
+      },
+      "expected_regime": "cpu_external_heavy",
+      "external_cpu_bucket": "external_c65p",
+      "external_cpu_core_equiv": 95.80414782278585,
+      "launched": true,
+      "load_class": "controlled_half_96",
+      "measurement_valid": true,
+      "node": "node002",
+      "observed_external_load": 96.02093981182699,
+      "observed_resource_state": {
+        "external_cpu_core_equiv": 95.80414782278585,
+        "load1_end": 49.55,
+        "load1_start": 37.41,
+        "load5_end": 24.17,
+        "load5_start": 20.65,
+        "logical_cpus": 192,
+        "measurement_wall_s": 14.26422993093729,
+        "own_cpu_core_equiv": 11.565293100204531,
+        "own_cpu_s": 164.97,
+        "schema_version": 1,
+        "system_busy_core_equiv": 107.36944092299038,
+        "system_busy_fraction": 0.5592158381405749,
+        "workers": 16
+      },
+      "probe_result": {
+        "completion_model_ready_count": 1,
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0
+        ],
+        "node": "node002",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 1,
+        "run_id": "cpu_controlled_resident_worker_20260727_repair_r12_node002_w4_w16_r12_node002_controlled_half_96_w16_r12",
+        "stable_rate_ready_count": 1,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/cpu_controlled_resident_worker_20260727_repair_r12_node002_w4_w16_r12_node002_controlled_half_96_w16_r12/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "replicate": 12,
+      "resident_workers": 96,
+      "resource_state": "half_loaded",
+      "resource_telemetry_ready": true,
+      "run_id": "cpu_controlled_resident_worker_20260727_repair_r12_node002_w4_w16_r12_node002_controlled_half_96_w16_r12",
+      "status": "READY",
+      "steps": 160,
+      "storage_class": "shared_home",
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/cpu_controlled_resident_worker_20260727_repair_r12_node002_w4_w16_r12_node002_controlled_half_96_w16_r12/reports/profile_1_per_gpu_summary.json",
+      "work_items": 90000,
+      "workers": 16,
+      "workload_key": "cpu_heavy_local_bench",
+      "workload_label": "cpu"
+    }
+  ],
+  "schema_version": 1,
+  "status": "PASS",
+  "tag": "cpu_controlled_resident_worker_20260727_repair_r12_node002_w4_w16"
+}

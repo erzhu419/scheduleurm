@@ -1,43 +1,43 @@
 {
-  "active_production_shadow_task_count": 2,
+  "active_production_shadow_task_count": 1,
   "algorithm": "theorem_maxweight_v1",
-  "candidate_count_total": 14,
+  "candidate_count_total": 7,
   "gate": "production_shadow_theorem_trace",
-  "generated_at": "2026-06-26T21:37:35+0800",
+  "generated_at": "2026-07-08T08:15:19+0800",
   "hard_rule_mode": "",
   "launched_dispatch_claim": false,
   "node_summary_after_shadow": [
     {
       "alive": true,
-      "free_cpu": 10,
-      "free_ram_mb": 14947,
+      "free_cpu": 14,
+      "free_ram_mb": 20805,
       "gpu_count": 1,
       "name": "local"
     },
     {
       "alive": true,
-      "free_cpu": 11,
-      "free_ram_mb": 508998,
+      "free_cpu": 12,
+      "free_ram_mb": 509091,
       "gpu_count": 2,
       "name": "jtl110gpu"
     },
     {
       "alive": true,
       "free_cpu": 12,
-      "free_ram_mb": 508680,
+      "free_ram_mb": 509026,
       "gpu_count": 2,
       "name": "jtl110gpu2"
     },
     {
       "alive": true,
       "free_cpu": 8,
-      "free_ram_mb": 41572,
+      "free_ram_mb": 55603,
       "gpu_count": 2,
       "name": "jtl311linux"
     },
     {
       "alive": true,
-      "free_cpu": 960,
+      "free_cpu": 1104,
       "free_ram_mb": 1349551,
       "gpu_count": 0,
       "name": "zhengliang-hpc"
@@ -45,92 +45,87 @@
     {
       "alive": true,
       "free_cpu": 64,
-      "free_ram_mb": 233006,
+      "free_ram_mb": 236639,
       "gpu_count": 4,
-      "name": "node007-direct"
+      "name": "node007"
     },
     {
       "alive": true,
       "free_cpu": 128,
-      "free_ram_mb": 490409,
+      "free_ram_mb": 464699,
       "gpu_count": 0,
       "name": "jtl110cpu"
     },
     {
       "alive": true,
       "free_cpu": 128,
-      "free_ram_mb": 485722,
+      "free_ram_mb": 440081,
       "gpu_count": 0,
       "name": "jtl110cpu2"
     },
     {
       "alive": true,
       "free_cpu": 192,
-      "free_ram_mb": 183770,
+      "free_ram_mb": 153806,
       "gpu_count": 0,
       "name": "node001"
     },
     {
       "alive": true,
       "free_cpu": 192,
-      "free_ram_mb": 180558,
+      "free_ram_mb": 151622,
       "gpu_count": 0,
       "name": "node002"
     },
     {
       "alive": true,
       "free_cpu": 192,
-      "free_ram_mb": 119133,
+      "free_ram_mb": 180678,
       "gpu_count": 0,
       "name": "node003"
     },
     {
       "alive": true,
       "free_cpu": 192,
-      "free_ram_mb": 151184,
+      "free_ram_mb": 157642,
       "gpu_count": 0,
       "name": "node004"
     },
     {
       "alive": true,
       "free_cpu": 192,
-      "free_ram_mb": 155221,
+      "free_ram_mb": 63411,
       "gpu_count": 0,
       "name": "node005"
     },
     {
       "alive": true,
       "free_cpu": 192,
-      "free_ram_mb": 154627,
+      "free_ram_mb": 133124,
       "gpu_count": 0,
       "name": "node006"
     }
   ],
   "non_theorem_blocker_counts": {
-    "scheduler_sort_key_minimization": 2
+    "scheduler_sort_key_minimization": 1
   },
   "oracle_bridge": {
-    "blocker_count": 2,
+    "blocker_count": 1,
     "blockers": [
       {
         "detail": "scheduler_sort_key_minimization",
         "reason": "score_semantics_not_robust_maxweight_lower_service",
-        "slot_id": "slot:shadow-production-0000-t13688:1782481054.5011523:1782481054508"
-      },
-      {
-        "detail": "scheduler_sort_key_minimization",
-        "reason": "score_semantics_not_robust_maxweight_lower_service",
-        "slot_id": "slot:shadow-production-0001-t13691:1782481054.5022075:1782481055084"
+        "slot_id": "slot:shadow-production-0000-t20985:1783469719.1940935:1783469719203"
       }
     ],
     "converted_slot_count": 0,
     "interpretation": "Trace cannot certify alpha0/alpha1 until each slot has robust MaxWeight lower-service semantics.",
     "status": "NOT_THEOREM_TRACE",
-    "trace_slot_count": 2,
+    "trace_slot_count": 1,
     "usable_for_theorem": false
   },
   "pass": true,
-  "placed_count": 2,
+  "placed_count": 1,
   "placements": [
     {
       "admitted": true,
@@ -140,23 +135,10 @@
         "node": "local"
       },
       "project": "scheduleurm",
-      "shadow_task_id": "shadow-production-0000-t13688",
-      "signature": "scheduleurm/auto-adopted/p3345274",
+      "shadow_task_id": "shadow-production-0000-t20985",
+      "signature": "scheduleurm/auto-adopted/p975262",
       "source_status": "running",
-      "source_task_id": "t13688"
-    },
-    {
-      "admitted": true,
-      "inferred_workload_key": "scheduleurm_control_plane_completed_history",
-      "placement": {
-        "gpu_idx": null,
-        "node": "local"
-      },
-      "project": "scheduleurm",
-      "shadow_task_id": "shadow-production-0001-t13691",
-      "signature": "scheduleurm/auto-adopted/p3352603",
-      "source_status": "running",
-      "source_task_id": "t13691"
+      "source_task_id": "t20985"
     }
   ],
   "production_shadow_trace_closed": false,
@@ -174,7 +156,7 @@
     "usable_for_theorem": false
   },
   "trace_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/production_organic_readiness_shadow_trace_20260614.jsonl",
-  "trace_slot_count": 2,
+  "trace_slot_count": 1,
   "uncertified_mode": "block",
   "unplaced_count": 0
 }

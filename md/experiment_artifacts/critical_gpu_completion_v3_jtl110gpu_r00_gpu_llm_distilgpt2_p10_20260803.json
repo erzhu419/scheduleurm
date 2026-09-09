@@ -1,0 +1,2039 @@
+{
+  "algorithm_path": "controlled_theorem_measurement_direct",
+  "allow_launch": true,
+  "campaign_id": "critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803",
+  "capacity_boundary_count": 1,
+  "coordinated_post_warmup_start_required_for_builtin_gpu_workloads": true,
+  "environment_gate": {
+    "ready": true,
+    "reason": "",
+    "returncode": 0,
+    "stderr_tail": "",
+    "stdout_tail": "ENV_READY\nRESAC_READY\n"
+  },
+  "final_measurement_code_manifest": {
+    "algorithm": "sha256(path\\0content\\0)",
+    "files": [
+      {
+        "path": "algorithm/experiments/critical_gpu_completion_campaign.py",
+        "sha256": "f50f49bff3d16a056f69e6f93c267d43396b2d825107543934b1041f2d73ee3c"
+      },
+      {
+        "path": "algorithm/experiments/critical_gpu_completion_series.py",
+        "sha256": "9cfe671ccbfa886a073992cec0233eb2cc18fc4ca9dd3235596b4d27a15723d0"
+      },
+      {
+        "path": "algorithm/experiments/gpu_progress_benchmark.py",
+        "sha256": "b6920fa34f025c78f12995707ea5407e7c45c07a97f2a2a82358bd7bdd98f0cb"
+      },
+      {
+        "path": "algorithm/experiments/progress_units.py",
+        "sha256": "293722b931966fac3433dd1b0bdf1a43083c2acef8eba68c2a3307b61bbd4c60"
+      },
+      {
+        "path": "algorithm/experiments/progress_wrapper.py",
+        "sha256": "b26dc5bb3e63974cc9ccd19d3c98108cc8124051ecfc86c9516e0e1385318dfa"
+      },
+      {
+        "path": "algorithm/experiments/remote_workload_selected_profile_probe.py",
+        "sha256": "bb45c01a7c06237e2f3ae1f5a33d31ff8e07cd0ccc00cde8e102cd01fbd328a5"
+      },
+      {
+        "path": "algorithm/experiments/templates/gpu_matmul_progress.cmd.tpl",
+        "sha256": "f9b1299d279b100b84ee99674f374ca4637873aed005f86bbca880498e844fed"
+      },
+      {
+        "path": "algorithm/experiments/templates/resac_env_real_venv.cmd.tpl",
+        "sha256": "a003a5c34659fc89d3dabc034bb1505e46b1918ad73e4c2a81b143e9dfc59371"
+      },
+      {
+        "path": "algorithm/experiments/templates/torch_cnn_resnet50.cmd.tpl",
+        "sha256": "f6036c685e4c21f665dae88aeee6ff116b196c07ed51c27168a507accbfe797f"
+      },
+      {
+        "path": "algorithm/experiments/templates/torch_llm_distilgpt2.cmd.tpl",
+        "sha256": "bef2f412fce12dc8a0b636317f7a720aa5da45aab75d38ff342c1d282c4f2c1f"
+      },
+      {
+        "path": "algorithm/experiments/torch_cnn_progress_benchmark.py",
+        "sha256": "b6f54d5e7fae703faf1ac501539b95885cfe7c1ad41432d221a7145577ed0a1f"
+      },
+      {
+        "path": "algorithm/experiments/torch_llm_progress_benchmark.py",
+        "sha256": "8f15e2afd0e1a53fc2bf1c4453398bc6a1964ac96e5d13d67709782925f74aaa"
+      }
+    ],
+    "sha256": "ce4b1ebf3244e9c3c1e87ec1f8931ed0b1cb4fdc8bf1f714d4dc39e6ca900bba"
+  },
+  "gate": "critical_gpu_completion_campaign",
+  "legacy_scheduler_limits_bypassed": true,
+  "measurement_code_manifest": {
+    "algorithm": "sha256(path\\0content\\0)",
+    "files": [
+      {
+        "path": "algorithm/experiments/critical_gpu_completion_campaign.py",
+        "sha256": "f50f49bff3d16a056f69e6f93c267d43396b2d825107543934b1041f2d73ee3c"
+      },
+      {
+        "path": "algorithm/experiments/critical_gpu_completion_series.py",
+        "sha256": "9cfe671ccbfa886a073992cec0233eb2cc18fc4ca9dd3235596b4d27a15723d0"
+      },
+      {
+        "path": "algorithm/experiments/gpu_progress_benchmark.py",
+        "sha256": "b6920fa34f025c78f12995707ea5407e7c45c07a97f2a2a82358bd7bdd98f0cb"
+      },
+      {
+        "path": "algorithm/experiments/progress_units.py",
+        "sha256": "293722b931966fac3433dd1b0bdf1a43083c2acef8eba68c2a3307b61bbd4c60"
+      },
+      {
+        "path": "algorithm/experiments/progress_wrapper.py",
+        "sha256": "b26dc5bb3e63974cc9ccd19d3c98108cc8124051ecfc86c9516e0e1385318dfa"
+      },
+      {
+        "path": "algorithm/experiments/remote_workload_selected_profile_probe.py",
+        "sha256": "bb45c01a7c06237e2f3ae1f5a33d31ff8e07cd0ccc00cde8e102cd01fbd328a5"
+      },
+      {
+        "path": "algorithm/experiments/templates/gpu_matmul_progress.cmd.tpl",
+        "sha256": "f9b1299d279b100b84ee99674f374ca4637873aed005f86bbca880498e844fed"
+      },
+      {
+        "path": "algorithm/experiments/templates/resac_env_real_venv.cmd.tpl",
+        "sha256": "a003a5c34659fc89d3dabc034bb1505e46b1918ad73e4c2a81b143e9dfc59371"
+      },
+      {
+        "path": "algorithm/experiments/templates/torch_cnn_resnet50.cmd.tpl",
+        "sha256": "f6036c685e4c21f665dae88aeee6ff116b196c07ed51c27168a507accbfe797f"
+      },
+      {
+        "path": "algorithm/experiments/templates/torch_llm_distilgpt2.cmd.tpl",
+        "sha256": "bef2f412fce12dc8a0b636317f7a720aa5da45aab75d38ff342c1d282c4f2c1f"
+      },
+      {
+        "path": "algorithm/experiments/torch_cnn_progress_benchmark.py",
+        "sha256": "b6f54d5e7fae703faf1ac501539b95885cfe7c1ad41432d221a7145577ed0a1f"
+      },
+      {
+        "path": "algorithm/experiments/torch_llm_progress_benchmark.py",
+        "sha256": "8f15e2afd0e1a53fc2bf1c4453398bc6a1964ac96e5d13d67709782925f74aaa"
+      }
+    ],
+    "sha256": "ce4b1ebf3244e9c3c1e87ec1f8931ed0b1cb4fdc8bf1f714d4dc39e6ca900bba"
+  },
+  "measurement_code_unchanged": true,
+  "measurement_protocol": "critical_gpu_phase_completion_v3",
+  "natural_completion_required": true,
+  "node": "jtl110gpu",
+  "node_spec": {
+    "bapr_python": "/home/erzhu419/.venvs/resac-jax-gpu1-0438/bin/python",
+    "gpus": [
+      0,
+      1
+    ],
+    "hardware_class": "NVIDIA_RTX_3080Ti_12GB",
+    "hf_cache_dir": "/home/erzhu419/.cache/huggingface/hub",
+    "node": "jtl110gpu",
+    "node_bucket": "gpu_3080ti_12gb_dual",
+    "output_root": "/tmp/scheduleurm_critical_gpu_completion",
+    "role": "representative",
+    "torch_python": "/home/erzhu419/.venvs/scheduleurm-torch-bench/bin/python",
+    "workload_pythonpath": "/home/erzhu419/.claude/scheduler/runtime_patches:/home/erzhu419/mine_code/RE-SAC"
+  },
+  "pass": true,
+  "planned_cells": [
+    {
+      "cell_id": "jtl110gpu_gpu_llm_distilgpt2_p10_r00",
+      "gpus": [
+        0,
+        1
+      ],
+      "hardware_class": "NVIDIA_RTX_3080Ti_12GB",
+      "max_iters": 120,
+      "node": "jtl110gpu",
+      "node_bucket": "gpu_3080ti_12gb_dual",
+      "node_role": "representative",
+      "profile": 10,
+      "profile_axis": "tasks_per_gpu",
+      "quadrant": "q01",
+      "split_role": "smoke_excluded",
+      "timeout_s": 5400,
+      "total_task_count": 20,
+      "wave": 0,
+      "workload_env": "distilgpt2_forward_fp16_b2_s128",
+      "workload_key": "gpu_llm_distilgpt2"
+    }
+  ],
+  "pre_registered_split": {
+    "calibration": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "holdout": 13,
+    "smoke_excluded": 0,
+    "training": [
+      1,
+      2,
+      3
+    ]
+  },
+  "ready_row_count": 0,
+  "real_checkpoint_allocation_required": true,
+  "rows": [
+    {
+      "artifact_audit": {
+        "allocated_file_count": 36,
+        "file_count": 36,
+        "files": [
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_10/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_10_checkpoint_60.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320032,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_10/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_10_checkpoint_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_10/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_10_final_save_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_0/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_0_checkpoint_60.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_0/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_0_checkpoint_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_0/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_0_final_save_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_4/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_4_checkpoint_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_4/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_4_final_save_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_4/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_4_checkpoint_60.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_1/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_1_checkpoint_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_1/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_1_final_save_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_1/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_1_checkpoint_60.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_14/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_14_checkpoint_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_14/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_14_checkpoint_60.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_14/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_14_final_save_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_11/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_11_checkpoint_60.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_11/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_11_checkpoint_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_11/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_11_final_save_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_2/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_2_final_save_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_2/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_2_checkpoint_60.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_2/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_2_checkpoint_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_6/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_6_final_save_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_6/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_6_checkpoint_60.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_6/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_6_checkpoint_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_12/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_12_checkpoint_60.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320032,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_12/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_12_final_save_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_12/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_12_checkpoint_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320032,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_13/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_13_final_save_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_13/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_13_checkpoint_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_13/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_13_checkpoint_60.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_3/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_3_checkpoint_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_3/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_3_checkpoint_60.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320032,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_3/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_3_final_save_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320032,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_15/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_15_checkpoint_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_15/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_15_final_save_120.pt",
+            "size_bytes": 163853170
+          },
+          {
+            "allocated_blocks_512": 320040,
+            "path": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/checkpoints/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_15/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_15_checkpoint_60.pt",
+            "size_bytes": 163853170
+          }
+        ],
+        "ready": true,
+        "returncode": 0,
+        "stderr_tail": "",
+        "total_allocated_bytes": 5898956800,
+        "total_size_bytes": 5898714120
+      },
+      "backend_audit": {
+        "accepted_task_count": 16,
+        "expected_task_count": 20,
+        "markers": [
+          "BENCH_START backend=torch_transformers device='NVIDIA GeForce RTX 3080 Ti' model_id=distilgpt2 mode=forward batch=2 seq_len=128 dtype=float16 label=critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_0",
+          "BENCH_START backend=torch_transformers device='NVIDIA GeForce RTX 3080 Ti' model_id=distilgpt2 mode=forward batch=2 seq_len=128 dtype=float16 label=critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_1",
+          "BENCH_START backend=torch_transformers device='NVIDIA GeForce RTX 3080 Ti' model_id=distilgpt2 mode=forward batch=2 seq_len=128 dtype=float16 label=critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_2",
+          "BENCH_START backend=torch_transformers device='NVIDIA GeForce RTX 3080 Ti' model_id=distilgpt2 mode=forward batch=2 seq_len=128 dtype=float16 label=critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_3",
+          "BENCH_START backend=torch_transformers device='NVIDIA GeForce RTX 3080 Ti' model_id=distilgpt2 mode=forward batch=2 seq_len=128 dtype=float16 label=critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_4",
+          "BENCH_START backend=torch_transformers device='NVIDIA GeForce RTX 3080 Ti' model_id=distilgpt2 mode=forward batch=2 seq_len=128 dtype=float16 label=critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_5",
+          "BENCH_START backend=torch_transformers device='NVIDIA GeForce RTX 3080 Ti' model_id=distilgpt2 mode=forward batch=2 seq_len=128 dtype=float16 label=critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_6",
+          "BENCH_START backend=torch_transformers device='NVIDIA GeForce RTX 3080 Ti' model_id=distilgpt2 mode=forward batch=2 seq_len=128 dtype=float16 label=critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_7",
+          "FORBIDDEN_FALLBACK",
+          "FORBIDDEN_FALLBACK",
+          "BENCH_START backend=torch_transformers device='NVIDIA GeForce RTX 3080 Ti' model_id=distilgpt2 mode=forward batch=2 seq_len=128 dtype=float16 label=critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_10",
+          "BENCH_START backend=torch_transformers device='NVIDIA GeForce RTX 3080 Ti' model_id=distilgpt2 mode=forward batch=2 seq_len=128 dtype=float16 label=critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_11",
+          "BENCH_START backend=torch_transformers device='NVIDIA GeForce RTX 3080 Ti' model_id=distilgpt2 mode=forward batch=2 seq_len=128 dtype=float16 label=critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_12",
+          "BENCH_START backend=torch_transformers device='NVIDIA GeForce RTX 3080 Ti' model_id=distilgpt2 mode=forward batch=2 seq_len=128 dtype=float16 label=critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_13",
+          "BENCH_START backend=torch_transformers device='NVIDIA GeForce RTX 3080 Ti' model_id=distilgpt2 mode=forward batch=2 seq_len=128 dtype=float16 label=critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_14",
+          "BENCH_START backend=torch_transformers device='NVIDIA GeForce RTX 3080 Ti' model_id=distilgpt2 mode=forward batch=2 seq_len=128 dtype=float16 label=critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_15",
+          "BENCH_START backend=torch_transformers device='NVIDIA GeForce RTX 3080 Ti' model_id=distilgpt2 mode=forward batch=2 seq_len=128 dtype=float16 label=critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_16",
+          "BENCH_START backend=torch_transformers device='NVIDIA GeForce RTX 3080 Ti' model_id=distilgpt2 mode=forward batch=2 seq_len=128 dtype=float16 label=critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_17",
+          "FORBIDDEN_FALLBACK",
+          "FORBIDDEN_FALLBACK"
+        ],
+        "ready": false
+      },
+      "capacity_boundary": true,
+      "cell_id": "jtl110gpu_gpu_llm_distilgpt2_p10_r00",
+      "checkpoint_allocation_ready": true,
+      "completion_audit": {
+        "all_completion_models_ready": false,
+        "all_natural_exit": false,
+        "checkpoint_or_finalization_observed": false,
+        "ready": false,
+        "task_count": 20
+      },
+      "coordination_audit": {
+        "children": [
+          {
+            "end_marker": true,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu0_0.log",
+            "start_marker": true
+          },
+          {
+            "end_marker": true,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu0_1.log",
+            "start_marker": true
+          },
+          {
+            "end_marker": true,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu0_2.log",
+            "start_marker": true
+          },
+          {
+            "end_marker": true,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu0_3.log",
+            "start_marker": true
+          },
+          {
+            "end_marker": true,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu0_4.log",
+            "start_marker": true
+          },
+          {
+            "end_marker": false,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu0_5.log",
+            "start_marker": false
+          },
+          {
+            "end_marker": true,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu0_6.log",
+            "start_marker": true
+          },
+          {
+            "end_marker": false,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu0_7.log",
+            "start_marker": false
+          },
+          {
+            "end_marker": false,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu0_8.log",
+            "start_marker": false
+          },
+          {
+            "end_marker": false,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu0_9.log",
+            "start_marker": false
+          },
+          {
+            "end_marker": true,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu1_0.log",
+            "start_marker": true
+          },
+          {
+            "end_marker": true,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu1_1.log",
+            "start_marker": true
+          },
+          {
+            "end_marker": true,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu1_2.log",
+            "start_marker": true
+          },
+          {
+            "end_marker": true,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu1_3.log",
+            "start_marker": true
+          },
+          {
+            "end_marker": true,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu1_4.log",
+            "start_marker": true
+          },
+          {
+            "end_marker": true,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu1_5.log",
+            "start_marker": true
+          },
+          {
+            "end_marker": false,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu1_6.log",
+            "start_marker": false
+          },
+          {
+            "end_marker": false,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu1_7.log",
+            "start_marker": false
+          },
+          {
+            "end_marker": false,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu1_8.log",
+            "start_marker": false
+          },
+          {
+            "end_marker": false,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu1_9.log",
+            "start_marker": false
+          }
+        ],
+        "end_marker_count": 12,
+        "expected_task_count": 20,
+        "observed_task_count": 20,
+        "ready": false,
+        "required": true,
+        "start_marker_count": 12
+      },
+      "elapsed_wall_s": 36.59065079689026,
+      "gpus": [
+        0,
+        1
+      ],
+      "hardware_class": "NVIDIA_RTX_3080Ti_12GB",
+      "max_iters": 120,
+      "measurement_code_identity_ready": true,
+      "measurement_code_sha256": "ce4b1ebf3244e9c3c1e87ec1f8931ed0b1cb4fdc8bf1f714d4dc39e6ca900bba",
+      "measurement_protocol": "critical_gpu_phase_completion_v3",
+      "node": "jtl110gpu",
+      "node_bucket": "gpu_3080ti_12gb_dual",
+      "node_role": "representative",
+      "preflight": {
+        "compute_process_rows": [],
+        "idle_memory_limit_mb": 512,
+        "idle_util_limit_pct": 5,
+        "ready": true,
+        "returncode": 0,
+        "selected_gpus": [
+          {
+            "index": 0,
+            "name": "NVIDIA GeForce RTX 3080 Ti",
+            "total_mb": 12288,
+            "used_mb": 15,
+            "util_pct": 0
+          },
+          {
+            "index": 1,
+            "name": "NVIDIA GeForce RTX 3080 Ti",
+            "total_mb": 12288,
+            "used_mb": 428,
+            "util_pct": 0
+          }
+        ],
+        "stderr_tail": ""
+      },
+      "probe_result": {
+        "completion_model_ready_count": 12,
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1
+        ],
+        "node": "jtl110gpu",
+        "pass": false,
+        "profiles": [
+          10
+        ],
+        "rate_count": 12,
+        "run_id": "critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244",
+        "stable_rate_ready_count": 12,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/reports/profile_10_per_gpu_summary.json"
+        ]
+      },
+      "profile": 10,
+      "profile_axis": "tasks_per_gpu",
+      "quadrant": "q01",
+      "ready": false,
+      "remote_cleanup": {
+        "ready": true,
+        "returncode": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "remote_output_root": "/tmp/scheduleurm_critical_gpu_completion/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244",
+      "run_id": "critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244",
+      "split_role": "smoke_excluded",
+      "status": "CAPACITY_BOUNDARY",
+      "summary": {
+        "aggregate_active_rate_unit_s": 745.2400000000001,
+        "aggregate_stable_rate_unit_s": 733.7813785999999,
+        "all_completion_models_ready": false,
+        "all_stable_rate_ready": false,
+        "blocked_count": 0,
+        "capacity_boundary": false,
+        "completion_model_count": 20,
+        "completion_model_ready_count": 12,
+        "coordinated_profile_launch": true,
+        "elapsed_wall_s": 28.378270626068115,
+        "eviction_count": 0,
+        "expected_per_gpu_running": {
+          "0": 10,
+          "1": 10
+        },
+        "gpus": [
+          0,
+          1
+        ],
+        "max_iters": 120,
+        "mean_active_rate_unit_s": 62.10333333333333,
+        "mean_stable_rate_unit_s": 61.148448216666665,
+        "measurement_aggregate_rate_unit_s_median": 745.2400000000001,
+        "measurement_valid": false,
+        "min_rate_samples": 12,
+        "node": "jtl110gpu",
+        "per_gpu_running": {
+          "0": 6,
+          "1": 6
+        },
+        "phase": "profile_10_per_gpu",
+        "placement_issues": [
+          "actual per-GPU running {'0': 6, '1': 6} != expected {'0': 10, '1': 10}"
+        ],
+        "placement_valid": false,
+        "probe": "remote_workload_selected_profile_probe",
+        "profile": 10,
+        "rate_units": [
+          "step"
+        ],
+        "rates_unit_s": [
+          56.69,
+          56.81,
+          56.89,
+          58.46,
+          57.35,
+          57.23,
+          83.15,
+          56.89,
+          65.22,
+          64.84,
+          59.33,
+          72.38
+        ],
+        "require_completion_model": true,
+        "require_stable_rate": true,
+        "returncode_acceptance_rule": "strict_zero_or_stable_required_rate",
+        "returncode_accepted_count": 12,
+        "returncode_valid_count": 12,
+        "rows": [
+          {
+            "completion_model": {
+              "amortized_unit_s": 0.08802394399147791,
+              "base_unit_s": 0.007556023588404059,
+              "checkpoint_observed_s": 1.2103498160140589,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 0.08802394399147791,
+              "counter_offset": 0,
+              "finalization_after_last_progress_s": 1.7074105099309236,
+              "first_progress_unit": 0,
+              "interval_sample_count": 24,
+              "last_progress_unit": 120,
+              "loop_observed_units": 120,
+              "loop_wall_s": 10.56287327897735,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 9.656150448368862,
+              "phase_durations_s": {
+                "checkpoint": [
+                  0.7009662450291216,
+                  0.5093835709849373
+                ],
+                "coordination_barrier": [
+                  4.6678347759880126
+                ],
+                "final_save": [
+                  0.48776617203839123
+                ],
+                "initialization": [
+                  10.249403034918942
+                ],
+                "outer_loop": [
+                  2.1179914110107347
+                ],
+                "warmup": [
+                  1.9763041330734268
+                ]
+              },
+              "predicted_total_s": 20.766819322947413,
+              "progress_observation_count": 25,
+              "readiness_reason": "ready",
+              "save_observed_s": 0.48776617203839123,
+              "schema_version": 1,
+              "startup_overhead_s": 8.49653553403914,
+              "startup_to_first_progress_s": 8.49653553403914,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 1.7074105099309236,
+              "total_units": 120,
+              "total_wall_s": 20.766819322947413,
+              "unit": "step"
+            },
+            "completion_model_ready": true,
+            "global_index": 0,
+            "gpu": 0,
+            "idx": 0,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu0_0.log",
+            "rate": 56.69,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_0",
+            "seed": 830000,
+            "stable_cv": 0.0354215682,
+            "stable_last_two_relative_delta": 0.0420379571,
+            "stable_mean_rate": 55.9629131,
+            "stable_rate": 58.3660759,
+            "stable_rate_ready": true,
+            "stable_samples": 13,
+            "stable_tail_rates": [
+              53.5111951,
+              56.0114682,
+              58.3660759
+            ],
+            "unit": "step"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 0.08898488980000062,
+              "base_unit_s": 0.008178586303256453,
+              "checkpoint_observed_s": 1.1606698350515217,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 0.08898488980000062,
+              "counter_offset": 0,
+              "finalization_after_last_progress_s": 1.825655274093151,
+              "first_progress_unit": 0,
+              "interval_sample_count": 24,
+              "last_progress_unit": 120,
+              "loop_observed_units": 120,
+              "loop_wall_s": 10.678186776000075,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 9.6967564196093,
+              "phase_durations_s": {
+                "checkpoint": [
+                  0.6790083410451189,
+                  0.4816614940064028
+                ],
+                "coordination_barrier": [
+                  4.516801699064672
+                ],
+                "final_save": [
+                  0.49405864905565977
+                ],
+                "initialization": [
+                  9.754023800021969
+                ],
+                "outer_loop": [
+                  2.113640428055078
+                ],
+                "warmup": [
+                  1.8725659309420735
+                ]
+              },
+              "predicted_total_s": 20.130195908015594,
+              "progress_observation_count": 25,
+              "readiness_reason": "ready",
+              "save_observed_s": 0.49405864905565977,
+              "schema_version": 1,
+              "startup_overhead_s": 7.626353857922368,
+              "startup_to_first_progress_s": 7.626353857922368,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 1.825655274093151,
+              "total_units": 120,
+              "total_wall_s": 20.130195908015594,
+              "unit": "step"
+            },
+            "completion_model_ready": true,
+            "global_index": 1,
+            "gpu": 0,
+            "idx": 1,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu0_1.log",
+            "rate": 56.81,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_1",
+            "seed": 830001,
+            "stable_cv": 0.0309270747,
+            "stable_last_two_relative_delta": 0.0364851018,
+            "stable_mean_rate": 55.1980926,
+            "stable_rate": 57.2635583,
+            "stable_rate_ready": true,
+            "stable_samples": 13,
+            "stable_tail_rates": [
+              53.082884,
+              55.2478354,
+              57.2635583
+            ],
+            "unit": "step"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 0.07865713061667824,
+              "base_unit_s": 0.007566224900074303,
+              "checkpoint_observed_s": 1.2066599179524928,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 0.07865713061667824,
+              "counter_offset": 0,
+              "finalization_after_last_progress_s": 1.7571372360689566,
+              "first_progress_unit": 0,
+              "interval_sample_count": 24,
+              "last_progress_unit": 120,
+              "loop_observed_units": 120,
+              "loop_wall_s": 9.438855674001388,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 8.530908685992472,
+              "phase_durations_s": {
+                "checkpoint": [
+                  0.6951452839421108,
+                  0.511514634010382
+                ],
+                "coordination_barrier": [
+                  3.3618554490385577
+                ],
+                "final_save": [
+                  0.48756205092649907
+                ],
+                "initialization": [
+                  9.900032373028807
+                ],
+                "outer_loop": [
+                  2.1107496349141
+                ],
+                "warmup": [
+                  2.133803877979517
+                ]
+              },
+              "predicted_total_s": 19.31509048200678,
+              "progress_observation_count": 25,
+              "readiness_reason": "ready",
+              "save_observed_s": 0.48756205092649907,
+              "schema_version": 1,
+              "startup_overhead_s": 8.119097571936436,
+              "startup_to_first_progress_s": 8.119097571936436,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 1.7571372360689566,
+              "total_units": 120,
+              "total_wall_s": 19.31509048200678,
+              "unit": "step"
+            },
+            "completion_model_ready": true,
+            "global_index": 2,
+            "gpu": 0,
+            "idx": 2,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu0_2.log",
+            "rate": 56.89,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_2",
+            "seed": 830002,
+            "stable_cv": 0.0353030032,
+            "stable_last_two_relative_delta": 0.0418876713,
+            "stable_mean_rate": 56.2458842,
+            "stable_rate": 58.6529332,
+            "stable_rate_ready": true,
+            "stable_samples": 13,
+            "stable_tail_rates": [
+              53.7898474,
+              56.2948721,
+              58.6529332
+            ],
+            "unit": "step"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 0.05981300222532203,
+              "base_unit_s": 0.007485828304197639,
+              "checkpoint_observed_s": 1.1912612860323861,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 0.05981300222532203,
+              "counter_offset": 0,
+              "finalization_after_last_progress_s": 1.3544955339748412,
+              "first_progress_unit": 0,
+              "interval_sample_count": 24,
+              "last_progress_unit": 120,
+              "loop_observed_units": 120,
+              "loop_wall_s": 7.177560267038643,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 6.279260870534927,
+              "phase_durations_s": {
+                "checkpoint": [
+                  0.6770774819888175,
+                  0.5141838040435687
+                ],
+                "coordination_barrier": [
+                  1.5560248189140111
+                ],
+                "final_save": [
+                  0.3011917999247089
+                ],
+                "initialization": [
+                  11.488278885022737
+                ],
+                "outer_loop": [
+                  2.0537541279336438
+                ],
+                "warmup": [
+                  1.5913494609994814
+                ]
+              },
+              "predicted_total_s": 18.092676375992596,
+              "progress_observation_count": 25,
+              "readiness_reason": "ready",
+              "save_observed_s": 0.3011917999247089,
+              "schema_version": 1,
+              "startup_overhead_s": 9.560620574979112,
+              "startup_to_first_progress_s": 9.560620574979112,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 1.3544955339748412,
+              "total_units": 120,
+              "total_wall_s": 18.092676375992596,
+              "unit": "step"
+            },
+            "completion_model_ready": true,
+            "global_index": 3,
+            "gpu": 0,
+            "idx": 3,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu0_3.log",
+            "rate": 58.46,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_3",
+            "seed": 830003,
+            "stable_cv": 0.0418297506,
+            "stable_last_two_relative_delta": 0.0419642374,
+            "stable_mean_rate": 58.9619862,
+            "stable_rate": 61.7954918,
+            "stable_rate_ready": true,
+            "stable_samples": 13,
+            "stable_tail_rates": [
+              55.7837368,
+              59.3067301,
+              61.7954918
+            ],
+            "unit": "step"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 0.0598797498998465,
+              "base_unit_s": 0.007891566900070757,
+              "checkpoint_observed_s": 1.1796962970402092,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 0.0598797498998465,
+              "counter_offset": 0,
+              "finalization_after_last_progress_s": 1.6119229630567133,
+              "first_progress_unit": 0,
+              "interval_sample_count": 24,
+              "last_progress_unit": 120,
+              "loop_observed_units": 120,
+              "loop_wall_s": 7.18556998798158,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 6.238581959973089,
+              "phase_durations_s": {
+                "checkpoint": [
+                  0.6867298790020868,
+                  0.49296641803812236
+                ],
+                "coordination_barrier": [
+                  1.0542919680010527
+                ],
+                "final_save": [
+                  0.48850745195522904
+                ],
+                "initialization": [
+                  10.838995871017687
+                ],
+                "outer_loop": [
+                  2.0931714290054515
+                ],
+                "warmup": [
+                  2.0171220649499446
+                ]
+              },
+              "predicted_total_s": 17.662170352996327,
+              "progress_observation_count": 25,
+              "readiness_reason": "ready",
+              "save_observed_s": 0.48850745195522904,
+              "schema_version": 1,
+              "startup_overhead_s": 8.864677401958033,
+              "startup_to_first_progress_s": 8.864677401958033,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 1.6119229630567133,
+              "total_units": 120,
+              "total_wall_s": 17.662170352996327,
+              "unit": "step"
+            },
+            "completion_model_ready": true,
+            "global_index": 4,
+            "gpu": 0,
+            "idx": 4,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu0_4.log",
+            "rate": 57.35,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_4",
+            "seed": 830004,
+            "stable_cv": 0.0298170985,
+            "stable_last_two_relative_delta": 0.0359491128,
+            "stable_mean_rate": 56.7977788,
+            "stable_rate": 58.8613609,
+            "stable_rate_ready": true,
+            "stable_samples": 13,
+            "stable_tail_rates": [
+              54.7131993,
+              56.8187763,
+              58.8613609
+            ],
+            "unit": "step"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 0.0,
+              "base_unit_s": 0.0,
+              "checkpoint_observed_s": 0,
+              "child_returncode": 1,
+              "completion_model_ready": false,
+              "completion_unit_s": 0.0,
+              "counter_offset": 0,
+              "finalization_after_last_progress_s": 0.0,
+              "first_progress_unit": 0,
+              "interval_sample_count": 0,
+              "last_progress_unit": 0,
+              "loop_observed_units": 0,
+              "loop_wall_s": 0.0,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": false,
+              "periodic_extra_s": 0.0,
+              "phase_durations_s": {
+                "initialization": [
+                  10.557681582984515
+                ]
+              },
+              "predicted_total_s": 0.0,
+              "progress_observation_count": 1,
+              "readiness_reason": "child_returncode_1",
+              "save_observed_s": 0,
+              "schema_version": 1,
+              "startup_overhead_s": 8.93083614599891,
+              "startup_to_first_progress_s": 8.93083614599891,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 0.0,
+              "total_units": 76,
+              "total_wall_s": 13.265081924968399,
+              "unit": "unit"
+            },
+            "completion_model_ready": false,
+            "global_index": 5,
+            "gpu": 0,
+            "idx": 5,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu0_5.log",
+            "rate": 0.0,
+            "returncode": 1,
+            "run_name": "critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_5",
+            "seed": 830005,
+            "stable_cv": 0.0,
+            "stable_last_two_relative_delta": 0.0,
+            "stable_mean_rate": 0.0,
+            "stable_rate": 0.0,
+            "stable_rate_ready": false,
+            "stable_samples": 0,
+            "stable_tail_rates": [],
+            "unit": "step"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 0.05064768353380108,
+              "base_unit_s": 0.007485826802439988,
+              "checkpoint_observed_s": 1.204572576098144,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 0.05064768353380108,
+              "counter_offset": 0,
+              "finalization_after_last_progress_s": 1.72811310691759,
+              "first_progress_unit": 0,
+              "interval_sample_count": 24,
+              "last_progress_unit": 120,
+              "loop_observed_units": 120,
+              "loop_wall_s": 6.077722024056129,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 5.179422807763331,
+              "phase_durations_s": {
+                "checkpoint": [
+                  0.6893324210541323,
+                  0.5152401550440118
+                ],
+                "coordination_barrier": [
+                  0.5523657450685278
+                ],
+                "final_save": [
+                  0.4881277979584411
+                ],
+                "initialization": [
+                  10.31485975603573
+                ],
+                "outer_loop": [
+                  2.097760665928945
+                ],
+                "warmup": [
+                  1.479416315909475
+                ]
+              },
+              "predicted_total_s": 16.22796104499139,
+              "progress_observation_count": 25,
+              "readiness_reason": "ready",
+              "save_observed_s": 0.4881277979584411,
+              "schema_version": 1,
+              "startup_overhead_s": 8.42212591401767,
+              "startup_to_first_progress_s": 8.42212591401767,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 1.72811310691759,
+              "total_units": 120,
+              "total_wall_s": 16.22796104499139,
+              "unit": "step"
+            },
+            "completion_model_ready": true,
+            "global_index": 6,
+            "gpu": 0,
+            "idx": 6,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu0_6.log",
+            "rate": 57.23,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_6",
+            "seed": 830006,
+            "stable_cv": 0.0345668064,
+            "stable_last_two_relative_delta": 0.040483902,
+            "stable_mean_rate": 57.2602411,
+            "stable_rate": 59.6494823,
+            "stable_rate_ready": true,
+            "stable_samples": 13,
+            "stable_tail_rates": [
+              54.8026441,
+              57.328597,
+              59.6494823
+            ],
+            "unit": "step"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 0.0,
+              "base_unit_s": 0.0,
+              "checkpoint_observed_s": 0,
+              "child_returncode": 1,
+              "completion_model_ready": false,
+              "completion_unit_s": 0.0,
+              "counter_offset": 0,
+              "finalization_after_last_progress_s": 0.0,
+              "first_progress_unit": 0,
+              "interval_sample_count": 0,
+              "last_progress_unit": 0,
+              "loop_observed_units": 0,
+              "loop_wall_s": 0.0,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": false,
+              "periodic_extra_s": 0.0,
+              "phase_durations_s": {
+                "initialization": [
+                  10.286386415944435
+                ]
+              },
+              "predicted_total_s": 0.0,
+              "progress_observation_count": 1,
+              "readiness_reason": "child_returncode_1",
+              "save_observed_s": 0,
+              "schema_version": 1,
+              "startup_overhead_s": 8.414945770986378,
+              "startup_to_first_progress_s": 8.414945770986378,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 0.0,
+              "total_units": 76,
+              "total_wall_s": 12.691956161987036,
+              "unit": "unit"
+            },
+            "completion_model_ready": false,
+            "global_index": 7,
+            "gpu": 0,
+            "idx": 7,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu0_7.log",
+            "rate": 0.0,
+            "returncode": 1,
+            "run_name": "critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_7",
+            "seed": 830007,
+            "stable_cv": 0.0,
+            "stable_last_two_relative_delta": 0.0,
+            "stable_mean_rate": 0.0,
+            "stable_rate": 0.0,
+            "stable_rate_ready": false,
+            "stable_samples": 0,
+            "stable_tail_rates": [],
+            "unit": "step"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 0.0,
+              "base_unit_s": 0.0,
+              "checkpoint_observed_s": 0,
+              "child_returncode": 1,
+              "completion_model_ready": false,
+              "completion_unit_s": 0.0,
+              "counter_offset": 0,
+              "finalization_after_last_progress_s": 0.0,
+              "first_progress_unit": 0,
+              "interval_sample_count": 0,
+              "last_progress_unit": 0,
+              "loop_observed_units": 0,
+              "loop_wall_s": 0.0,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": false,
+              "periodic_extra_s": 0.0,
+              "phase_durations_s": {},
+              "predicted_total_s": 0.0,
+              "progress_observation_count": 1,
+              "readiness_reason": "child_returncode_1",
+              "save_observed_s": 0,
+              "schema_version": 1,
+              "startup_overhead_s": 8.471886245999485,
+              "startup_to_first_progress_s": 8.471886245999485,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 0.0,
+              "total_units": 76,
+              "total_wall_s": 11.13312798005063,
+              "unit": "unit"
+            },
+            "completion_model_ready": false,
+            "global_index": 8,
+            "gpu": 0,
+            "idx": 8,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu0_8.log",
+            "rate": 0.0,
+            "returncode": 1,
+            "run_name": "critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_8",
+            "seed": 830008,
+            "stable_cv": 0.0,
+            "stable_last_two_relative_delta": 0.0,
+            "stable_mean_rate": 0.0,
+            "stable_rate": 0.0,
+            "stable_rate_ready": false,
+            "stable_samples": 0,
+            "stable_tail_rates": [],
+            "unit": "step"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 0.0,
+              "base_unit_s": 0.0,
+              "checkpoint_observed_s": 0,
+              "child_returncode": 1,
+              "completion_model_ready": false,
+              "completion_unit_s": 0.0,
+              "counter_offset": 0,
+              "finalization_after_last_progress_s": 0.0,
+              "first_progress_unit": 0,
+              "interval_sample_count": 0,
+              "last_progress_unit": 0,
+              "loop_observed_units": 0,
+              "loop_wall_s": 0.0,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": false,
+              "periodic_extra_s": 0.0,
+              "phase_durations_s": {},
+              "predicted_total_s": 0.0,
+              "progress_observation_count": 1,
+              "readiness_reason": "child_returncode_1",
+              "save_observed_s": 0,
+              "schema_version": 1,
+              "startup_overhead_s": 8.222049545962363,
+              "startup_to_first_progress_s": 8.222049545962363,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 0.0,
+              "total_units": 76,
+              "total_wall_s": 11.06814259395469,
+              "unit": "unit"
+            },
+            "completion_model_ready": false,
+            "global_index": 9,
+            "gpu": 0,
+            "idx": 9,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu0_9.log",
+            "rate": 0.0,
+            "returncode": 1,
+            "run_name": "critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu0_9",
+            "seed": 830009,
+            "stable_cv": 0.0,
+            "stable_last_two_relative_delta": 0.0,
+            "stable_mean_rate": 0.0,
+            "stable_rate": 0.0,
+            "stable_rate_ready": false,
+            "stable_samples": 0,
+            "stable_tail_rates": [],
+            "unit": "step"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 0.08272667541653694,
+              "base_unit_s": 0.0070884787128306925,
+              "checkpoint_observed_s": 0.7881430090637878,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 0.08272667541653694,
+              "counter_offset": 0,
+              "finalization_after_last_progress_s": 1.492093153996393,
+              "first_progress_unit": 0,
+              "interval_sample_count": 24,
+              "last_progress_unit": 120,
+              "loop_observed_units": 120,
+              "loop_wall_s": 9.927201049984433,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 9.07658360444475,
+              "phase_durations_s": {
+                "checkpoint": [
+                  0.5436185740400106,
+                  0.2445244350237772
+                ],
+                "coordination_barrier": [
+                  4.267545338952914
+                ],
+                "final_save": [
+                  0.47690388502087444
+                ],
+                "initialization": [
+                  10.603953105048276
+                ],
+                "outer_loop": [
+                  1.444223054102622
+                ],
+                "warmup": [
+                  2.0075680429581553
+                ]
+              },
+              "predicted_total_s": 19.866233006934635,
+              "progress_observation_count": 25,
+              "readiness_reason": "ready",
+              "save_observed_s": 0.47690388502087444,
+              "schema_version": 1,
+              "startup_overhead_s": 8.44693880295381,
+              "startup_to_first_progress_s": 8.44693880295381,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 1.492093153996393,
+              "total_units": 120,
+              "total_wall_s": 19.866233006934635,
+              "unit": "step"
+            },
+            "completion_model_ready": true,
+            "global_index": 10,
+            "gpu": 1,
+            "idx": 0,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu1_0.log",
+            "rate": 83.15,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_10",
+            "seed": 830010,
+            "stable_cv": 0.0467152068,
+            "stable_last_two_relative_delta": 0.0564237718,
+            "stable_mean_rate": 68.1147307,
+            "stable_rate": 71.9944872,
+            "stable_rate_ready": true,
+            "stable_samples": 13,
+            "stable_tail_rates": [
+              64.2004555,
+              68.1492495,
+              71.9944872
+            ],
+            "unit": "step"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 0.08624364774150309,
+              "base_unit_s": 0.008210245892405509,
+              "checkpoint_observed_s": 1.2505999450804666,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 0.08624364774150309,
+              "counter_offset": 0,
+              "finalization_after_last_progress_s": 1.654774900060147,
+              "first_progress_unit": 0,
+              "interval_sample_count": 24,
+              "last_progress_unit": 120,
+              "loop_observed_units": 120,
+              "loop_wall_s": 10.34923772898037,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 9.364008221891709,
+              "phase_durations_s": {
+                "checkpoint": [
+                  0.6949256310472265,
+                  0.5556743140332401
+                ],
+                "coordination_barrier": [
+                  4.766824710997753
+                ],
+                "final_save": [
+                  0.49405186192598194
+                ],
+                "initialization": [
+                  9.648039418971166
+                ],
+                "outer_loop": [
+                  2.1102128931088373
+                ],
+                "warmup": [
+                  1.7179314979584888
+                ]
+              },
+              "predicted_total_s": 19.94496482401155,
+              "progress_observation_count": 25,
+              "readiness_reason": "ready",
+              "save_observed_s": 0.49405186192598194,
+              "schema_version": 1,
+              "startup_overhead_s": 7.940952194971032,
+              "startup_to_first_progress_s": 7.940952194971032,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 1.654774900060147,
+              "total_units": 120,
+              "total_wall_s": 19.94496482401155,
+              "unit": "step"
+            },
+            "completion_model_ready": true,
+            "global_index": 11,
+            "gpu": 1,
+            "idx": 1,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu1_1.log",
+            "rate": 56.89,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_11",
+            "seed": 830011,
+            "stable_cv": 0.0310568998,
+            "stable_last_two_relative_delta": 0.0353385099,
+            "stable_mean_rate": 55.2694857,
+            "stable_rate": 57.322082,
+            "stable_rate_ready": true,
+            "stable_samples": 13,
+            "stable_tail_rates": [
+              53.1208289,
+              55.3655461,
+              57.322082
+            ],
+            "unit": "step"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 0.06931254093360621,
+              "base_unit_s": 0.007039101899135858,
+              "checkpoint_observed_s": 1.1148039479739964,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 0.06931254093360621,
+              "counter_offset": 0,
+              "finalization_after_last_progress_s": 1.2673040740191936,
+              "first_progress_unit": 0,
+              "interval_sample_count": 24,
+              "last_progress_unit": 120,
+              "loop_observed_units": 120,
+              "loop_wall_s": 8.317504912032746,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 7.472812684136443,
+              "phase_durations_s": {
+                "checkpoint": [
+                  0.6690978789702058,
+                  0.4457060690037906
+                ],
+                "coordination_barrier": [
+                  2.7114163120277226
+                ],
+                "final_save": [
+                  0.25963356893043965
+                ],
+                "initialization": [
+                  10.83200258295983
+                ],
+                "outer_loop": [
+                  1.8909784549614415
+                ],
+                "warmup": [
+                  1.872646515024826
+                ]
+              },
+              "predicted_total_s": 18.62402116402518,
+              "progress_observation_count": 25,
+              "readiness_reason": "ready",
+              "save_observed_s": 0.25963356893043965,
+              "schema_version": 1,
+              "startup_overhead_s": 9.03921217797324,
+              "startup_to_first_progress_s": 9.03921217797324,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 1.2673040740191936,
+              "total_units": 120,
+              "total_wall_s": 18.62402116402518,
+              "unit": "step"
+            },
+            "completion_model_ready": true,
+            "global_index": 12,
+            "gpu": 1,
+            "idx": 2,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu1_2.log",
+            "rate": 65.22,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_12",
+            "seed": 830012,
+            "stable_cv": 0.0385077698,
+            "stable_last_two_relative_delta": 0.0432794561,
+            "stable_mean_rate": 59.9466067,
+            "stable_rate": 62.6964209,
+            "stable_rate_ready": true,
+            "stable_samples": 13,
+            "stable_tail_rates": [
+              57.0478796,
+              60.0955195,
+              62.6964209
+            ],
+            "unit": "step"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 0.06907982185851627,
+              "base_unit_s": 0.0071790949092246596,
+              "checkpoint_observed_s": 1.0968998250318691,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 0.06907982185851627,
+              "counter_offset": 0,
+              "finalization_after_last_progress_s": 1.4603218879783526,
+              "first_progress_unit": 0,
+              "interval_sample_count": 24,
+              "last_progress_unit": 120,
+              "loop_observed_units": 120,
+              "loop_wall_s": 8.289578623021953,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 7.428087233914994,
+              "phase_durations_s": {
+                "checkpoint": [
+                  0.6744176850188524,
+                  0.42248214001301676
+                ],
+                "coordination_barrier": [
+                  2.459065971081145
+                ],
+                "final_save": [
+                  0.31013682298362255
+                ],
+                "initialization": [
+                  10.201240738038905
+                ],
+                "outer_loop": [
+                  1.9019506319891661
+                ],
+                "warmup": [
+                  1.9863150420133024
+                ]
+              },
+              "predicted_total_s": 18.056052287924103,
+              "progress_observation_count": 25,
+              "readiness_reason": "ready",
+              "save_observed_s": 0.31013682298362255,
+              "schema_version": 1,
+              "startup_overhead_s": 8.306151776923798,
+              "startup_to_first_progress_s": 8.306151776923798,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 1.4603218879783526,
+              "total_units": 120,
+              "total_wall_s": 18.056052287924103,
+              "unit": "step"
+            },
+            "completion_model_ready": true,
+            "global_index": 13,
+            "gpu": 1,
+            "idx": 3,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu1_3.log",
+            "rate": 64.84,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_13",
+            "seed": 830013,
+            "stable_cv": 0.0369953591,
+            "stable_last_two_relative_delta": 0.0434339569,
+            "stable_mean_rate": 58.9050657,
+            "stable_rate": 61.5377691,
+            "stable_rate_ready": true,
+            "stable_samples": 13,
+            "stable_tail_rates": [
+              56.2012287,
+              58.9761994,
+              61.5377691
+            ],
+            "unit": "step"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 0.060254795075161384,
+              "base_unit_s": 0.006916236400138586,
+              "checkpoint_observed_s": 1.2549104009522125,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 0.060254795075161384,
+              "counter_offset": 0,
+              "finalization_after_last_progress_s": 1.8244893259834498,
+              "first_progress_unit": 0,
+              "interval_sample_count": 24,
+              "last_progress_unit": 120,
+              "loop_observed_units": 120,
+              "loop_wall_s": 7.230575409019366,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 6.4006270410027355,
+              "phase_durations_s": {
+                "checkpoint": [
+                  0.6902911079814658,
+                  0.5646192929707468
+                ],
+                "coordination_barrier": [
+                  1.6059521359857172
+                ],
+                "final_save": [
+                  0.5303652059519663
+                ],
+                "initialization": [
+                  10.742511910037138
+                ],
+                "outer_loop": [
+                  2.0481265449197963
+                ],
+                "warmup": [
+                  1.5547031790483743
+                ]
+              },
+              "predicted_total_s": 17.821634444990195,
+              "progress_observation_count": 25,
+              "readiness_reason": "ready",
+              "save_observed_s": 0.5303652059519663,
+              "schema_version": 1,
+              "startup_overhead_s": 8.76656970998738,
+              "startup_to_first_progress_s": 8.76656970998738,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 1.8244893259834498,
+              "total_units": 120,
+              "total_wall_s": 17.821634444990195,
+              "unit": "step"
+            },
+            "completion_model_ready": true,
+            "global_index": 14,
+            "gpu": 1,
+            "idx": 4,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu1_4.log",
+            "rate": 59.33,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_14",
+            "seed": 830014,
+            "stable_cv": 0.03796505,
+            "stable_last_two_relative_delta": 0.046495506,
+            "stable_mean_rate": 57.5126906,
+            "stable_rate": 60.1868499,
+            "stable_rate_ready": true,
+            "stable_samples": 13,
+            "stable_tail_rates": [
+              54.8384572,
+              57.5127648,
+              60.1868499
+            ],
+            "unit": "step"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 0.04784040920009526,
+              "base_unit_s": 0.007252007105853409,
+              "checkpoint_observed_s": 0.8888033990515396,
+              "child_returncode": 0,
+              "completion_model_ready": true,
+              "completion_unit_s": 0.04784040920009526,
+              "counter_offset": 0,
+              "finalization_after_last_progress_s": 1.5865000690100715,
+              "first_progress_unit": 0,
+              "interval_sample_count": 24,
+              "last_progress_unit": 120,
+              "loop_observed_units": 120,
+              "loop_wall_s": 5.740849104011431,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": true,
+              "periodic_extra_s": 4.870608251309022,
+              "phase_durations_s": {
+                "checkpoint": [
+                  0.6348693040199578,
+                  0.2539340950315818
+                ],
+                "coordination_barrier": [
+                  0.45170843903906643
+                ],
+                "final_save": [
+                  0.4532493050210178
+                ],
+                "initialization": [
+                  11.091363450046629
+                ],
+                "outer_loop": [
+                  1.65869365807157
+                ],
+                "warmup": [
+                  1.5955533280503005
+                ]
+              },
+              "predicted_total_s": 16.43110467796214,
+              "progress_observation_count": 25,
+              "readiness_reason": "ready",
+              "save_observed_s": 0.4532493050210178,
+              "schema_version": 1,
+              "startup_overhead_s": 9.103755504940636,
+              "startup_to_first_progress_s": 9.103755504940636,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 1.5865000690100715,
+              "total_units": 120,
+              "total_wall_s": 16.43110467796214,
+              "unit": "step"
+            },
+            "completion_model_ready": true,
+            "global_index": 15,
+            "gpu": 1,
+            "idx": 5,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu1_5.log",
+            "rate": 72.38,
+            "returncode": 0,
+            "run_name": "critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_15",
+            "seed": 830015,
+            "stable_cv": 0.0466182729,
+            "stable_last_two_relative_delta": 0.0571223364,
+            "stable_mean_rate": 61.9190357,
+            "stable_rate": 65.4548671,
+            "stable_rate_ready": true,
+            "stable_samples": 13,
+            "stable_tail_rates": [
+              58.3842719,
+              61.9179681,
+              65.4548671
+            ],
+            "unit": "step"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 0.0,
+              "base_unit_s": 0.0,
+              "checkpoint_observed_s": 0,
+              "child_returncode": 1,
+              "completion_model_ready": false,
+              "completion_unit_s": 0.0,
+              "counter_offset": 0,
+              "finalization_after_last_progress_s": 0.0,
+              "first_progress_unit": 0,
+              "interval_sample_count": 0,
+              "last_progress_unit": 0,
+              "loop_observed_units": 0,
+              "loop_wall_s": 0.0,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": false,
+              "periodic_extra_s": 0.0,
+              "phase_durations_s": {
+                "initialization": [
+                  10.509498136001639
+                ]
+              },
+              "predicted_total_s": 0.0,
+              "progress_observation_count": 1,
+              "readiness_reason": "child_returncode_1",
+              "save_observed_s": 0,
+              "schema_version": 1,
+              "startup_overhead_s": 9.015237519983202,
+              "startup_to_first_progress_s": 9.015237519983202,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 0.0,
+              "total_units": 76,
+              "total_wall_s": 12.311812340980396,
+              "unit": "unit"
+            },
+            "completion_model_ready": false,
+            "global_index": 16,
+            "gpu": 1,
+            "idx": 6,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu1_6.log",
+            "rate": 0.0,
+            "returncode": 1,
+            "run_name": "critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_16",
+            "seed": 830016,
+            "stable_cv": 0.0,
+            "stable_last_two_relative_delta": 0.0,
+            "stable_mean_rate": 0.0,
+            "stable_rate": 0.0,
+            "stable_rate_ready": false,
+            "stable_samples": 0,
+            "stable_tail_rates": [],
+            "unit": "step"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 0.0,
+              "base_unit_s": 0.0,
+              "checkpoint_observed_s": 0,
+              "child_returncode": 1,
+              "completion_model_ready": false,
+              "completion_unit_s": 0.0,
+              "counter_offset": 0,
+              "finalization_after_last_progress_s": 0.0,
+              "first_progress_unit": 0,
+              "interval_sample_count": 0,
+              "last_progress_unit": 0,
+              "loop_observed_units": 0,
+              "loop_wall_s": 0.0,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": false,
+              "periodic_extra_s": 0.0,
+              "phase_durations_s": {
+                "initialization": [
+                  9.937451747944579
+                ]
+              },
+              "predicted_total_s": 0.0,
+              "progress_observation_count": 1,
+              "readiness_reason": "child_returncode_1",
+              "save_observed_s": 0,
+              "schema_version": 1,
+              "startup_overhead_s": 8.131425258005038,
+              "startup_to_first_progress_s": 8.131425258005038,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 0.0,
+              "total_units": 76,
+              "total_wall_s": 11.60240569000598,
+              "unit": "unit"
+            },
+            "completion_model_ready": false,
+            "global_index": 17,
+            "gpu": 1,
+            "idx": 7,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu1_7.log",
+            "rate": 0.0,
+            "returncode": 1,
+            "run_name": "critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_17",
+            "seed": 830017,
+            "stable_cv": 0.0,
+            "stable_last_two_relative_delta": 0.0,
+            "stable_mean_rate": 0.0,
+            "stable_rate": 0.0,
+            "stable_rate_ready": false,
+            "stable_samples": 0,
+            "stable_tail_rates": [],
+            "unit": "step"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 0.0,
+              "base_unit_s": 0.0,
+              "checkpoint_observed_s": 0,
+              "child_returncode": 1,
+              "completion_model_ready": false,
+              "completion_unit_s": 0.0,
+              "counter_offset": 0,
+              "finalization_after_last_progress_s": 0.0,
+              "first_progress_unit": 0,
+              "interval_sample_count": 0,
+              "last_progress_unit": 0,
+              "loop_observed_units": 0,
+              "loop_wall_s": 0.0,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": false,
+              "periodic_extra_s": 0.0,
+              "phase_durations_s": {},
+              "predicted_total_s": 0.0,
+              "progress_observation_count": 1,
+              "readiness_reason": "child_returncode_1",
+              "save_observed_s": 0,
+              "schema_version": 1,
+              "startup_overhead_s": 8.442707681911997,
+              "startup_to_first_progress_s": 8.442707681911997,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 0.0,
+              "total_units": 76,
+              "total_wall_s": 10.933007496991195,
+              "unit": "unit"
+            },
+            "completion_model_ready": false,
+            "global_index": 18,
+            "gpu": 1,
+            "idx": 8,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu1_8.log",
+            "rate": 0.0,
+            "returncode": 1,
+            "run_name": "critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_18",
+            "seed": 830018,
+            "stable_cv": 0.0,
+            "stable_last_two_relative_delta": 0.0,
+            "stable_mean_rate": 0.0,
+            "stable_rate": 0.0,
+            "stable_rate_ready": false,
+            "stable_samples": 0,
+            "stable_tail_rates": [],
+            "unit": "step"
+          },
+          {
+            "completion_model": {
+              "amortized_unit_s": 0.0,
+              "base_unit_s": 0.0,
+              "checkpoint_observed_s": 0,
+              "child_returncode": 1,
+              "completion_model_ready": false,
+              "completion_unit_s": 0.0,
+              "counter_offset": 0,
+              "finalization_after_last_progress_s": 0.0,
+              "first_progress_unit": 0,
+              "interval_sample_count": 0,
+              "last_progress_unit": 0,
+              "loop_observed_units": 0,
+              "loop_wall_s": 0.0,
+              "model_abs_error_s": 0.0,
+              "model_relative_error": 0.0,
+              "natural_exit": false,
+              "periodic_extra_s": 0.0,
+              "phase_durations_s": {},
+              "predicted_total_s": 0.0,
+              "progress_observation_count": 1,
+              "readiness_reason": "child_returncode_1",
+              "save_observed_s": 0,
+              "schema_version": 1,
+              "startup_overhead_s": 8.55694321799092,
+              "startup_to_first_progress_s": 8.55694321799092,
+              "stopped_on_stable": false,
+              "terminal_overhead_s": 0.0,
+              "total_units": 76,
+              "total_wall_s": 10.017395109985955,
+              "unit": "unit"
+            },
+            "completion_model_ready": false,
+            "global_index": 19,
+            "gpu": 1,
+            "idx": 9,
+            "log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/raw/profile_10_per_gpu/gpu1_9.log",
+            "rate": 0.0,
+            "returncode": 1,
+            "run_name": "critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244_profile_10_per_gpu_gpu1_19",
+            "seed": 830019,
+            "stable_cv": 0.0,
+            "stable_last_two_relative_delta": 0.0,
+            "stable_mean_rate": 0.0,
+            "stable_rate": 0.0,
+            "stable_rate_ready": false,
+            "stable_samples": 0,
+            "stable_tail_rates": [],
+            "unit": "step"
+          }
+        ],
+        "run_id": "critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244",
+        "running_count": 20,
+        "running_with_rate_count": 12,
+        "stable_cv_threshold": 0.1,
+        "stable_cycle_units": 0,
+        "stable_rate_ready_count": 12,
+        "stable_rates_unit_s": [
+          58.3660759,
+          57.2635583,
+          58.6529332,
+          61.7954918,
+          58.8613609,
+          59.6494823,
+          71.9944872,
+          57.322082,
+          62.6964209,
+          61.5377691,
+          60.1868499,
+          65.4548671
+        ],
+        "stable_rel_delta_threshold": 0.08,
+        "stable_skip_samples": 2,
+        "stable_windows": 3,
+        "status_counts": {
+          "missing_rate": 8,
+          "sampled": 12
+        },
+        "terminate_on_stable": false,
+        "timeout_s": 5400,
+        "transport_mode": "foreground_ssh"
+      },
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_completion_v3_jtl110gpu_r00_gpu_llm_distilgpt2_p10_20260803_gpu_llm_distilgpt2_p10_codece4b1ebf3244/reports/profile_10_per_gpu_summary.json",
+      "timeout_s": 5400,
+      "total_task_count": 20,
+      "wave": 0,
+      "workload_env": "distilgpt2_forward_fp16_b2_s128",
+      "workload_key": "gpu_llm_distilgpt2"
+    }
+  ],
+  "selection": {
+    "filtered": true,
+    "profiles": [
+      10
+    ],
+    "workload_keys": [
+      "gpu_llm_distilgpt2"
+    ]
+  },
+  "split_role": "smoke_excluded",
+  "status": "PASS",
+  "task_native_progress_required": true,
+  "terminate_on_stable": false,
+  "wait_row_count": 0,
+  "wave": 0
+}

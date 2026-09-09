@@ -1,0 +1,97 @@
+{
+  "admitted_count": 0,
+  "admitted_rows": [],
+  "allow_launch": true,
+  "boundary_count": 0,
+  "boundary_rows": [],
+  "gate": "full_factorial_eta_probe_runner",
+  "launched_count": 1,
+  "max_profiles": 0,
+  "pass": true,
+  "resource_state": "full_loaded",
+  "rows": [
+    {
+      "boundary_closed_profiles": [],
+      "capacity_boundary_profiles": [],
+      "config": {
+        "cwd": "/home/erzhu419/mine_code/RE-SAC",
+        "gpus": [
+          0,
+          1
+        ],
+        "max_iters": 200,
+        "node": "jtl110gpu",
+        "stable_cycle_units": 5,
+        "template": "resac_env_real_venv.cmd.tpl",
+        "template_values": {
+          "mujoco_env": "Ant-v2"
+        },
+        "timeout_s": 2400
+      },
+      "eta_source_required": "tqdm/progress",
+      "family": "hybrid_rl",
+      "hardware_group": "gpu_3080ti_12gb_dual",
+      "launch_ready": true,
+      "launched": true,
+      "legacy_scheduler_limits_bypassed": true,
+      "measurement_valid": false,
+      "node": "jtl110gpu",
+      "node_bucket": "jtl110gpu:gpu_3080ti_12gb_dual",
+      "pending_reason": "",
+      "probe_result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1
+        ],
+        "node": "jtl110gpu",
+        "pass": false,
+        "profiles": [
+          6
+        ],
+        "rate_count": 0,
+        "run_id": "ff_parallel_eta_replan_20260701_gpu_jtl110_representative_jtl110gpu_full_loaded_hybrid_rl_resac_ant_jtl110gpu_hybrid_rl_resac_ant_ant_full_loaded",
+        "stable_rate_ready_count": 0,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_replan_20260701_gpu_jtl110_representative_jtl110gpu_full_loaded_hybrid_rl_resac_ant_jtl110gpu_hybrid_rl_resac_ant_ant_full_loaded/reports/profile_6_per_gpu_summary.json"
+        ]
+      },
+      "profile_rows": [
+        {
+          "aggregate_stable_rate_unit_s": 0.0,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.0,
+          "measurement_valid": false,
+          "path_exists": true,
+          "profile": 6,
+          "running_count": 12,
+          "stable_rate_ready_count": 0,
+          "status_counts": {
+            "missing_rate": 12,
+            "sampled": 0
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_replan_20260701_gpu_jtl110_representative_jtl110gpu_full_loaded_hybrid_rl_resac_ant_jtl110gpu_hybrid_rl_resac_ant_ant_full_loaded/reports/profile_6_per_gpu_summary.json"
+        }
+      ],
+      "profiles": [
+        6
+      ],
+      "reason": "one_or_more_profiles_unstable_or_capacity_boundary",
+      "resident_mix": "same_workload_to_capacity_boundary",
+      "resource_state": "full_loaded",
+      "row_id": "gpu_3080ti_12gb_dual|q11_high_cpu_high_gpu|hybrid_rl_resac_ant|ant|full_loaded|same_workload_to_capacity_boundary",
+      "run_id": "ff_parallel_eta_replan_20260701_gpu_jtl110_representative_jtl110gpu_full_loaded_hybrid_rl_resac_ant_jtl110gpu_hybrid_rl_resac_ant_ant_full_loaded",
+      "workload_env": "ant",
+      "workload_key": "hybrid_rl_resac_ant"
+    }
+  ],
+  "run_prefix": "ff_parallel_eta_replan_20260701_gpu_jtl110_representative_jtl110gpu_full_loaded_hybrid_rl_resac_ant",
+  "scope": "Controlled full-factorial ETA probes.  Launches bypass the legacy scheduler dispatch path and require task-native tqdm/progress.  Invalid profiles are retained as scoped capacity/instability boundaries for the exact node/workload/state.",
+  "selected_count": 1,
+  "service_cache_snapshot": {
+    "capacity_boundaries": [],
+    "records": []
+  },
+  "status": "PROBE_RUNNER_LAUNCHED",
+  "tier": "T0_core_curve"
+}

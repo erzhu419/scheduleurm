@@ -1,0 +1,124 @@
+{
+  "all_completion_models_ready": true,
+  "allow_launch": true,
+  "claim_boundary": "These are natural-completion calibration cells. FreqDuet and SUMO rows remain explicit surrogates until their native checkpointable commands are run. External resident load is observational and is never relabelled as an empty-state cell.",
+  "completion_model_ready_count": 1,
+  "elapsed_wall_s": 104.93987679481506,
+  "gate": "phase_aware_cpu_completion_matrix",
+  "hardware_group": "cpu_hpc_192c",
+  "matrix": "cpu_curve",
+  "node_equivalence_contract": "node001-node006 are homogeneous 3x64-core nodes",
+  "repeat_index": 0,
+  "rows": [
+    {
+      "cell_id": "cpu_p64_external",
+      "checkpoint_bytes": 8388608,
+      "checkpoint_interval": 40,
+      "child_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_cpu_p64_external_telemetry_fit_20260727_r0_node004_cpu_p64_external/raw/profile_1_per_gpu/gpu0_0.log",
+      "completion_model": {
+        "amortized_unit_s": 0.09397889667078617,
+        "base_unit_s": 0.09603006695397198,
+        "checkpoint_observed_s": 0.1239043038804084,
+        "child_returncode": 0,
+        "completion_model_ready": true,
+        "completion_unit_s": 0.09397889667078617,
+        "counter_offset": 0,
+        "finalization_after_last_progress_s": 0.07413063710555434,
+        "first_progress_unit": 2,
+        "interval_sample_count": 79,
+        "last_progress_unit": 160,
+        "loop_observed_units": 158,
+        "loop_wall_s": 14.848665673984215,
+        "model_abs_error_s": 0.0,
+        "model_relative_error": 0.0,
+        "natural_exit": true,
+        "periodic_extra_s": 0.0,
+        "phase_durations_s": {
+          "checkpoint": [
+            0.030667275888845325,
+            0.030978621914982796,
+            0.031908310018479824,
+            0.030350096058100462
+          ],
+          "final_save": [
+            0.02963471901603043
+          ],
+          "initialization": [
+            0.00016342801973223686
+          ],
+          "outer_loop": [
+            15.194080902030692
+          ]
+        },
+        "predicted_total_s": 15.335366901010275,
+        "progress_observation_count": 80,
+        "readiness_reason": "ready",
+        "save_observed_s": 0.02963471901603043,
+        "schema_version": 1,
+        "startup_overhead_s": 0.22461279657893354,
+        "startup_to_first_progress_s": 0.4125705899205059,
+        "stopped_on_stable": false,
+        "terminal_overhead_s": 0.07413063710555434,
+        "total_units": 160,
+        "total_wall_s": 15.335366901010275,
+        "unit": "step"
+      },
+      "completion_model_ready": true,
+      "declared_external_load_snapshot": 48.1,
+      "external_cpu_bucket": "external_c33_64",
+      "external_cpu_core_equiv": 48.172849134560096,
+      "launched": true,
+      "measurement_valid": true,
+      "node": "node004",
+      "observed_external_load": 48.1,
+      "observed_resource_state": {
+        "external_cpu_core_equiv": 48.172849134560096,
+        "load1_end": 48.43,
+        "load1_start": 48.18,
+        "load5_end": 49.26,
+        "load5_start": 49.26,
+        "logical_cpus": 192,
+        "measurement_wall_s": 15.195941822836176,
+        "own_cpu_core_equiv": 32.8837794870378,
+        "own_cpu_s": 499.7,
+        "schema_version": 1,
+        "system_busy_core_equiv": 81.0566286215979,
+        "system_busy_fraction": 0.42216994073748904,
+        "workers": 64
+      },
+      "probe_result": {
+        "completion_model_ready_count": 1,
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0
+        ],
+        "node": "node004",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 1,
+        "run_id": "phase_cpu_p64_external_telemetry_fit_20260727_r0_node004_cpu_p64_external",
+        "stable_rate_ready_count": 1,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/phase_cpu_p64_external_telemetry_fit_20260727_r0_node004_cpu_p64_external/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "resource_state": "cpu_resident_external",
+      "resource_telemetry_ready": true,
+      "run_id": "phase_cpu_p64_external_telemetry_fit_20260727_r0_node004_cpu_p64_external",
+      "status": "READY",
+      "steps": 160,
+      "storage_class": "shared_home",
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/phase_cpu_p64_external_telemetry_fit_20260727_r0_node004_cpu_p64_external/reports/profile_1_per_gpu_summary.json",
+      "work_items": 90000,
+      "workers": 64,
+      "workload_key": "cpu_heavy_local_bench",
+      "workload_label": "cpu"
+    }
+  ],
+  "run_prefix": "phase_cpu_p64_external_telemetry_fit_20260727",
+  "schema_version": 1,
+  "selected_count": 1,
+  "status": "COMPLETE"
+}

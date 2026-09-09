@@ -1,0 +1,238 @@
+{
+  "frontier": [
+    {
+      "arrival_mode": "static",
+      "best_makespan_policy": "sota_iadeep_salus_interference_guard",
+      "best_makespan_profiles": {
+        "gpu_cnn_torch_resnet50": 5
+      },
+      "best_makespan_s": 47.54677761099491,
+      "best_mean_flow_policy": "scheduleurm_sota_union_online_pareto_slack",
+      "best_mean_flow_profiles": {
+        "gpu_cnn_torch_resnet50": 5
+      },
+      "best_mean_flow_s": 26.97134601709071,
+      "candidate_profiles": {
+        "gpu_cnn_torch_resnet50": 5
+      },
+      "diagnosis": "same measured CNN profile but different statewise drain trajectory; current phase-switch/SJF/LPT bridge candidates improve flow but fail the strict makespan guard",
+      "makespan_ratio": 0.9932506849718261,
+      "mean_flow_ratio": 1.0,
+      "pareto_slack_profiles": {
+        "gpu_cnn_torch_resnet50": 5
+      },
+      "required_action": "measure a new CNN tail/co-location service point or admit a bridge only after it improves flow without exceeding the finish-time makespan envelope",
+      "taskset": "q01_gpu_bound_cnn_resnet50"
+    },
+    {
+      "arrival_mode": "static",
+      "best_makespan_policy": "sota_gavel_finish_time_fairness",
+      "best_makespan_profiles": {
+        "gpu_llm_distilgpt2": 8
+      },
+      "best_makespan_s": 3.6062255243705352,
+      "best_mean_flow_policy": "sota_gavel_finish_time_fairness",
+      "best_mean_flow_profiles": {
+        "gpu_llm_distilgpt2": 8
+      },
+      "best_mean_flow_s": 1.903094999507621,
+      "candidate_profiles": {
+        "gpu_llm_distilgpt2": 8
+      },
+      "diagnosis": "strict gap remains inside one policy family",
+      "makespan_ratio": 0.9973700484473411,
+      "mean_flow_ratio": 0.9999431057361982,
+      "pareto_slack_profiles": {
+        "gpu_llm_distilgpt2": 8
+      },
+      "required_action": "increase replay samples and inspect whether the gap is sampling noise or requires a new measured profile",
+      "taskset": "q01_gpu_bound_llm_inference"
+    },
+    {
+      "arrival_mode": "poisson",
+      "best_makespan_policy": "sota_iadeep_salus_interference_guard",
+      "best_makespan_profiles": {
+        "gpu_llm_distilgpt2": 1
+      },
+      "best_makespan_s": 2339.9409771015457,
+      "best_mean_flow_policy": "sota_iadeep_salus_interference_guard",
+      "best_mean_flow_profiles": {
+        "gpu_llm_distilgpt2": 1
+      },
+      "best_mean_flow_s": 0.22422931881630295,
+      "candidate_profiles": {
+        "gpu_llm_distilgpt2": 8
+      },
+      "diagnosis": "strict gap remains inside one policy family",
+      "makespan_ratio": 0.9999486035506663,
+      "mean_flow_ratio": 0.6505703328116342,
+      "pareto_slack_profiles": {
+        "gpu_llm_distilgpt2": 8
+      },
+      "required_action": "increase replay samples and inspect whether the gap is sampling noise or requires a new measured profile",
+      "taskset": "q01_gpu_bound_llm_inference"
+    },
+    {
+      "arrival_mode": "static",
+      "best_makespan_policy": "scheduleurm_sota_union_online_pareto_slack",
+      "best_makespan_profiles": {
+        "gpu_cnn_torch_resnet50": 5,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 8
+      },
+      "best_makespan_s": 829.7902742396941,
+      "best_mean_flow_policy": "sota_gavel_finish_time_fairness",
+      "best_mean_flow_profiles": {
+        "gpu_cnn_torch_resnet50": 5,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 8
+      },
+      "best_mean_flow_s": 86.56133162965659,
+      "candidate_profiles": {
+        "gpu_cnn_torch_resnet50": 5,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 8
+      },
+      "diagnosis": "portfolio inherits the ResNet-50 static tail-drain gap at a much smaller scale",
+      "makespan_ratio": 1.0,
+      "mean_flow_ratio": 0.9999970541022555,
+      "pareto_slack_profiles": {
+        "gpu_cnn_torch_resnet50": 5,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 8
+      },
+      "required_action": "close the CNN tail/co-location bridge first, then rerun the portfolio frontier on the same measured cache",
+      "taskset": "q01_gpu_model_portfolio"
+    },
+    {
+      "arrival_mode": "poisson",
+      "best_makespan_policy": "scheduleurm_sota_union_online_pareto_slack",
+      "best_makespan_profiles": {
+        "gpu_cnn_torch_resnet50": 1,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 8
+      },
+      "best_makespan_s": 2681.922088852305,
+      "best_mean_flow_policy": "sota_iadeep_salus_interference_guard",
+      "best_mean_flow_profiles": {
+        "gpu_cnn_torch_resnet50": 1,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 1
+      },
+      "best_mean_flow_s": 12.04778824848198,
+      "candidate_profiles": {
+        "gpu_cnn_torch_resnet50": 1,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 8
+      },
+      "diagnosis": "portfolio inherits the ResNet-50 static tail-drain gap at a much smaller scale",
+      "makespan_ratio": 1.0,
+      "mean_flow_ratio": 0.9945580302749186,
+      "pareto_slack_profiles": {
+        "gpu_cnn_torch_resnet50": 1,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 8
+      },
+      "required_action": "close the CNN tail/co-location bridge first, then rerun the portfolio frontier on the same measured cache",
+      "taskset": "q01_gpu_model_portfolio"
+    },
+    {
+      "arrival_mode": "static",
+      "best_makespan_policy": "scheduleurm_sota_union_online_pareto_slack",
+      "best_makespan_profiles": {
+        "cpu_heavy_local_bench": 8,
+        "gpu_cnn_torch_resnet50": 4,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 8,
+        "hybrid_rl_resac_ant": 5
+      },
+      "best_makespan_s": 23358.926685957675,
+      "best_mean_flow_policy": "scheduleurm_sota_union_guarded_mean_flow",
+      "best_mean_flow_profiles": {
+        "cpu_heavy_local_bench": 8,
+        "gpu_cnn_torch_resnet50": 5,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 8,
+        "hybrid_rl_resac_ant": 5
+      },
+      "best_mean_flow_s": 4225.930814758104,
+      "candidate_profiles": {
+        "cpu_heavy_local_bench": 8,
+        "gpu_cnn_torch_resnet50": 4,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 8,
+        "hybrid_rl_resac_ant": 5
+      },
+      "diagnosis": "hybrid RL profile-3 minimizes makespan while profile-2 minimizes flow",
+      "makespan_ratio": 1.0,
+      "mean_flow_ratio": 0.9999999821063021,
+      "pareto_slack_profiles": {
+        "cpu_heavy_local_bench": 8,
+        "gpu_cnn_torch_resnet50": 4,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 8,
+        "hybrid_rl_resac_ant": 5
+      },
+      "required_action": "measure or admit a hybrid RL co-location profile between current p2/p3, or add a critical-path-aware p3-to-p2 switch with a verified makespan guard",
+      "taskset": "hybrid_research_portfolio"
+    },
+    {
+      "arrival_mode": "poisson",
+      "best_makespan_policy": "scheduleurm_sota_union_online_pareto_slack",
+      "best_makespan_profiles": {
+        "cpu_heavy_local_bench": 8,
+        "gpu_cnn_torch_resnet50": 1,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 8,
+        "hybrid_rl_resac_ant": 5
+      },
+      "best_makespan_s": 23472.237750159704,
+      "best_mean_flow_policy": "sota_gavel_finish_time_fairness",
+      "best_mean_flow_profiles": {
+        "cpu_heavy_local_bench": 8,
+        "gpu_cnn_torch_resnet50": 1,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 1,
+        "hybrid_rl_resac_ant": 5
+      },
+      "best_mean_flow_s": 2957.015968772371,
+      "candidate_profiles": {
+        "cpu_heavy_local_bench": 8,
+        "gpu_cnn_torch_resnet50": 1,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 8,
+        "hybrid_rl_resac_ant": 5
+      },
+      "diagnosis": "hybrid RL profile-3 minimizes makespan while profile-2 minimizes flow",
+      "makespan_ratio": 1.0,
+      "mean_flow_ratio": 0.9999946887860538,
+      "pareto_slack_profiles": {
+        "cpu_heavy_local_bench": 8,
+        "gpu_cnn_torch_resnet50": 1,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 8,
+        "hybrid_rl_resac_ant": 5
+      },
+      "required_action": "measure or admit a hybrid RL co-location profile between current p2/p3, or add a critical-path-aware p3-to-p2 switch with a verified makespan guard",
+      "taskset": "hybrid_research_portfolio"
+    }
+  ],
+  "frontier_count": 7,
+  "gate": "sota_strict_dominance_frontier",
+  "gate_pass": false,
+  "next_probe_order": [
+    "Hybrid RL p2/p3 bridge: run RE-SAC/BAPR-like probes at 2-3 concurrent tasks under empty and high-VRAM-resident states; admit only if the LCB gives profile-3 makespan with profile-2 tail flow.",
+    "CNN tail/co-location bridge: current cache-only phase-switch, SJF, critical-SJF, and LPT-static bridge variants improve flow but miss the strict makespan envelope; run controlled ResNet-50 tail and CNN+LLM/CNN+CUDA service probes and admit only if the LCB improves flow without exceeding the finish-time makespan envelope.",
+    "q01 portfolio strict gap: rerun after the CNN bridge closes; do not add a separate portfolio-only claim unless the per-workload CNN service point is certified."
+  ],
+  "pareto_tolerance": 0.005,
+  "pass": false,
+  "pass_meaning": "remaining measured-cache external-policy frontier rows require bridge actions",
+  "scope": "This certificate only diagnoses strict measured-cache policy-semantics gaps against the registered external-policy envelope. It does not claim direct full-stack SOTA binary superiority.",
+  "scoped_claim_ready": false,
+  "source_gate_status": "SOTA_CANDIDATE_UNION_NEEDS_REVIEW",
+  "status": "MEASURED_CACHE_EXTERNAL_POLICY_FRONTIER_OPEN",
+  "strict_pareto_ready": false,
+  "strong_claim_ready": false,
+  "within_tolerance_ready": false
+}

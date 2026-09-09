@@ -184,6 +184,59 @@ def test_launch_input_sync_keeps_bundle_logs(monkeypatch, tmp_path):
     assert "--exclude=logs/" not in rsync_call
 
 
+def test_launch_input_sync_collapses_nested_directories(monkeypatch, tmp_path):
+    bundle = tmp_path / "project" / "bundle"
+    checkpoints = bundle / "checkpoints"
+    logs = bundle / "logs"
+    checkpoints.mkdir(parents=True)
+    logs.mkdir()
+    calls = []
+
+    def fake_run(args, **kwargs):
+        calls.append(list(args))
+        if args[0] == "du":
+            return _RunResult(stdout="1\t.\n")
+        return _RunResult()
+
+    monkeypatch.setattr(cwd_stage.subprocess, "run", fake_run)
+    task = {
+        "stage_input_paths": [
+            str(checkpoints), str(bundle), str(logs), str(bundle),
+        ],
+    }
+
+    ok, msg = cwd_stage.stage_input_paths_for_launch(
+        task, "remote", deps=_deps())
+
+    assert ok is True
+    assert len([args for args in calls if args[0] == "rsync"]) == 1
+    assert "synced 1 launch input directory" in msg
+
+
+def test_launch_input_sync_keeps_sibling_directories(monkeypatch, tmp_path):
+    first = tmp_path / "first"
+    second = tmp_path / "second"
+    first.mkdir()
+    second.mkdir()
+    calls = []
+
+    def fake_run(args, **kwargs):
+        calls.append(list(args))
+        if args[0] == "du":
+            return _RunResult(stdout="1\t.\n")
+        return _RunResult()
+
+    monkeypatch.setattr(cwd_stage.subprocess, "run", fake_run)
+    task = {"stage_input_paths": [str(first), str(second)]}
+
+    ok, msg = cwd_stage.stage_input_paths_for_launch(
+        task, "remote", deps=_deps())
+
+    assert ok is True
+    assert len([args for args in calls if args[0] == "rsync"]) == 2
+    assert "synced 2 launch input directories" in msg
+
+
 def test_launch_input_set_is_marked_only_after_every_directory(monkeypatch, tmp_path):
     first = tmp_path / "first"
     second = tmp_path / "second"

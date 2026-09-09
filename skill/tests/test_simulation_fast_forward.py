@@ -6,6 +6,7 @@ from simulation.defaults import (
     default_workload_specs,
     legacy_policy,
 )
+import simulation.fast_forward as ff
 from simulation.fast_forward import compare_policies
 from simulation.service_cache import (
     ServiceRateCache,
@@ -210,3 +211,40 @@ def test_fast_forward_refuses_unmeasured_colocation_profile(check, sch):
           "missing exact service profile" in comparison_error
           or "no service cache entries" in comparison_error,
           diag=comparison_error)
+
+
+def test_compare_policies_reuses_summary_cache_without_mutation_leak(monkeypatch):
+    ff._POLICY_SUMMARY_CACHE.clear()
+    cache = build_default_cache()
+    specs = default_workload_specs()[:1]
+    calls = 0
+    real_replay = ff.replay_workload
+
+    def counted_replay(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return real_replay(*args, **kwargs)
+
+    monkeypatch.setattr(ff, "replay_workload", counted_replay)
+
+    first = ff.compare_policies(
+        cache,
+        specs,
+        baseline=legacy_policy(),
+        candidate=calibrated_makespan_policy(),
+        trials=3,
+        seed=123,
+    )
+    assert calls == 6
+    first.candidate.workloads[0].makespan_s = -1.0
+
+    second = ff.compare_policies(
+        cache,
+        specs,
+        baseline=legacy_policy(),
+        candidate=calibrated_makespan_policy(),
+        trials=3,
+        seed=123,
+    )
+    assert calls == 6
+    assert second.candidate.workloads[0].makespan_s != -1.0

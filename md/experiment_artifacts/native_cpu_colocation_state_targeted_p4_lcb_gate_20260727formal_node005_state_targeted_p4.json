@@ -1,0 +1,436 @@
+{
+  "all_lower_service_valid_on_holdout": false,
+  "all_rows_ready": true,
+  "artifact_cell_set_diagnostics": [
+    {
+      "artifact": "training:1",
+      "exact_match": true,
+      "missing_cell_ids": [],
+      "unexpected_cell_ids": []
+    },
+    {
+      "artifact": "training:2",
+      "exact_match": true,
+      "missing_cell_ids": [],
+      "unexpected_cell_ids": []
+    },
+    {
+      "artifact": "training:3",
+      "exact_match": true,
+      "missing_cell_ids": [],
+      "unexpected_cell_ids": []
+    },
+    {
+      "artifact": "calibration:1",
+      "exact_match": true,
+      "missing_cell_ids": [],
+      "unexpected_cell_ids": []
+    },
+    {
+      "artifact": "calibration:2",
+      "exact_match": true,
+      "missing_cell_ids": [],
+      "unexpected_cell_ids": []
+    },
+    {
+      "artifact": "calibration:3",
+      "exact_match": true,
+      "missing_cell_ids": [],
+      "unexpected_cell_ids": []
+    },
+    {
+      "artifact": "calibration:4",
+      "exact_match": true,
+      "missing_cell_ids": [],
+      "unexpected_cell_ids": []
+    },
+    {
+      "artifact": "calibration:5",
+      "exact_match": true,
+      "missing_cell_ids": [],
+      "unexpected_cell_ids": []
+    },
+    {
+      "artifact": "calibration:6",
+      "exact_match": true,
+      "missing_cell_ids": [],
+      "unexpected_cell_ids": []
+    },
+    {
+      "artifact": "calibration:7",
+      "exact_match": true,
+      "missing_cell_ids": [],
+      "unexpected_cell_ids": []
+    },
+    {
+      "artifact": "calibration:8",
+      "exact_match": true,
+      "missing_cell_ids": [],
+      "unexpected_cell_ids": []
+    },
+    {
+      "artifact": "calibration:9",
+      "exact_match": true,
+      "missing_cell_ids": [],
+      "unexpected_cell_ids": []
+    },
+    {
+      "artifact": "holdout:1",
+      "exact_match": true,
+      "missing_cell_ids": [],
+      "unexpected_cell_ids": []
+    }
+  ],
+  "artifact_cell_sets_ready": true,
+  "calibration_paths": [
+    "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/native_cpu_colocation_state_targeted_p4_calibration_r01_20260727formal_node005_state_targeted_p4.json",
+    "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/native_cpu_colocation_state_targeted_p4_calibration_r02_20260727formal_node005_state_targeted_p4.json",
+    "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/native_cpu_colocation_state_targeted_p4_calibration_r03_20260727formal_node005_state_targeted_p4.json",
+    "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/native_cpu_colocation_state_targeted_p4_calibration_r04_20260727formal_node005_state_targeted_p4.json",
+    "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/native_cpu_colocation_state_targeted_p4_calibration_r05_20260727formal_node005_state_targeted_p4.json",
+    "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/native_cpu_colocation_state_targeted_p4_calibration_r06_20260727formal_node005_state_targeted_p4.json",
+    "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/native_cpu_colocation_state_targeted_p4_calibration_r07_20260727formal_node005_state_targeted_p4.json",
+    "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/native_cpu_colocation_state_targeted_p4_calibration_r08_20260727formal_node005_state_targeted_p4.json",
+    "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/native_cpu_colocation_state_targeted_p4_calibration_r09_20260727formal_node005_state_targeted_p4.json"
+  ],
+  "claim_boundary": "The bound has finite-sample split-conformal cellwise coverage for the exact native workload, node, observed hardware-normalized multi-window external-load regime, allocation, co-location count, total work, and cache-state cell. The regime is sampled before the controlled group starts; run-window external load remains an audited outcome. Rows from other observed states are excluded before fitting and calibration. The conformal base model uses training groups only, and its calibration residuals remain frozen. The operational point ETA separately uses all pre-holdout training and calibration groups; it has no conformal coverage claim and cannot alter the lower-service bound. When every calibration artifact contains the same exact cell family, a second split-conformal construction calibrates the maximum normalized residual across each complete calibration wave. Under exchangeability of these pre-registered vector waves, the reported wave-max lower services have simultaneous family coverage at the same nominal level; the scalar cellwise values remain recorded separately for audit. Every group member has a task-native phase-aware natural-completion model. This is not joint coverage over arbitrary load states.",
+  "expected_cell_count": 2,
+  "expected_cell_ids": [
+    "freqduet_cpu_native_node005_aw1_cc4_u6",
+    "sumo_eval_cpu_native_node005_aw1_cc4_u6"
+  ],
+  "gate": "phase_aware_colocation_stochastic_lcb_gate",
+  "holdout_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/native_cpu_colocation_state_targeted_p4_holdout_r01_20260727formal_node005_state_targeted_p4.json",
+  "max_relative_error_limit": 0.15,
+  "min_training_sample_count": 3,
+  "miscoverage_alpha": 0.1,
+  "nominal_cellwise_coverage": 0.9,
+  "p95_relative_error_limit": 0.1,
+  "pass": false,
+  "point_max_relative_error": 0.07481254322291156,
+  "point_p95_relative_error": 0.07481254322291156,
+  "ready_row_count": 2,
+  "row_count": 2,
+  "rows": [
+    {
+      "actual_makespan_s": 187.44347908021882,
+      "aggregate_service_units": 24.0,
+      "all_task_phase_models_ready": true,
+      "allocation_workers": 1,
+      "calibration_cell_id": "freqduet_cpu_native_node005_aw1_cc4_u6",
+      "calibration_ratio_scores": [
+        0.000520876402657855,
+        0.019544195892773564,
+        0.03401994834431443,
+        0.03455830225260548,
+        -0.0027088428532658915,
+        0.003809284179772998,
+        -0.029127163884791973,
+        -0.010746593815382566,
+        0.03579142314229933
+      ],
+      "calibration_sample_count": 9,
+      "cellwise_conservative_upper_makespan_s": 178.70870371209458,
+      "cellwise_lower_service_units_per_s": 0.13429676060246493,
+      "cellwise_lower_service_valid_on_holdout": false,
+      "colocation_count": 4,
+      "conformal_base_predicted_makespan_s": 172.53348475308158,
+      "conformal_rank": 9,
+      "conformal_ratio_margin": 0.03579142314229933,
+      "conservative_holdout_covered": false,
+      "conservative_upper_makespan_s": 178.70870371209458,
+      "dispatch_external_cpu_bucket": "external_c0_2",
+      "dispatch_external_cpu_core_equiv": 0.0039866111669387225,
+      "dispatch_external_cpu_core_equiv_p95": 0.009976098929647719,
+      "dispatch_external_cpu_fraction": 2.0763599827805848e-05,
+      "dispatch_external_cpu_fraction_p95": 5.19588485919152e-05,
+      "dispatch_external_cpu_regime": "cpu_external_idle",
+      "dispatch_sample_count": 5,
+      "dispatch_state_ready": true,
+      "excluded_calibration_state_count": 0,
+      "excluded_training_state_count": 0,
+      "finite_sample_conformal_ready": true,
+      "frozen_conformal_group_phase_model": {
+        "aggregate_completion_unit_s": 6.894026326145589,
+        "startup_overhead_s": 6.20861722365953,
+        "terminal_overhead_s": 0.8682357019279152
+      },
+      "frozen_group_phase_model": {
+        "aggregate_completion_unit_s": 6.894026326145589,
+        "startup_overhead_s": 6.20861722365953,
+        "terminal_overhead_s": 0.8682357019279152
+      },
+      "init_cache_state": "warm",
+      "lower_service_bound_kind": "wave_max_simultaneous_split_conformal",
+      "lower_service_units_per_s": 0.13429676060246493,
+      "lower_service_valid_on_holdout": false,
+      "measurement_protocol": "dispatch_multisample_and_run_window_v3",
+      "min_interval_sample_count": 5,
+      "minimum_sample_counts_ready": true,
+      "minimum_training_sample_count": 3,
+      "miscoverage_alpha": 0.1,
+      "node": "node005",
+      "nonfinite_calibration_score_count": 0,
+      "observed_effective_resource_state": "controlled_colocation",
+      "observed_min_interval_sample_counts": [
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "operational_point_group_phase_model": {
+        "aggregate_completion_unit_s": 6.917169868083633,
+        "startup_overhead_s": 6.6151676382171,
+        "terminal_overhead_s": 0.793111227452755
+      },
+      "operational_point_predicted_makespan_s": 173.42035569967703,
+      "operational_point_sample_count": 12,
+      "point_predicted_makespan_s": 173.42035569967703,
+      "point_relative_error": 0.07481254322291156,
+      "profile_axis": "colocation_count",
+      "raw_calibration_sample_count": 9,
+      "raw_training_sample_count": 3,
+      "ready": true,
+      "realized_service_units_per_s": 0.12803859658264716,
+      "run_window_effective_resource_state": "controlled_colocation",
+      "run_window_external_cpu_bucket": "external_c0_2",
+      "run_window_external_cpu_core_equiv": 0.04712442305104192,
+      "simultaneous_conservative_upper_makespan_s": 178.70870371209458,
+      "simultaneous_lower_service_units_per_s": 0.13429676060246493,
+      "simultaneous_lower_service_valid_on_holdout": false,
+      "state_signature": [
+        "node005",
+        "freqduet_cpu_native",
+        "freqduet",
+        "controlled_colocation",
+        "cpu_external_idle",
+        1,
+        4,
+        24.0,
+        "warm",
+        "colocation_count"
+      ],
+      "statewise_match": true,
+      "training_sample_count": 3,
+      "workload_env": "freqduet",
+      "workload_key": "freqduet_cpu_native"
+    },
+    {
+      "actual_makespan_s": 33.28804844408296,
+      "aggregate_service_units": 24.0,
+      "all_task_phase_models_ready": true,
+      "allocation_workers": 1,
+      "calibration_cell_id": "sumo_eval_cpu_native_node005_aw1_cc4_u6",
+      "calibration_ratio_scores": [
+        -0.008896168745907596,
+        -0.0012465813030755335,
+        -0.012017927405256423,
+        -0.005789606170685135,
+        -0.0027762386538207062,
+        0.003271869061584942,
+        -0.017913105460158008,
+        -0.034469988255592776,
+        -0.019369778523508963
+      ],
+      "calibration_sample_count": 9,
+      "cellwise_conservative_upper_makespan_s": 33.49072260805406,
+      "cellwise_lower_service_units_per_s": 0.7166163680872126,
+      "cellwise_lower_service_valid_on_holdout": true,
+      "colocation_count": 4,
+      "conformal_base_predicted_makespan_s": 33.38150270213373,
+      "conformal_rank": 9,
+      "conformal_ratio_margin": 0.003271869061584942,
+      "conservative_holdout_covered": true,
+      "conservative_upper_makespan_s": 34.57627419047161,
+      "dispatch_external_cpu_bucket": "external_c0_2",
+      "dispatch_external_cpu_core_equiv": 0.001991907874260815,
+      "dispatch_external_cpu_core_equiv_p95": 0.009959539371304078,
+      "dispatch_external_cpu_fraction": 1.0374520178441746e-05,
+      "dispatch_external_cpu_fraction_p95": 5.187260089220873e-05,
+      "dispatch_external_cpu_regime": "cpu_external_idle",
+      "dispatch_sample_count": 5,
+      "dispatch_state_ready": true,
+      "excluded_calibration_state_count": 0,
+      "excluded_training_state_count": 0,
+      "finite_sample_conformal_ready": true,
+      "frozen_conformal_group_phase_model": {
+        "aggregate_completion_unit_s": 1.2115828594580913,
+        "startup_overhead_s": 3.886956859286874,
+        "terminal_overhead_s": 0.4165572158526629
+      },
+      "frozen_group_phase_model": {
+        "aggregate_completion_unit_s": 1.2115828594580913,
+        "startup_overhead_s": 3.886956859286874,
+        "terminal_overhead_s": 0.4165572158526629
+      },
+      "init_cache_state": "warm",
+      "lower_service_bound_kind": "wave_max_simultaneous_split_conformal",
+      "lower_service_units_per_s": 0.6941175867529945,
+      "lower_service_valid_on_holdout": true,
+      "measurement_protocol": "dispatch_multisample_and_run_window_v3",
+      "min_interval_sample_count": 5,
+      "minimum_sample_counts_ready": true,
+      "minimum_training_sample_count": 3,
+      "miscoverage_alpha": 0.1,
+      "node": "node005",
+      "nonfinite_calibration_score_count": 0,
+      "observed_effective_resource_state": "controlled_colocation",
+      "observed_min_interval_sample_counts": [
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "operational_point_group_phase_model": {
+        "aggregate_completion_unit_s": 1.2074619772601483,
+        "startup_overhead_s": 3.831364066596143,
+        "terminal_overhead_s": 0.41661590291187167
+      },
+      "operational_point_predicted_makespan_s": 33.22706742375157,
+      "operational_point_sample_count": 12,
+      "point_predicted_makespan_s": 33.22706742375157,
+      "point_relative_error": 0.0018319193578988375,
+      "profile_axis": "colocation_count",
+      "raw_calibration_sample_count": 9,
+      "raw_training_sample_count": 3,
+      "ready": true,
+      "realized_service_units_per_s": 0.7209794842829264,
+      "run_window_effective_resource_state": "controlled_colocation",
+      "run_window_external_cpu_bucket": "external_c0_2",
+      "run_window_external_cpu_core_equiv": 0.0578730416563511,
+      "simultaneous_conservative_upper_makespan_s": 34.57627419047161,
+      "simultaneous_lower_service_units_per_s": 0.6941175867529945,
+      "simultaneous_lower_service_valid_on_holdout": true,
+      "state_signature": [
+        "node005",
+        "sumo_eval_cpu_native",
+        "sumo",
+        "controlled_colocation",
+        "cpu_external_idle",
+        1,
+        4,
+        24.0,
+        "warm",
+        "colocation_count"
+      ],
+      "statewise_match": true,
+      "training_sample_count": 3,
+      "workload_env": "sumo",
+      "workload_key": "sumo_eval_cpu_native"
+    }
+  ],
+  "schema_version": 1,
+  "simultaneous_wave_max_bound": {
+    "assumption": "The complete pre-registered calibration vectors and the future holdout vector are exchangeable at the wave level within the fixed exact cell family and dispatch-state targets.",
+    "calibration_wave_count": 9,
+    "conformal_rank": 9,
+    "conformal_ratio_margin": 0.03579142314229933,
+    "construction": "wave_max_simultaneous_split_conformal",
+    "exchangeability_unit": "complete_exact_cell_calibration_wave",
+    "expected_cell_count": 2,
+    "miscoverage_alpha": 0.1,
+    "nominal_simultaneous_family_coverage": 0.9,
+    "ready": true,
+    "ready_calibration_wave_count": 9,
+    "wave_diagnostics": [
+      {
+        "calibration_wave": 1,
+        "cell_score_count": 2,
+        "errors": [],
+        "ready": true,
+        "wave_max_ratio_score": 0.000520876402657855
+      },
+      {
+        "calibration_wave": 2,
+        "cell_score_count": 2,
+        "errors": [],
+        "ready": true,
+        "wave_max_ratio_score": 0.019544195892773564
+      },
+      {
+        "calibration_wave": 3,
+        "cell_score_count": 2,
+        "errors": [],
+        "ready": true,
+        "wave_max_ratio_score": 0.03401994834431443
+      },
+      {
+        "calibration_wave": 4,
+        "cell_score_count": 2,
+        "errors": [],
+        "ready": true,
+        "wave_max_ratio_score": 0.03455830225260548
+      },
+      {
+        "calibration_wave": 5,
+        "cell_score_count": 2,
+        "errors": [],
+        "ready": true,
+        "wave_max_ratio_score": -0.0027088428532658915
+      },
+      {
+        "calibration_wave": 6,
+        "cell_score_count": 2,
+        "errors": [],
+        "ready": true,
+        "wave_max_ratio_score": 0.003809284179772998
+      },
+      {
+        "calibration_wave": 7,
+        "cell_score_count": 2,
+        "errors": [],
+        "ready": true,
+        "wave_max_ratio_score": -0.017913105460158008
+      },
+      {
+        "calibration_wave": 8,
+        "cell_score_count": 2,
+        "errors": [],
+        "ready": true,
+        "wave_max_ratio_score": -0.010746593815382566
+      },
+      {
+        "calibration_wave": 9,
+        "cell_score_count": 2,
+        "errors": [],
+        "ready": true,
+        "wave_max_ratio_score": 0.03579142314229933
+      }
+    ],
+    "wave_max_ratio_scores": [
+      0.000520876402657855,
+      0.019544195892773564,
+      0.03401994834431443,
+      0.03455830225260548,
+      -0.0027088428532658915,
+      0.003809284179772998,
+      -0.017913105460158008,
+      -0.010746593815382566,
+      0.03579142314229933
+    ]
+  },
+  "status": "FAIL",
+  "training_paths": [
+    "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/native_cpu_colocation_state_targeted_p4_training_r01_20260727formal_node005_state_targeted_p4.json",
+    "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/native_cpu_colocation_state_targeted_p4_training_r02_20260727formal_node005_state_targeted_p4.json",
+    "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/native_cpu_colocation_state_targeted_p4_training_r03_20260727formal_node005_state_targeted_p4.json"
+  ]
+}

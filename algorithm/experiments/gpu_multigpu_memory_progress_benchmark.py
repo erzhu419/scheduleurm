@@ -29,6 +29,10 @@ def _progress(iterable, *, total: int, desc: str, unit: str):
         return iterable
 
 
+def _phase(name: str, event: str) -> None:
+    print(f"ScheduleurmPhase name={name} event={event}", flush=True)
+
+
 def _parse_devices(raw: str, count: int) -> list[int]:
     text = str(raw or "").strip()
     if text:
@@ -51,6 +55,7 @@ def main() -> int:
     parser.add_argument("--commit-reserve", action="store_true")
     args = parser.parse_args()
 
+    _phase("initialization", "start")
     import torch
 
     if not torch.cuda.is_available():
@@ -104,16 +109,20 @@ def main() -> int:
         flush=True,
     )
 
+    _phase("initialization", "end")
+    _phase("warmup", "start")
     for _ in range(max(0, int(args.warmup))):
         _step(mats)
     for dev_idx in devices:
         torch.cuda.synchronize(dev_idx)
+    _phase("warmup", "end")
 
     steps = max(1, int(args.steps))
     start = time.perf_counter()
     window_start = start
     window_steps = 0
     checksum = 0.0
+    _phase("outer_loop", "start")
     for step in _progress(range(1, steps + 1), total=steps, desc=str(args.label), unit="step"):
         checksum += _step(mats)
         window_steps += 1
@@ -133,6 +142,7 @@ def main() -> int:
             )
             window_start = now
             window_steps = 0
+    _phase("outer_loop", "end")
     print(f"BENCH_DONE checksum={checksum:.6g}", flush=True)
     return 0
 

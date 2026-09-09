@@ -1,0 +1,8 @@
+{
+  "cmd": [
+    "scheduler.run_on",
+    "node007-direct",
+    "export BAPR_PYTHON=/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python; export LD_LIBRARY_PATH=/cm/local/apps/cuda-driver/libs/535.261.03/lib64; export PATH=/cm/local/apps/cuda-driver/libs/535.261.03/bin:/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin:/usr/local/bin:/usr/bin:/bin; export XLA_PYTHON_CLIENT_MEM_FRACTION=0.20; set +e\nprintf \"HOST $(hostname)\n\"\nfor p in /home/zhengliang01/scheduleurm_work/RE-SAC /home/erzhu419/.venvs/resac-jax-gpu1-0438/bin/python /home/erzhu419/.conda/envs/bapr-jax/bin/python; do [ -e \"$p\" ] && echo EXISTS \"$p\" || echo MISSING \"$p\"; done\nif [ -x /home/erzhu419/.venvs/resac-jax-gpu1-0438/bin/python ]; then /home/erzhu419/.venvs/resac-jax-gpu1-0438/bin/python - <<'PY2'\ntry:\n import jax, gym\n print('JAX', jax.__version__, 'GYM', getattr(gym,'__version__','?'))\nexcept Exception as e:\n print('PYERR', type(e).__name__, str(e)[:200])\nPY2\nfi\n"
+  ],
+  "returncode": 0
+}

@@ -1,0 +1,2 @@
+374143 su zhengliang01 -s /bin/bash -c bash -c 'for p in $(pgrep -f ff_eta_t0_node001_sumo_p1to128_20260630 2>/dev/null || true); do [ "$p" = "$$" ] && continue; kill $p >/dev/null 2>&1 || true; done; sleep 1; pgrep -af ff_eta_t0_node001_sumo_p1to128_20260630 || true'
+374161 bash -c for p in $(pgrep -f ff_eta_t0_node001_sumo_p1to128_20260630 2>/dev/null || true); do [ "$p" = "$$" ] && continue; kill $p >/dev/null 2>&1 || true; done; sleep 1; pgrep -af ff_eta_t0_node001_sumo_p1to128_20260630 || true

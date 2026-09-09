@@ -1,0 +1,586 @@
+{
+  "admitted_count": 1,
+  "admitted_rows": [
+    {
+      "boundary_closed_profiles": [],
+      "capacity_boundary_profiles": [],
+      "config": {
+        "cwd": "/home/erzhu419/mine_code/scheduleurm",
+        "gpus": [
+          0,
+          1
+        ],
+        "max_iters": 160,
+        "node": "jtl311linux",
+        "stable_cycle_units": 0,
+        "template": "gpu_matmul_progress.cmd.tpl",
+        "template_values": {
+          "matrix_size": "2048"
+        },
+        "timeout_s": 1200
+      },
+      "eta_source_required": "tqdm/progress",
+      "family": "gpu_matmul",
+      "hardware_group": "gpu_rtx2080_8gb_dual_cpu_fast",
+      "launch_ready": true,
+      "launched": true,
+      "legacy_scheduler_limits_bypassed": true,
+      "measurement_valid": true,
+      "node": "jtl311linux",
+      "node_bucket": "jtl311linux:gpu_rtx2080_8gb_dual_cpu_fast",
+      "pending_reason": "",
+      "probe_result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1
+        ],
+        "node": "jtl311linux",
+        "pass": true,
+        "profiles": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          8
+        ],
+        "rate_count": 58,
+        "run_id": "ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty",
+        "stable_rate_ready_count": 58,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_1_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_2_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_3_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_4_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_5_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_6_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_8_per_gpu_summary.json"
+        ]
+      },
+      "profile_rows": [
+        {
+          "aggregate_stable_rate_unit_s": 783.451132,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 391.725566,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 1,
+          "running_count": 2,
+          "stable_rate_ready_count": 2,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 2
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_1_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 937.15748,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 234.28937,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 2,
+          "running_count": 4,
+          "stable_rate_ready_count": 4,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 4
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_2_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 1143.574501,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 190.59575016666668,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 3,
+          "running_count": 6,
+          "stable_rate_ready_count": 6,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 6
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_3_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 1370.2852229999999,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 171.285652875,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 4,
+          "running_count": 8,
+          "stable_rate_ready_count": 8,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 8
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_4_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 1265.71985,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 126.571985,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 5,
+          "running_count": 10,
+          "stable_rate_ready_count": 10,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 10
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_5_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 2085.133462,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 173.76112183333333,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 6,
+          "running_count": 12,
+          "stable_rate_ready_count": 12,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 12
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_6_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 2731.7084170000003,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 170.7317760625,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 8,
+          "running_count": 16,
+          "stable_rate_ready_count": 16,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 16
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_8_per_gpu_summary.json"
+        }
+      ],
+      "profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8
+      ],
+      "reason": "",
+      "resident_mix": "none",
+      "resource_state": "empty",
+      "row_id": "gpu_rtx2080_8gb_dual_cpu_fast|q01_low_cpu_high_gpu|gpu_heavy_jax_matmul|gpu_matmul|empty|none",
+      "run_id": "ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty",
+      "workload_env": "gpu_matmul",
+      "workload_key": "gpu_heavy_jax_matmul"
+    }
+  ],
+  "allow_launch": true,
+  "boundary_count": 0,
+  "boundary_rows": [],
+  "gate": "full_factorial_eta_probe_runner",
+  "launched_count": 1,
+  "pass": true,
+  "resource_state": "empty",
+  "rows": [
+    {
+      "boundary_closed_profiles": [],
+      "capacity_boundary_profiles": [],
+      "config": {
+        "cwd": "/home/erzhu419/mine_code/scheduleurm",
+        "gpus": [
+          0,
+          1
+        ],
+        "max_iters": 160,
+        "node": "jtl311linux",
+        "stable_cycle_units": 0,
+        "template": "gpu_matmul_progress.cmd.tpl",
+        "template_values": {
+          "matrix_size": "2048"
+        },
+        "timeout_s": 1200
+      },
+      "eta_source_required": "tqdm/progress",
+      "family": "gpu_matmul",
+      "hardware_group": "gpu_rtx2080_8gb_dual_cpu_fast",
+      "launch_ready": true,
+      "launched": true,
+      "legacy_scheduler_limits_bypassed": true,
+      "measurement_valid": true,
+      "node": "jtl311linux",
+      "node_bucket": "jtl311linux:gpu_rtx2080_8gb_dual_cpu_fast",
+      "pending_reason": "",
+      "probe_result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1
+        ],
+        "node": "jtl311linux",
+        "pass": true,
+        "profiles": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          8
+        ],
+        "rate_count": 58,
+        "run_id": "ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty",
+        "stable_rate_ready_count": 58,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_1_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_2_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_3_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_4_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_5_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_6_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_8_per_gpu_summary.json"
+        ]
+      },
+      "profile_rows": [
+        {
+          "aggregate_stable_rate_unit_s": 783.451132,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 391.725566,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 1,
+          "running_count": 2,
+          "stable_rate_ready_count": 2,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 2
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_1_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 937.15748,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 234.28937,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 2,
+          "running_count": 4,
+          "stable_rate_ready_count": 4,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 4
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_2_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 1143.574501,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 190.59575016666668,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 3,
+          "running_count": 6,
+          "stable_rate_ready_count": 6,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 6
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_3_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 1370.2852229999999,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 171.285652875,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 4,
+          "running_count": 8,
+          "stable_rate_ready_count": 8,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 8
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_4_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 1265.71985,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 126.571985,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 5,
+          "running_count": 10,
+          "stable_rate_ready_count": 10,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 10
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_5_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 2085.133462,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 173.76112183333333,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 6,
+          "running_count": 12,
+          "stable_rate_ready_count": 12,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 12
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_6_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 2731.7084170000003,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 170.7317760625,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 8,
+          "running_count": 16,
+          "stable_rate_ready_count": 16,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 16
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_8_per_gpu_summary.json"
+        }
+      ],
+      "profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8
+      ],
+      "reason": "",
+      "resident_mix": "none",
+      "resource_state": "empty",
+      "row_id": "gpu_rtx2080_8gb_dual_cpu_fast|q01_low_cpu_high_gpu|gpu_heavy_jax_matmul|gpu_matmul|empty|none",
+      "run_id": "ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty",
+      "workload_env": "gpu_matmul",
+      "workload_key": "gpu_heavy_jax_matmul"
+    }
+  ],
+  "run_prefix": "ff_eta_t0_jtl311_matmul_p1234568_20260630",
+  "scope": "Controlled full-factorial ETA probes.  Launches bypass the legacy scheduler dispatch path and require task-native tqdm/progress.  Invalid profiles are retained as scoped capacity/instability boundaries for the exact node/workload/state.",
+  "selected_count": 1,
+  "service_cache_snapshot": {
+    "capacity_boundaries": [],
+    "records": [
+      {
+        "aggregate_rate": 391.725566,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_rtx2080_8gb_dual_cpu_fast",
+        "node_bucket": "jtl311linux:gpu_rtx2080_8gb_dual_cpu_fast",
+        "per_task_rates": [
+          392.626117,
+          390.825015
+        ],
+        "profile": 1,
+        "resource_kind": "gpu_matmul",
+        "resource_state": "empty",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_1_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 160.0,
+        "unit": "step",
+        "workload_env": "gpu_matmul",
+        "workload_key": "gpu_heavy_jax_matmul"
+      },
+      {
+        "aggregate_rate": 468.57874,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_rtx2080_8gb_dual_cpu_fast",
+        "node_bucket": "jtl311linux:gpu_rtx2080_8gb_dual_cpu_fast",
+        "per_task_rates": [
+          186.67198,
+          205.161406,
+          347.762002,
+          197.562092
+        ],
+        "profile": 2,
+        "resource_kind": "gpu_matmul",
+        "resource_state": "empty",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_2_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 160.0,
+        "unit": "step",
+        "workload_env": "gpu_matmul",
+        "workload_key": "gpu_heavy_jax_matmul"
+      },
+      {
+        "aggregate_rate": 571.7872505,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_rtx2080_8gb_dual_cpu_fast",
+        "node_bucket": "jtl311linux:gpu_rtx2080_8gb_dual_cpu_fast",
+        "per_task_rates": [
+          168.688267,
+          125.049771,
+          168.678352,
+          338.798874,
+          163.870036,
+          178.489201
+        ],
+        "profile": 3,
+        "resource_kind": "gpu_matmul",
+        "resource_state": "empty",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_3_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 160.0,
+        "unit": "step",
+        "workload_env": "gpu_matmul",
+        "workload_key": "gpu_heavy_jax_matmul"
+      },
+      {
+        "aggregate_rate": 685.1426114999999,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_rtx2080_8gb_dual_cpu_fast",
+        "node_bucket": "jtl311linux:gpu_rtx2080_8gb_dual_cpu_fast",
+        "per_task_rates": [
+          185.969093,
+          176.127087,
+          94.516741,
+          95.570198,
+          122.101912,
+          159.117165,
+          382.624834,
+          154.258193
+        ],
+        "profile": 4,
+        "resource_kind": "gpu_matmul",
+        "resource_state": "empty",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_4_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 160.0,
+        "unit": "step",
+        "workload_env": "gpu_matmul",
+        "workload_key": "gpu_heavy_jax_matmul"
+      },
+      {
+        "aggregate_rate": 632.859925,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_rtx2080_8gb_dual_cpu_fast",
+        "node_bucket": "jtl311linux:gpu_rtx2080_8gb_dual_cpu_fast",
+        "per_task_rates": [
+          74.031567,
+          80.981702,
+          305.835892,
+          74.758114,
+          74.845647,
+          82.870596,
+          258.475634,
+          151.311768,
+          83.268103,
+          79.340827
+        ],
+        "profile": 5,
+        "resource_kind": "gpu_matmul",
+        "resource_state": "empty",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_5_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 160.0,
+        "unit": "step",
+        "workload_env": "gpu_matmul",
+        "workload_key": "gpu_heavy_jax_matmul"
+      },
+      {
+        "aggregate_rate": 1042.566731,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_rtx2080_8gb_dual_cpu_fast",
+        "node_bucket": "jtl311linux:gpu_rtx2080_8gb_dual_cpu_fast",
+        "per_task_rates": [
+          89.377283,
+          63.060278,
+          66.162637,
+          392.575234,
+          67.56138,
+          156.080528,
+          146.340399,
+          415.331399,
+          391.948762,
+          97.392119,
+          101.204131,
+          98.099312
+        ],
+        "profile": 6,
+        "resource_kind": "gpu_matmul",
+        "resource_state": "empty",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_6_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 160.0,
+        "unit": "step",
+        "workload_env": "gpu_matmul",
+        "workload_key": "gpu_heavy_jax_matmul"
+      },
+      {
+        "aggregate_rate": 1365.8542085000001,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_rtx2080_8gb_dual_cpu_fast",
+        "node_bucket": "jtl311linux:gpu_rtx2080_8gb_dual_cpu_fast",
+        "per_task_rates": [
+          99.201042,
+          97.304523,
+          379.945314,
+          111.672409,
+          187.773182,
+          105.134792,
+          180.847129,
+          99.23968,
+          238.136831,
+          92.127525,
+          70.196924,
+          391.535035,
+          154.988693,
+          118.25934,
+          336.493231,
+          68.852767
+        ],
+        "profile": 8,
+        "resource_kind": "gpu_matmul",
+        "resource_state": "empty",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_eta_t0_jtl311_matmul_p1234568_20260630_jtl311linux_gpu_heavy_jax_matmul_gpu_matmul_empty/reports/profile_8_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 160.0,
+        "unit": "step",
+        "workload_env": "gpu_matmul",
+        "workload_key": "gpu_heavy_jax_matmul"
+      }
+    ]
+  },
+  "status": "PROBE_RUNNER_LAUNCHED",
+  "tier": "T0_core_curve"
+}

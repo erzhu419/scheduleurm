@@ -1,0 +1,322 @@
+{
+  "admitted_count": 0,
+  "admitted_rows": [],
+  "allow_launch": true,
+  "boundary_count": 0,
+  "boundary_rows": [],
+  "gate": "full_factorial_eta_probe_runner",
+  "launched_count": 1,
+  "max_profiles": 0,
+  "pass": true,
+  "resource_state": "full_loaded",
+  "rows": [
+    {
+      "boundary_closed_profiles": [],
+      "capacity_boundary_profiles": [],
+      "config": {
+        "cwd": "/home/erzhu419/mine_code/BAPR",
+        "gpus": [
+          0,
+          1
+        ],
+        "max_iters": 200,
+        "node": "jtl311linux",
+        "stable_cycle_units": 5,
+        "template": "bapr_ant_real.cmd.tpl",
+        "template_values": {},
+        "timeout_s": 2400
+      },
+      "eta_source_required": "tqdm/progress",
+      "family": "hybrid_rl",
+      "hardware_group": "gpu_rtx2080_8gb_dual_cpu_fast",
+      "launch_ready": true,
+      "launched": true,
+      "legacy_scheduler_limits_bypassed": true,
+      "measurement_valid": false,
+      "node": "jtl311linux",
+      "node_bucket": "jtl311linux:gpu_rtx2080_8gb_dual_cpu_fast",
+      "pending_reason": "",
+      "probe_result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1
+        ],
+        "node": "jtl311linux",
+        "pass": false,
+        "profiles": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "rate_count": 36,
+        "run_id": "ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl311_cpu_fast_jtl311linux_full_loaded_hybrid_rl_bapr_ant_jtl311linux_hybrid_rl_bapr_ant_bapr_ant_full_loaded",
+        "stable_rate_ready_count": 36,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl311_cpu_fast_jtl311linux_full_loaded_hybrid_rl_bapr_ant_jtl311linux_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_1_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl311_cpu_fast_jtl311linux_full_loaded_hybrid_rl_bapr_ant_jtl311linux_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_2_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl311_cpu_fast_jtl311linux_full_loaded_hybrid_rl_bapr_ant_jtl311linux_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_3_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl311_cpu_fast_jtl311linux_full_loaded_hybrid_rl_bapr_ant_jtl311linux_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_4_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl311_cpu_fast_jtl311linux_full_loaded_hybrid_rl_bapr_ant_jtl311linux_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_5_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl311_cpu_fast_jtl311linux_full_loaded_hybrid_rl_bapr_ant_jtl311linux_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_6_per_gpu_summary.json"
+        ]
+      },
+      "profile_rows": [
+        {
+          "aggregate_stable_rate_unit_s": 0.242136429,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.1210682145,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 1,
+          "running_count": 2,
+          "stable_rate_ready_count": 2,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 2
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl311_cpu_fast_jtl311linux_full_loaded_hybrid_rl_bapr_ant_jtl311linux_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_1_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.23165304720000002,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.057913261800000004,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 2,
+          "running_count": 4,
+          "stable_rate_ready_count": 4,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 4
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl311_cpu_fast_jtl311linux_full_loaded_hybrid_rl_bapr_ant_jtl311linux_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_2_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.0,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.0,
+          "measurement_valid": false,
+          "path_exists": true,
+          "profile": 3,
+          "running_count": 6,
+          "stable_rate_ready_count": 0,
+          "status_counts": {
+            "missing_rate": 6,
+            "sampled": 0
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl311_cpu_fast_jtl311linux_full_loaded_hybrid_rl_bapr_ant_jtl311linux_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_3_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.2300705133,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.0287588141625,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 4,
+          "running_count": 8,
+          "stable_rate_ready_count": 8,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 8
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl311_cpu_fast_jtl311linux_full_loaded_hybrid_rl_bapr_ant_jtl311linux_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_4_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.31960575680000003,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.03196057568,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 5,
+          "running_count": 10,
+          "stable_rate_ready_count": 10,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 10
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl311_cpu_fast_jtl311linux_full_loaded_hybrid_rl_bapr_ant_jtl311linux_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_5_per_gpu_summary.json"
+        },
+        {
+          "aggregate_stable_rate_unit_s": 0.2314030389,
+          "eta_source": "tqdm/progress",
+          "mean_stable_rate_unit_s": 0.019283586575,
+          "measurement_valid": true,
+          "path_exists": true,
+          "profile": 6,
+          "running_count": 12,
+          "stable_rate_ready_count": 12,
+          "status_counts": {
+            "missing_rate": 0,
+            "sampled": 12
+          },
+          "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl311_cpu_fast_jtl311linux_full_loaded_hybrid_rl_bapr_ant_jtl311linux_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_6_per_gpu_summary.json"
+        }
+      ],
+      "profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "reason": "one_or_more_profiles_unstable_or_capacity_boundary",
+      "resident_mix": "same_workload_to_capacity_boundary",
+      "resource_state": "full_loaded",
+      "row_id": "gpu_rtx2080_8gb_dual_cpu_fast|q11_high_cpu_high_gpu|hybrid_rl_bapr_ant|bapr_ant|full_loaded|same_workload_to_capacity_boundary",
+      "run_id": "ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl311_cpu_fast_jtl311linux_full_loaded_hybrid_rl_bapr_ant_jtl311linux_hybrid_rl_bapr_ant_bapr_ant_full_loaded",
+      "workload_env": "bapr_ant",
+      "workload_key": "hybrid_rl_bapr_ant"
+    }
+  ],
+  "run_prefix": "ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl311_cpu_fast_jtl311linux_full_loaded_hybrid_rl_bapr_ant",
+  "scope": "Controlled full-factorial ETA probes.  Launches bypass the legacy scheduler dispatch path and require task-native tqdm/progress.  Invalid profiles are retained as scoped capacity/instability boundaries for the exact node/workload/state.",
+  "selected_count": 1,
+  "service_cache_snapshot": {
+    "capacity_boundaries": [],
+    "records": [
+      {
+        "aggregate_rate": 0.1210682145,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_rtx2080_8gb_dual_cpu_fast",
+        "node_bucket": "jtl311linux:gpu_rtx2080_8gb_dual_cpu_fast",
+        "per_task_rates": [
+          0.121654501,
+          0.120481928
+        ],
+        "profile": 1,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl311_cpu_fast_jtl311linux_full_loaded_hybrid_rl_bapr_ant_jtl311linux_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_1_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "bapr_ant",
+        "workload_key": "hybrid_rl_bapr_ant"
+      },
+      {
+        "aggregate_rate": 0.11582652360000001,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_rtx2080_8gb_dual_cpu_fast",
+        "node_bucket": "jtl311linux:gpu_rtx2080_8gb_dual_cpu_fast",
+        "per_task_rates": [
+          0.0580046404,
+          0.0566893424,
+          0.0584795322,
+          0.0584795322
+        ],
+        "profile": 2,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl311_cpu_fast_jtl311linux_full_loaded_hybrid_rl_bapr_ant_jtl311linux_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_2_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "bapr_ant",
+        "workload_key": "hybrid_rl_bapr_ant"
+      },
+      {
+        "aggregate_rate": 0.11503525665,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_rtx2080_8gb_dual_cpu_fast",
+        "node_bucket": "jtl311linux:gpu_rtx2080_8gb_dual_cpu_fast",
+        "per_task_rates": [
+          0.0284090909,
+          0.0284252416,
+          0.0282167043,
+          0.028280543,
+          0.0290360046,
+          0.0291375291,
+          0.0292226768,
+          0.029342723
+        ],
+        "profile": 4,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl311_cpu_fast_jtl311linux_full_loaded_hybrid_rl_bapr_ant_jtl311linux_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_4_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "bapr_ant",
+        "workload_key": "hybrid_rl_bapr_ant"
+      },
+      {
+        "aggregate_rate": 0.15980287840000001,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_rtx2080_8gb_dual_cpu_fast",
+        "node_bucket": "jtl311linux:gpu_rtx2080_8gb_dual_cpu_fast",
+        "per_task_rates": [
+          0.0226860254,
+          0.0225835592,
+          0.110375276,
+          0.0226346763,
+          0.0233100233,
+          0.0236630383,
+          0.0235072873,
+          0.0236854571,
+          0.0239693193,
+          0.0231910946
+        ],
+        "profile": 5,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl311_cpu_fast_jtl311linux_full_loaded_hybrid_rl_bapr_ant_jtl311linux_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_5_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "bapr_ant",
+        "workload_key": "hybrid_rl_bapr_ant"
+      },
+      {
+        "aggregate_rate": 0.11570151945,
+        "capacity_boundary": false,
+        "command_fingerprint": "live_tqdm_service_cache_v2_full_factorial_20260630",
+        "eta_source": "tqdm/progress",
+        "gpu_count_observed": 2,
+        "hardware_class": "gpu_rtx2080_8gb_dual_cpu_fast",
+        "node_bucket": "jtl311linux:gpu_rtx2080_8gb_dual_cpu_fast",
+        "per_task_rates": [
+          0.0189035917,
+          0.0190258752,
+          0.0189035917,
+          0.0188821752,
+          0.0191058464,
+          0.0188253012,
+          0.0194552529,
+          0.0194250194,
+          0.0194174757,
+          0.019554165,
+          0.0200240288,
+          0.0198807157
+        ],
+        "profile": 6,
+        "resource_kind": "hybrid_rl",
+        "resource_state": "full_loaded",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/ff_parallel_eta_t0_full_wave2_20260630_gpu_jtl311_cpu_fast_jtl311linux_full_loaded_hybrid_rl_bapr_ant_jtl311linux_hybrid_rl_bapr_ant_bapr_ant_full_loaded/reports/profile_6_per_gpu_summary.json",
+        "stable_rate_ready": true,
+        "total_units": 200.0,
+        "unit": "iter",
+        "workload_env": "bapr_ant",
+        "workload_key": "hybrid_rl_bapr_ant"
+      }
+    ]
+  },
+  "status": "PROBE_RUNNER_LAUNCHED",
+  "tier": "T0_core_curve"
+}

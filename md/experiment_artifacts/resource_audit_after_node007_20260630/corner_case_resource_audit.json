@@ -1,0 +1,2564 @@
+{
+  "created_at_unix": 1782861877.9254794,
+  "gate": "corner_case_resource_audit",
+  "nodes": [
+    {
+      "node": "jtl110gpu",
+      "parsed": {
+        "availability_class": "gpu_and_cpu_busy",
+        "cpu_busy": true,
+        "external_busy_process_count": 0,
+        "external_busy_processes": [],
+        "gpu_busy": true,
+        "gpus": [
+          {
+            "index": 0,
+            "memory_total_mb": 12288,
+            "memory_used_mb": 3149,
+            "name": "NVIDIA GeForce RTX 3080 Ti",
+            "utilization_gpu_pct": 100
+          },
+          {
+            "index": 1,
+            "memory_total_mb": 12288,
+            "memory_used_mb": 3397,
+            "name": "NVIDIA GeForce RTX 3080 Ti",
+            "utilization_gpu_pct": 100
+          }
+        ],
+        "hostname": "huiwei-Super-Server",
+        "loadavg_15m": 8.54,
+        "loadavg_1m": 9.41,
+        "loadavg_5m": 9.66,
+        "mem_available_kb": 504399876,
+        "mem_total_kb": 527787692,
+        "nproc": 24,
+        "processes": [
+          {
+            "args": "/home/erzhu419/.venvs/resac-jax-gpu1-0438/bin/python -u -m jax_experiments.train --algo resac --env Hopper-v2 --seed 700000 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded_profile_4_per_gpu_gpu0_0",
+            "command": "python",
+            "pcpu": 127.0,
+            "pid": 2475806,
+            "pmem": 0.4,
+            "scheduleurm_probe": true
+          },
+          {
+            "args": "/home/erzhu419/.venvs/resac-jax-gpu1-0438/bin/python -u -m jax_experiments.train --algo resac --env Hopper-v2 --seed 700005 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded_profile_4_per_gpu_gpu1_5",
+            "command": "python",
+            "pcpu": 127.0,
+            "pid": 2475805,
+            "pmem": 0.4,
+            "scheduleurm_probe": true
+          },
+          {
+            "args": "/home/erzhu419/.venvs/resac-jax-gpu1-0438/bin/python -u -m jax_experiments.train --algo resac --env Hopper-v2 --seed 700001 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded_profile_4_per_gpu_gpu0_1",
+            "command": "python",
+            "pcpu": 127.0,
+            "pid": 2475807,
+            "pmem": 0.4,
+            "scheduleurm_probe": true
+          },
+          {
+            "args": "/home/erzhu419/.venvs/resac-jax-gpu1-0438/bin/python -u -m jax_experiments.train --algo resac --env Hopper-v2 --seed 700007 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded_profile_4_per_gpu_gpu1_7",
+            "command": "python",
+            "pcpu": 127.0,
+            "pid": 2475809,
+            "pmem": 0.4,
+            "scheduleurm_probe": true
+          },
+          {
+            "args": "/home/erzhu419/.venvs/resac-jax-gpu1-0438/bin/python -u -m jax_experiments.train --algo resac --env Hopper-v2 --seed 700002 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded_profile_4_per_gpu_gpu0_2",
+            "command": "python",
+            "pcpu": 127.0,
+            "pid": 2475810,
+            "pmem": 0.4,
+            "scheduleurm_probe": true
+          },
+          {
+            "args": "/home/erzhu419/.venvs/resac-jax-gpu1-0438/bin/python -u -m jax_experiments.train --algo resac --env Hopper-v2 --seed 700003 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded_profile_4_per_gpu_gpu0_3",
+            "command": "python",
+            "pcpu": 126.0,
+            "pid": 2475808,
+            "pmem": 0.4,
+            "scheduleurm_probe": true
+          },
+          {
+            "args": "/home/erzhu419/.venvs/resac-jax-gpu1-0438/bin/python -u -m jax_experiments.train --algo resac --env Hopper-v2 --seed 700004 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded_profile_4_per_gpu_gpu1_4",
+            "command": "python",
+            "pcpu": 126.0,
+            "pid": 2475811,
+            "pmem": 0.4,
+            "scheduleurm_probe": true
+          },
+          {
+            "args": "/home/erzhu419/.venvs/resac-jax-gpu1-0438/bin/python -u -m jax_experiments.train --algo resac --env Hopper-v2 --seed 700006 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded_profile_4_per_gpu_gpu1_6",
+            "command": "python",
+            "pcpu": 126.0,
+            "pid": 2475812,
+            "pmem": 0.4,
+            "scheduleurm_probe": true
+          },
+          {
+            "args": "/tmp/scheduleurm-k3s/bin/k3s server",
+            "command": "k3s-server",
+            "pcpu": 13.1,
+            "pid": 31905,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "gpushare-device-plugin -logtostderr --v=5 --memory-unit=GiB",
+            "command": "gpushare-device",
+            "pcpu": 11.0,
+            "pid": 821622,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock",
+            "command": "dockerd",
+            "pcpu": 3.5,
+            "pid": 31381,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/local/bin/etcd --listen-client-urls=http://0.0.0.0:2379 --advertise-client-urls=http://iadeep-etcd.iadeep.svc.cluster.local:2379",
+            "command": "etcd",
+            "pcpu": 1.0,
+            "pid": 2750936,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "gpushare-sche-extender",
+            "command": "gpushare-sche-e",
+            "pcpu": 0.6,
+            "pid": 2750630,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/bin/containerd",
+            "command": "containerd",
+            "pcpu": 0.4,
+            "pid": 8529,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kworker/u48:0-p]",
+            "command": "kworker/u48:0-p",
+            "pcpu": 0.4,
+            "pid": 2446655,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "kube-scheduler --config=/etc/kubernetes/scheduler-config.yaml --v=3 --secure-port=10269",
+            "command": "kube-scheduler",
+            "pcpu": 0.4,
+            "pid": 2750935,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/home/huiwei/frpembed/frpc -c /home/huiwei/frpembed/frpc.toml",
+            "command": "frpc",
+            "pcpu": 0.3,
+            "pid": 7544,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/coredns -conf /etc/coredns/Corefile",
+            "command": "coredns",
+            "pcpu": 0.3,
+            "pid": 2751746,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[irq/191-nvidia]",
+            "command": "irq/191-nvidia",
+            "pcpu": 0.2,
+            "pid": 1379,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[irq/192-nvidia]",
+            "command": "irq/192-nvidia",
+            "pcpu": 0.2,
+            "pid": 1430,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kswapd0]",
+            "command": "kswapd0",
+            "pcpu": 0.1,
+            "pid": 244,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[nvidia-modeset/]",
+            "command": "nvidia-modeset/",
+            "pcpu": 0.1,
+            "pid": 793,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/bin/gnome-shell",
+            "command": "gnome-shell",
+            "pcpu": 0.1,
+            "pid": 1502,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/lib/gnome-settings-daemon/gsd-color",
+            "command": "gsd-color",
+            "pcpu": 0.1,
+            "pid": 1588,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/bin/gnome-shell",
+            "command": "gnome-shell",
+            "pcpu": 0.1,
+            "pid": 32417,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          }
+        ],
+        "safe_for_cpu_probe": false,
+        "safe_for_gpu_only_probe": false,
+        "safe_for_hybrid_probe": false
+      },
+      "raw_stderr": "",
+      "raw_stdout": "huiwei-Super-Server\nNPROC=24\nLOADAVG=9.41 9.66 8.54\nMemTotal:527787692\nMemAvailable:504399876\n0, NVIDIA GeForce RTX 3080 Ti, 3149, 12288, 100\n1, NVIDIA GeForce RTX 3080 Ti, 3397, 12288, 100\n__SCHEDULEURM_PROCESS_SNAPSHOT__\n2475806  127  0.4 python          /home/erzhu419/.venvs/resac-jax-gpu1-0438/bin/python -u -m jax_experiments.train --algo resac --env Hopper-v2 --seed 700000 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded_profile_4_per_gpu_gpu0_0\n2475805  127  0.4 python          /home/erzhu419/.venvs/resac-jax-gpu1-0438/bin/python -u -m jax_experiments.train --algo resac --env Hopper-v2 --seed 700005 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded_profile_4_per_gpu_gpu1_5\n2475807  127  0.4 python          /home/erzhu419/.venvs/resac-jax-gpu1-0438/bin/python -u -m jax_experiments.train --algo resac --env Hopper-v2 --seed 700001 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded_profile_4_per_gpu_gpu0_1\n2475809  127  0.4 python          /home/erzhu419/.venvs/resac-jax-gpu1-0438/bin/python -u -m jax_experiments.train --algo resac --env Hopper-v2 --seed 700007 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded_profile_4_per_gpu_gpu1_7\n2475810  127  0.4 python          /home/erzhu419/.venvs/resac-jax-gpu1-0438/bin/python -u -m jax_experiments.train --algo resac --env Hopper-v2 --seed 700002 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded_profile_4_per_gpu_gpu0_2\n2475808  126  0.4 python          /home/erzhu419/.venvs/resac-jax-gpu1-0438/bin/python -u -m jax_experiments.train --algo resac --env Hopper-v2 --seed 700003 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded_profile_4_per_gpu_gpu0_3\n2475811  126  0.4 python          /home/erzhu419/.venvs/resac-jax-gpu1-0438/bin/python -u -m jax_experiments.train --algo resac --env Hopper-v2 --seed 700004 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded_profile_4_per_gpu_gpu1_4\n2475812  126  0.4 python          /home/erzhu419/.venvs/resac-jax-gpu1-0438/bin/python -u -m jax_experiments.train --algo resac --env Hopper-v2 --seed 700006 --max_iters 200 --checkpoint_interval 0 --checkpoint_keep 1 --save_root /tmp/scheduleurm_full_factorial_eta/ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded --backend spring --device gpu --stationary --beta -2.0 --beta_ood 0.001 --weight_reg 0.001 --beta_bc 0.0001 --beta_start -2.0 --beta_warmup 0.2 --adaptive_beta --ensemble_size 10 --beta_end -1.0 --ema_tau 0.0 --anchor_lambda 0.01 --independent_ratio 0.5 --run_name ff_eta_t0_full_rl_jtl110gpu_20260630_jtl110gpu_hybrid_rl_resac_hopper_hopper_full_loaded_profile_4_per_gpu_gpu1_6\n  31905 13.1  0.0 k3s-server      /tmp/scheduleurm-k3s/bin/k3s server\n 821622 11.0  0.0 gpushare-device gpushare-device-plugin -logtostderr --v=5 --memory-unit=GiB\n  31381  3.5  0.0 dockerd         /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock\n2750936  1.0  0.0 etcd            /usr/local/bin/etcd --listen-client-urls=http://0.0.0.0:2379 --advertise-client-urls=http://iadeep-etcd.iadeep.svc.cluster.local:2379\n2750630  0.6  0.0 gpushare-sche-e gpushare-sche-extender\n   8529  0.4  0.0 containerd      /usr/bin/containerd\n2446655  0.4  0.0 kworker/u48:0-p [kworker/u48:0-p]\n2750935  0.4  0.0 kube-scheduler  kube-scheduler --config=/etc/kubernetes/scheduler-config.yaml --v=3 --secure-port=10269\n   7544  0.3  0.0 frpc            /home/huiwei/frpembed/frpc -c /home/huiwei/frpembed/frpc.toml\n2751746  0.3  0.0 coredns         /coredns -conf /etc/coredns/Corefile\n   1379  0.2  0.0 irq/191-nvidia  [irq/191-nvidia]\n   1430  0.2  0.0 irq/192-nvidia  [irq/192-nvidia]\n    244  0.1  0.0 kswapd0         [kswapd0]\n    793  0.1  0.0 nvidia-modeset/ [nvidia-modeset/]\n   1502  0.1  0.0 gnome-shell     /usr/bin/gnome-shell\n   1588  0.1  0.0 gsd-color       /usr/lib/gnome-settings-daemon/gsd-color\n  32417  0.1  0.0 gnome-shell     /usr/bin/gnome-shell\n",
+      "reachable": true,
+      "returncode": 0
+    },
+    {
+      "node": "jtl110gpu2",
+      "parsed": {
+        "availability_class": "cpu_busy_gpu_idle",
+        "cpu_busy": true,
+        "external_busy_process_count": 1,
+        "external_busy_processes": [
+          {
+            "args": "/home/erzhu419/scomp-simbench-py312/bin/python scripts/revision/simbench_power_cache.py --scale L1 --min-completeness 0.95 --layer-k 8 --mi-mode screened --mi-knn 5 --pearson-screen-k 32 --n-jobs 16 --batch-size 64 --powerflow-checkpoint-every 128 --update-registry",
+            "command": "python",
+            "pcpu": 174.0,
+            "pid": 2694459,
+            "pmem": 1.7,
+            "scheduleurm_probe": false
+          }
+        ],
+        "gpu_busy": false,
+        "gpus": [
+          {
+            "index": 0,
+            "memory_total_mb": 12288,
+            "memory_used_mb": 152,
+            "name": "NVIDIA GeForce RTX 3080 Ti",
+            "utilization_gpu_pct": 0
+          },
+          {
+            "index": 1,
+            "memory_total_mb": 12288,
+            "memory_used_mb": 10,
+            "name": "NVIDIA GeForce RTX 3080 Ti",
+            "utilization_gpu_pct": 0
+          }
+        ],
+        "hostname": "erzhu419-Super-Server",
+        "loadavg_15m": 4.73,
+        "loadavg_1m": 4.51,
+        "loadavg_5m": 4.74,
+        "mem_available_kb": 513154488,
+        "mem_total_kb": 527766788,
+        "nproc": 24,
+        "processes": [
+          {
+            "args": "/home/erzhu419/scomp-simbench-py312/bin/python scripts/revision/simbench_power_cache.py --scale L1 --min-completeness 0.95 --layer-k 8 --mi-mode screened --mi-knn 5 --pearson-screen-k 32 --n-jobs 16 --batch-size 64 --powerflow-checkpoint-every 128 --update-registry",
+            "command": "python",
+            "pcpu": 174.0,
+            "pid": 2694459,
+            "pmem": 1.7,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "ps -eo pid=,pcpu=,pmem=,comm=,args= --sort=-pcpu",
+            "command": "ps",
+            "pcpu": 100.0,
+            "pid": 3462264,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/snap/snapd/current/usr/bin/snap run --timer=00:00-24:00/8 firmware-updater.firmware-notifier",
+            "command": "snap",
+            "pcpu": 1.8,
+            "pid": 3462188,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/home/erzhu419/frpembed/frpc -c /home/erzhu419/frpembed/frpc.toml",
+            "command": "frpc",
+            "pcpu": 0.8,
+            "pid": 1016393,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "sshd: erzhu419@notty",
+            "command": "sshd",
+            "pcpu": 0.6,
+            "pid": 3375177,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "phy [mt76-usb-rx phy0]",
+            "command": "mt76-usb-rx",
+            "pcpu": 0.3,
+            "pid": 902,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "sshd: unknown [priv]",
+            "command": "sshd",
+            "pcpu": 0.3,
+            "pid": 3462225,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/bin/gnome-shell",
+            "command": "gnome-shell",
+            "pcpu": 0.3,
+            "pid": 2317,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "phy0    [mt76-tx phy0]",
+            "command": "mt76-tx",
+            "pcpu": 0.2,
+            "pid": 1127,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kworker/u96:2-kvfree_rcu_reclaim]",
+            "command": "kworker/u96:2-k",
+            "pcpu": 0.1,
+            "pid": 3430630,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kworker/u96:3-kvfree_rcu_reclaim]",
+            "command": "kworker/u96:3-k",
+            "pcpu": 0.1,
+            "pid": 3450559,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kworker/u96:0-mt76]",
+            "command": "kworker/u96:0-m",
+            "pcpu": 0.1,
+            "pid": 3440888,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kworker/u96:1-flush-259:0]",
+            "command": "kworker/u96:1-f",
+            "pcpu": 0.1,
+            "pid": 3453780,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[mt76-usb-status phy0]",
+            "command": "mt76-usb-status",
+            "pcpu": 0.1,
+            "pid": 903,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/sbin/slurmctld --systemd",
+            "command": "slurmctld",
+            "pcpu": 0.1,
+            "pid": 2964,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kworker/u96:4-mt76]",
+            "command": "kworker/u96:4-m",
+            "pcpu": 0.1,
+            "pid": 3458703,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[irq/207-nvidia]",
+            "command": "irq/207-nvidia",
+            "pcpu": 0.0,
+            "pid": 932,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/lib/systemd/systemd --user",
+            "command": "systemd",
+            "pcpu": 0.0,
+            "pid": 1878,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[irq/208-nvidia]",
+            "command": "irq/208-nvidia",
+            "pcpu": 0.0,
+            "pid": 1130,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[rcu_preempt]",
+            "command": "rcu_preempt",
+            "pcpu": 0.0,
+            "pid": 15,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/lib/systemd/systemd-oomd",
+            "command": "systemd-oomd",
+            "pcpu": 0.0,
+            "pid": 1523,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/lib/systemd/systemd-journald",
+            "command": "systemd-journal",
+            "pcpu": 0.0,
+            "pid": 528,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "@dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only",
+            "command": "dbus-daemon",
+            "pcpu": 0.0,
+            "pid": 1536,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[nvidia-modeset/kthread_q]",
+            "command": "nvidia-modeset/",
+            "pcpu": 0.0,
+            "pid": 928,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/sbin/init splash",
+            "command": "systemd",
+            "pcpu": 0.0,
+            "pid": 1,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          }
+        ],
+        "safe_for_cpu_probe": false,
+        "safe_for_gpu_only_probe": true,
+        "safe_for_hybrid_probe": false
+      },
+      "raw_stderr": "",
+      "raw_stdout": "erzhu419-Super-Server\nNPROC=24\nLOADAVG=4.51 4.74 4.73\nMemTotal:527766788\nMemAvailable:513154488\n0, NVIDIA GeForce RTX 3080 Ti, 152, 12288, 0\n1, NVIDIA GeForce RTX 3080 Ti, 10, 12288, 0\n__SCHEDULEURM_PROCESS_SNAPSHOT__\n2694459  174  1.7 python          /home/erzhu419/scomp-simbench-py312/bin/python scripts/revision/simbench_power_cache.py --scale L1 --min-completeness 0.95 --layer-k 8 --mi-mode screened --mi-knn 5 --pearson-screen-k 32 --n-jobs 16 --batch-size 64 --powerflow-checkpoint-every 128 --update-registry\n3462264  100  0.0 ps              ps -eo pid=,pcpu=,pmem=,comm=,args= --sort=-pcpu\n3462188  1.8  0.0 snap            /snap/snapd/current/usr/bin/snap run --timer=00:00-24:00/8 firmware-updater.firmware-notifier\n1016393  0.8  0.0 frpc            /home/erzhu419/frpembed/frpc -c /home/erzhu419/frpembed/frpc.toml\n3375177  0.6  0.0 sshd            sshd: erzhu419@notty\n    902  0.3  0.0 mt76-usb-rx phy [mt76-usb-rx phy0]\n3462225  0.3  0.0 sshd            sshd: unknown [priv]\n   2317  0.3  0.0 gnome-shell     /usr/bin/gnome-shell\n   1127  0.2  0.0 mt76-tx phy0    [mt76-tx phy0]\n3430630  0.1  0.0 kworker/u96:2-k [kworker/u96:2-kvfree_rcu_reclaim]\n3450559  0.1  0.0 kworker/u96:3-k [kworker/u96:3-kvfree_rcu_reclaim]\n3440888  0.1  0.0 kworker/u96:0-m [kworker/u96:0-mt76]\n3453780  0.1  0.0 kworker/u96:1-f [kworker/u96:1-flush-259:0]\n    903  0.1  0.0 mt76-usb-status [mt76-usb-status phy0]\n   2964  0.1  0.0 slurmctld       /usr/sbin/slurmctld --systemd\n3458703  0.1  0.0 kworker/u96:4-m [kworker/u96:4-mt76]\n    932  0.0  0.0 irq/207-nvidia  [irq/207-nvidia]\n   1878  0.0  0.0 systemd         /usr/lib/systemd/systemd --user\n   1130  0.0  0.0 irq/208-nvidia  [irq/208-nvidia]\n     15  0.0  0.0 rcu_preempt     [rcu_preempt]\n   1523  0.0  0.0 systemd-oomd    /usr/lib/systemd/systemd-oomd\n    528  0.0  0.0 systemd-journal /usr/lib/systemd/systemd-journald\n   1536  0.0  0.0 dbus-daemon     @dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only\n    928  0.0  0.0 nvidia-modeset/ [nvidia-modeset/kthread_q]\n      1  0.0  0.0 systemd         /sbin/init splash\n",
+      "reachable": true,
+      "returncode": 0
+    },
+    {
+      "node": "jtl311linux",
+      "parsed": {
+        "availability_class": "cpu_busy_gpu_idle",
+        "cpu_busy": true,
+        "external_busy_process_count": 1,
+        "external_busy_processes": [
+          {
+            "args": "/home/zhengliang/tanyue/multi_sim_fee_v1/multi_sim_fee/.venv_linux312/bin/python /home/zhengliang/tanyue/multi_sim_fee_v1/multi_sim_fee/D_main_experiment/B_BDRSO_experiment.py",
+            "command": "python",
+            "pcpu": 99.9,
+            "pid": 1771442,
+            "pmem": 0.8,
+            "scheduleurm_probe": false
+          }
+        ],
+        "gpu_busy": false,
+        "gpus": [
+          {
+            "index": 0,
+            "memory_total_mb": 8192,
+            "memory_used_mb": 58,
+            "name": "NVIDIA GeForce RTX 2080",
+            "utilization_gpu_pct": 0
+          },
+          {
+            "index": 1,
+            "memory_total_mb": 8192,
+            "memory_used_mb": 6,
+            "name": "NVIDIA GeForce RTX 2080",
+            "utilization_gpu_pct": 0
+          }
+        ],
+        "hostname": "zhengliang-C246-WU4",
+        "loadavg_15m": 1.32,
+        "loadavg_1m": 1.0,
+        "loadavg_5m": 1.0,
+        "mem_available_kb": 30623456,
+        "mem_total_kb": 65736724,
+        "nproc": 16,
+        "processes": [
+          {
+            "args": "/home/zhengliang/tanyue/multi_sim_fee_v1/multi_sim_fee/.venv_linux312/bin/python /home/zhengliang/tanyue/multi_sim_fee_v1/multi_sim_fee/D_main_experiment/B_BDRSO_experiment.py",
+            "command": "python",
+            "pcpu": 99.9,
+            "pid": 1771442,
+            "pmem": 0.8,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/home/zhengliang/frpembed/frpc -c /home/zhengliang/frpembed/frpc.toml",
+            "command": "frpc",
+            "pcpu": 0.2,
+            "pid": 2580,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/lib/xorg/Xorg vt1 -displayfd 3 -auth /run/user/120/gdm/Xauthority -nolisten tcp -background none -noreset -keeptty -novtswitch -verbose 3",
+            "command": "Xorg",
+            "pcpu": 0.0,
+            "pid": 1981,
+            "pmem": 0.1,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[nvidia-modeset/kthread_q]",
+            "command": "nvidia-modeset/",
+            "pcpu": 0.0,
+            "pid": 818,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "sshd: erzhu419@notty",
+            "command": "sshd",
+            "pcpu": 0.0,
+            "pid": 1653349,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/home/zhengliang/tanyue/multi_sim_fee_v1/multi_sim_fee/.venv_linux312/bin/python /home/zhengliang/tanyue/multi_sim_fee_v1/multi_sim_fee/D_main_experiment/B_BDRSO_experiment.py",
+            "command": "python",
+            "pcpu": 0.0,
+            "pid": 3942409,
+            "pmem": 0.1,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/bin/gnome-shell",
+            "command": "gnome-shell",
+            "pcpu": 0.0,
+            "pid": 2166,
+            "pmem": 0.4,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/libexec/udisks2/udisksd",
+            "command": "udisksd",
+            "pcpu": 0.0,
+            "pid": 1634,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/lib/systemd/systemd-oomd",
+            "command": "systemd-oomd",
+            "pcpu": 0.0,
+            "pid": 59353,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/snap/snapd/current/usr/lib/snapd/snapd",
+            "command": "snapd",
+            "pcpu": 0.0,
+            "pid": 109386,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/home/zhengliang/frpembed/frpembed -c /home/zhengliang/frpembed/frpc.toml",
+            "command": "frpembed",
+            "pcpu": 0.0,
+            "pid": 1907,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[rcu_preempt]",
+            "command": "rcu_preempt",
+            "pcpu": 0.0,
+            "pid": 15,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[z_rd_int_0]",
+            "command": "z_rd_int_0",
+            "pcpu": 0.0,
+            "pid": 1549914,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[z_rd_int_0]",
+            "command": "z_rd_int_0",
+            "pcpu": 0.0,
+            "pid": 1549911,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[z_rd_int_2]",
+            "command": "z_rd_int_2",
+            "pcpu": 0.0,
+            "pid": 1549849,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[z_rd_int_2]",
+            "command": "z_rd_int_2",
+            "pcpu": 0.0,
+            "pid": 1549848,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[z_rd_int_1]",
+            "command": "z_rd_int_1",
+            "pcpu": 0.0,
+            "pid": 1549846,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[z_rd_int_0]",
+            "command": "z_rd_int_0",
+            "pcpu": 0.0,
+            "pid": 1549850,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[txg_sync]",
+            "command": "txg_sync",
+            "pcpu": 0.0,
+            "pid": 1335,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/lib/systemd/systemd --system --deserialize=96 splash",
+            "command": "systemd",
+            "pcpu": 0.0,
+            "pid": 1,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kworker/0:1-events]",
+            "command": "kworker/0:1-eve",
+            "pcpu": 0.0,
+            "pid": 385263,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kworker/11:0-cgroup_release]",
+            "command": "kworker/11:0-cg",
+            "pcpu": 0.0,
+            "pid": 1755979,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kcompactd0]",
+            "command": "kcompactd0",
+            "pcpu": 0.0,
+            "pid": 121,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[z_wr_iss]",
+            "command": "z_wr_iss",
+            "pcpu": 0.0,
+            "pid": 1272,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/libexec/fwupd/fwupd",
+            "command": "fwupd",
+            "pcpu": 0.0,
+            "pid": 6529,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          }
+        ],
+        "safe_for_cpu_probe": false,
+        "safe_for_gpu_only_probe": true,
+        "safe_for_hybrid_probe": false
+      },
+      "raw_stderr": "",
+      "raw_stdout": "zhengliang-C246-WU4\nNPROC=16\nLOADAVG=1.00 1.00 1.32\nMemTotal:65736724\nMemAvailable:30623456\n0, NVIDIA GeForce RTX 2080, 58, 8192, 0\n1, NVIDIA GeForce RTX 2080, 6, 8192, 0\n__SCHEDULEURM_PROCESS_SNAPSHOT__\n1771442 99.9  0.8 python          /home/zhengliang/tanyue/multi_sim_fee_v1/multi_sim_fee/.venv_linux312/bin/python /home/zhengliang/tanyue/multi_sim_fee_v1/multi_sim_fee/D_main_experiment/B_BDRSO_experiment.py\n   2580  0.2  0.0 frpc            /home/zhengliang/frpembed/frpc -c /home/zhengliang/frpembed/frpc.toml\n   1981  0.0  0.1 Xorg            /usr/lib/xorg/Xorg vt1 -displayfd 3 -auth /run/user/120/gdm/Xauthority -nolisten tcp -background none -noreset -keeptty -novtswitch -verbose 3\n    818  0.0  0.0 nvidia-modeset/ [nvidia-modeset/kthread_q]\n1653349  0.0  0.0 sshd            sshd: erzhu419@notty\n3942409  0.0  0.1 python          /home/zhengliang/tanyue/multi_sim_fee_v1/multi_sim_fee/.venv_linux312/bin/python /home/zhengliang/tanyue/multi_sim_fee_v1/multi_sim_fee/D_main_experiment/B_BDRSO_experiment.py\n   2166  0.0  0.4 gnome-shell     /usr/bin/gnome-shell\n   1634  0.0  0.0 udisksd         /usr/libexec/udisks2/udisksd\n  59353  0.0  0.0 systemd-oomd    /usr/lib/systemd/systemd-oomd\n 109386  0.0  0.0 snapd           /snap/snapd/current/usr/lib/snapd/snapd\n   1907  0.0  0.0 frpembed        /home/zhengliang/frpembed/frpembed -c /home/zhengliang/frpembed/frpc.toml\n     15  0.0  0.0 rcu_preempt     [rcu_preempt]\n1549914  0.0  0.0 z_rd_int_0      [z_rd_int_0]\n1549911  0.0  0.0 z_rd_int_0      [z_rd_int_0]\n1549849  0.0  0.0 z_rd_int_2      [z_rd_int_2]\n1549848  0.0  0.0 z_rd_int_2      [z_rd_int_2]\n1549846  0.0  0.0 z_rd_int_1      [z_rd_int_1]\n1549850  0.0  0.0 z_rd_int_0      [z_rd_int_0]\n   1335  0.0  0.0 txg_sync        [txg_sync]\n      1  0.0  0.0 systemd         /usr/lib/systemd/systemd --system --deserialize=96 splash\n 385263  0.0  0.0 kworker/0:1-eve [kworker/0:1-events]\n1755979  0.0  0.0 kworker/11:0-cg [kworker/11:0-cgroup_release]\n    121  0.0  0.0 kcompactd0      [kcompactd0]\n   1272  0.0  0.0 z_wr_iss        [z_wr_iss]\n   6529  0.0  0.0 fwupd           /usr/libexec/fwupd/fwupd\n",
+      "reachable": true,
+      "returncode": 0
+    },
+    {
+      "node": "node007-direct",
+      "parsed": {
+        "availability_class": "clean_idle",
+        "cpu_busy": false,
+        "external_busy_process_count": 0,
+        "external_busy_processes": [],
+        "gpu_busy": false,
+        "gpus": [
+          {
+            "index": 0,
+            "memory_total_mb": 11264,
+            "memory_used_mb": 1,
+            "name": "NVIDIA GeForce RTX 2080 Ti",
+            "utilization_gpu_pct": 0
+          },
+          {
+            "index": 1,
+            "memory_total_mb": 11264,
+            "memory_used_mb": 1,
+            "name": "NVIDIA GeForce RTX 2080 Ti",
+            "utilization_gpu_pct": 0
+          },
+          {
+            "index": 2,
+            "memory_total_mb": 11264,
+            "memory_used_mb": 1,
+            "name": "NVIDIA GeForce RTX 2080 Ti",
+            "utilization_gpu_pct": 0
+          },
+          {
+            "index": 3,
+            "memory_total_mb": 11264,
+            "memory_used_mb": 1,
+            "name": "NVIDIA GeForce RTX 2080 Ti",
+            "utilization_gpu_pct": 0
+          }
+        ],
+        "hostname": "node007",
+        "loadavg_15m": 6.19,
+        "loadavg_1m": 0.09,
+        "loadavg_5m": 1.35,
+        "mem_available_kb": 238541888,
+        "mem_total_kb": 247242112,
+        "nproc": 64,
+        "processes": [
+          {
+            "args": "/cm/local/apps/cuda-dcgm/current/bin/nv-hostengine --no-daemon",
+            "command": "nv-hostengine",
+            "pcpu": 0.3,
+            "pid": 17326,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/local/apps/cmd/sbin/cmd -s -n -P /var/run/cmd.pid",
+            "command": "cmd",
+            "pcpu": 0.3,
+            "pid": 17852,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/lib/systemd/systemd",
+            "command": "systemd",
+            "pcpu": 0.1,
+            "pid": 1,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[nvidia-modeset/]",
+            "command": "nvidia-modeset/",
+            "pcpu": 0.1,
+            "pid": 3462,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/bin/dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation",
+            "command": "dbus-daemon",
+            "pcpu": 0.1,
+            "pid": 17283,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/sbin/nslcd",
+            "command": "nslcd",
+            "pcpu": 0.1,
+            "pid": 17814,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kthreadd]",
+            "command": "kthreadd",
+            "pcpu": 0.0,
+            "pid": 2,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kworker/0:0H]",
+            "command": "kworker/0:0H",
+            "pcpu": 0.0,
+            "pid": 4,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[ksoftirqd/0]",
+            "command": "ksoftirqd/0",
+            "pcpu": 0.0,
+            "pid": 6,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[migration/0]",
+            "command": "migration/0",
+            "pcpu": 0.0,
+            "pid": 7,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[rcu_bh]",
+            "command": "rcu_bh",
+            "pcpu": 0.0,
+            "pid": 8,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[rcu_sched]",
+            "command": "rcu_sched",
+            "pcpu": 0.0,
+            "pid": 9,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[lru-add-drain]",
+            "command": "lru-add-drain",
+            "pcpu": 0.0,
+            "pid": 10,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[watchdog/0]",
+            "command": "watchdog/0",
+            "pcpu": 0.0,
+            "pid": 11,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[watchdog/1]",
+            "command": "watchdog/1",
+            "pcpu": 0.0,
+            "pid": 12,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[migration/1]",
+            "command": "migration/1",
+            "pcpu": 0.0,
+            "pid": 13,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[ksoftirqd/1]",
+            "command": "ksoftirqd/1",
+            "pcpu": 0.0,
+            "pid": 14,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kworker/1:0H]",
+            "command": "kworker/1:0H",
+            "pcpu": 0.0,
+            "pid": 16,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[watchdog/2]",
+            "command": "watchdog/2",
+            "pcpu": 0.0,
+            "pid": 18,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[migration/2]",
+            "command": "migration/2",
+            "pcpu": 0.0,
+            "pid": 19,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[ksoftirqd/2]",
+            "command": "ksoftirqd/2",
+            "pcpu": 0.0,
+            "pid": 20,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kworker/2:0H]",
+            "command": "kworker/2:0H",
+            "pcpu": 0.0,
+            "pid": 22,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[watchdog/3]",
+            "command": "watchdog/3",
+            "pcpu": 0.0,
+            "pid": 23,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[migration/3]",
+            "command": "migration/3",
+            "pcpu": 0.0,
+            "pid": 24,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[ksoftirqd/3]",
+            "command": "ksoftirqd/3",
+            "pcpu": 0.0,
+            "pid": 25,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          }
+        ],
+        "safe_for_cpu_probe": true,
+        "safe_for_gpu_only_probe": true,
+        "safe_for_hybrid_probe": true
+      },
+      "raw_stderr": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n",
+      "raw_stdout": "node007\nNPROC=64\nLOADAVG=0.09 1.35 6.19\nMemTotal:247242112\nMemAvailable:238541888\n0, NVIDIA GeForce RTX 2080 Ti, 1, 11264, 0\n1, NVIDIA GeForce RTX 2080 Ti, 1, 11264, 0\n2, NVIDIA GeForce RTX 2080 Ti, 1, 11264, 0\n3, NVIDIA GeForce RTX 2080 Ti, 1, 11264, 0\n__SCHEDULEURM_PROCESS_SNAPSHOT__\n 17326  0.3  0.0 nv-hostengine   /cm/local/apps/cuda-dcgm/current/bin/nv-hostengine --no-daemon\n 17852  0.3  0.0 cmd             /cm/local/apps/cmd/sbin/cmd -s -n -P /var/run/cmd.pid\n     1  0.1  0.0 systemd         /usr/lib/systemd/systemd\n  3462  0.1  0.0 nvidia-modeset/ [nvidia-modeset/]\n 17283  0.1  0.0 dbus-daemon     /usr/bin/dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation\n 17814  0.1  0.0 nslcd           /usr/sbin/nslcd\n     2  0.0  0.0 kthreadd        [kthreadd]\n     4  0.0  0.0 kworker/0:0H    [kworker/0:0H]\n     6  0.0  0.0 ksoftirqd/0     [ksoftirqd/0]\n     7  0.0  0.0 migration/0     [migration/0]\n     8  0.0  0.0 rcu_bh          [rcu_bh]\n     9  0.0  0.0 rcu_sched       [rcu_sched]\n    10  0.0  0.0 lru-add-drain   [lru-add-drain]\n    11  0.0  0.0 watchdog/0      [watchdog/0]\n    12  0.0  0.0 watchdog/1      [watchdog/1]\n    13  0.0  0.0 migration/1     [migration/1]\n    14  0.0  0.0 ksoftirqd/1     [ksoftirqd/1]\n    16  0.0  0.0 kworker/1:0H    [kworker/1:0H]\n    18  0.0  0.0 watchdog/2      [watchdog/2]\n    19  0.0  0.0 migration/2     [migration/2]\n    20  0.0  0.0 ksoftirqd/2     [ksoftirqd/2]\n    22  0.0  0.0 kworker/2:0H    [kworker/2:0H]\n    23  0.0  0.0 watchdog/3      [watchdog/3]\n    24  0.0  0.0 migration/3     [migration/3]\n    25  0.0  0.0 ksoftirqd/3     [ksoftirqd/3]\n",
+      "reachable": true,
+      "returncode": 0
+    },
+    {
+      "node": "node001",
+      "parsed": {
+        "availability_class": "cpu_busy_gpu_idle",
+        "cpu_busy": true,
+        "external_busy_process_count": 25,
+        "external_busy_processes": [
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 115.0,
+            "pid": 35671,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.6,
+            "pid": 35672,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.6,
+            "pid": 35673,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.6,
+            "pid": 35675,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.6,
+            "pid": 35677,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.6,
+            "pid": 35681,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.5,
+            "pid": 35679,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.4,
+            "pid": 35674,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          }
+        ],
+        "gpu_busy": false,
+        "gpus": [],
+        "hostname": "node001",
+        "loadavg_15m": 48.51,
+        "loadavg_1m": 48.21,
+        "loadavg_5m": 48.43,
+        "mem_available_kb": 160500896,
+        "mem_total_kb": 197420904,
+        "nproc": 192,
+        "processes": [
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 115.0,
+            "pid": 35671,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.6,
+            "pid": 35672,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.6,
+            "pid": 35673,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.6,
+            "pid": 35675,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.6,
+            "pid": 35677,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.6,
+            "pid": 35681,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.5,
+            "pid": 35679,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.4,
+            "pid": 35674,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.4,
+            "pid": 35676,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.4,
+            "pid": 35680,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.4,
+            "pid": 35683,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.4,
+            "pid": 35685,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.4,
+            "pid": 35687,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.4,
+            "pid": 35689,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.4,
+            "pid": 35691,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.4,
+            "pid": 35693,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.3,
+            "pid": 35678,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.3,
+            "pid": 35692,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.2,
+            "pid": 35682,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.2,
+            "pid": 35684,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.2,
+            "pid": 35686,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.2,
+            "pid": 35688,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.2,
+            "pid": 35690,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.2,
+            "pid": 35713,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.2,
+            "pid": 35715,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          }
+        ],
+        "safe_for_cpu_probe": false,
+        "safe_for_gpu_only_probe": true,
+        "safe_for_hybrid_probe": false
+      },
+      "raw_stderr": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n",
+      "raw_stdout": "node001\nNPROC=192\nLOADAVG=48.21 48.43 48.51\nMemTotal:197420904\nMemAvailable:160500896\n__SCHEDULEURM_PROCESS_SNAPSHOT__\n 35671  115  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0\n 35672 99.6  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0\n 35673 99.6  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0\n 35675 99.6  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0\n 35677 99.6  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0\n 35681 99.6  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0\n 35679 99.5  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0\n 35674 99.4  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0\n 35676 99.4  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0\n 35680 99.4  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0\n 35683 99.4  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0\n 35685 99.4  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0\n 35687 99.4  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0\n 35689 99.4  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0\n 35691 99.4  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0\n 35693 99.4  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0\n 35678 99.3  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0\n 35692 99.3  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0\n 35682 99.2  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0\n 35684 99.2  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0\n 35686 99.2  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0\n 35688 99.2  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0\n 35690 99.2  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0\n 35713 99.2  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0\n 35715 99.2  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.1:10.141.0.1:40593:0\n",
+      "reachable": true,
+      "returncode": 0
+    },
+    {
+      "node": "node002",
+      "parsed": {
+        "availability_class": "cpu_busy_gpu_idle",
+        "cpu_busy": true,
+        "external_busy_process_count": 17,
+        "external_busy_processes": [
+          {
+            "args": "python CPU_MPI.py",
+            "command": "python",
+            "pcpu": 4588.0,
+            "pid": 12701,
+            "pmem": 0.5,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 92.8,
+            "pid": 251669,
+            "pmem": 0.1,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 92.0,
+            "pid": 251671,
+            "pmem": 0.1,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 91.7,
+            "pid": 251673,
+            "pmem": 0.1,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 91.5,
+            "pid": 251670,
+            "pmem": 0.1,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 91.4,
+            "pid": 251677,
+            "pmem": 0.1,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 90.8,
+            "pid": 251675,
+            "pmem": 0.1,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 90.6,
+            "pid": 251679,
+            "pmem": 0.1,
+            "scheduleurm_probe": false
+          }
+        ],
+        "gpu_busy": false,
+        "gpus": [],
+        "hostname": "node002",
+        "loadavg_15m": 159.53,
+        "loadavg_1m": 163.05,
+        "loadavg_5m": 162.2,
+        "mem_available_kb": 182766500,
+        "mem_total_kb": 197420908,
+        "nproc": 192,
+        "processes": [
+          {
+            "args": "python CPU_MPI.py",
+            "command": "python",
+            "pcpu": 4588.0,
+            "pid": 12701,
+            "pmem": 0.5,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 92.8,
+            "pid": 251669,
+            "pmem": 0.1,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 92.0,
+            "pid": 251671,
+            "pmem": 0.1,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 91.7,
+            "pid": 251673,
+            "pmem": 0.1,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 91.5,
+            "pid": 251670,
+            "pmem": 0.1,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 91.4,
+            "pid": 251677,
+            "pmem": 0.1,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 90.8,
+            "pid": 251675,
+            "pmem": 0.1,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 90.6,
+            "pid": 251679,
+            "pmem": 0.1,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 90.5,
+            "pid": 251674,
+            "pmem": 0.1,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 90.5,
+            "pid": 251681,
+            "pmem": 0.1,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 90.1,
+            "pid": 251678,
+            "pmem": 0.1,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 89.9,
+            "pid": 251672,
+            "pmem": 0.1,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 89.8,
+            "pid": 251683,
+            "pmem": 0.1,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 89.5,
+            "pid": 251682,
+            "pmem": 0.1,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 89.0,
+            "pid": 251680,
+            "pmem": 0.1,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 88.4,
+            "pid": 251676,
+            "pmem": 0.1,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 82.7,
+            "pid": 251668,
+            "pmem": 0.1,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_host/fluent.20.1.0 host -cx node002.cm.cluster:41293:38431 (list (rpsetvar (QUOTE parallel/function) \"fluent 3d   -flux -node -r20.1.0 -t16 -pinfiniband -mpi=ibmmpi  -ssh\") (rpsetvar (QUOTE parallel/rhost) \"\") (rpsetvar (QUOTE parallel/ruser) \"\") (rpsetvar (QUOTE parallel/nprocs_string) \"16\") (rpsetvar (QUOTE parallel/auto-spawn?) #t) (rpsetvar (QUOTE parallel/trace-level) 0) (rpsetvar (QUOTE parallel/remote-shell) 1) (rpsetvar (QUOTE parallel/path) \"/cm/shared/apps/ansys/v201/fluent\") (rpsetvar (QUOTE parallel/hostsfile) \"\") )",
+            "command": "fluent.20.1.0",
+            "pcpu": 4.7,
+            "pid": 251257,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kworker/109:1H]",
+            "command": "kworker/109:1H",
+            "pcpu": 3.8,
+            "pid": 320550,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "sshd: root@notty",
+            "command": "sshd",
+            "pcpu": 3.0,
+            "pid": 323708,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "su zhengliang01 -s /bin/bash -c bash -c 'hostname; echo NPROC=$(nproc); awk '\"'\"'{printf \"LOADAVG=%s %s %s\\n\", $1, $2, $3}'\"'\"' /proc/loadavg; awk '\"'\"'/MemTotal|MemAvailable/ {print $1$2}'\"'\"' /proc/meminfo; if command -v nvidia-smi >/dev/null 2>&1; then nvidia-smi --query-gpu=index,name,memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits; elif [ -x /cm/local/apps/cuda-driver/libs/535.261.03/bin/nvidia-smi ]; then /cm/local/apps/cuda-driver/libs/535.261.03/bin/nvidia-smi --query-gpu=index,name,memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits; fi; echo __SCHEDULEURM_PROCESS_SNAPSHOT__; ps -eo pid=,pcpu=,pmem=,comm=,args= --sort=-pcpu | head -25'",
+            "command": "su",
+            "pcpu": 3.0,
+            "pid": 323719,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kworker/109:0H]",
+            "command": "kworker/109:0H",
+            "pcpu": 2.6,
+            "pid": 316492,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kworker/98:2]",
+            "command": "kworker/98:2",
+            "pcpu": 2.0,
+            "pid": 323627,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "bash -c hostname; echo NPROC=$(nproc); awk '{printf \"LOADAVG=%s %s %s\\n\", $1, $2, $3}' /proc/loadavg; awk '/MemTotal|MemAvailable/ {print $1$2}' /proc/meminfo; if command -v nvidia-smi >/dev/null 2>&1; then nvidia-smi --query-gpu=index,name,memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits; elif [ -x /cm/local/apps/cuda-driver/libs/535.261.03/bin/nvidia-smi ]; then /cm/local/apps/cuda-driver/libs/535.261.03/bin/nvidia-smi --query-gpu=index,name,memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits; fi; echo __SCHEDULEURM_PROCESS_SNAPSHOT__; ps -eo pid=,pcpu=,pmem=,comm=,args= --sort=-pcpu | head -25",
+            "command": "bash",
+            "pcpu": 2.0,
+            "pid": 323738,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kworker/u1281:0]",
+            "command": "kworker/u1281:0",
+            "pcpu": 1.4,
+            "pid": 322885,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          }
+        ],
+        "safe_for_cpu_probe": false,
+        "safe_for_gpu_only_probe": true,
+        "safe_for_hybrid_probe": false
+      },
+      "raw_stderr": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n",
+      "raw_stdout": "node002\nNPROC=192\nLOADAVG=163.05 162.20 159.53\nMemTotal:197420908\nMemAvailable:182766500\n__SCHEDULEURM_PROCESS_SNAPSHOT__\n 12701 4588  0.5 python          python CPU_MPI.py\n251669 92.8  0.1 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0\n251671 92.0  0.1 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0\n251673 91.7  0.1 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0\n251670 91.5  0.1 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0\n251677 91.4  0.1 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0\n251675 90.8  0.1 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0\n251679 90.6  0.1 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0\n251674 90.5  0.1 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0\n251681 90.5  0.1 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0\n251678 90.1  0.1 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0\n251672 89.9  0.1 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0\n251683 89.8  0.1 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0\n251682 89.5  0.1 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0\n251680 89.0  0.1 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0\n251676 88.4  0.1 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0\n251668 82.7  0.1 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_node/fluent_mpi.20.1.0 node -mpiw ibmmpi -pic infiniband -mport 10.141.0.2:10.141.0.2:41812:0\n251257  4.7  0.0 fluent.20.1.0   /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3d_host/fluent.20.1.0 host -cx node002.cm.cluster:41293:38431 (list (rpsetvar (QUOTE parallel/function) \"fluent 3d   -flux -node -r20.1.0 -t16 -pinfiniband -mpi=ibmmpi  -ssh\") (rpsetvar (QUOTE parallel/rhost) \"\") (rpsetvar (QUOTE parallel/ruser) \"\") (rpsetvar (QUOTE parallel/nprocs_string) \"16\") (rpsetvar (QUOTE parallel/auto-spawn?) #t) (rpsetvar (QUOTE parallel/trace-level) 0) (rpsetvar (QUOTE parallel/remote-shell) 1) (rpsetvar (QUOTE parallel/path) \"/cm/shared/apps/ansys/v201/fluent\") (rpsetvar (QUOTE parallel/hostsfile) \"\") )\n320550  3.8  0.0 kworker/109:1H  [kworker/109:1H]\n323708  3.0  0.0 sshd            sshd: root@notty\n323719  3.0  0.0 su              su zhengliang01 -s /bin/bash -c bash -c 'hostname; echo NPROC=$(nproc); awk '\"'\"'{printf \"LOADAVG=%s %s %s\\n\", $1, $2, $3}'\"'\"' /proc/loadavg; awk '\"'\"'/MemTotal|MemAvailable/ {print $1$2}'\"'\"' /proc/meminfo; if command -v nvidia-smi >/dev/null 2>&1; then nvidia-smi --query-gpu=index,name,memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits; elif [ -x /cm/local/apps/cuda-driver/libs/535.261.03/bin/nvidia-smi ]; then /cm/local/apps/cuda-driver/libs/535.261.03/bin/nvidia-smi --query-gpu=index,name,memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits; fi; echo __SCHEDULEURM_PROCESS_SNAPSHOT__; ps -eo pid=,pcpu=,pmem=,comm=,args= --sort=-pcpu | head -25'\n316492  2.6  0.0 kworker/109:0H  [kworker/109:0H]\n323627  2.0  0.0 kworker/98:2    [kworker/98:2]\n323738  2.0  0.0 bash            bash -c hostname; echo NPROC=$(nproc); awk '{printf \"LOADAVG=%s %s %s\\n\", $1, $2, $3}' /proc/loadavg; awk '/MemTotal|MemAvailable/ {print $1$2}' /proc/meminfo; if command -v nvidia-smi >/dev/null 2>&1; then nvidia-smi --query-gpu=index,name,memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits; elif [ -x /cm/local/apps/cuda-driver/libs/535.261.03/bin/nvidia-smi ]; then /cm/local/apps/cuda-driver/libs/535.261.03/bin/nvidia-smi --query-gpu=index,name,memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits; fi; echo __SCHEDULEURM_PROCESS_SNAPSHOT__; ps -eo pid=,pcpu=,pmem=,comm=,args= --sort=-pcpu | head -25\n322885  1.4  0.0 kworker/u1281:0 [kworker/u1281:0]\n",
+      "reachable": true,
+      "returncode": 0
+    },
+    {
+      "node": "node003",
+      "parsed": {
+        "availability_class": "clean_idle",
+        "cpu_busy": false,
+        "external_busy_process_count": 0,
+        "external_busy_processes": [],
+        "gpu_busy": false,
+        "gpus": [],
+        "hostname": "node003",
+        "loadavg_15m": 0.05,
+        "loadavg_1m": 0.0,
+        "loadavg_5m": 0.03,
+        "mem_available_kb": 187732440,
+        "mem_total_kb": 197420912,
+        "nproc": 192,
+        "processes": [
+          {
+            "args": "/cm/local/apps/cmd/sbin/cmd -s -n -P /var/run/cmd.pid",
+            "command": "cmd",
+            "pcpu": 0.4,
+            "pid": 8382,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/lib/systemd/systemd",
+            "command": "systemd",
+            "pcpu": 0.1,
+            "pid": 1,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[rcu_sched]",
+            "command": "rcu_sched",
+            "pcpu": 0.1,
+            "pid": 9,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/sbin/irqbalance --foreground",
+            "command": "irqbalance",
+            "pcpu": 0.1,
+            "pid": 7824,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kthreadd]",
+            "command": "kthreadd",
+            "pcpu": 0.0,
+            "pid": 2,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kworker/0:0H]",
+            "command": "kworker/0:0H",
+            "pcpu": 0.0,
+            "pid": 4,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[ksoftirqd/0]",
+            "command": "ksoftirqd/0",
+            "pcpu": 0.0,
+            "pid": 6,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[migration/0]",
+            "command": "migration/0",
+            "pcpu": 0.0,
+            "pid": 7,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[rcu_bh]",
+            "command": "rcu_bh",
+            "pcpu": 0.0,
+            "pid": 8,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[lru-add-drain]",
+            "command": "lru-add-drain",
+            "pcpu": 0.0,
+            "pid": 10,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[watchdog/0]",
+            "command": "watchdog/0",
+            "pcpu": 0.0,
+            "pid": 11,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[watchdog/1]",
+            "command": "watchdog/1",
+            "pcpu": 0.0,
+            "pid": 12,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[migration/1]",
+            "command": "migration/1",
+            "pcpu": 0.0,
+            "pid": 13,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[ksoftirqd/1]",
+            "command": "ksoftirqd/1",
+            "pcpu": 0.0,
+            "pid": 14,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kworker/1:0H]",
+            "command": "kworker/1:0H",
+            "pcpu": 0.0,
+            "pid": 16,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[watchdog/2]",
+            "command": "watchdog/2",
+            "pcpu": 0.0,
+            "pid": 18,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[migration/2]",
+            "command": "migration/2",
+            "pcpu": 0.0,
+            "pid": 19,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[ksoftirqd/2]",
+            "command": "ksoftirqd/2",
+            "pcpu": 0.0,
+            "pid": 20,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[watchdog/3]",
+            "command": "watchdog/3",
+            "pcpu": 0.0,
+            "pid": 23,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[migration/3]",
+            "command": "migration/3",
+            "pcpu": 0.0,
+            "pid": 24,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[ksoftirqd/3]",
+            "command": "ksoftirqd/3",
+            "pcpu": 0.0,
+            "pid": 25,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kworker/3:0H]",
+            "command": "kworker/3:0H",
+            "pcpu": 0.0,
+            "pid": 27,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[watchdog/4]",
+            "command": "watchdog/4",
+            "pcpu": 0.0,
+            "pid": 28,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[migration/4]",
+            "command": "migration/4",
+            "pcpu": 0.0,
+            "pid": 29,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[ksoftirqd/4]",
+            "command": "ksoftirqd/4",
+            "pcpu": 0.0,
+            "pid": 30,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          }
+        ],
+        "safe_for_cpu_probe": true,
+        "safe_for_gpu_only_probe": true,
+        "safe_for_hybrid_probe": true
+      },
+      "raw_stderr": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n",
+      "raw_stdout": "node003\nNPROC=192\nLOADAVG=0.00 0.03 0.05\nMemTotal:197420912\nMemAvailable:187732440\n__SCHEDULEURM_PROCESS_SNAPSHOT__\n  8382  0.4  0.0 cmd             /cm/local/apps/cmd/sbin/cmd -s -n -P /var/run/cmd.pid\n     1  0.1  0.0 systemd         /usr/lib/systemd/systemd\n     9  0.1  0.0 rcu_sched       [rcu_sched]\n  7824  0.1  0.0 irqbalance      /usr/sbin/irqbalance --foreground\n     2  0.0  0.0 kthreadd        [kthreadd]\n     4  0.0  0.0 kworker/0:0H    [kworker/0:0H]\n     6  0.0  0.0 ksoftirqd/0     [ksoftirqd/0]\n     7  0.0  0.0 migration/0     [migration/0]\n     8  0.0  0.0 rcu_bh          [rcu_bh]\n    10  0.0  0.0 lru-add-drain   [lru-add-drain]\n    11  0.0  0.0 watchdog/0      [watchdog/0]\n    12  0.0  0.0 watchdog/1      [watchdog/1]\n    13  0.0  0.0 migration/1     [migration/1]\n    14  0.0  0.0 ksoftirqd/1     [ksoftirqd/1]\n    16  0.0  0.0 kworker/1:0H    [kworker/1:0H]\n    18  0.0  0.0 watchdog/2      [watchdog/2]\n    19  0.0  0.0 migration/2     [migration/2]\n    20  0.0  0.0 ksoftirqd/2     [ksoftirqd/2]\n    23  0.0  0.0 watchdog/3      [watchdog/3]\n    24  0.0  0.0 migration/3     [migration/3]\n    25  0.0  0.0 ksoftirqd/3     [ksoftirqd/3]\n    27  0.0  0.0 kworker/3:0H    [kworker/3:0H]\n    28  0.0  0.0 watchdog/4      [watchdog/4]\n    29  0.0  0.0 migration/4     [migration/4]\n    30  0.0  0.0 ksoftirqd/4     [ksoftirqd/4]\n",
+      "reachable": true,
+      "returncode": 0
+    },
+    {
+      "node": "node004",
+      "parsed": {
+        "availability_class": "cpu_busy_gpu_idle",
+        "cpu_busy": true,
+        "external_busy_process_count": 25,
+        "external_busy_processes": [
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 113.0,
+            "pid": 425050,
+            "pmem": 1.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.6,
+            "pid": 425052,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.6,
+            "pid": 425058,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.6,
+            "pid": 425060,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.5,
+            "pid": 425054,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.5,
+            "pid": 425056,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.5,
+            "pid": 425062,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.5,
+            "pid": 425064,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          }
+        ],
+        "gpu_busy": false,
+        "gpus": [],
+        "hostname": "node004",
+        "loadavg_15m": 48.87,
+        "loadavg_1m": 49.57,
+        "loadavg_5m": 49.04,
+        "mem_available_kb": 156644908,
+        "mem_total_kb": 197420908,
+        "nproc": 192,
+        "processes": [
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 113.0,
+            "pid": 425050,
+            "pmem": 1.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.6,
+            "pid": 425052,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.6,
+            "pid": 425058,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.6,
+            "pid": 425060,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.5,
+            "pid": 425054,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.5,
+            "pid": 425056,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.5,
+            "pid": 425062,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.5,
+            "pid": 425064,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.5,
+            "pid": 425070,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.4,
+            "pid": 425053,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.4,
+            "pid": 425055,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.4,
+            "pid": 425059,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.4,
+            "pid": 425066,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.4,
+            "pid": 425068,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.4,
+            "pid": 425071,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.4,
+            "pid": 425072,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.3,
+            "pid": 425051,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.3,
+            "pid": 425057,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.3,
+            "pid": 425061,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.3,
+            "pid": 425063,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.3,
+            "pid": 425065,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.3,
+            "pid": 425067,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.3,
+            "pid": 425092,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.3,
+            "pid": 425094,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0",
+            "command": "fluent_mpi.20.1",
+            "pcpu": 99.3,
+            "pid": 425096,
+            "pmem": 0.3,
+            "scheduleurm_probe": false
+          }
+        ],
+        "safe_for_cpu_probe": false,
+        "safe_for_gpu_only_probe": true,
+        "safe_for_hybrid_probe": false
+      },
+      "raw_stderr": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n",
+      "raw_stdout": "node004\nNPROC=192\nLOADAVG=49.57 49.04 48.87\nMemTotal:197420908\nMemAvailable:156644908\n__SCHEDULEURM_PROCESS_SNAPSHOT__\n425050  113  1.0 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0\n425052 99.6  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0\n425058 99.6  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0\n425060 99.6  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0\n425054 99.5  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0\n425056 99.5  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0\n425062 99.5  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0\n425064 99.5  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0\n425070 99.5  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0\n425053 99.4  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0\n425055 99.4  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0\n425059 99.4  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0\n425066 99.4  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0\n425068 99.4  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0\n425071 99.4  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0\n425072 99.4  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0\n425051 99.3  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0\n425057 99.3  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0\n425061 99.3  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0\n425063 99.3  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0\n425065 99.3  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0\n425067 99.3  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0\n425092 99.3  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0\n425094 99.3  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0\n425096 99.3  0.3 fluent_mpi.20.1 /cm/shared/apps/ansys/v201/fluent/fluent20.1.0/lnamd64/3ddp_node/fluent_mpi.20.1.0 node -mpiw intel -pic shmem -mport 10.141.0.4:10.141.0.4:43951:0\n",
+      "reachable": true,
+      "returncode": 0
+    },
+    {
+      "node": "node005",
+      "parsed": {
+        "availability_class": "clean_idle",
+        "cpu_busy": false,
+        "external_busy_process_count": 0,
+        "external_busy_processes": [],
+        "gpu_busy": false,
+        "gpus": [],
+        "hostname": "node005",
+        "loadavg_15m": 0.05,
+        "loadavg_1m": 0.02,
+        "loadavg_5m": 0.04,
+        "mem_available_kb": 187528588,
+        "mem_total_kb": 197420908,
+        "nproc": 192,
+        "processes": [
+          {
+            "args": "/cm/local/apps/cmd/sbin/cmd -s -n -P /var/run/cmd.pid",
+            "command": "cmd",
+            "pcpu": 0.5,
+            "pid": 8401,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[rcu_sched]",
+            "command": "rcu_sched",
+            "pcpu": 0.2,
+            "pid": 9,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/lib/systemd/systemd",
+            "command": "systemd",
+            "pcpu": 0.1,
+            "pid": 1,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/sbin/irqbalance --foreground",
+            "command": "irqbalance",
+            "pcpu": 0.1,
+            "pid": 7817,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kthreadd]",
+            "command": "kthreadd",
+            "pcpu": 0.0,
+            "pid": 2,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kworker/0:0H]",
+            "command": "kworker/0:0H",
+            "pcpu": 0.0,
+            "pid": 4,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[ksoftirqd/0]",
+            "command": "ksoftirqd/0",
+            "pcpu": 0.0,
+            "pid": 6,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[migration/0]",
+            "command": "migration/0",
+            "pcpu": 0.0,
+            "pid": 7,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[rcu_bh]",
+            "command": "rcu_bh",
+            "pcpu": 0.0,
+            "pid": 8,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[lru-add-drain]",
+            "command": "lru-add-drain",
+            "pcpu": 0.0,
+            "pid": 10,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[watchdog/0]",
+            "command": "watchdog/0",
+            "pcpu": 0.0,
+            "pid": 11,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[watchdog/1]",
+            "command": "watchdog/1",
+            "pcpu": 0.0,
+            "pid": 12,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[migration/1]",
+            "command": "migration/1",
+            "pcpu": 0.0,
+            "pid": 13,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[ksoftirqd/1]",
+            "command": "ksoftirqd/1",
+            "pcpu": 0.0,
+            "pid": 14,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kworker/1:0H]",
+            "command": "kworker/1:0H",
+            "pcpu": 0.0,
+            "pid": 16,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[watchdog/2]",
+            "command": "watchdog/2",
+            "pcpu": 0.0,
+            "pid": 18,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[migration/2]",
+            "command": "migration/2",
+            "pcpu": 0.0,
+            "pid": 19,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[ksoftirqd/2]",
+            "command": "ksoftirqd/2",
+            "pcpu": 0.0,
+            "pid": 20,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kworker/2:0H]",
+            "command": "kworker/2:0H",
+            "pcpu": 0.0,
+            "pid": 22,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[watchdog/3]",
+            "command": "watchdog/3",
+            "pcpu": 0.0,
+            "pid": 23,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[migration/3]",
+            "command": "migration/3",
+            "pcpu": 0.0,
+            "pid": 24,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[ksoftirqd/3]",
+            "command": "ksoftirqd/3",
+            "pcpu": 0.0,
+            "pid": 25,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kworker/3:0H]",
+            "command": "kworker/3:0H",
+            "pcpu": 0.0,
+            "pid": 27,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[watchdog/4]",
+            "command": "watchdog/4",
+            "pcpu": 0.0,
+            "pid": 28,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[migration/4]",
+            "command": "migration/4",
+            "pcpu": 0.0,
+            "pid": 29,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          }
+        ],
+        "safe_for_cpu_probe": true,
+        "safe_for_gpu_only_probe": true,
+        "safe_for_hybrid_probe": true
+      },
+      "raw_stderr": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n",
+      "raw_stdout": "node005\nNPROC=192\nLOADAVG=0.02 0.04 0.05\nMemTotal:197420908\nMemAvailable:187528588\n__SCHEDULEURM_PROCESS_SNAPSHOT__\n  8401  0.5  0.0 cmd             /cm/local/apps/cmd/sbin/cmd -s -n -P /var/run/cmd.pid\n     9  0.2  0.0 rcu_sched       [rcu_sched]\n     1  0.1  0.0 systemd         /usr/lib/systemd/systemd\n  7817  0.1  0.0 irqbalance      /usr/sbin/irqbalance --foreground\n     2  0.0  0.0 kthreadd        [kthreadd]\n     4  0.0  0.0 kworker/0:0H    [kworker/0:0H]\n     6  0.0  0.0 ksoftirqd/0     [ksoftirqd/0]\n     7  0.0  0.0 migration/0     [migration/0]\n     8  0.0  0.0 rcu_bh          [rcu_bh]\n    10  0.0  0.0 lru-add-drain   [lru-add-drain]\n    11  0.0  0.0 watchdog/0      [watchdog/0]\n    12  0.0  0.0 watchdog/1      [watchdog/1]\n    13  0.0  0.0 migration/1     [migration/1]\n    14  0.0  0.0 ksoftirqd/1     [ksoftirqd/1]\n    16  0.0  0.0 kworker/1:0H    [kworker/1:0H]\n    18  0.0  0.0 watchdog/2      [watchdog/2]\n    19  0.0  0.0 migration/2     [migration/2]\n    20  0.0  0.0 ksoftirqd/2     [ksoftirqd/2]\n    22  0.0  0.0 kworker/2:0H    [kworker/2:0H]\n    23  0.0  0.0 watchdog/3      [watchdog/3]\n    24  0.0  0.0 migration/3     [migration/3]\n    25  0.0  0.0 ksoftirqd/3     [ksoftirqd/3]\n    27  0.0  0.0 kworker/3:0H    [kworker/3:0H]\n    28  0.0  0.0 watchdog/4      [watchdog/4]\n    29  0.0  0.0 migration/4     [migration/4]\n",
+      "reachable": true,
+      "returncode": 0
+    },
+    {
+      "node": "node006",
+      "parsed": {
+        "availability_class": "clean_idle",
+        "cpu_busy": false,
+        "external_busy_process_count": 0,
+        "external_busy_processes": [],
+        "gpu_busy": false,
+        "gpus": [],
+        "hostname": "node006",
+        "loadavg_15m": 0.06,
+        "loadavg_1m": 0.21,
+        "loadavg_5m": 0.08,
+        "mem_available_kb": 185698276,
+        "mem_total_kb": 197420912,
+        "nproc": 192,
+        "processes": [
+          {
+            "args": "sshd: root@notty",
+            "command": "sshd",
+            "pcpu": 3.0,
+            "pid": 254911,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/cm/local/apps/cmd/sbin/cmd -s -n -P /var/run/cmd.pid",
+            "command": "cmd",
+            "pcpu": 0.5,
+            "pid": 8363,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[rcu_sched]",
+            "command": "rcu_sched",
+            "pcpu": 0.3,
+            "pid": 9,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/lib/systemd/systemd",
+            "command": "systemd",
+            "pcpu": 0.1,
+            "pid": 1,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "/usr/sbin/irqbalance --foreground",
+            "command": "irqbalance",
+            "pcpu": 0.1,
+            "pid": 7819,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kthreadd]",
+            "command": "kthreadd",
+            "pcpu": 0.0,
+            "pid": 2,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kworker/0:0H]",
+            "command": "kworker/0:0H",
+            "pcpu": 0.0,
+            "pid": 4,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[ksoftirqd/0]",
+            "command": "ksoftirqd/0",
+            "pcpu": 0.0,
+            "pid": 6,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[migration/0]",
+            "command": "migration/0",
+            "pcpu": 0.0,
+            "pid": 7,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[rcu_bh]",
+            "command": "rcu_bh",
+            "pcpu": 0.0,
+            "pid": 8,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[lru-add-drain]",
+            "command": "lru-add-drain",
+            "pcpu": 0.0,
+            "pid": 10,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[watchdog/0]",
+            "command": "watchdog/0",
+            "pcpu": 0.0,
+            "pid": 11,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[watchdog/1]",
+            "command": "watchdog/1",
+            "pcpu": 0.0,
+            "pid": 12,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[migration/1]",
+            "command": "migration/1",
+            "pcpu": 0.0,
+            "pid": 13,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[ksoftirqd/1]",
+            "command": "ksoftirqd/1",
+            "pcpu": 0.0,
+            "pid": 14,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kworker/1:0H]",
+            "command": "kworker/1:0H",
+            "pcpu": 0.0,
+            "pid": 16,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[watchdog/2]",
+            "command": "watchdog/2",
+            "pcpu": 0.0,
+            "pid": 18,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[migration/2]",
+            "command": "migration/2",
+            "pcpu": 0.0,
+            "pid": 19,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[ksoftirqd/2]",
+            "command": "ksoftirqd/2",
+            "pcpu": 0.0,
+            "pid": 20,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[kworker/2:0H]",
+            "command": "kworker/2:0H",
+            "pcpu": 0.0,
+            "pid": 22,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[watchdog/3]",
+            "command": "watchdog/3",
+            "pcpu": 0.0,
+            "pid": 23,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[migration/3]",
+            "command": "migration/3",
+            "pcpu": 0.0,
+            "pid": 24,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[ksoftirqd/3]",
+            "command": "ksoftirqd/3",
+            "pcpu": 0.0,
+            "pid": 25,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[watchdog/4]",
+            "command": "watchdog/4",
+            "pcpu": 0.0,
+            "pid": 28,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          },
+          {
+            "args": "[migration/4]",
+            "command": "migration/4",
+            "pcpu": 0.0,
+            "pid": 29,
+            "pmem": 0.0,
+            "scheduleurm_probe": false
+          }
+        ],
+        "safe_for_cpu_probe": true,
+        "safe_for_gpu_only_probe": true,
+        "safe_for_hybrid_probe": true
+      },
+      "raw_stderr": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n",
+      "raw_stdout": "node006\nNPROC=192\nLOADAVG=0.21 0.08 0.06\nMemTotal:197420912\nMemAvailable:185698276\n__SCHEDULEURM_PROCESS_SNAPSHOT__\n254911  3.0  0.0 sshd            sshd: root@notty\n  8363  0.5  0.0 cmd             /cm/local/apps/cmd/sbin/cmd -s -n -P /var/run/cmd.pid\n     9  0.3  0.0 rcu_sched       [rcu_sched]\n     1  0.1  0.0 systemd         /usr/lib/systemd/systemd\n  7819  0.1  0.0 irqbalance      /usr/sbin/irqbalance --foreground\n     2  0.0  0.0 kthreadd        [kthreadd]\n     4  0.0  0.0 kworker/0:0H    [kworker/0:0H]\n     6  0.0  0.0 ksoftirqd/0     [ksoftirqd/0]\n     7  0.0  0.0 migration/0     [migration/0]\n     8  0.0  0.0 rcu_bh          [rcu_bh]\n    10  0.0  0.0 lru-add-drain   [lru-add-drain]\n    11  0.0  0.0 watchdog/0      [watchdog/0]\n    12  0.0  0.0 watchdog/1      [watchdog/1]\n    13  0.0  0.0 migration/1     [migration/1]\n    14  0.0  0.0 ksoftirqd/1     [ksoftirqd/1]\n    16  0.0  0.0 kworker/1:0H    [kworker/1:0H]\n    18  0.0  0.0 watchdog/2      [watchdog/2]\n    19  0.0  0.0 migration/2     [migration/2]\n    20  0.0  0.0 ksoftirqd/2     [ksoftirqd/2]\n    22  0.0  0.0 kworker/2:0H    [kworker/2:0H]\n    23  0.0  0.0 watchdog/3      [watchdog/3]\n    24  0.0  0.0 migration/3     [migration/3]\n    25  0.0  0.0 ksoftirqd/3     [ksoftirqd/3]\n    28  0.0  0.0 watchdog/4      [watchdog/4]\n    29  0.0  0.0 migration/4     [migration/4]\n",
+      "reachable": true,
+      "returncode": 0
+    }
+  ],
+  "pass": true
+}

@@ -1,0 +1,121 @@
+{
+  "clean_preflight": {
+    "active_scheduler_tasks": [],
+    "gpu_idle": {
+      "compute_process_rows": [],
+      "idle_memory_limit_mb": 512,
+      "idle_util_limit_pct": 5,
+      "ready": true,
+      "returncode": 0,
+      "selected_gpus": [
+        {
+          "index": 0,
+          "name": "NVIDIA GeForce RTX 2080 Ti",
+          "total_mb": 11264,
+          "used_mb": 1,
+          "util_pct": 0
+        },
+        {
+          "index": 1,
+          "name": "NVIDIA GeForce RTX 2080 Ti",
+          "total_mb": 11264,
+          "used_mb": 1,
+          "util_pct": 0
+        },
+        {
+          "index": 2,
+          "name": "NVIDIA GeForce RTX 2080 Ti",
+          "total_mb": 11264,
+          "used_mb": 1,
+          "util_pct": 0
+        },
+        {
+          "index": 3,
+          "name": "NVIDIA GeForce RTX 2080 Ti",
+          "total_mb": 11264,
+          "used_mb": 1,
+          "util_pct": 0
+        }
+      ],
+      "stderr_tail": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n"
+    },
+    "sampled_at": 1788054045.3958652
+  },
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "algorithm.experiments.critical_gpu_loaded_wave_runner",
+        "--node",
+        "node007",
+        "--wave",
+        "10",
+        "--allow-launch",
+        "--keep-remote-output"
+      ],
+      "attempt": 1,
+      "finished_at": 1788055195.148776,
+      "log_path": "md/experiment_artifacts/critical_gpu_reserved_campaign_node007_resume_20260830_00_loaded_r10_try01.log",
+      "max_attempts": 2,
+      "pass": true,
+      "phase": "loaded",
+      "returncode": 0,
+      "started_at": 1788054045.3959317,
+      "wave": 10
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "algorithm.experiments.critical_gpu_loaded_wave_runner",
+        "--node",
+        "node007",
+        "--wave",
+        "11",
+        "--allow-launch",
+        "--keep-remote-output"
+      ],
+      "attempt": 1,
+      "log_path": "md/experiment_artifacts/critical_gpu_reserved_campaign_node007_resume_20260830_01_loaded_r11_try01.log",
+      "max_attempts": 2,
+      "phase": "loaded",
+      "started_at": 1788055244.7565913,
+      "wave": 11
+    }
+  ],
+  "empty_waves": [],
+  "existing_tasks_drain_naturally": true,
+  "external_manual_launches_still_rejected_by_process_audit": true,
+  "gate": "critical_gpu_reserved_campaign",
+  "gates_retried": false,
+  "legacy_scheduler_limits_bypassed_by_frozen_campaign": true,
+  "loaded_waves": [
+    10,
+    11,
+    12,
+    13
+  ],
+  "node": "node007",
+  "ordinary_running_tasks_touched": false,
+  "pass": false,
+  "reservation": {
+    "blocks_new_scheduleurm_launches_only": true,
+    "created_at": 1788053972.7021482,
+    "expires_at": 1788055172.7021482,
+    "holder_host": "FATHERSUCKERMSI",
+    "holder_pid": 1086822,
+    "holder_start_ticks": 5752009,
+    "node": "node007",
+    "ordinary_running_tasks_touched": false,
+    "purpose": "theorem-facing natural-completion GPU calibration",
+    "renewed_at": 1788053972.7021482,
+    "reservation_id": "measure-504fc895f02341e2921b38d5bf070a04"
+  },
+  "run_empty_gate": false,
+  "run_loaded_gate": true,
+  "schema_version": 1,
+  "started_at": 1788053972.7018685,
+  "status": "RUNNING_LOADED",
+  "wave_retries_after_initial_attempt": 1
+}

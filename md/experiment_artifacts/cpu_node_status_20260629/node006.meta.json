@@ -1,0 +1,8 @@
+{
+  "cmd": [
+    "scheduler.run_on",
+    "node006",
+    "set +e\nprintf \"LOAD \"; uptime | sed 's/^.*load average: //'\nprintf \"USER_PROCS \"; ps -u \"$USER\" -o pid= | wc -l\nprintf \"TOPCPU\n\"; ps -eo user,pid,pcpu,pmem,cmd --sort=-pcpu | head -8\n"
+  ],
+  "returncode": 0
+}

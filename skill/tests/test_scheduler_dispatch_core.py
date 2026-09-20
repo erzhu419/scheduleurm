@@ -10,6 +10,7 @@ def test_build_dispatch_queue_plan_orders_targets_and_running_keys():
         "tasks": [
             {"id": "r1", "status": "running", "identity": "same"},
             {"id": "l1", "status": "launching", "identity": "launching-key"},
+            {"id": "f1", "status": "failed", "identity": "failed-key"},
             {"id": "q-low", "status": "queued", "priority": "low", "submitted_at": 1},
             {"id": "q-high-late", "status": "queued", "priority": "high", "submitted_at": 5},
             {"id": "q-high-early", "status": "queued", "priority": "high", "submitted_at": 2},
@@ -31,6 +32,10 @@ def test_build_dispatch_queue_plan_orders_targets_and_running_keys():
     )
 
     assert plan.running_keys == {"same", "launching-key"}
+    assert plan.identity_index["tasks_by_id"]["f1"]["status"] == "failed"
+    assert plan.identity_index["terminal_by_run_key"] == {
+        "failed-key": [state["tasks"][2]]
+    }
     assert [t["id"] for t in plan.queued] == ["q-high-early", "q-low"]
     assert seen_queued == ["q-high-early", "q-low"]
     assert plan.global_batch_plan == {"q-high-early": {"node": "nodeA"}}

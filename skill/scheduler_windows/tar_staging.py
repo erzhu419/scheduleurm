@@ -18,14 +18,20 @@ class WindowsTarStagingDeps:
     run_subprocess: Callable[..., Any] = subprocess.run
 
 
-def tar_exclude_args(extra_excludes: list | None = None) -> list[str]:
-    patterns = [
-        ".git", "__pycache__", "*.pyc",
-        "results", "results_*",
-        "logs", "logs_*",
-        "experiment_output",
-        "archive*", "*.tar.gz",
-    ]
+def tar_exclude_args(
+    extra_excludes: list | None = None,
+    *,
+    use_default_excludes: bool = True,
+) -> list[str]:
+    patterns = []
+    if use_default_excludes:
+        patterns.extend([
+            ".git", "__pycache__", "*.pyc",
+            "results", "results_*",
+            "logs", "logs_*",
+            "experiment_output",
+            "archive*", "*.tar.gz",
+        ])
     for exclude in extra_excludes or []:
         clean = str(exclude or "").strip().strip("/")
         if not clean:
@@ -41,6 +47,7 @@ def stage_local_dir_to_windows(
     target_dir: str,
     *,
     extra_excludes: list | None = None,
+    use_default_excludes: bool = True,
     timeout_s: int = 600,
     deps: WindowsTarStagingDeps,
 ) -> tuple[bool, str]:
@@ -59,7 +66,10 @@ def stage_local_dir_to_windows(
         "Write-Output 'READY'"
     )
     encoded = base64.b64encode(ps.encode("utf-16le")).decode("ascii")
-    tar_args = ["tar", "-h", "-C", str(src)] + tar_exclude_args(extra_excludes) + ["-cf", "-", "."]
+    tar_args = ["tar", "-h", "-C", str(src)] + tar_exclude_args(
+        extra_excludes,
+        use_default_excludes=use_default_excludes,
+    ) + ["-cf", "-", "."]
     ssh_args = deps.ssh_base_args(target_node) + [
         "powershell",
         "-NoProfile",

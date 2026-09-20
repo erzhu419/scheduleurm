@@ -6,6 +6,7 @@ import json
 import shlex
 import time as _time
 from dataclasses import dataclass
+from functools import lru_cache
 from typing import Any, Callable, Optional
 
 
@@ -39,48 +40,51 @@ def task_required_gpu_idx(task: dict) -> Optional[int]:
     return idx if idx >= 0 else None
 
 
-def python_runtime_identity(command: str) -> str:
-    """Return the explicit Python executable token used by a command."""
-    try:
-        tokens = shlex.split(command or "")
-    except ValueError:
-        tokens = str(command or "").split()
-    for token in tokens:
-        executable = token.rsplit("/", 1)[-1].lower()
-        if executable == "python" or executable.startswith("python3"):
-            return token
-    return ""
-
-
-def python_entrypoint_identity(command: str) -> str:
-    """Return the Python script/module launched by a command."""
+@lru_cache(maxsize=4096)
+def _python_command_identities(command: str) -> tuple[str, str]:
+    """Parse the Python runtime and entrypoint once for repeated node gates."""
     try:
         tokens = shlex.split(command or "")
     except ValueError:
         tokens = str(command or "").split()
     python_idx = None
+    runtime = ""
     for idx, token in enumerate(tokens):
         executable = token.rsplit("/", 1)[-1].lower()
         if executable == "python" or executable.startswith("python3"):
             python_idx = idx
+            runtime = token
             break
     if python_idx is None:
-        return ""
+        return "", ""
+
     idx = python_idx + 1
     while idx < len(tokens):
         token = tokens[idx]
         if token == "-m":
-            return f"module:{tokens[idx + 1]}" if idx + 1 < len(tokens) else ""
+            entrypoint = f"module:{tokens[idx + 1]}" if idx + 1 < len(tokens) else ""
+            return runtime, entrypoint
         if token == "-c":
-            return f"inline:{tokens[idx + 1]}" if idx + 1 < len(tokens) else ""
+            entrypoint = f"inline:{tokens[idx + 1]}" if idx + 1 < len(tokens) else ""
+            return runtime, entrypoint
         if token in ("-W", "-X"):
             idx += 2
             continue
         if token.startswith("-"):
             idx += 1
             continue
-        return token
-    return ""
+        return runtime, token
+    return runtime, ""
+
+
+def python_runtime_identity(command: str) -> str:
+    """Return the explicit Python executable token used by a command."""
+    return _python_command_identities(str(command or ""))[0]
+
+
+def python_entrypoint_identity(command: str) -> str:
+    """Return the Python script/module launched by a command."""
+    return _python_command_identities(str(command or ""))[1]
 
 
 def node_numeric(node_state: Optional[dict], *keys, default=None):
@@ -160,6 +164,7 @@ def blocked_nodes_for_task(task: dict, *, deps: BlockedNodesDeps) -> set:
         except Exception:
             return set()
     blocked = set()
+    task_python_identity = None
     for rec in latest.values():
         if rec.get("status") != "pending":
             continue
@@ -172,10 +177,14 @@ def blocked_nodes_for_task(task: dict, *, deps: BlockedNodesDeps) -> set:
         same_proj = project and rec.get("project") == project
         category = rec.get("category")
         if category == "PYTHON_IMPORT":
-            task_runtime = python_runtime_identity(task.get("cmd") or "")
-            failed_runtime = python_runtime_identity(rec.get("cmd") or "")
-            task_entrypoint = python_entrypoint_identity(task.get("cmd") or "")
-            failed_entrypoint = python_entrypoint_identity(rec.get("cmd") or "")
+            if task_python_identity is None:
+                task_python_identity = _python_command_identities(
+                    str(task.get("cmd") or "")
+                )
+            task_runtime, task_entrypoint = task_python_identity
+            failed_runtime, failed_entrypoint = _python_command_identities(
+                str(rec.get("cmd") or "")
+            )
             same_python_invocation = bool(
                 task_runtime
                 and failed_runtime

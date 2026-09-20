@@ -38,6 +38,7 @@ class SchedulerCliDeps:
     cmd_record_vram: Callable
     cmd_history: Callable
     cmd_priority: Callable
+    cmd_release_node: Callable
     cmd_edit: Callable
     cmd_why: Callable
     cmd_tui: Callable
@@ -50,6 +51,12 @@ def _add_submit_parser(sub, deps: SchedulerCliDeps) -> None:
     parser.add_argument("--cmd", required=True, help="Shell command to run (will be wrapped with cd cwd && env)")
     parser.add_argument("--cwd", required=True, help="Working directory on target node")
     parser.add_argument("--signature", required=True, help="Stable id like 'RE-SAC/b1' for VRAM history lookup")
+    parser.add_argument("--reserve-node", dest="reserve_nodes", choices=nodes, action="append",
+                        help="Reserve this node for this task's campaign. Repeatable for multiple nodes.")
+    parser.add_argument("--reserve-signature-prefix", default="",
+                        help="Only tasks whose signature begins with this prefix may use reserved nodes.")
+    parser.add_argument("--reserve-until-file", default="",
+                        help="Absolute local completion marker; reservation stays active across retries until this file is nonempty.")
     parser.add_argument(
         "--resource-family",
         dest="resource_family",
@@ -97,6 +104,17 @@ def _add_submit_parser(sub, deps: SchedulerCliDeps) -> None:
         ),
     )
     parser.add_argument("--priority", choices=["low", "normal", "high"], default="normal")
+    parser.add_argument(
+        "--protect-from-auto-eviction",
+        dest="protect_from_auto_eviction",
+        action="store_true",
+        help=(
+            "Prefer keeping this loss-sensitive control task when scheduler resource "
+            "pressure selects an eviction victim. This does not bypass placement "
+            "capacity; if every eligible victim is protected, the scheduler may still "
+            "evict one to recover capacity."
+        ),
+    )
     parser.add_argument("--project", help="Project name (else derived from cwd basename)")
     parser.add_argument("--preferred-node", choices=nodes, help="SOFT preference: try this node first, fall back if full")
     parser.add_argument(
@@ -448,6 +466,10 @@ def _add_mutation_parsers(sub, deps: SchedulerCliDeps) -> None:
     parser.add_argument("id", help="Task id (e.g. t0042)")
     parser.add_argument("level", choices=["low", "normal", "high"])
     parser.set_defaults(func=deps.cmd_priority)
+
+    parser = sub.add_parser("release-node", help="Explicitly release a campaign node reservation")
+    parser.add_argument("--owner-task", required=True, help="Task ID that created the reservation")
+    parser.set_defaults(func=deps.cmd_release_node)
 
     parser = sub.add_parser("edit", help="Override resource estimates / pin on a queued task")
     parser.add_argument("id", nargs="?", help="Task id (e.g. t0042)")

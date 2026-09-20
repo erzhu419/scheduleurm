@@ -282,6 +282,42 @@ def test_remote_to_remote_relays_complete_directory_via_local_tmp():
     assert success_marks == [("src_remote", "remote", "/ckpt")]
 
 
+def test_remote_relay_verifies_relative_checkpoint_path_on_target():
+    run_on_calls = []
+
+    def target_path_only(node, cmd, **kwargs):
+        del kwargs
+        if cmd.startswith("test -d"):
+            return 0, "", ""
+        if "du -sm" in cmd:
+            return 0, "6\n", ""
+        if cmd.startswith("mkdir -p"):
+            return 0, "", ""
+        if cmd.startswith("test -e"):
+            expected = "test -e /mnt/remote/ckpt/train_state.pkl"
+            return (0, "", "") if cmd == expected else (1, "", "")
+        return 0, "", ""
+
+    ok, msg = resume_stage.stage_resume_ckpt_for_launch(
+        _task(),
+        "remote",
+        source_loc={
+            "node": "src_remote",
+            "path": "/mnt/src_remote/ckpt/train_state.pkl",
+        },
+        max_ckpt_mb=100,
+        deps=_deps(run_on_calls=run_on_calls, run_on_impl=target_path_only),
+    )
+
+    assert ok is True
+    assert msg == "synced ckpt_dir remote-to-remote via local (6MB)"
+    assert any(
+        node == "remote"
+        and cmd == "test -e /mnt/remote/ckpt/train_state.pkl"
+        for node, cmd, _ in run_on_calls
+    )
+
+
 def test_remote_relay_keeps_partial_spool_and_reuses_it_on_retry(tmp_path):
     subprocess_calls = []
     success_marks = []

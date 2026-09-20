@@ -1,0 +1,33 @@
+{
+  "registered_at_utc": "2026-09-09T17:21:24.131976+00:00",
+  "role": "development mechanism diagnosis; no independent arrival seeds",
+  "loads": [
+    0.5,
+    0.8,
+    0.95
+  ],
+  "seeds": [
+    41,
+    42,
+    43
+  ],
+  "arrival_horizon_s": 20000.0,
+  "budget": 26,
+  "terminal_service_rates": [
+    0.1335789666104868,
+    0.29323460659958855,
+    0.35916419250378795
+  ],
+  "source_policy": "frozen always-lookahead with weight 1 and 1% support cap",
+  "state_roster": "every source frame where v4 and lookahead differ in departures, duration or sorted class completion offsets, including drain",
+  "intervention": "same source prefix; force v4 versus lookahead once; both continue with v4 K26 to drain the identical original population",
+  "prediction": "frozen J=A+EV; all delta signs lookahead-first minus v4-first, units job-seconds",
+  "realized_target": "N times paired mean-flow difference; identical prefix contributions cancel",
+  "area_partition": "current/future use each branch's own first-frame boundary, which may differ in absolute time",
+  "cutoff": "h=min(tau,max(H-start,0)); truncated current arrival area Lambda*(tau*h-h*h/2); terminal Poisson mean lambda*h",
+  "residual_identity": "delta F-delta J = cutoff correction + realized current arrival residual + realized next-queue residual + future area minus realized terminal value",
+  "outcome_zero_tolerance_job_s": 1e-06,
+  "diagnostic_work": "offline queue memoization: search and prediction counters cover selector cache misses; additional action audits and replay frames counted separately; forced replays are not new budgeted schedulers",
+  "stopping_rule": "all substitutions on all nine source trajectories, once; no state filtering based on outcomes or policy tuning",
+  "execution_workers": 3
+}

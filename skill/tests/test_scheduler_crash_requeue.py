@@ -236,6 +236,26 @@ def test_hard_fail_escalates_without_retry():
     assert len(state["tasks"]) == 1
 
 
+def test_deterministic_app_bug_escalates_without_retry():
+    parent = _task()
+    state = {"tasks": [parent], "next_id": 10}
+    escalations = []
+
+    new_id = requeue_after_crash(
+        parent,
+        state,
+        deps=_deps(
+            category="DETERMINISTIC_APP_BUG", escalations=escalations),
+    )
+
+    assert new_id is None
+    assert parent["failure_category"] == "DETERMINISTIC_APP_BUG"
+    assert escalations == [
+        ("tParent", "DETERMINISTIC_APP_BUG", parent["_diagnosis"]),
+    ]
+    assert len(state["tasks"]) == 1
+
+
 def test_protocol_source_mismatch_escalates_without_retry():
     parent = _task(_diagnosis={
         "is_crash": True,

@@ -124,6 +124,28 @@ def test_node_launch_extra_env_keeps_node_cuda_env_only_for_jax_gpu_tasks():
     assert ("gpu", "/local/cuda") in rewrite_calls
 
 
+def test_bus_module_does_not_inherit_jax_cuda_library_environment():
+    result = launch_env.node_launch_extra_env(
+        {
+            "node": "gpu",
+            "project": "BAPR",
+            "cmd": (
+                "/python -u -m bus_experiments.run_policy_bank_train_v1 "
+                "--role robust_source"
+            ),
+            "est_vram_mb": 1800,
+        },
+        node_configs={
+            "gpu": {"launch_extra_env": {"LD_LIBRARY_PATH": "/jax/cuda"}}
+        },
+        rewrite_command_paths_for_node=lambda node, value: value,
+        default_vram_mb=512,
+        task_launch_cpu_mode=lambda task: False,
+    )
+
+    assert result == {}
+
+
 def test_launch_extra_env_skips_jax_defaults_for_cpu_mode():
     env = launch_env.launch_extra_env(
         {

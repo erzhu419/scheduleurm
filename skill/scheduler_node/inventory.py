@@ -36,6 +36,10 @@ NODE007_SCOMP_ENV = "/home/zhengliang01/scheduleurm_work/conda_envs/scomp-py310"
 OFFLINE_SUMO_ENV = "/home/erzhu419/.conda/envs/offline-sumo"
 OFFLINE_SUMO_PYTHON = f"{OFFLINE_SUMO_ENV}/bin/python"
 BUS_TORCH_CMD_REWRITES = [
+    ("/home/erzhu419/anaconda3/bin/python -u -m bus_experiments",
+     f"{OFFLINE_SUMO_PYTHON} -u -m bus_experiments"),
+    ("/home/erzhu419/anaconda3/bin/python -m bus_experiments",
+     f"{OFFLINE_SUMO_PYTHON} -m bus_experiments"),
     ("/home/erzhu419/anaconda3/bin/python -u sac_ensemble",
      f"{OFFLINE_SUMO_PYTHON} -u sac_ensemble"),
     ("/home/erzhu419/anaconda3/bin/python sac_ensemble",
@@ -220,6 +224,10 @@ NODES = {
         "launch_stage_include_paths": BAPR_JAX_LAUNCH_INCLUDE_PATHS,
         "launch_stage_fingerprint_exclude_paths": LAUNCH_STAGE_FINGERPRINT_EXCLUDE_PATHS,
         "cmd_rewrites": BUS_TORCH_CMD_REWRITES + [
+            (f"{OFFLINE_SUMO_PYTHON} -u -m bus_experiments",
+             f"{NODE007_RESAC_JAX_ENV}/bin/python -u -m bus_experiments"),
+            (f"{OFFLINE_SUMO_PYTHON} -m bus_experiments",
+             f"{NODE007_RESAC_JAX_ENV}/bin/python -m bus_experiments"),
             ("/home/erzhu419/miniconda3/envs/csbapr/bin/python",
              "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python"),
             ("/home/erzhu419/.venvs/scheduleurm-torch-bench/bin/python",

@@ -1,0 +1,133 @@
+{
+  "diagnostic": "exhaustive_inactive_backlog_gate_states",
+  "status": "COMPLETE",
+  "source": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/aligned_hardware_backlog_gate_development_20260910.json",
+  "scenario_id": "q01:gpu_3080ti_12gb_dual_jtl110gpu2",
+  "workloads": [
+    "gpu_cnn_torch_resnet50",
+    "gpu_heavy_jax_matmul",
+    "gpu_llm_distilgpt2"
+  ],
+  "gate_weights": [
+    8,
+    8,
+    3
+  ],
+  "gate_capacity": 48,
+  "inactive_state_count": 169,
+  "arrival_rates_by_load": {
+    "0.5": [
+      0.0667894833052434,
+      0.14661730329979422,
+      0.17958209625189392
+    ],
+    "0.8": [
+      0.10686317328838943,
+      0.23458768527967075,
+      0.2873313540030302
+    ],
+    "0.95": [
+      0.12690001827996245,
+      0.27857287626960897,
+      0.3412059828785984
+    ]
+  },
+  "terminal_service_rates": [
+    0.1335789666104868,
+    0.29323460659958855,
+    0.35916419250378795
+  ],
+  "groups": [
+    {
+      "load": 0.5,
+      "budget": 10,
+      "state_count": 169,
+      "different_action_count": 0,
+      "witnesses": []
+    },
+    {
+      "load": 0.5,
+      "budget": 14,
+      "state_count": 169,
+      "different_action_count": 0,
+      "witnesses": []
+    },
+    {
+      "load": 0.5,
+      "budget": 26,
+      "state_count": 169,
+      "different_action_count": 0,
+      "witnesses": []
+    },
+    {
+      "load": 0.5,
+      "budget": 120,
+      "state_count": 169,
+      "different_action_count": 0,
+      "witnesses": []
+    },
+    {
+      "load": 0.8,
+      "budget": 10,
+      "state_count": 169,
+      "different_action_count": 0,
+      "witnesses": []
+    },
+    {
+      "load": 0.8,
+      "budget": 14,
+      "state_count": 169,
+      "different_action_count": 0,
+      "witnesses": []
+    },
+    {
+      "load": 0.8,
+      "budget": 26,
+      "state_count": 169,
+      "different_action_count": 0,
+      "witnesses": []
+    },
+    {
+      "load": 0.8,
+      "budget": 120,
+      "state_count": 169,
+      "different_action_count": 0,
+      "witnesses": []
+    },
+    {
+      "load": 0.95,
+      "budget": 10,
+      "state_count": 169,
+      "different_action_count": 0,
+      "witnesses": []
+    },
+    {
+      "load": 0.95,
+      "budget": 14,
+      "state_count": 169,
+      "different_action_count": 0,
+      "witnesses": []
+    },
+    {
+      "load": 0.95,
+      "budget": 26,
+      "state_count": 169,
+      "different_action_count": 0,
+      "witnesses": []
+    },
+    {
+      "load": 0.95,
+      "budget": 120,
+      "state_count": 169,
+      "different_action_count": 0,
+      "witnesses": []
+    }
+  ],
+  "all_inactive_actions_equal": true,
+  "arrival_tapes_used": false,
+  "selector_calls": 4056,
+  "diagnostic_candidate_attempts": 51546,
+  "accounting": "Extra diagnostic double searches; excluded from the 108-run experiment candidate budget.",
+  "conclusion": "Inactive actions agree exhaustively; active branches use the same lookahead. The two action policies coincide on all integer queues for this catalogue, these recorded rates, and four budgets.",
+  "scope": "No claim for other arrival rates, terminal rates, catalogues, budgets, or gate thresholds."
+}

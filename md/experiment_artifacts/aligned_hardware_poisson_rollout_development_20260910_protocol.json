@@ -1,0 +1,63 @@
+{
+  "registered_at_utc": "2026-09-09T18:55:44.883843+00:00",
+  "base_protocol": {
+    "arrival_horizon_s": 20000.0,
+    "loads": [
+      0.5,
+      0.8,
+      0.95
+    ],
+    "seeds": [
+      41,
+      42,
+      43
+    ],
+    "budgets": [
+      10,
+      14,
+      26,
+      120
+    ],
+    "exact_reference_budget": 120,
+    "arrival_model": "independent Poisson arrivals per second; common tape across budgets",
+    "job_sizes": "fixed task-native canonical units",
+    "dispatch": "global synchronous frames; released jobs only; FIFO within class",
+    "score": "queue weighted actual frame departures divided by actual frame duration",
+    "budget_unit": "candidate construction or feasibility attempt; seeds included",
+    "stopping_rule": "stop arrivals at horizon, then drain the same finite prefix"
+  },
+  "role": "development only; no confirmation seeds",
+  "policies": [
+    "v4_support",
+    "lookahead_cap_1pct",
+    "arrival_rollout_cap_1pct",
+    "poisson_rollout_cap_1pct"
+  ],
+  "main_policy": "poisson_rollout_cap_1pct",
+  "main_budget": 26,
+  "terminal_service_rates": [
+    0.1335789666104868,
+    0.29323460659958855,
+    0.35916419250378795
+  ],
+  "planning_seeds": [
+    0,
+    1,
+    2
+  ],
+  "changed_rule": "replace fixed-spacing arrivals by one shared sampled Poisson path per active comparison; all current search, recovery, support floors and terminal integration stay fixed",
+  "arrival_path": "class-specific exponential gaps at registered lambda, accumulated from decision time 0 to the common H; one path generated and shared by two contenders",
+  "rng": "per-class random.Random('aligned-planning:{planning_seed}:{coordinate}'), distinct from exogenous aligned-frame streams; each complete run starts fresh and active decisions advance it; no Q-based caching or reseeding",
+  "rng_scope": "same planning seed crossed with every real arrival seed, load and K; planning state is local to each run and never supplied a real arrival tape or real arrival seed",
+  "random_cost": "charge every exponential draw, including first beyond H; zero-rate classes make no draw; report RNG initialization count and setup time separately",
+  "common_horizon_s": 44.91725121287891,
+  "objective": "same complete first-frame plus two pure-batch successor areas and remaining shared-population fluid tail; no old Poisson correction added",
+  "budget": "one shared sample and exactly two paid successor frames per contender; three planning repetitions are separate full runs, never three free paths in one decision",
+  "sampling_limits": "single-path argmin is not an expected-cost minimizer; fluid tail and analytic challenger restriction remain",
+  "known_counterexample": "describe all three fresh planning streams on the previously observed (1,4,8); no requirement to correct its ordering",
+  "controls": "full-K v4, full-K analytic lookahead and frozen midpoint-arrival rollout; reproduce all 108 old control runs",
+  "reference": "v4 K120 remains the exact support reference",
+  "aggregation": "pair each planning repetition against the same real-seed controls; average the three repetitions within each real arrival seed before averaging the original three seeds; report every planning-seed mean and raw range, select none",
+  "stopping_rule": "all 216 cases once: 108 controls plus 108 Poisson runs; no seed selection or changes to sampling, horizon, terminal rule or budget after outcomes",
+  "execution_workers": 3
+}

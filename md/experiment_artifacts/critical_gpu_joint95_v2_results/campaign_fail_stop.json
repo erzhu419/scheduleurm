@@ -1,0 +1,44 @@
+{
+  "claim_boundary": "This terminal records a v2 execution failure. It is retained and does not create a calibration unit or an empirical capacity claim.",
+  "created_at": 1789298673.0017262,
+  "decision": "JOINT95_V2_INTERVAL_OVERLAP_FAIL_STOP",
+  "failed_attempt_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_joint95_v2_results/critical_gpu_joint95_v2_jtl110gpu2_r34_attempt01.json",
+  "failed_joint_unit_id": "critical_gpu_joint95_v2_jtl110gpu2_r34",
+  "failed_wave": 34,
+  "gate": "critical_gpu_joint95_v2_campaign_fail_stop",
+  "holdout_release_authorized": false,
+  "pass": false,
+  "protocol": "critical_gpu_joint95_natural_completion_v2",
+  "reason": "DispatchRefusal: empty cell workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3 overlapped target-node scheduler task(s): t93454",
+  "replacement_attempt_authorized": false,
+  "scheduler_interval_failures": [
+    {
+      "measurement_finished_at": 1789298672.755306,
+      "measurement_id": "workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3",
+      "measurement_kind": "empty_cell",
+      "measurement_started_at": 1789298641.873546,
+      "overlap_count": 1,
+      "overlapping_tasks": [
+        {
+          "active_at_audit": true,
+          "description": "auto-adopted: scheduleurm on jtl110gpu2:CPU-only (2 procs)",
+          "finished_at": null,
+          "id": "t93454",
+          "node": "jtl110gpu2",
+          "project": "scheduleurm",
+          "signature": "scheduleurm/auto-adopted/p3548212",
+          "started_at": 1789298641.2288969,
+          "status": "running"
+        }
+      ],
+      "queue_path": "/home/erzhu419/.claude/scheduler/queue.json",
+      "status": "FAIL_OVERLAP",
+      "target_node": "jtl110gpu2",
+      "target_queue_tasks_are_external": true
+    }
+  ],
+  "schema_version": 1,
+  "status": "FAIL_STOP",
+  "terminal": true,
+  "v1_joint_units_used": 0
+}

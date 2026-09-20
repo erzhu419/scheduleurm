@@ -141,13 +141,19 @@ def preempt_for_high_priority(state: dict, nodes: list, *, deps: PreemptionDeps)
             if not victims:
                 break
             victim, protected_ids = _pick_victim(victims, remaining_cpu, remaining_ram, deps)
+            protection_fallback_used = bool(victims) and len(protected_ids) == len(victims)
             cpu_freed = victim.get("cpu_cores") or deps.default_cpu_cores
             ram_freed = deps.task_ram_pressure_mb(victim) or deps.default_ram_mb
+            fallback_note = (
+                "; all eligible tasks are loss-protected, using operability fallback"
+                if protection_fallback_used else ""
+            )
             deps.evict_to_queue(
                 victim,
                 state,
                 f"preempted by {hi_task['id']} (high-prio waited {wait_min}min; "
-                f"deficit cpu={cpu_deficit}, ram={deps.format_mem_gb(ram_deficit)})",
+                f"deficit cpu={cpu_deficit}, ram={deps.format_mem_gb(ram_deficit)})"
+                f"{fallback_note}",
                 "preempt_high_priority",
             )
             evicted.append({
@@ -161,6 +167,7 @@ def preempt_for_high_priority(state: dict, nodes: list, *, deps: PreemptionDeps)
                 "protected_skipped": [
                     task.get("id") for task in victims if id(task) in protected_ids
                 ],
+                "protection_fallback_used": protection_fallback_used,
             })
             cpu_acc += cpu_freed
             ram_acc += ram_freed

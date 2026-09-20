@@ -258,8 +258,7 @@ def _apply_probe_result(
                 "terminal_reason": f"launcher exit-status sentinel recorded rc={exit_code}",
                 "terminal_diagnosis_deferred": True,
             }
-            if exit_code != 0:
-                results[task["id"]]["terminal_ok"] = False
+            results[task["id"]]["terminal_ok"] = exit_code == 0
             continue
         pid_set = set(pids)
         protected_pids = {

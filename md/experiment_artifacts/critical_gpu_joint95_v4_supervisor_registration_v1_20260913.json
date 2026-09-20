@@ -1,0 +1,106 @@
+{
+  "campaign_contract": {
+    "calibration_waves": [
+      74,
+      75,
+      76,
+      77,
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      84,
+      85,
+      86,
+      87,
+      88,
+      89,
+      90,
+      91,
+      92
+    ],
+    "collection_prefix": "critical_gpu_joint95_v4",
+    "finite_sample_rank": 19,
+    "holdout_wave": 93,
+    "manifest_gate": "critical_gpu_joint95_v4_registration",
+    "manifest_protocol": "critical_gpu_joint95_natural_completion_v4",
+    "node": "jtl110gpu2",
+    "results_directory": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_joint95_v4_results",
+    "v1_joint_scores_eligible": 0,
+    "v1_joint_units_eligible": 0,
+    "v2_joint_scores_eligible": 0,
+    "v2_joint_units_eligible": 0,
+    "v3_joint_scores_eligible": 0,
+    "v3_joint_units_eligible": 0
+  },
+  "control_policy": {
+    "ACTIVE_CONTROLLER": "wait without mutation",
+    "COMPLETE": "terminate successfully",
+    "FAIL_RESULT_STATE": "terminate without release, submission, or retry",
+    "FAIL_STOP": "terminate without release, submission, or retry",
+    "HOLDOUT_LOCKED": "if exactly 19 calibrations succeeded and no controller is active, call frozen release_holdout once, then submit_next for wave 93",
+    "READY_CALIBRATION": "if no active joint95 controller, call existing submit_next once",
+    "READY_HOLDOUT": "if no active joint95 controller, call existing submit_next once",
+    "TERMINAL_CONTROLLER_WITHOUT_SUCCESS": "terminate when the exact expected-wave controller signature is already terminal but its valid PASS result is absent"
+  },
+  "decision_inputs": [
+    "active joint95 controller presence",
+    "registered collection state only when no joint95 controller is active",
+    "successful calibration count only for the frozen 19-unit release boundary"
+  ],
+  "execution_scope": {
+    "active_controller_checked_before_collection_status": true,
+    "active_controller_signature_prefix": "ScheduleurmBench/critical_gpu_joint95_v4/",
+    "direct_scheduler_subprocess_calls": 0,
+    "dispatcher_release_holdout_only": true,
+    "dispatcher_submit_next_only": true,
+    "measurement_calls": 0,
+    "retry_authorized": false,
+    "terminal_controller_history_checked_before_every_submission": true
+  },
+  "gate": "critical_gpu_joint95_v4_supervisor",
+  "prohibited": [
+    "direct measurement execution",
+    "submission while any joint95 controller is active",
+    "retry after any failed or invalid attempt",
+    "score-dependent selection outside the registered rank-19 release",
+    "v1/v2/v3 evidence reuse, server pulls, or paper edits"
+  ],
+  "protocol": "critical_gpu_joint95_v4_deterministic_supervisor_v1",
+  "registered": true,
+  "registered_at_utc": "2026-09-13T14:59:47.796465+00:00",
+  "registration_snapshot": {
+    "collection_status_read_while_controller_active": false,
+    "kind": "ZERO_RESULT_START",
+    "next_wave": 74,
+    "results_entry_count": 0,
+    "scores_read_by_supervisor_registration": 0,
+    "successful_calibration_count": 0
+  },
+  "scheduler_placement": {
+    "release_after": [
+      "COMPLETE",
+      "VALIDATED_FAIL_STOP_WITH_QUIESCENT_CHILDREN"
+    ],
+    "require_node": "local",
+    "reserve_node": "jtl110gpu2",
+    "reserve_signature_prefix": "ScheduleurmBench/critical_gpu_joint95_v4/",
+    "reserve_until_file": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_joint95_v4_results/v4_reservation_release.ready",
+    "signature": "ScheduleurmBench/joint95_v4_supervisor_v1",
+    "signature_is_outside_joint95_controller_prefix": true,
+    "vram_mb": 0
+  },
+  "schema_version": 1,
+  "score_policy": "The supervisor never reads a score for branching. The existing frozen release_holdout API alone computes registered rank 19.",
+  "source_paths": {
+    "manifest": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_joint95_v4_collection_manifest_20260913.json",
+    "node_status": "/home/erzhu419/.claude/scheduler/node_probe_cache.json",
+    "python_bin": "/usr/bin/python3.10",
+    "queue_status": "/home/erzhu419/.claude/scheduler/queue.json",
+    "results_directory": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_joint95_v4_results",
+    "scheduler": "/home/erzhu419/mine_code/scheduleurm/skill/scheduler.py"
+  },
+  "status": "REGISTERED_READY_FOR_LOCAL_CONTROL"
+}

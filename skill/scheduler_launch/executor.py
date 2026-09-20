@@ -17,8 +17,9 @@ def execute_launch_intents(
     batch_commit_fn: Callable | None = None,
     slot_lock_factory: Callable,
     notify_fn: Callable,
-    commit_batch_size: int = 8,
-    commit_max_delay_s: float = 0.5,
+    progress_fn: Callable[[dict], None] | None = None,
+    commit_batch_size: int = 48,
+    commit_max_delay_s: float = 2.0,
 ) -> list:
     """Execute launch_intent events, commit their results, and preserve event order.
 
@@ -79,8 +80,10 @@ def execute_launch_intents(
         return idx, committed
 
     results_by_idx: dict[int, list] = {}
+    completed_count = 0
 
     def _commit_records(records: list[dict]) -> None:
+        nonlocal completed_count
         if not records:
             return
         records.sort(key=lambda r: r["idx"])
@@ -106,10 +109,19 @@ def execute_launch_intents(
                     for record in records
                 }
             results_by_idx.update(committed)
-            return
-        for record in records:
-            out_idx, committed = _commit_one(record)
-            results_by_idx[out_idx] = committed
+        else:
+            for record in records:
+                out_idx, committed = _commit_one(record)
+                results_by_idx[out_idx] = committed
+        completed_count += len(records)
+        if progress_fn is not None:
+            try:
+                progress_fn({
+                    "completed": completed_count,
+                    "total": len(launch_intents),
+                })
+            except Exception:
+                pass
 
     workers = max(1, min(int(max_workers or 1), len(launch_intents)))
     if workers <= 1:
@@ -124,24 +136,36 @@ def execute_launch_intents(
                 for idx, ev in launch_intents
             }
             buffered: list[dict] = []
-            last_commit_at = time.monotonic()
+            buffered_since_at: float | None = None
             while pending:
+                wait_timeout = max_delay
+                if buffered_since_at is not None:
+                    wait_timeout = max(
+                        0.01,
+                        max_delay - (time.monotonic() - buffered_since_at),
+                    )
                 done, pending = wait(
                     pending,
-                    timeout=max_delay,
+                    timeout=wait_timeout,
                     return_when=FIRST_COMPLETED,
                 )
+                if done and not buffered:
+                    buffered_since_at = time.monotonic()
                 buffered.extend(future.result() for future in done)
                 while len(buffered) >= batch_size:
                     _commit_records(buffered[:batch_size])
                     del buffered[:batch_size]
-                    last_commit_at = time.monotonic()
+                    buffered_since_at = time.monotonic() if buffered else None
                 if buffered and (
-                    not pending or time.monotonic() - last_commit_at >= max_delay
+                    not pending
+                    or (
+                        buffered_since_at is not None
+                        and time.monotonic() - buffered_since_at >= max_delay
+                    )
                 ):
                     _commit_records(buffered)
                     buffered = []
-                    last_commit_at = time.monotonic()
+                    buffered_since_at = None
             _commit_records(buffered)
 
     final_events: list = []

@@ -41,6 +41,7 @@ def _deps(calls=None):
         cmd_record_vram=cb("record-vram"),
         cmd_history=cb("history"),
         cmd_priority=cb("priority"),
+        cmd_release_node=cb("release-node"),
         cmd_edit=cb("edit"),
         cmd_why=cb("why"),
         cmd_tui=cb("tui"),
@@ -65,6 +66,24 @@ def test_run_scheduler_cli_invokes_injected_callback():
     assert name == "status"
     assert args.readonly is True
     assert args.ids == ["t1,t2"]
+
+
+def test_submit_node_reservation_and_release_parser():
+    calls = []
+    run_scheduler_cli(
+        _deps(calls),
+        ["submit", "--description", "controller", "--cmd", "true", "--cwd", "/work",
+         "--signature", "campaign/controller", "--reserve-node", "node001",
+         "--reserve-signature-prefix", "campaign/", "--reserve-until-file", "/tmp/done"],
+    )
+    name, args = calls.pop()
+    assert name == "submit"
+    assert args.reserve_nodes == ["node001"]
+    assert args.reserve_signature_prefix == "campaign/"
+    assert args.reserve_until_file == "/tmp/done"
+    run_scheduler_cli(_deps(calls), ["release-node", "--owner-task", "t1"])
+    assert calls[0][0] == "release-node"
+    assert calls[0][1].owner_task == "t1"
 
 
 def test_task_log_alias_routes_to_same_callback():
@@ -120,6 +139,22 @@ def test_submit_parser_uses_dynamic_node_choices_and_defaults():
     assert args.node_down_requeue_s == 9
     assert args.priority == "normal"
     assert args.env_spec == "none"
+    assert args.protect_from_auto_eviction is False
+
+
+def test_submit_parser_accepts_explicit_auto_eviction_protection():
+    parser = build_parser(_deps())
+
+    args = parser.parse_args([
+        "submit",
+        "--description", "loss-sensitive controller",
+        "--cmd", "python controller.py",
+        "--cwd", "/work",
+        "--signature", "campaign/wave-controller",
+        "--protect-from-auto-eviction",
+    ])
+
+    assert args.protect_from_auto_eviction is True
 
 
 def test_submit_parser_rejects_removed_slurm_flags():

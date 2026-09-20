@@ -1,0 +1,1981 @@
+{
+  "schema_version": 1,
+  "experiment": "aligned_hardware_requirement_dominance_prevalence_screen_v1",
+  "role": "outcome-neutral local catalogue prevalence development screen",
+  "registered": true,
+  "registered_at_utc": "2026-09-20T02:07:09.935650+00:00",
+  "catalogue_roster": [
+    {
+      "snapshot_id": "frame_v1",
+      "source_role": "frame_experiment_model",
+      "path": "aligned_hardware_frame_experiment_20260909.json",
+      "model_path": [
+        "model"
+      ],
+      "representation": "frame_model"
+    },
+    {
+      "snapshot_id": "frame_v2",
+      "source_role": "frame_experiment_model",
+      "path": "aligned_hardware_frame_experiment_v2_20260909.json",
+      "model_path": [
+        "model"
+      ],
+      "representation": "frame_model"
+    },
+    {
+      "snapshot_id": "frame_v3",
+      "source_role": "frame_experiment_model",
+      "path": "aligned_hardware_frame_experiment_v3_20260909.json",
+      "model_path": [
+        "model"
+      ],
+      "representation": "frame_model"
+    },
+    {
+      "snapshot_id": "frame_v4",
+      "source_role": "frame_experiment_model",
+      "path": "aligned_hardware_frame_experiment_v4_20260909.json",
+      "model_path": [
+        "model"
+      ],
+      "representation": "frame_model"
+    },
+    {
+      "snapshot_id": "joint95_v1_point",
+      "source_role": "capacity_protocol_point_reference",
+      "path": "aligned_hardware_joint95_capacity_closure_20260913_protocol.json",
+      "model_path": [
+        "point_reference_model"
+      ],
+      "representation": "frame_model"
+    },
+    {
+      "snapshot_id": "joint95_v2_point",
+      "source_role": "capacity_protocol_point_reference",
+      "path": "aligned_hardware_joint95_v2_capacity_closure_20260913_protocol.json",
+      "model_path": [
+        "point_reference_model"
+      ],
+      "representation": "frame_model"
+    },
+    {
+      "snapshot_id": "joint95_v3_point",
+      "source_role": "capacity_protocol_point_reference",
+      "path": "aligned_hardware_joint95_v3_capacity_closure_20260913_protocol.json",
+      "model_path": [
+        "point_reference_model"
+      ],
+      "representation": "frame_model"
+    },
+    {
+      "snapshot_id": "joint95_v4_point",
+      "source_role": "capacity_protocol_point_reference",
+      "path": "aligned_hardware_joint95_v4_capacity_closure_20260913_protocol.json",
+      "model_path": [
+        "point_reference_model"
+      ],
+      "representation": "frame_model"
+    },
+    {
+      "snapshot_id": "joint95_v5_point",
+      "source_role": "capacity_protocol_point_reference",
+      "path": "aligned_hardware_joint95_v5_capacity_closure_20260919_protocol.json",
+      "model_path": [
+        "point_reference_model"
+      ],
+      "representation": "frame_model"
+    },
+    {
+      "snapshot_id": "count_space_scaling_point",
+      "source_role": "scaling_screen_point_reference",
+      "path": "aligned_hardware_count_space_bnb_scaling_screen_development_20260913.json",
+      "model_path": [
+        "protocol",
+        "model"
+      ],
+      "representation": "frame_model"
+    },
+    {
+      "snapshot_id": "lcb_shadow",
+      "source_role": "lcb_complete_frame_shadow_model",
+      "path": "aligned_hardware_lcb_frame_envelope_shadow_development_20260912.json",
+      "model_path": [
+        "protocol",
+        "shadow_model"
+      ],
+      "representation": "frame_model"
+    },
+    {
+      "snapshot_id": "joint95_v1_zero_margin",
+      "source_role": "capacity_protocol_zero_margin_envelopes",
+      "path": "aligned_hardware_joint95_capacity_closure_20260913_protocol.json",
+      "model_path": [
+        "zero_margin_action_envelopes"
+      ],
+      "representation": "zero_margin_action_envelopes"
+    },
+    {
+      "snapshot_id": "joint95_v2_zero_margin",
+      "source_role": "capacity_protocol_zero_margin_envelopes",
+      "path": "aligned_hardware_joint95_v2_capacity_closure_20260913_protocol.json",
+      "model_path": [
+        "zero_margin_action_envelopes"
+      ],
+      "representation": "zero_margin_action_envelopes"
+    },
+    {
+      "snapshot_id": "joint95_v3_zero_margin",
+      "source_role": "capacity_protocol_zero_margin_envelopes",
+      "path": "aligned_hardware_joint95_v3_capacity_closure_20260913_protocol.json",
+      "model_path": [
+        "zero_margin_action_envelopes"
+      ],
+      "representation": "zero_margin_action_envelopes"
+    },
+    {
+      "snapshot_id": "joint95_v4_zero_margin",
+      "source_role": "capacity_protocol_zero_margin_envelopes",
+      "path": "aligned_hardware_joint95_v4_capacity_closure_20260913_protocol.json",
+      "model_path": [
+        "zero_margin_action_envelopes"
+      ],
+      "representation": "zero_margin_action_envelopes"
+    },
+    {
+      "snapshot_id": "joint95_v5_zero_margin",
+      "source_role": "capacity_protocol_zero_margin_envelopes",
+      "path": "aligned_hardware_joint95_v5_capacity_closure_20260919_protocol.json",
+      "model_path": [
+        "zero_margin_action_envelopes"
+      ],
+      "representation": "zero_margin_action_envelopes"
+    },
+    {
+      "snapshot_id": "joint95_v5_physical_envelope",
+      "source_role": "capacity_result_physical_envelope",
+      "path": "aligned_hardware_joint95_v5_capacity_closure_20260919.json",
+      "model_path": [
+        "physical_complete_frame_envelope",
+        "model"
+      ],
+      "representation": "frame_model"
+    }
+  ],
+  "catalogue_contract": [
+    {
+      "snapshot_id": "frame_v1",
+      "model": {
+        "node": "jtl110gpu2",
+        "scenario_id": "q01:gpu_3080ti_12gb_dual_jtl110gpu2",
+        "lanes": 2,
+        "workloads": [
+          "gpu_cnn_torch_resnet50",
+          "gpu_heavy_jax_matmul",
+          "gpu_llm_distilgpt2"
+        ],
+        "model_scope": "deterministic_cached_phase_complete_job_renewal",
+        "options": [
+          {
+            "index": 0,
+            "action_id": "gpu_loaded:jtl110gpu2:cnn_after_llm",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 11.514578111707017
+          },
+          {
+            "index": 1,
+            "action_id": "gpu_loaded:jtl110gpu2:llm_after_cnn",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 11.936669718453734
+          },
+          {
+            "index": 2,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              1,
+              0,
+              0
+            ],
+            "duration": 8.093888054475512
+          },
+          {
+            "index": 3,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              3,
+              0,
+              0
+            ],
+            "duration": 14.972417070959636
+          },
+          {
+            "index": 4,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              1,
+              0
+            ],
+            "duration": 2.7928254592821196
+          },
+          {
+            "index": 5,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              3,
+              0
+            ],
+            "duration": 6.820477375410869
+          },
+          {
+            "index": 6,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              0,
+              1
+            ],
+            "duration": 7.4174495042607305
+          },
+          {
+            "index": 7,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              0,
+              3
+            ],
+            "duration": 9.462480184740949
+          },
+          {
+            "index": 8,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p8",
+            "requirements": [
+              0,
+              0,
+              8
+            ],
+            "duration": 14.84929022616052
+          }
+        ]
+      }
+    },
+    {
+      "snapshot_id": "frame_v2",
+      "model": {
+        "node": "jtl110gpu2",
+        "scenario_id": "q01:gpu_3080ti_12gb_dual_jtl110gpu2",
+        "lanes": 2,
+        "workloads": [
+          "gpu_cnn_torch_resnet50",
+          "gpu_heavy_jax_matmul",
+          "gpu_llm_distilgpt2"
+        ],
+        "model_scope": "deterministic_cached_phase_complete_job_renewal",
+        "options": [
+          {
+            "index": 0,
+            "action_id": "gpu_loaded:jtl110gpu2:cnn_after_llm",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 11.514578111707017
+          },
+          {
+            "index": 1,
+            "action_id": "gpu_loaded:jtl110gpu2:llm_after_cnn",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 11.936669718453734
+          },
+          {
+            "index": 2,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              1,
+              0,
+              0
+            ],
+            "duration": 8.093888054475512
+          },
+          {
+            "index": 3,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              3,
+              0,
+              0
+            ],
+            "duration": 14.972417070959636
+          },
+          {
+            "index": 4,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              1,
+              0
+            ],
+            "duration": 2.7928254592821196
+          },
+          {
+            "index": 5,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              3,
+              0
+            ],
+            "duration": 6.820477375410869
+          },
+          {
+            "index": 6,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              0,
+              1
+            ],
+            "duration": 7.4174495042607305
+          },
+          {
+            "index": 7,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              0,
+              3
+            ],
+            "duration": 9.462480184740949
+          },
+          {
+            "index": 8,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p8",
+            "requirements": [
+              0,
+              0,
+              8
+            ],
+            "duration": 14.84929022616052
+          }
+        ]
+      }
+    },
+    {
+      "snapshot_id": "frame_v3",
+      "model": {
+        "node": "jtl110gpu2",
+        "scenario_id": "q01:gpu_3080ti_12gb_dual_jtl110gpu2",
+        "lanes": 2,
+        "workloads": [
+          "gpu_cnn_torch_resnet50",
+          "gpu_heavy_jax_matmul",
+          "gpu_llm_distilgpt2"
+        ],
+        "model_scope": "deterministic_cached_phase_complete_job_renewal",
+        "options": [
+          {
+            "index": 0,
+            "action_id": "gpu_loaded:jtl110gpu2:cnn_after_llm",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 11.514578111707017
+          },
+          {
+            "index": 1,
+            "action_id": "gpu_loaded:jtl110gpu2:llm_after_cnn",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 11.936669718453734
+          },
+          {
+            "index": 2,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              1,
+              0,
+              0
+            ],
+            "duration": 8.093888054475512
+          },
+          {
+            "index": 3,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              3,
+              0,
+              0
+            ],
+            "duration": 14.972417070959636
+          },
+          {
+            "index": 4,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              1,
+              0
+            ],
+            "duration": 2.7928254592821196
+          },
+          {
+            "index": 5,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              3,
+              0
+            ],
+            "duration": 6.820477375410869
+          },
+          {
+            "index": 6,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              0,
+              1
+            ],
+            "duration": 7.4174495042607305
+          },
+          {
+            "index": 7,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              0,
+              3
+            ],
+            "duration": 9.462480184740949
+          },
+          {
+            "index": 8,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p8",
+            "requirements": [
+              0,
+              0,
+              8
+            ],
+            "duration": 14.84929022616052
+          }
+        ]
+      }
+    },
+    {
+      "snapshot_id": "frame_v4",
+      "model": {
+        "node": "jtl110gpu2",
+        "scenario_id": "q01:gpu_3080ti_12gb_dual_jtl110gpu2",
+        "lanes": 2,
+        "workloads": [
+          "gpu_cnn_torch_resnet50",
+          "gpu_heavy_jax_matmul",
+          "gpu_llm_distilgpt2"
+        ],
+        "model_scope": "deterministic_cached_phase_complete_job_renewal",
+        "options": [
+          {
+            "index": 0,
+            "action_id": "gpu_loaded:jtl110gpu2:cnn_after_llm",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 11.514578111707017
+          },
+          {
+            "index": 1,
+            "action_id": "gpu_loaded:jtl110gpu2:llm_after_cnn",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 11.936669718453734
+          },
+          {
+            "index": 2,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              1,
+              0,
+              0
+            ],
+            "duration": 8.093888054475512
+          },
+          {
+            "index": 3,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              3,
+              0,
+              0
+            ],
+            "duration": 14.972417070959636
+          },
+          {
+            "index": 4,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              1,
+              0
+            ],
+            "duration": 2.7928254592821196
+          },
+          {
+            "index": 5,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              3,
+              0
+            ],
+            "duration": 6.820477375410869
+          },
+          {
+            "index": 6,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              0,
+              1
+            ],
+            "duration": 7.4174495042607305
+          },
+          {
+            "index": 7,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              0,
+              3
+            ],
+            "duration": 9.462480184740949
+          },
+          {
+            "index": 8,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p8",
+            "requirements": [
+              0,
+              0,
+              8
+            ],
+            "duration": 14.84929022616052
+          }
+        ]
+      }
+    },
+    {
+      "snapshot_id": "joint95_v1_point",
+      "model": {
+        "node": "jtl110gpu2",
+        "scenario_id": "q01:gpu_3080ti_12gb_dual_jtl110gpu2",
+        "lanes": 2,
+        "workloads": [
+          "gpu_cnn_torch_resnet50",
+          "gpu_heavy_jax_matmul",
+          "gpu_llm_distilgpt2"
+        ],
+        "model_scope": "deterministic_cached_phase_complete_job_renewal",
+        "options": [
+          {
+            "index": 0,
+            "action_id": "gpu_loaded:jtl110gpu2:cnn_after_llm",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 11.514578111707017
+          },
+          {
+            "index": 1,
+            "action_id": "gpu_loaded:jtl110gpu2:llm_after_cnn",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 11.936669718453734
+          },
+          {
+            "index": 2,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              1,
+              0,
+              0
+            ],
+            "duration": 8.093888054475512
+          },
+          {
+            "index": 3,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              3,
+              0,
+              0
+            ],
+            "duration": 14.972417070959636
+          },
+          {
+            "index": 4,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              1,
+              0
+            ],
+            "duration": 2.7928254592821196
+          },
+          {
+            "index": 5,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              3,
+              0
+            ],
+            "duration": 6.820477375410869
+          },
+          {
+            "index": 6,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              0,
+              1
+            ],
+            "duration": 7.4174495042607305
+          },
+          {
+            "index": 7,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              0,
+              3
+            ],
+            "duration": 9.462480184740949
+          },
+          {
+            "index": 8,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p8",
+            "requirements": [
+              0,
+              0,
+              8
+            ],
+            "duration": 14.84929022616052
+          }
+        ]
+      }
+    },
+    {
+      "snapshot_id": "joint95_v2_point",
+      "model": {
+        "node": "jtl110gpu2",
+        "scenario_id": "q01:gpu_3080ti_12gb_dual_jtl110gpu2",
+        "lanes": 2,
+        "workloads": [
+          "gpu_cnn_torch_resnet50",
+          "gpu_heavy_jax_matmul",
+          "gpu_llm_distilgpt2"
+        ],
+        "model_scope": "deterministic_cached_phase_complete_job_renewal",
+        "options": [
+          {
+            "index": 0,
+            "action_id": "gpu_loaded:jtl110gpu2:cnn_after_llm",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 11.514578111707017
+          },
+          {
+            "index": 1,
+            "action_id": "gpu_loaded:jtl110gpu2:llm_after_cnn",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 11.936669718453734
+          },
+          {
+            "index": 2,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              1,
+              0,
+              0
+            ],
+            "duration": 8.093888054475512
+          },
+          {
+            "index": 3,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              3,
+              0,
+              0
+            ],
+            "duration": 14.972417070959636
+          },
+          {
+            "index": 4,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              1,
+              0
+            ],
+            "duration": 2.7928254592821196
+          },
+          {
+            "index": 5,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              3,
+              0
+            ],
+            "duration": 6.820477375410869
+          },
+          {
+            "index": 6,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              0,
+              1
+            ],
+            "duration": 7.4174495042607305
+          },
+          {
+            "index": 7,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              0,
+              3
+            ],
+            "duration": 9.462480184740949
+          },
+          {
+            "index": 8,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p8",
+            "requirements": [
+              0,
+              0,
+              8
+            ],
+            "duration": 14.84929022616052
+          }
+        ]
+      }
+    },
+    {
+      "snapshot_id": "joint95_v3_point",
+      "model": {
+        "node": "jtl110gpu2",
+        "scenario_id": "q01:gpu_3080ti_12gb_dual_jtl110gpu2",
+        "lanes": 2,
+        "workloads": [
+          "gpu_cnn_torch_resnet50",
+          "gpu_heavy_jax_matmul",
+          "gpu_llm_distilgpt2"
+        ],
+        "model_scope": "deterministic_cached_phase_complete_job_renewal",
+        "options": [
+          {
+            "index": 0,
+            "action_id": "gpu_loaded:jtl110gpu2:cnn_after_llm",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 11.514578111707017
+          },
+          {
+            "index": 1,
+            "action_id": "gpu_loaded:jtl110gpu2:llm_after_cnn",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 11.936669718453734
+          },
+          {
+            "index": 2,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              1,
+              0,
+              0
+            ],
+            "duration": 8.093888054475512
+          },
+          {
+            "index": 3,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              3,
+              0,
+              0
+            ],
+            "duration": 14.972417070959636
+          },
+          {
+            "index": 4,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              1,
+              0
+            ],
+            "duration": 2.7928254592821196
+          },
+          {
+            "index": 5,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              3,
+              0
+            ],
+            "duration": 6.820477375410869
+          },
+          {
+            "index": 6,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              0,
+              1
+            ],
+            "duration": 7.4174495042607305
+          },
+          {
+            "index": 7,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              0,
+              3
+            ],
+            "duration": 9.462480184740949
+          },
+          {
+            "index": 8,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p8",
+            "requirements": [
+              0,
+              0,
+              8
+            ],
+            "duration": 14.84929022616052
+          }
+        ]
+      }
+    },
+    {
+      "snapshot_id": "joint95_v4_point",
+      "model": {
+        "node": "jtl110gpu2",
+        "scenario_id": "q01:gpu_3080ti_12gb_dual_jtl110gpu2",
+        "lanes": 2,
+        "workloads": [
+          "gpu_cnn_torch_resnet50",
+          "gpu_heavy_jax_matmul",
+          "gpu_llm_distilgpt2"
+        ],
+        "model_scope": "deterministic_cached_phase_complete_job_renewal",
+        "options": [
+          {
+            "index": 0,
+            "action_id": "gpu_loaded:jtl110gpu2:cnn_after_llm",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 11.514578111707017
+          },
+          {
+            "index": 1,
+            "action_id": "gpu_loaded:jtl110gpu2:llm_after_cnn",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 11.936669718453734
+          },
+          {
+            "index": 2,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              1,
+              0,
+              0
+            ],
+            "duration": 8.093888054475512
+          },
+          {
+            "index": 3,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              3,
+              0,
+              0
+            ],
+            "duration": 14.972417070959636
+          },
+          {
+            "index": 4,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              1,
+              0
+            ],
+            "duration": 2.7928254592821196
+          },
+          {
+            "index": 5,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              3,
+              0
+            ],
+            "duration": 6.820477375410869
+          },
+          {
+            "index": 6,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              0,
+              1
+            ],
+            "duration": 7.4174495042607305
+          },
+          {
+            "index": 7,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              0,
+              3
+            ],
+            "duration": 9.462480184740949
+          },
+          {
+            "index": 8,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p8",
+            "requirements": [
+              0,
+              0,
+              8
+            ],
+            "duration": 14.84929022616052
+          }
+        ]
+      }
+    },
+    {
+      "snapshot_id": "joint95_v5_point",
+      "model": {
+        "node": "jtl110gpu2",
+        "scenario_id": "q01:gpu_3080ti_12gb_dual_jtl110gpu2",
+        "lanes": 2,
+        "workloads": [
+          "gpu_cnn_torch_resnet50",
+          "gpu_heavy_jax_matmul",
+          "gpu_llm_distilgpt2"
+        ],
+        "model_scope": "deterministic_cached_phase_complete_job_renewal",
+        "options": [
+          {
+            "index": 0,
+            "action_id": "gpu_loaded:jtl110gpu2:cnn_after_llm",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 11.514578111707017
+          },
+          {
+            "index": 1,
+            "action_id": "gpu_loaded:jtl110gpu2:llm_after_cnn",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 11.936669718453734
+          },
+          {
+            "index": 2,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              1,
+              0,
+              0
+            ],
+            "duration": 8.093888054475512
+          },
+          {
+            "index": 3,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              3,
+              0,
+              0
+            ],
+            "duration": 14.972417070959636
+          },
+          {
+            "index": 4,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              1,
+              0
+            ],
+            "duration": 2.7928254592821196
+          },
+          {
+            "index": 5,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              3,
+              0
+            ],
+            "duration": 6.820477375410869
+          },
+          {
+            "index": 6,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              0,
+              1
+            ],
+            "duration": 7.4174495042607305
+          },
+          {
+            "index": 7,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              0,
+              3
+            ],
+            "duration": 9.462480184740949
+          },
+          {
+            "index": 8,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p8",
+            "requirements": [
+              0,
+              0,
+              8
+            ],
+            "duration": 14.84929022616052
+          }
+        ]
+      }
+    },
+    {
+      "snapshot_id": "count_space_scaling_point",
+      "model": {
+        "node": "jtl110gpu2",
+        "scenario_id": "q01:gpu_3080ti_12gb_dual_jtl110gpu2",
+        "lanes": 2,
+        "workloads": [
+          "gpu_cnn_torch_resnet50",
+          "gpu_heavy_jax_matmul",
+          "gpu_llm_distilgpt2"
+        ],
+        "model_scope": "deterministic_cached_phase_complete_job_renewal",
+        "options": [
+          {
+            "index": 0,
+            "action_id": "gpu_loaded:jtl110gpu2:cnn_after_llm",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 11.514578111707017
+          },
+          {
+            "index": 1,
+            "action_id": "gpu_loaded:jtl110gpu2:llm_after_cnn",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 11.936669718453734
+          },
+          {
+            "index": 2,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              1,
+              0,
+              0
+            ],
+            "duration": 8.093888054475512
+          },
+          {
+            "index": 3,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              3,
+              0,
+              0
+            ],
+            "duration": 14.972417070959636
+          },
+          {
+            "index": 4,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              1,
+              0
+            ],
+            "duration": 2.7928254592821196
+          },
+          {
+            "index": 5,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              3,
+              0
+            ],
+            "duration": 6.820477375410869
+          },
+          {
+            "index": 6,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              0,
+              1
+            ],
+            "duration": 7.4174495042607305
+          },
+          {
+            "index": 7,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              0,
+              3
+            ],
+            "duration": 9.462480184740949
+          },
+          {
+            "index": 8,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p8",
+            "requirements": [
+              0,
+              0,
+              8
+            ],
+            "duration": 14.84929022616052
+          }
+        ]
+      }
+    },
+    {
+      "snapshot_id": "lcb_shadow",
+      "model": {
+        "node": "jtl110gpu2",
+        "scenario_id": "q01:gpu_3080ti_12gb_dual_jtl110gpu2",
+        "lanes": 2,
+        "workloads": [
+          "gpu_cnn_torch_resnet50",
+          "gpu_heavy_jax_matmul",
+          "gpu_llm_distilgpt2"
+        ],
+        "model_scope": "hardware_local_union_0p8_lcb_serial_complete_frame_shadow",
+        "options": [
+          {
+            "index": 0,
+            "action_id": "gpu_loaded:jtl110gpu2:cnn_after_llm",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 21.356083580644757
+          },
+          {
+            "index": 1,
+            "action_id": "gpu_loaded:jtl110gpu2:llm_after_cnn",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 23.950404479335248
+          },
+          {
+            "index": 2,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              1,
+              0,
+              0
+            ],
+            "duration": 9.178786404480242
+          },
+          {
+            "index": 3,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              3,
+              0,
+              0
+            ],
+            "duration": 16.6071014979644
+          },
+          {
+            "index": 4,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              1,
+              0
+            ],
+            "duration": 3.12295819477921
+          },
+          {
+            "index": 5,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              3,
+              0
+            ],
+            "duration": 7.621514394508295
+          },
+          {
+            "index": 6,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              0,
+              1
+            ],
+            "duration": 8.103991160594
+          },
+          {
+            "index": 7,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              0,
+              3
+            ],
+            "duration": 10.530514595181701
+          },
+          {
+            "index": 8,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p8",
+            "requirements": [
+              0,
+              0,
+              8
+            ],
+            "duration": 16.880782200650074
+          }
+        ]
+      }
+    },
+    {
+      "snapshot_id": "joint95_v1_zero_margin",
+      "model": {
+        "node": "jtl110gpu2",
+        "scenario_id": "q01:gpu_3080ti_12gb_dual_jtl110gpu2",
+        "lanes": 2,
+        "workloads": [
+          "gpu_cnn_torch_resnet50",
+          "gpu_heavy_jax_matmul",
+          "gpu_llm_distilgpt2"
+        ],
+        "model_scope": "registered_zero_margin_complete_frame_upper_envelope",
+        "options": [
+          {
+            "index": 0,
+            "action_id": "gpu_loaded:jtl110gpu2:cnn_after_llm",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 13.077463737591227
+          },
+          {
+            "index": 1,
+            "action_id": "gpu_loaded:jtl110gpu2:llm_after_cnn",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 14.708914632777834
+          },
+          {
+            "index": 2,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              1,
+              0,
+              0
+            ],
+            "duration": 8.320095933013363
+          },
+          {
+            "index": 3,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              3,
+              0,
+              0
+            ],
+            "duration": 15.05348000743437
+          },
+          {
+            "index": 4,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              1,
+              0
+            ],
+            "duration": 2.830800350977836
+          },
+          {
+            "index": 5,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              3,
+              0
+            ],
+            "duration": 6.908509265037421
+          },
+          {
+            "index": 6,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              0,
+              1
+            ],
+            "duration": 7.345849541015923
+          },
+          {
+            "index": 7,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              0,
+              3
+            ],
+            "duration": 9.54536774198641
+          },
+          {
+            "index": 8,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p8",
+            "requirements": [
+              0,
+              0,
+              8
+            ],
+            "duration": 15.301557433034759
+          }
+        ]
+      }
+    },
+    {
+      "snapshot_id": "joint95_v2_zero_margin",
+      "model": {
+        "node": "jtl110gpu2",
+        "scenario_id": "q01:gpu_3080ti_12gb_dual_jtl110gpu2",
+        "lanes": 2,
+        "workloads": [
+          "gpu_cnn_torch_resnet50",
+          "gpu_heavy_jax_matmul",
+          "gpu_llm_distilgpt2"
+        ],
+        "model_scope": "registered_zero_margin_complete_frame_upper_envelope",
+        "options": [
+          {
+            "index": 0,
+            "action_id": "gpu_loaded:jtl110gpu2:cnn_after_llm",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 13.077463737591227
+          },
+          {
+            "index": 1,
+            "action_id": "gpu_loaded:jtl110gpu2:llm_after_cnn",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 14.708914632777834
+          },
+          {
+            "index": 2,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              1,
+              0,
+              0
+            ],
+            "duration": 8.320095933013363
+          },
+          {
+            "index": 3,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              3,
+              0,
+              0
+            ],
+            "duration": 15.05348000743437
+          },
+          {
+            "index": 4,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              1,
+              0
+            ],
+            "duration": 2.830800350977836
+          },
+          {
+            "index": 5,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              3,
+              0
+            ],
+            "duration": 6.908509265037421
+          },
+          {
+            "index": 6,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              0,
+              1
+            ],
+            "duration": 7.345849541015923
+          },
+          {
+            "index": 7,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              0,
+              3
+            ],
+            "duration": 9.54536774198641
+          },
+          {
+            "index": 8,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p8",
+            "requirements": [
+              0,
+              0,
+              8
+            ],
+            "duration": 15.301557433034759
+          }
+        ]
+      }
+    },
+    {
+      "snapshot_id": "joint95_v3_zero_margin",
+      "model": {
+        "node": "jtl110gpu2",
+        "scenario_id": "q01:gpu_3080ti_12gb_dual_jtl110gpu2",
+        "lanes": 2,
+        "workloads": [
+          "gpu_cnn_torch_resnet50",
+          "gpu_heavy_jax_matmul",
+          "gpu_llm_distilgpt2"
+        ],
+        "model_scope": "registered_zero_margin_complete_frame_upper_envelope",
+        "options": [
+          {
+            "index": 0,
+            "action_id": "gpu_loaded:jtl110gpu2:cnn_after_llm",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 13.077463737591227
+          },
+          {
+            "index": 1,
+            "action_id": "gpu_loaded:jtl110gpu2:llm_after_cnn",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 14.708914632777834
+          },
+          {
+            "index": 2,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              1,
+              0,
+              0
+            ],
+            "duration": 8.320095933013363
+          },
+          {
+            "index": 3,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              3,
+              0,
+              0
+            ],
+            "duration": 15.05348000743437
+          },
+          {
+            "index": 4,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              1,
+              0
+            ],
+            "duration": 2.830800350977836
+          },
+          {
+            "index": 5,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              3,
+              0
+            ],
+            "duration": 6.908509265037421
+          },
+          {
+            "index": 6,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              0,
+              1
+            ],
+            "duration": 7.345849541015923
+          },
+          {
+            "index": 7,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              0,
+              3
+            ],
+            "duration": 9.54536774198641
+          },
+          {
+            "index": 8,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p8",
+            "requirements": [
+              0,
+              0,
+              8
+            ],
+            "duration": 15.301557433034759
+          }
+        ]
+      }
+    },
+    {
+      "snapshot_id": "joint95_v4_zero_margin",
+      "model": {
+        "node": "jtl110gpu2",
+        "scenario_id": "q01:gpu_3080ti_12gb_dual_jtl110gpu2",
+        "lanes": 2,
+        "workloads": [
+          "gpu_cnn_torch_resnet50",
+          "gpu_heavy_jax_matmul",
+          "gpu_llm_distilgpt2"
+        ],
+        "model_scope": "registered_zero_margin_complete_frame_upper_envelope",
+        "options": [
+          {
+            "index": 0,
+            "action_id": "gpu_loaded:jtl110gpu2:cnn_after_llm",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 13.077463737591227
+          },
+          {
+            "index": 1,
+            "action_id": "gpu_loaded:jtl110gpu2:llm_after_cnn",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 14.708914632777834
+          },
+          {
+            "index": 2,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              1,
+              0,
+              0
+            ],
+            "duration": 8.320095933013363
+          },
+          {
+            "index": 3,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              3,
+              0,
+              0
+            ],
+            "duration": 15.05348000743437
+          },
+          {
+            "index": 4,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              1,
+              0
+            ],
+            "duration": 2.830800350977836
+          },
+          {
+            "index": 5,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              3,
+              0
+            ],
+            "duration": 6.908509265037421
+          },
+          {
+            "index": 6,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              0,
+              1
+            ],
+            "duration": 7.345849541015923
+          },
+          {
+            "index": 7,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              0,
+              3
+            ],
+            "duration": 9.54536774198641
+          },
+          {
+            "index": 8,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p8",
+            "requirements": [
+              0,
+              0,
+              8
+            ],
+            "duration": 15.301557433034759
+          }
+        ]
+      }
+    },
+    {
+      "snapshot_id": "joint95_v5_zero_margin",
+      "model": {
+        "node": "jtl110gpu2",
+        "scenario_id": "q01:gpu_3080ti_12gb_dual_jtl110gpu2",
+        "lanes": 2,
+        "workloads": [
+          "gpu_cnn_torch_resnet50",
+          "gpu_heavy_jax_matmul",
+          "gpu_llm_distilgpt2"
+        ],
+        "model_scope": "registered_zero_margin_complete_frame_upper_envelope",
+        "options": [
+          {
+            "index": 0,
+            "action_id": "gpu_loaded:jtl110gpu2:cnn_after_llm",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 13.077463737591227
+          },
+          {
+            "index": 1,
+            "action_id": "gpu_loaded:jtl110gpu2:llm_after_cnn",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 14.708914632777834
+          },
+          {
+            "index": 2,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              1,
+              0,
+              0
+            ],
+            "duration": 8.320095933013363
+          },
+          {
+            "index": 3,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              3,
+              0,
+              0
+            ],
+            "duration": 15.05348000743437
+          },
+          {
+            "index": 4,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              1,
+              0
+            ],
+            "duration": 2.830800350977836
+          },
+          {
+            "index": 5,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              3,
+              0
+            ],
+            "duration": 6.908509265037421
+          },
+          {
+            "index": 6,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              0,
+              1
+            ],
+            "duration": 7.345849541015923
+          },
+          {
+            "index": 7,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              0,
+              3
+            ],
+            "duration": 9.54536774198641
+          },
+          {
+            "index": 8,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p8",
+            "requirements": [
+              0,
+              0,
+              8
+            ],
+            "duration": 15.301557433034759
+          }
+        ]
+      }
+    },
+    {
+      "snapshot_id": "joint95_v5_physical_envelope",
+      "model": {
+        "node": "jtl110gpu2",
+        "scenario_id": "q01:gpu_3080ti_12gb_dual_jtl110gpu2",
+        "lanes": 2,
+        "workloads": [
+          "gpu_cnn_torch_resnet50",
+          "gpu_heavy_jax_matmul",
+          "gpu_llm_distilgpt2"
+        ],
+        "model_scope": "joint95_hardware_local_serial_complete_frame_upper_envelope",
+        "options": [
+          {
+            "index": 0,
+            "action_id": "gpu_loaded:jtl110gpu2:cnn_after_llm",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 25.33384071330409
+          },
+          {
+            "index": 1,
+            "action_id": "gpu_loaded:jtl110gpu2:llm_after_cnn",
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "duration": 28.494309588582176
+          },
+          {
+            "index": 2,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              1,
+              0,
+              0
+            ],
+            "duration": 16.117803063026795
+          },
+          {
+            "index": 3,
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              3,
+              0,
+              0
+            ],
+            "duration": 29.161806321283994
+          },
+          {
+            "index": 4,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              1,
+              0
+            ],
+            "duration": 5.483864962033319
+          },
+          {
+            "index": 5,
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              3,
+              0
+            ],
+            "duration": 13.383258160659276
+          },
+          {
+            "index": 6,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+            "requirements": [
+              0,
+              0,
+              1
+            ],
+            "duration": 14.23047969470213
+          },
+          {
+            "index": 7,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+            "requirements": [
+              0,
+              0,
+              3
+            ],
+            "duration": 18.491416285122614
+          },
+          {
+            "index": 8,
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p8",
+            "requirements": [
+              0,
+              0,
+              8
+            ],
+            "duration": 29.642385286046192
+          }
+        ]
+      }
+    }
+  ],
+  "catalogue_topology_equivalence": "exact equality of node, scenario_id, lanes, ordered workloads, and ordered (action_id, requirements); duration and model_scope are excluded",
+  "duration_variant_equivalence": "exact equality of topology fields plus ordered (action_id, requirements, duration)",
+  "dominance_rule": "same exact requirement vector and strictly smaller max(1, duration)",
+  "advance_gate": "at least two distinct ordered action catalogue topologies each have a nonempty quotient with a valid full-catalogue canonical lift",
+  "decision_rule": {
+    "INVALID_EXECUTION": "one or more read-only inventory checks fail",
+    "MULTI_CATALOGUE_SCALING_ADVANCE": "at least two distinct ordered action catalogue topologies each have a nonempty quotient with a valid full-catalogue canonical lift",
+    "SINGLE_CATALOGUE_TOPOLOGY_STOP": "the frozen roster contains fewer than two distinct ordered action catalogue topologies",
+    "CROSS_CATALOGUE_DOMINANCE_NOT_OBSERVED_STOP": "multiple catalogue topologies exist but fewer than two have a nonempty canonically liftable quotient"
+  },
+  "claim_boundary": "A deterministic development inventory of local complete-frame catalogue snapshots. Equality of ordered action_id and requirement vectors defines one catalogue topology; exact duration equality defines variants within that topology. Repeated lineage snapshots do not count as independent catalogues. The screen does not establish selector scaling, wall time, trajectory performance, external-system prevalence, or a paper claim.",
+  "prohibited": "server pulls, RNG, arrivals, trajectories, selector calls, wall-time claims, paper edits, and dropping roster members after observing their quotient"
+}

@@ -246,6 +246,12 @@ def _run_state_phase(
     deps: WatchIterationDeps,
 ) -> tuple[Any, dict]:
     record_phase = watch_phase_recorder.record
+
+    def record_state_phase(name, *args, **kwargs):
+        result = record_phase(name, *args, **kwargs)
+        _touch_watcher_progress(deps, f"state:{name}")
+        return result
+
     _touch_watcher_progress(deps, "running_task_probe")
     phase_t0 = deps.now()
     running_probe_results, running_probe_ids = deps.running_probe_snapshot_outside_lock(
@@ -311,7 +317,7 @@ def _run_state_phase(
         with deps.state_lock(purpose="watch:main"):
             phase_t0 = deps.now()
             state = deps.load_state()
-            record_phase("load_state", phase_t0)
+            record_state_phase("load_state", phase_t0)
             watch_state = deps.run_watch_state_phase(
                 state,
                 nodes,
@@ -324,7 +330,7 @@ def _run_state_phase(
                 should_auto_adopt=should_auto_adopt,
                 auto_adopt_probe_data=auto_adopt_probe_data,
                 defer_launches=deps.defer_launch_outside_lock,
-                record_phase=record_phase,
+                record_phase=record_state_phase,
                 deps=deps.watch_state_phase_deps(),
                 defer_eta_refresh=True,
             )
@@ -504,7 +510,11 @@ def run_watch_iteration(args, *, deps: WatchIterationDeps) -> None:
     events = watch_state.events
     qcount = watch_state.qcount
     had_deferred_launches = any(event.get("type") == "launch_intent" for event in events)
-    events = deps.execute_deferred_launches(events, mark_notified_launch=True)
+    events = deps.execute_deferred_launches(
+        events,
+        mark_notified_launch=True,
+        progress_fn=lambda _progress: _touch_watcher_progress(deps, "launching"),
+    )
     if had_deferred_launches:
         state = deps.load_state_shared_snapshot("watch:post-launch-snapshot")
 

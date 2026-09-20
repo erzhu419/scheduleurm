@@ -35,7 +35,7 @@ def test_valid_inputs_build_complete_fail_closed_replay_matrix(tmp_path):
 
     assert report["status"] == "PASS"
     assert report["pass"] is True
-    assert report["schema_version"] == 2
+    assert report["schema_version"] == 3
     assert all(report["coverage_checks"].values())
     assert {row["quadrant"] for row in report["scenarios"]} == set(EXPECTED_QUADRANTS)
     assert {row["arrival_family"] for row in report["runs"]} == set(EXPECTED_ARRIVAL_FAMILIES)

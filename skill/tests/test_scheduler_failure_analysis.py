@@ -123,6 +123,14 @@ def test_classify_failure_priority_and_fallbacks():
     assert classify_failure({"is_crash": True, "tail": "OSError: No space left on device CUDA out of memory"}, deps=deps) == "DISK_FULL"
     assert classify_failure({"is_crash": True, "tail": "CUDA out of memory"}, deps=deps) == "OOM"
     assert classify_failure({"is_crash": True, "tail": "Traceback", "lifetime_s": 61}, deps=deps) == "APP_BUG"
+    assert classify_failure({
+        "is_crash": True,
+        "tail": "AttributeError: module 'model' has no attribute 'PATH'",
+    }, deps=deps) == "DETERMINISTIC_APP_BUG"
+    assert classify_failure({
+        "is_crash": True,
+        "reason": "err_pattern: Traceback; NameError: missing_name",
+    }, deps=deps) == "DETERMINISTIC_APP_BUG"
     assert classify_failure({"is_crash": True, "tail": "unknown"}, deps=deps) == "UNKNOWN"
 
 

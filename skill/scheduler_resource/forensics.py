@@ -78,7 +78,8 @@ def task_has_incremental_result_resume(task: dict, *, deps: ResourceForensicsDep
 
 def task_evict_loss_protected(task: dict, *, deps: ResourceForensicsDeps) -> bool:
     return bool(
-        ckpt_task_evict_protected(task, deps=deps)
+        task.get("protect_from_auto_eviction")
+        or ckpt_task_evict_protected(task, deps=deps)
         or task_has_incremental_result_resume(task, deps=deps)
     )
 
@@ -88,6 +89,9 @@ def summarize_task_for_resource_log(task: dict, *, deps: ResourceForensicsDeps) 
     elapsed = max(0, int(deps.now() - started)) if started else 0
     ratio = task_progress_ratio(task)
     resume_locations = task.get("resume_locations") or []
+    explicit_auto_eviction_protection = bool(
+        task.get("protect_from_auto_eviction")
+    )
     ckpt_evict_protected = ckpt_task_evict_protected(task, deps=deps)
     incremental_result_resume = task_has_incremental_result_resume(task, deps=deps)
     return {
@@ -116,9 +120,14 @@ def summarize_task_for_resource_log(task: dict, *, deps: ResourceForensicsDeps) 
         "resume_scan_at": task.get("resume_scan_at"),
         "resume_locations_count": len(resume_locations),
         "resume_checkpoint_node": task.get("resume_checkpoint_node"),
+        "protect_from_auto_eviction": explicit_auto_eviction_protection,
         "ckpt_evict_protected": ckpt_evict_protected,
         "incremental_result_resume": incremental_result_resume,
-        "evict_loss_protected": ckpt_evict_protected or incremental_result_resume,
+        "evict_loss_protected": (
+            explicit_auto_eviction_protection
+            or ckpt_evict_protected
+            or incremental_result_resume
+        ),
         "last_progress_line": (task.get("last_progress_line") or "")[-240:],
     }
 

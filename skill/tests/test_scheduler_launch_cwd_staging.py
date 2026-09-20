@@ -290,6 +290,43 @@ def test_launch_input_set_failure_does_not_publish_cache(monkeypatch, tmp_path):
     assert success_marks == []
 
 
+def test_launch_input_sync_to_windows_keeps_exact_directory(monkeypatch, tmp_path):
+    bundle = tmp_path / "results_bundle" / "seed_0"
+    bundle.mkdir(parents=True)
+    (bundle / "controller.pkl").write_text("model", encoding="utf-8")
+    calls = []
+    success_marks = []
+
+    def stage_windows(*args, **kwargs):
+        calls.append((args, kwargs))
+        return True, "windows synced"
+
+    monkeypatch.setattr(
+        cwd_stage.subprocess,
+        "run",
+        lambda *args, **kwargs: _RunResult(stdout="1\t.\n"),
+    )
+    deps = replace(
+        _deps(success_marks=success_marks),
+        stage_local_dir_to_windows=stage_windows,
+    )
+    task = {"stage_input_paths": [str(bundle)]}
+
+    ok, msg = cwd_stage.stage_input_paths_for_launch(task, "win", deps=deps)
+
+    assert ok is True
+    assert "synced 1 launch input directory" in msg
+    assert calls == [(
+        (str(bundle.resolve()), "win", str(bundle.resolve())),
+        {
+            "extra_excludes": [".git", "__pycache__", "*.pyc"],
+            "use_default_excludes": False,
+            "timeout_s": 600,
+        },
+    )]
+    assert success_marks == [cwd_stage.launch_input_stage_key(task, "win")]
+
+
 def test_stage_cwd_missing_source_fails_clearly():
     ok, msg = cwd_stage.stage_cwd_for_launch(
         {"cwd": "/nonexistent_scheduleurm_cwd_staging_test"},
@@ -528,6 +565,37 @@ def test_stage_local_dir_to_windows_streams_tar_over_ssh(tmp_path):
     assert ssh_args[:2] == ["ssh", "user@win"]
     assert "-EncodedCommand" in ssh_args
     assert calls["ps"] and "Test-Path" in calls["ps"][0][1]
+
+
+def test_stage_local_dir_to_windows_can_keep_result_inputs(tmp_path):
+    calls = {"popen": []}
+
+    def popen(args, **kwargs):
+        calls["popen"].append(list(args))
+        return _FakePopen(args)
+
+    deps = WindowsTarStagingDeps(
+        node_is_windows=lambda node: node == "win",
+        windows_path_for_node=lambda node, path: f"C:\\stage{path}",
+        ps_quote=lambda text: f"'{text}'",
+        ssh_base_args=lambda node: ["ssh", "user@win"],
+        run_windows_ps=lambda *args, **kwargs: (0, "OK", ""),
+        popen=popen,
+        run_subprocess=lambda *args, **kwargs: _RunResult(
+            returncode=0, stdout=b"READY\n", stderr=b""),
+    )
+
+    ok, _ = cwd_stage.stage_local_dir_to_windows(
+        str(tmp_path),
+        "win",
+        "/work/proj/results_bundle",
+        use_default_excludes=False,
+        deps=deps,
+    )
+
+    assert ok is True
+    tar_args = calls["popen"][0]
+    assert not any(arg.startswith("--exclude=") for arg in tar_args)
 
 
 def test_stage_local_dir_to_windows_reports_extract_failure(tmp_path):

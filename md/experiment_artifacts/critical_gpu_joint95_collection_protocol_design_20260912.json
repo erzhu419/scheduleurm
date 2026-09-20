@@ -1,0 +1,244 @@
+{
+  "claim_boundary": "This design and runner contain no new measurement, conformal margin, coverage result, capacity certificate, or paper claim. No job was launched and no server data was pulled.",
+  "current_local_readiness_snapshot": {
+    "active_task_count": 0,
+    "blockers": [],
+    "gpus": [
+      {
+        "idx": 0,
+        "used_mb": 194,
+        "util_pct": 0
+      },
+      {
+        "idx": 1,
+        "used_mb": 10,
+        "util_pct": 0
+      }
+    ],
+    "interpretation": "The four BAPR jobs that previously occupied the target GPUs are now done, and the latest local node cache shows both GPUs below the registered empty-state thresholds. This is a transient readiness observation, not launch authorization.",
+    "local_only": true,
+    "node_status_source": "/home/erzhu419/.claude/scheduler/node_probe_cache.json",
+    "observed_at": "2026-09-13T06:51:02.588434+08:00",
+    "pre_interruption_blocker_currently_active": false,
+    "pre_interruption_four_bapr_tasks": [
+      {
+        "gpu_idx": 0,
+        "id": "t93134",
+        "node": "jtl110gpu2",
+        "project": "BAPR",
+        "status": "done"
+      },
+      {
+        "gpu_idx": 1,
+        "id": "t93135",
+        "node": "jtl110gpu2",
+        "project": "BAPR",
+        "status": "done"
+      },
+      {
+        "gpu_idx": 1,
+        "id": "t93146",
+        "node": "jtl110gpu2",
+        "project": "BAPR",
+        "status": "done"
+      },
+      {
+        "gpu_idx": 0,
+        "id": "t93152",
+        "node": "jtl110gpu2",
+        "project": "BAPR",
+        "status": "done"
+      }
+    ],
+    "queue_status_source": "/home/erzhu419/.claude/scheduler/queue.json",
+    "remote_probe_run": false,
+    "status": "READY"
+  },
+  "historical_predictors": {
+    "disclosed_wave_13_excluded": true,
+    "eligible_existing_joint_calibration_units": 0,
+    "empty_gate": "md/experiment_artifacts/critical_gpu_stochastic_lcb_gate_v8_jtl110gpu2_20260803.json",
+    "loaded_gate": "md/experiment_artifacts/critical_gpu_loaded_stochastic_lcb_gate_jtl110gpu2_20260809.json",
+    "post_hoc_pairing_forbidden": true,
+    "reason": "The empty and loaded campaigns were collected on different dates. Reused source-local wave numbers are not registered joint visits.",
+    "role": "fixed_point_predictors_only",
+    "training_waves_per_source": [
+      1,
+      2,
+      3
+    ]
+  },
+  "main_scope": {
+    "counting_rule": "A visit counts once only when all seven empty cells and both loaded scenarios pass under the same pre-registered joint identity. Retries keep the identity and add no unit.",
+    "empty_cell_count": 7,
+    "empty_functionals": [
+      {
+        "direction": "upper_time",
+        "functional": "drain_completion",
+        "observation_field": "drain_completion_s",
+        "profile": 1,
+        "service_cell_id": "workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1",
+        "workload_key": "gpu_llm_distilgpt2"
+      },
+      {
+        "direction": "upper_time",
+        "functional": "drain_completion",
+        "observation_field": "drain_completion_s",
+        "profile": 3,
+        "service_cell_id": "workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3",
+        "workload_key": "gpu_llm_distilgpt2"
+      },
+      {
+        "direction": "upper_time",
+        "functional": "drain_completion",
+        "observation_field": "drain_completion_s",
+        "profile": 8,
+        "service_cell_id": "workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=8",
+        "workload_key": "gpu_llm_distilgpt2"
+      },
+      {
+        "direction": "upper_time",
+        "functional": "drain_completion",
+        "observation_field": "drain_completion_s",
+        "profile": 1,
+        "service_cell_id": "workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1",
+        "workload_key": "gpu_heavy_jax_matmul"
+      },
+      {
+        "direction": "upper_time",
+        "functional": "drain_completion",
+        "observation_field": "drain_completion_s",
+        "profile": 3,
+        "service_cell_id": "workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3",
+        "workload_key": "gpu_heavy_jax_matmul"
+      },
+      {
+        "direction": "upper_time",
+        "functional": "drain_completion",
+        "observation_field": "drain_completion_s",
+        "profile": 1,
+        "service_cell_id": "workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1",
+        "workload_key": "gpu_cnn_torch_resnet50"
+      },
+      {
+        "direction": "upper_time",
+        "functional": "drain_completion",
+        "observation_field": "drain_completion_s",
+        "profile": 3,
+        "service_cell_id": "workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3",
+        "workload_key": "gpu_cnn_torch_resnet50"
+      }
+    ],
+    "empty_mean_task_jct_role": "suite_diagnostic_not_scored",
+    "loaded_scenario_count": 2,
+    "loaded_scenarios": [
+      {
+        "direction": "upper_time",
+        "functionals": [
+          "target_completion_time"
+        ],
+        "observation_field": "target_canonical_completion_s",
+        "resident_overlap_service_role": "suite_diagnostic_not_scored",
+        "resident_workload_key": "gpu_llm_distilgpt2",
+        "scenario_id": "cnn_after_llm",
+        "target_workload_key": "gpu_cnn_torch_resnet50"
+      },
+      {
+        "direction": "upper_time",
+        "functionals": [
+          "target_completion_time"
+        ],
+        "observation_field": "target_canonical_completion_s",
+        "resident_overlap_service_role": "suite_diagnostic_not_scored",
+        "resident_workload_key": "gpu_cnn_torch_resnet50",
+        "scenario_id": "llm_after_cnn",
+        "target_workload_key": "gpu_llm_distilgpt2"
+      }
+    ],
+    "scored_functional_count_per_joint_visit": 9
+  },
+  "measurement_compatibility_audit": {
+    "concrete_findings": [
+      "The selected jtl110gpu2 workload/profile definitions, natural-completion estimands, and launch arguments are unchanged. Current changes add an injectable code-identity callback, strengthen the environment preflight, and add a jtl311linux-only profile override.",
+      "Current code rejects progress counters whose declared total differs from the registered total and ignores lower-ranked duplicate terminal bars. This can change readiness diagnostics and phase decomposition, but the registered functionals remain natural-exit drain time and mean task JCT. The new calibration and holdout must therefore use one frozen current bundle; old calibration residuals cannot be reused.",
+      "Remote output retrieval now uses bounded chunks and verifies the reconstructed bytes. Workload commands and measured clocks are not changed.",
+      "The current LLM command exports the registered node PYTHONPATH. This is not an exact execution replica of the August empty campaign and may shift duration, but it keeps the same model, batch, sequence, precision, step count, checkpoint, natural-exit, and JCT estimands. Fresh current-bundle calibration absorbs this shift.",
+      "Relative to the August loaded bundle, the only changed shared source adds a CNN capacity override for jtl311linux. Neither selected jtl110gpu2 loaded scenario, its resident/target command, nor either loaded functional changes."
+    ],
+    "empty_changed_paths": [
+      "algorithm/experiments/critical_gpu_completion_campaign.py",
+      "algorithm/experiments/progress_wrapper.py",
+      "algorithm/experiments/remote_workload_selected_profile_probe.py",
+      "algorithm/experiments/templates/torch_llm_distilgpt2.cmd.tpl"
+    ],
+    "empty_code_exact_match": false,
+    "empty_contract_exact_match": true,
+    "freeze_requirement": "All 19 calibration visits and the untouched holdout must use the same current empty and loaded measurement manifests registered by the runner. A later code change starts a new split.",
+    "loaded_changed_paths": [
+      "algorithm/experiments/critical_gpu_completion_campaign.py"
+    ],
+    "loaded_code_exact_match": false,
+    "loaded_contract_exact_match": true,
+    "method": "old-vs-current cell/scenario contract comparison plus source-diff effect classification",
+    "old_calibration_or_holdout_units_eligible": 0,
+    "result": "COMPATIBLE_FOR_FROZEN_PREDICTOR_ONLY",
+    "training_predictor_reuse_ready": true,
+    "unreviewed_changed_paths": [],
+    "validity_basis": "The August measurements are used only to freeze the deterministic empty and loaded point predictors. Split-conformal validity is provided by nineteen fresh exchangeable joint calibration visits and one independent holdout measured with one frozen current bundle."
+  },
+  "next_execution_boundary": "Create a separate registered executor that consumes one joint work item at a time. Do not call the legacy wave-1..13 CLIs with waves 14..33, and do not release wave 33 until all 19 calibration units finish and the conformal margin is frozen.",
+  "node": "jtl110gpu2",
+  "node_bucket": "gpu_3080ti_12gb_dual",
+  "runner": {
+    "default_formal_artifact_created": false,
+    "generates_joint_work_item_count": 20,
+    "implemented": true,
+    "launch_capability": false,
+    "measurement_synthesis_capability": false,
+    "network_or_remote_probe_capability": false,
+    "path": "algorithm/experiments/critical_gpu_joint95_collection_runner.py",
+    "requires_explicit_output_for_registration": true,
+    "separate_launcher_required": true,
+    "test_path": "skill/tests/test_critical_gpu_joint95_collection_runner.py",
+    "validates_total_observation_count": 180
+  },
+  "schema_version": 2,
+  "statistical_contract": {
+    "calibration_joint_waves": [
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32
+    ],
+    "calibration_unit_count": 19,
+    "cell_score": "actual_time / frozen_predicted_time - 1",
+    "finite_sample_rank": 19,
+    "holdout_joint_wave": 33,
+    "holdout_unit_count": 1,
+    "joint_wave_score": "maximum cell score over exactly seven drain-completion and two loaded target-completion functionals",
+    "margin": "max(0, nineteenth order statistic of the 19 joint-wave scores)",
+    "method": "paired_joint_wave_max_split_conformal",
+    "miscoverage_alpha": 0.05,
+    "observations_per_joint_visit": 9,
+    "rank_rule": "ceil((n_calibration + 1) * (1 - alpha))",
+    "total_joint_visits": 20,
+    "total_new_observations": 180
+  },
+  "status": "DESIGN_RUNNER_IMPLEMENTED_NOT_REGISTERED_NOT_EXECUTED",
+  "target_simultaneous_coverage": 0.95
+}

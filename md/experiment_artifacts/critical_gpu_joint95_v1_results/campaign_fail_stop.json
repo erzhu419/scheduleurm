@@ -1,0 +1,86 @@
+{
+  "adoption": {
+    "baseline_confirmation_authorized": false,
+    "calibration_margin_available": false,
+    "capacity_closure_authorized": false,
+    "holdout_release_authorized": false,
+    "next_action": "retain the failed v1 campaign; repair interval-overlap detection before registering any independent future campaign",
+    "retry_wave23_authorized": false,
+    "static_selector_screen_authorized": false,
+    "wave23_counts_as_joint_unit": false
+  },
+  "campaign": {
+    "failed_attempt": 1,
+    "failed_wave": 23,
+    "holdout_launched": false,
+    "holdout_released": false,
+    "holdout_wave": 33,
+    "manifest_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_joint95_collection_manifest_20260913.json",
+    "required_calibration_unit_count": 19,
+    "results_dir": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_joint95_v1_results",
+    "valid_calibration_unit_count": 9,
+    "valid_first_attempt_calibration_waves_before_failure": [
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22
+    ],
+    "wave24_through_wave32_launched": false
+  },
+  "claim_boundary": "Waves 14-22 are a valid nine-visit prefix, but they do not establish the registered 95% joint envelope. Wave 23 and all downstream joint95 capacity, selector, baseline, and holdout claims are unavailable.",
+  "created_at": 1789260574.6858425,
+  "decision": "JOINT95_V1_EXTERNAL_OVERLAP_FAIL_STOP",
+  "gate": "critical_gpu_joint95_campaign_fail_stop",
+  "incident": {
+    "affected_call_start_estimate_unix_s": 1789259726.2833,
+    "affected_cell_elapsed_wall_s": 33.70199966430664,
+    "affected_cell_id": "critical_gpu_joint95_v1_jtl110gpu2_r23_empty_03",
+    "affected_profile": 8,
+    "affected_registered_service_cell_id": "workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=8",
+    "affected_summary_mtime_unix_s": 1789259759.9852996,
+    "affected_summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_joint95_v1_jtl110gpu2_r23_attempt01_empty_gpu_llm_distilgpt2_p8_code4bd098dd7911/reports/profile_8_per_gpu_summary.json",
+    "affected_workload_key": "gpu_llm_distilgpt2",
+    "attempt_artifact_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_joint95_v1_results/critical_gpu_joint95_v1_jtl110gpu2_r23_attempt01.json",
+    "attempt_artifact_state_at_stop": {
+      "empty_row_count": 7,
+      "loaded_row_count": 0,
+      "pass": false,
+      "status": "RUNNING_LOADED",
+      "terminal": false
+    },
+    "controller_task": {
+      "cancel_reason": "stop invalid campaign after detecting target-node overlap",
+      "cancelled_at_unix_s": 1789260408.9551847,
+      "status": "cancelled",
+      "task_id": "t93344"
+    },
+    "estimate_definition": "summary file mtime minus dispatcher-reported cell elapsed_wall_s",
+    "external_task": {
+      "continues_after_affected_summary_s": 494.18049931526184,
+      "cpu_cores": 8,
+      "description": "auto-adopted: disjoint_noisy_matched_witness_development_candidate0 on jtl110gpu2:CPU-only (8 procs)",
+      "finished_at_unix_s": 1789260254.165799,
+      "node": "jtl110gpu2",
+      "observed_cpu_percent_approximately": 799.0,
+      "overlaps_affected_call_estimate": true,
+      "project": "disjoint_noisy_matched_witness_development_candidate0",
+      "started_at_unix_s": 1789259725.9256802,
+      "starts_before_affected_call_estimate_s": 0.3576197624206543,
+      "task_id": "t93346"
+    },
+    "kind": "target_node_scheduler_task_overlap",
+    "predecessor_summary_mtime_unix_s": 1789259724.675828,
+    "target_node": "jtl110gpu2"
+  },
+  "pass": false,
+  "protocol": "critical_gpu_joint95_natural_completion_v1",
+  "reason": "wave 23 empty cell 3 overlapped target-node task t93346 during its first attempt",
+  "schema_version": 1,
+  "status": "FAIL_STOP",
+  "terminal": true
+}

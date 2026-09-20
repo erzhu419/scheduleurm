@@ -20,6 +20,8 @@ class LaunchCommitDeps:
 @dataclass(frozen=True)
 class DeferredLaunchDeps:
     max_workers: int
+    commit_batch_size: int
+    commit_max_delay_s: float
     launch: Callable[..., tuple[bool, str]]
     launch_exec_slot_lock: Callable[[str], Any]
     execute_launch_intents: Callable[..., list]
@@ -187,6 +189,7 @@ def execute_deferred_launches(
     *,
     lock_timeout=None,
     mark_notified_launch: bool = False,
+    progress_fn: Callable[[dict], None] | None = None,
     deps: DeferredLaunchDeps,
 ) -> list:
     def _commit_intent(ev: dict, task: dict, ok: bool, msg: str) -> list:
@@ -216,4 +219,7 @@ def execute_deferred_launches(
         batch_commit_fn=_commit_batch,
         slot_lock_factory=lambda node: deps.launch_exec_slot_lock(node),
         notify_fn=deps.notify,
+        progress_fn=progress_fn,
+        commit_batch_size=deps.commit_batch_size,
+        commit_max_delay_s=deps.commit_max_delay_s,
     )

@@ -165,6 +165,7 @@ def test_matching_exit_status_sentinel_is_authoritative_over_live_pid():
     assert out["a"]["exit_code"] == 0
     assert out["a"]["backend_finished_at"] == 123.5
     assert out["a"]["backend_state"] == "LOCAL_EXIT_STATUS"
+    assert out["a"]["terminal_ok"] is True
     assert out["a"]["terminal_diagnosis_deferred"] is True
 
 

@@ -127,6 +127,7 @@ def test_preempt_prefers_unprotected_victim_but_falls_back_if_all_protected():
 
     assert [event["id"] for event in evicted] == ["safe"]
     assert evicted[0]["protected_skipped"] == ["protected"]
+    assert evicted[0]["protection_fallback_used"] is False
 
     evictions.clear()
     state = {"tasks": [_queued_high(cpu_cores=2, ram_mb=1000), _victim("only", ram_mb=9000)]}
@@ -137,6 +138,8 @@ def test_preempt_prefers_unprotected_victim_but_falls_back_if_all_protected():
     )
     assert [event["id"] for event in evicted] == ["only"]
     assert evicted[0]["protected_skipped"] == ["only"]
+    assert evicted[0]["protection_fallback_used"] is True
+    assert "operability fallback" in evictions[0][1]
 
 
 def test_preempt_uses_ram_headroom_and_ignore_cpu_switch():

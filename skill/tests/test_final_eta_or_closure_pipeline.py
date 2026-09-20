@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 import subprocess
+import sys
 
 from algorithm.experiments.final_eta_or_closure_pipeline import (
     Stage,
@@ -72,6 +74,31 @@ def test_stage_plan_orders_cache_slack_migration_replay_and_figure() -> None:
         stage for stage in stages if stage.name == "certify_or_generalization_v7"
     )
     assert generalization.argv[-1] == "--force"
+
+
+def test_figure_stage_imports_from_clean_pythonpath() -> None:
+    figure = next(
+        stage
+        for stage in build_stages(python=sys.executable)
+        if stage.name == "render_quadrant_figure"
+    )
+    assert figure.argv == (
+        sys.executable,
+        "-m",
+        "md.figures.make_scheduleurm_quadrant_sota_grid",
+    )
+
+    completed = subprocess.run(
+        [*figure.argv, "--help"],
+        cwd=Path(__file__).resolve().parents[2],
+        env={**os.environ, "PYTHONPATH": ""},
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
 
 
 def test_pipeline_stops_at_first_failed_stage(tmp_path: Path) -> None:

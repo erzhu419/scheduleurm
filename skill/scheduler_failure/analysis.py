@@ -250,6 +250,12 @@ def classify_failure(diag: dict, *, deps: FailureClassificationDeps) -> str:
     tail = diag.get("tail", "") or ""
     reason = diag.get("reason", "") or ""
     haystack = (tail + " " + reason).lower()
+    if any(marker in haystack for marker in (
+        "attributeerror:",
+        "nameerror:",
+        "syntaxerror:",
+    )):
+        return "DETERMINISTIC_APP_BUG"
     # Python raises FileNotFoundError for missing task inputs, checkpoints and
     # generated artifacts as well as for environment files.  The generic
     # "No such file" pattern must not turn those task-local failures into a

@@ -1,0 +1,43 @@
+{
+  "role": "development test of an explicit holding-cost selector",
+  "registered_at_utc": "2026-09-09T15:51:23.300069+00:00",
+  "base_protocol": {
+    "arrival_horizon_s": 20000.0,
+    "loads": [
+      0.5,
+      0.8,
+      0.95
+    ],
+    "seeds": [
+      41,
+      42,
+      43
+    ],
+    "budgets": [
+      10,
+      14,
+      26,
+      120
+    ],
+    "exact_reference_budget": 120,
+    "arrival_model": "independent Poisson arrivals per second; common tape across budgets",
+    "job_sizes": "fixed task-native canonical units",
+    "dispatch": "global synchronous frames; released jobs only; FIFO within class",
+    "score": "queue weighted actual frame departures divided by actual frame duration",
+    "budget_unit": "candidate construction or feasibility attempt; seeds included",
+    "stopping_rule": "stop arrivals at horizon, then drain the same finite prefix"
+  },
+  "policies": [
+    "v4_support",
+    "seed_guarded_holding_v1"
+  ],
+  "main_budget": 26,
+  "new_objective": "H(Q,a) = sum(Q)-sum(D(a)) + sum(completion_offsets(a))/tau(a) + Lambda*tau(a)/2",
+  "eligibility": "Q dot D(a)/tau(a) >= maximum paid homogeneous-seed support",
+  "candidate_generation": "same budgeted construction, order and max-support pruning as frozen v4",
+  "cost_scope": "minimize H only over already paid eligible candidates; no global holding-cost guarantee",
+  "arrival_rate_input": "Lambda=sum(registered class arrival rates); fixed throughout arrival window and drain",
+  "drain_cost_interpretation": "stationary-arrival proxy, not actual conditional arrivals after the cutoff",
+  "reference": "v4 support selector at K120; K120 of the new rule is not a support-exact reference",
+  "stopping_rule": "run the full development roster once; no coefficient or budget selection from the results"
+}

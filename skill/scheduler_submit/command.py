@@ -6,6 +6,7 @@ import json
 import sys
 from dataclasses import dataclass
 from typing import Any, Callable
+from scheduler_node.reservations import make_reservation, prune_released_reservations
 
 
 @dataclass(frozen=True)
@@ -51,6 +52,9 @@ class SubmitJsonlCommandDeps:
 def cmd_submit(args, *, deps: SubmitCommandDeps):
     split_args = deps.split_bapr_seed_batch_submit_args(args)
     if split_args:
+        if getattr(args, "reserve_nodes", None):
+            deps.exit_fn("a node reservation cannot be attached to an auto-split seed batch")
+            return
         deps.print_fn(
             f"NOTE: auto-splitting BAPR seed batch into {len(split_args)} per-seed tasks",
             file=sys.stderr,
@@ -96,6 +100,23 @@ def cmd_submit(args, *, deps: SubmitCommandDeps):
                 default_cpu_cores=deps.default_cpu_cores,
             )
             task = submit_result.task
+            reserve_nodes = list(getattr(args, "reserve_nodes", None) or [])
+            reserve_prefix = str(getattr(args, "reserve_signature_prefix", "") or "")
+            reserve_until = str(getattr(args, "reserve_until_file", "") or "")
+            if reserve_nodes or reserve_prefix or reserve_until:
+                try:
+                    reservation = make_reservation(
+                        state,
+                        task,
+                        nodes=reserve_nodes,
+                        signature_prefix=reserve_prefix,
+                        until_file=reserve_until,
+                        known_nodes=set(deps.submit_task_deps().known_nodes),
+                    )
+                except ValueError as exc:
+                    raise deps.submit_task_refusal_type([f"REFUSED: {exc}"]) from exc
+                prune_released_reservations(state)
+                state.setdefault("node_reservations", []).append(reservation)
             state["tasks"].append(task)
             deps.save_state(state)
     except deps.submit_task_refusal_type as refusal:
@@ -122,6 +143,11 @@ def cmd_submit(args, *, deps: SubmitCommandDeps):
     deps.print_fn(
         "  run `dispatch` to launch (resource-aware: respects 1/3 VRAM rule, CPU/RAM headroom)."
     )
+    if reserve_nodes:
+        deps.print_fn(
+            f"  reserved {', '.join(reserve_nodes)} for signatures beginning "
+            f"{reserve_prefix!r} until {reserve_until} is nonempty"
+        )
 
 
 def _submit_jsonl_payload(submitted: list[dict]) -> dict:

@@ -1,0 +1,66 @@
+{
+  "registered_at_utc": "2026-09-09T16:38:45.689454+00:00",
+  "base_protocol": {
+    "arrival_horizon_s": 20000.0,
+    "loads": [
+      0.5,
+      0.8,
+      0.95
+    ],
+    "seeds": [
+      41,
+      42,
+      43
+    ],
+    "budgets": [
+      10,
+      14,
+      26,
+      120
+    ],
+    "exact_reference_budget": 120,
+    "arrival_model": "independent Poisson arrivals per second; common tape across budgets",
+    "job_sizes": "fixed task-native canonical units",
+    "dispatch": "global synchronous frames; released jobs only; FIFO within class",
+    "score": "queue weighted actual frame departures divided by actual frame duration",
+    "budget_unit": "candidate construction or feasibility attempt; seeds included",
+    "stopping_rule": "stop arrivals at horizon, then drain the same finite prefix"
+  },
+  "role": "development only; previously used confirmation seeds are excluded",
+  "policies": [
+    "v4_support",
+    "holding_cap_1pct",
+    "frame_area_cap_1pct",
+    "lookahead_cap_1pct"
+  ],
+  "main_policy": "lookahead_cap_1pct",
+  "main_budget": 26,
+  "max_relative_support_loss": 0.01,
+  "eligibility": "S(a) >= max(S_seed, 0.99*S_inc), using only the original paid pool",
+  "current_frame_area": "A=(sum(Q)-sum(D))*tau+sum(completion_offsets)+sum(lambda)*tau^2/2",
+  "next_queue": "Q_next=Q-D+independent Poisson(lambda*tau); m=Q-D+lambda*tau",
+  "terminal_value": "V(q)=sum(q_i^2/(2*mu_i)); E[V(Q_next)]=sum((m_i^2+lambda_i*tau)/(2*mu_i))",
+  "objective": "J=A+terminal_weight*E[V(Q_next)] in job-seconds; main weight 1, area-only control weight 0",
+  "terminal_service_rates": [
+    0.1335789666104868,
+    0.29323460659958855,
+    0.35916419250378795
+  ],
+  "terminal_reference_time_weights": [
+    0.0,
+    0.0,
+    0.0,
+    0.33333333333333326,
+    0.0,
+    0.3333333333333334,
+    0.0,
+    0.0,
+    0.33333333333333337
+  ],
+  "terminal_reference_source": "one fixed feasible boundary time allocation computed from the first registered load; identical mu at every load",
+  "arrival_rate_input": "registered per-class lambda, fixed through arrival window and drain",
+  "terminal_interpretation": "fluid clearing at fixed mu with no arrivals beyond the next boundary; analytic surrogate rather than a second executed frame",
+  "accounting": "unchanged paid candidate construction; completion reads, mean-queue and terminal second-moment evaluations counted separately for both weights",
+  "reference": "v4 at K120, never K120 of a cost selector",
+  "stopping_rule": "one fixed 144-run development roster; no coefficient fitting or post-result budget/seed selection"
+}

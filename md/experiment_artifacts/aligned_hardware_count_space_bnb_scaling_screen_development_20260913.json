@@ -1,0 +1,2332 @@
+{
+  "experiment": "aligned_hardware_count_space_bnb_scaling_screen_v1",
+  "status": "PASS",
+  "checks": {
+    "base_grid_is_complete_unique_and_ordered": true,
+    "model_has_nine_distinct_duration_roots": true,
+    "scaled_grids_are_exact_unique_and_ordered": true,
+    "capacity_certificates_are_valid": true,
+    "selection_reconstruction_holds": true,
+    "selection_certificate_holds": true,
+    "selection_work_identities_hold": true,
+    "checkpoint_curves_are_monotone": true,
+    "r2_score_optimum_upper_holds_at_every_checkpoint": true,
+    "r2_oracle_action_count_is_exact": true,
+    "count_space_trace_call_count_is_exact": true,
+    "checkpoint_read_count_is_exact": true,
+    "capacity_call_count_is_exact": true,
+    "no_scaled_ordered_action_enumeration": true
+  },
+  "protocol": {
+    "registered_at_utc": "2026-09-12T22:54:06.612661+00:00",
+    "experiment": "aligned_hardware_count_space_bnb_scaling_screen_v1",
+    "role": "post-result count-space branch-and-bound scaling screen",
+    "post_result_development_screen": true,
+    "independent_preregistration": false,
+    "source_contract": {
+      "scaling_result": "aligned_hardware_cartesian_scaling_development_20260912.json",
+      "scaling_experiment": "aligned_hardware_cartesian_scaling_v1",
+      "scaling_decision": "COMPUTE_SAVING_WITH_LOOSE_CERTIFICATE_STOP",
+      "action_regret_result": "aligned_hardware_scaling_action_regret_veto_development_20260912.json",
+      "action_regret_experiment": "aligned_hardware_scaling_action_regret_veto_v1",
+      "action_regret_decision": "ACTION_REGRET_VETO_CERTIFICATE_ONLY_STOP"
+    },
+    "model": {
+      "node": "jtl110gpu2",
+      "scenario_id": "q01:gpu_3080ti_12gb_dual_jtl110gpu2",
+      "lanes": 2,
+      "workloads": [
+        "gpu_cnn_torch_resnet50",
+        "gpu_heavy_jax_matmul",
+        "gpu_llm_distilgpt2"
+      ],
+      "scales": [
+        60.0,
+        40.0,
+        120.0
+      ],
+      "options": [
+        {
+          "action_id": "gpu_loaded:jtl110gpu2:cnn_after_llm",
+          "requirements": [
+            1,
+            0,
+            1
+          ],
+          "duration": 11.514578111707017,
+          "completion_offsets": [
+            [
+              10.431026738447038
+            ],
+            [],
+            [
+              11.514578111707017
+            ]
+          ],
+          "loaded": true,
+          "source_action_ids": [
+            "gpu_loaded:jtl110gpu2:cnn_after_llm",
+            "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1"
+          ],
+          "phases": [
+            [
+              "resident_initialization_s",
+              4.716920265498629
+            ],
+            [
+              "target_overlap_s",
+              5.714106472948409
+            ],
+            [
+              "resident_overlap_rate_native_per_s",
+              120.39972693896493
+            ],
+            [
+              "resident_remaining_native_units",
+              0.0
+            ],
+            [
+              "resident_dedicated_drain_s",
+              0.0
+            ],
+            [
+              "resident_finalization_s",
+              1.0835513732599793
+            ]
+          ]
+        },
+        {
+          "action_id": "gpu_loaded:jtl110gpu2:llm_after_cnn",
+          "requirements": [
+            1,
+            0,
+            1
+          ],
+          "duration": 11.936669718453734,
+          "completion_offsets": [
+            [
+              11.936669718453734
+            ],
+            [],
+            [
+              11.090642004449867
+            ]
+          ],
+          "loaded": true,
+          "source_action_ids": [
+            "gpu_loaded:jtl110gpu2:llm_after_cnn",
+            "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1"
+          ],
+          "phases": [
+            [
+              "resident_initialization_s",
+              4.669018776022396
+            ],
+            [
+              "target_overlap_s",
+              6.421623228427471
+            ],
+            [
+              "resident_overlap_rate_native_per_s",
+              16.652848248271273
+            ],
+            [
+              "resident_remaining_native_units",
+              0.0
+            ],
+            [
+              "resident_dedicated_drain_s",
+              0.0
+            ],
+            [
+              "resident_finalization_s",
+              0.846027714003867
+            ]
+          ]
+        },
+        {
+          "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+          "requirements": [
+            1,
+            0,
+            0
+          ],
+          "duration": 8.093888054475512,
+          "completion_offsets": [
+            [
+              8.093888054475512
+            ],
+            [],
+            []
+          ],
+          "loaded": false,
+          "source_action_ids": [
+            "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1"
+          ],
+          "phases": [
+            [
+              "initialization_s",
+              4.669018776022396
+            ],
+            [
+              "loop_s",
+              2.5788415644492484
+            ],
+            [
+              "finalization_s",
+              0.846027714003867
+            ]
+          ]
+        },
+        {
+          "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+          "requirements": [
+            3,
+            0,
+            0
+          ],
+          "duration": 14.972417070959636,
+          "completion_offsets": [
+            [
+              14.972417070959636,
+              14.972417070959636,
+              14.972417070959636
+            ],
+            [],
+            []
+          ],
+          "loaded": false,
+          "source_action_ids": [
+            "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3"
+          ],
+          "phases": [
+            [
+              "initialization_s",
+              6.583782343158832
+            ],
+            [
+              "loop_s",
+              7.48884139563465
+            ],
+            [
+              "finalization_s",
+              0.8997933321661549
+            ]
+          ]
+        },
+        {
+          "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+          "requirements": [
+            0,
+            1,
+            0
+          ],
+          "duration": 2.7928254592821196,
+          "completion_offsets": [
+            [],
+            [
+              2.7928254592821196
+            ],
+            []
+          ],
+          "loaded": false,
+          "source_action_ids": [
+            "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1"
+          ],
+          "phases": [
+            [
+              "initialization_s",
+              1.2277755779466062
+            ],
+            [
+              "loop_s",
+              1.194901513584997
+            ],
+            [
+              "finalization_s",
+              0.3701483677505166
+            ]
+          ]
+        },
+        {
+          "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+          "requirements": [
+            0,
+            3,
+            0
+          ],
+          "duration": 6.820477375410869,
+          "completion_offsets": [
+            [],
+            [
+              6.820477375410869,
+              6.820477375410869,
+              6.820477375410869
+            ],
+            []
+          ],
+          "loaded": false,
+          "source_action_ids": [
+            "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3"
+          ],
+          "phases": [
+            [
+              "initialization_s",
+              2.741113696925434
+            ],
+            [
+              "loop_s",
+              3.661079762986579
+            ],
+            [
+              "finalization_s",
+              0.41828391549885663
+            ]
+          ]
+        },
+        {
+          "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+          "requirements": [
+            0,
+            0,
+            1
+          ],
+          "duration": 7.4174495042607305,
+          "completion_offsets": [
+            [],
+            [],
+            [
+              7.4174495042607305
+            ]
+          ],
+          "loaded": false,
+          "source_action_ids": [
+            "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1"
+          ],
+          "phases": [
+            [
+              "initialization_s",
+              4.716920265498629
+            ],
+            [
+              "loop_s",
+              1.6169778655021219
+            ],
+            [
+              "finalization_s",
+              1.0835513732599793
+            ]
+          ]
+        },
+        {
+          "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+          "requirements": [
+            0,
+            0,
+            3
+          ],
+          "duration": 9.462480184740949,
+          "completion_offsets": [
+            [],
+            [],
+            [
+              9.462480184740949,
+              9.462480184740949,
+              9.462480184740949
+            ]
+          ],
+          "loaded": false,
+          "source_action_ids": [
+            "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3"
+          ],
+          "phases": [
+            [
+              "initialization_s",
+              5.648919066996314
+            ],
+            [
+              "loop_s",
+              2.6111246433283664
+            ],
+            [
+              "finalization_s",
+              1.202436474416269
+            ]
+          ]
+        },
+        {
+          "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p8",
+          "requirements": [
+            0,
+            0,
+            8
+          ],
+          "duration": 14.84929022616052,
+          "completion_offsets": [
+            [],
+            [],
+            [
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052
+            ]
+          ],
+          "loaded": false,
+          "source_action_ids": [
+            "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p8"
+          ],
+          "phases": [
+            [
+              "initialization_s",
+              7.840006518249538
+            ],
+            [
+              "loop_s",
+              5.504426018315827
+            ],
+            [
+              "finalization_s",
+              1.5048576895951555
+            ]
+          ]
+        }
+      ],
+      "excluded_actions": [
+        {
+          "action_id": "gpu_loaded:jtl110gpu2:cnn_after_rl",
+          "reason": "resident class has no arrivals in the three-class q01 protocol"
+        }
+      ],
+      "model_scope": "deterministic_cached_phase_complete_job_renewal"
+    },
+    "base_levels": {
+      "cnn": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        8,
+        16,
+        24,
+        40
+      ],
+      "jax": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        8,
+        12,
+        18,
+        25
+      ],
+      "llm": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        8,
+        12,
+        18,
+        24
+      ]
+    },
+    "base_state_count": 1000,
+    "lane_counts": [
+      2,
+      4,
+      8,
+      16
+    ],
+    "queue_scale_by_lane": {
+      "2": 1,
+      "4": 2,
+      "8": 4,
+      "16": 8
+    },
+    "lp_checkpoint_budgets": [
+      9,
+      18,
+      36,
+      72
+    ],
+    "checkpoint_execution": "one cumulative B&B trace per state/lane; roots and nodes are not repaid between checkpoint reads",
+    "loads": [
+      0.5,
+      0.8,
+      0.95
+    ],
+    "option_count": 9,
+    "distinct_duration_root_count": 9,
+    "local_choice_count_including_idle": 10,
+    "raw_ordered_action_count_by_lane": {
+      "2": 100,
+      "4": 10000,
+      "8": 100000000,
+      "16": 10000000000000000
+    },
+    "r2_oracle_audit": {
+      "states": 1000,
+      "ordered_actions_per_state": 100,
+      "complete_enumeration": true,
+      "checkpoint_inequality": "selected score <= exact optimum <= returned upper"
+    },
+    "expected_calls": {
+      "count_space_traces": 4000,
+      "checkpoint_reads": 16000,
+      "capacity_certificate": 12,
+      "r2_oracle_action_evaluations": 100000,
+      "scaled_ordered_action_evaluations": 0
+    },
+    "certificate_rule": "stratify by exact maximum effective duration; bound every unresolved integer-count box by an exactly checked, outward-rounded repaired LP dual or its inherited analytic upper bound",
+    "candidate_rule": "floor the node LP primal within its count box, then greedily fill remaining lanes and visible queue in original option order",
+    "work_rule": {
+      "denominator": "1,000 states times 10^R ordered actions per state",
+      "reported_separately": [
+        "LP calls",
+        "LP matrix coefficient cells",
+        "candidate evaluations",
+        "residual-fill option probes",
+        "dual column checks"
+      ],
+      "gate_components": [
+        "LP-call fraction",
+        "LP-matrix coefficient fraction",
+        "candidate-evaluation fraction"
+      ],
+      "fraction_limit": 0.05
+    },
+    "advance_gate": {
+      "execution_checks": true,
+      "required_lane_counts": [
+        4,
+        8,
+        16
+      ],
+      "capacity": "one checkpoint has eta(load)-alpha>1e-10 at every load",
+      "work": "the same checkpoint passes every frozen work fraction"
+    },
+    "decision_rule": {
+      "INVALID_EXECUTION": "one or more frozen execution checks fail",
+      "COUNT_SPACE_BNB_SCALING_ADVANCE": "R4, R8, and R16 each have a fixed LP checkpoint whose alpha preserves all three lane-capacity eta margins and whose LP-call, LP-matrix, and candidate-evaluation fractions are each below five percent of 10^R",
+      "CERTIFIED_WITH_HIGH_MATRIX_WORK_STOP": "all scaled lane counts have a capacity-preserving checkpoint but at least one lacks a checkpoint passing every frozen work fraction",
+      "COMPUTE_SAVING_WITH_LOOSE_CERTIFICATE_STOP": "all scaled lane counts have a work-efficient checkpoint but at least one lacks a capacity-preserving checkpoint",
+      "NO_COUNT_SPACE_SCALING_TRADEOFF_STOP": "neither a common certificate conclusion nor a common work conclusion holds"
+    },
+    "claim_boundary": "A post-result deterministic development screen on the fixed synthetic 1,000-state scaling grid for identical replicas of the aligned nine-option lane model. The R2 oracle audit covers its 100 ordered actions. This is not an independent confirmation, physical multi-GPU measurement, trajectory result, all-queue theorem, or deployment decision.",
+    "prohibited": "R4/R8/R16 ordered-action enumeration, count-vector enumeration, arrivals, trajectories, RNG, server data, paper edits, and post-result changes to the grid, lane counts, LP checkpoints, capacity bridge, or work gate",
+    "timing_is_scientific_gate": false
+  },
+  "post_result_development_screen": true,
+  "independent_preregistration": false,
+  "capacity_by_lane": {
+    "2": [
+      {
+        "load": 0.5,
+        "effective_slack_eta": 0.10964359942581603,
+        "support_slack_delta": 0.10964359942581603,
+        "projection_support_loss_rate": 0.0,
+        "capacity_projection_passed": true,
+        "conditional_model_drift_certified": true,
+        "physical_service_confidence_increased": false
+      },
+      {
+        "load": 0.8,
+        "effective_slack_eta": 0.043857439770326384,
+        "support_slack_delta": 0.043857439770326384,
+        "projection_support_loss_rate": 0.0,
+        "capacity_projection_passed": true,
+        "conditional_model_drift_certified": true,
+        "physical_service_confidence_increased": false
+      },
+      {
+        "load": 0.95,
+        "effective_slack_eta": 0.01096435994258163,
+        "support_slack_delta": 0.01096435994258163,
+        "projection_support_loss_rate": 0.0,
+        "capacity_projection_passed": true,
+        "conditional_model_drift_certified": true,
+        "physical_service_confidence_increased": false
+      }
+    ],
+    "4": [
+      {
+        "load": 0.5,
+        "effective_slack_eta": 0.21928719885163206,
+        "support_slack_delta": 0.21928719885163206,
+        "projection_support_loss_rate": 0.0,
+        "capacity_projection_passed": true,
+        "conditional_model_drift_certified": true,
+        "physical_service_confidence_increased": false
+      },
+      {
+        "load": 0.8,
+        "effective_slack_eta": 0.08771487954065277,
+        "support_slack_delta": 0.08771487954065277,
+        "projection_support_loss_rate": 0.0,
+        "capacity_projection_passed": true,
+        "conditional_model_drift_certified": true,
+        "physical_service_confidence_increased": false
+      },
+      {
+        "load": 0.95,
+        "effective_slack_eta": 0.02192871988516326,
+        "support_slack_delta": 0.02192871988516326,
+        "projection_support_loss_rate": 0.0,
+        "capacity_projection_passed": true,
+        "conditional_model_drift_certified": true,
+        "physical_service_confidence_increased": false
+      }
+    ],
+    "8": [
+      {
+        "load": 0.5,
+        "effective_slack_eta": 0.43857439770326423,
+        "support_slack_delta": 0.43857439770326423,
+        "projection_support_loss_rate": 0.0,
+        "capacity_projection_passed": true,
+        "conditional_model_drift_certified": true,
+        "physical_service_confidence_increased": false
+      },
+      {
+        "load": 0.8,
+        "effective_slack_eta": 0.17542975908130587,
+        "support_slack_delta": 0.17542975908130587,
+        "projection_support_loss_rate": 0.0,
+        "capacity_projection_passed": true,
+        "conditional_model_drift_certified": true,
+        "physical_service_confidence_increased": false
+      },
+      {
+        "load": 0.95,
+        "effective_slack_eta": 0.043857439770326634,
+        "support_slack_delta": 0.043857439770326634,
+        "projection_support_loss_rate": 0.0,
+        "capacity_projection_passed": true,
+        "conditional_model_drift_certified": true,
+        "physical_service_confidence_increased": false
+      }
+    ],
+    "16": [
+      {
+        "load": 0.5,
+        "effective_slack_eta": 0.8771487954065282,
+        "support_slack_delta": 0.8771487954065282,
+        "projection_support_loss_rate": 0.0,
+        "capacity_projection_passed": true,
+        "conditional_model_drift_certified": true,
+        "physical_service_confidence_increased": false
+      },
+      {
+        "load": 0.8,
+        "effective_slack_eta": 0.35085951816261174,
+        "support_slack_delta": 0.35085951816261174,
+        "projection_support_loss_rate": 0.0,
+        "capacity_projection_passed": true,
+        "conditional_model_drift_certified": true,
+        "physical_service_confidence_increased": false
+      },
+      {
+        "load": 0.95,
+        "effective_slack_eta": 0.08771487954065327,
+        "support_slack_delta": 0.08771487954065327,
+        "projection_support_loss_rate": 0.0,
+        "capacity_projection_passed": true,
+        "conditional_model_drift_certified": true,
+        "physical_service_confidence_increased": false
+      }
+    ]
+  },
+  "lane_summaries": [
+    {
+      "lanes": 2,
+      "queue_scale": 1,
+      "state_count": 1000,
+      "raw_ordered_actions_per_state": 100,
+      "represented_count_vectors_per_state": 55,
+      "budget_summaries": [
+        {
+          "lp_node_budget": 9,
+          "state_count": 1000,
+          "nonempty_state_count": 999,
+          "alpha": 0.17613423057459163,
+          "alpha_witness": {
+            "base_queue": [
+              0,
+              1,
+              5
+            ],
+            "scaled_queue": [
+              0,
+              1,
+              5
+            ],
+            "queue_l1": 6,
+            "value": 0.17613423057459163,
+            "score": 1.6908886135160797,
+            "upper_bound": 2.7476939969636294,
+            "gap": 1.0568053834475497,
+            "exact": false,
+            "option_counts": [
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              1,
+              0
+            ],
+            "option_indices": [
+              4,
+              7
+            ]
+          },
+          "normalized_gap_sum": 14.354513627084094,
+          "exact_certificate_state_count": 784,
+          "lp_calls": 9000,
+          "successful_lp_calls": 9000,
+          "dual_certified_lp_calls": 9000,
+          "safe_fallback_lp_calls": 0,
+          "dual_repair_count": 341,
+          "candidate_evaluations": 10000,
+          "singleton_candidate_evaluations": 0,
+          "residual_fill_option_probes": 45000,
+          "branch_splits": 0,
+          "lp_matrix_coefficients": 465000,
+          "dual_column_checks": 45000,
+          "frontier_regions_remaining": 436,
+          "inherited_unsolved_regions": 0,
+          "frontier_peak_sum": 592,
+          "max_certified_normalized_gap": 0.17613423057459163,
+          "mean_certified_normalized_gap": 0.014368882509593688,
+          "exact_certificate_domain_fraction": 0.784,
+          "raw_ordered_actions_per_state": 100,
+          "represented_count_vectors_per_state": 55,
+          "represented_count_vector_fraction_of_ordered_actions": 0.55,
+          "mean_lp_calls": 9.0,
+          "mean_candidate_evaluations": 10.0,
+          "lp_call_fraction_of_raw_enumeration": 0.09,
+          "lp_matrix_coefficient_fraction_of_raw_enumeration": 4.65,
+          "candidate_evaluation_fraction_of_raw_enumeration": 0.1,
+          "residual_fill_probe_fraction_of_raw_enumeration": 0.45,
+          "dual_column_check_fraction_of_raw_enumeration": 0.45,
+          "capacity_bridge": [
+            {
+              "load": 0.5,
+              "effective_slack_eta": 0.10964359942581603,
+              "finite_grid_alpha": 0.17613423057459163,
+              "residual_margin": -0.0664906311487756,
+              "residual_margin_positive": false
+            },
+            {
+              "load": 0.8,
+              "effective_slack_eta": 0.043857439770326384,
+              "finite_grid_alpha": 0.17613423057459163,
+              "residual_margin": -0.13227679080426524,
+              "residual_margin_positive": false
+            },
+            {
+              "load": 0.95,
+              "effective_slack_eta": 0.01096435994258163,
+              "finite_grid_alpha": 0.17613423057459163,
+              "residual_margin": -0.16516987063201,
+              "residual_margin_positive": false
+            }
+          ],
+          "capacity_margin_passed": false,
+          "work_fraction_passed": false,
+          "tradeoff_passed": false
+        },
+        {
+          "lp_node_budget": 18,
+          "state_count": 1000,
+          "nonempty_state_count": 999,
+          "alpha": 0.15778966321774446,
+          "alpha_witness": {
+            "base_queue": [
+              0,
+              2,
+              12
+            ],
+            "scaled_queue": [
+              0,
+              2,
+              12
+            ],
+            "queue_l1": 14,
+            "value": 0.15778966321774446,
+            "score": 7.608998760822359,
+            "upper_bound": 9.818054045870781,
+            "gap": 2.2090552850484224,
+            "exact": false,
+            "option_counts": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              2,
+              0
+            ],
+            "option_indices": [
+              7,
+              7
+            ]
+          },
+          "normalized_gap_sum": 7.232784865340236,
+          "exact_certificate_state_count": 888,
+          "lp_calls": 10501,
+          "successful_lp_calls": 10501,
+          "dual_certified_lp_calls": 10501,
+          "safe_fallback_lp_calls": 0,
+          "dual_repair_count": 355,
+          "candidate_evaluations": 11501,
+          "singleton_candidate_evaluations": 0,
+          "residual_fill_option_probes": 55901,
+          "branch_splits": 968,
+          "lp_matrix_coefficients": 595435,
+          "dual_column_checks": 55901,
+          "frontier_regions_remaining": 367,
+          "inherited_unsolved_regions": 142,
+          "frontier_peak_sum": 1152,
+          "max_certified_normalized_gap": 0.15778966321774446,
+          "mean_certified_normalized_gap": 0.007240024890230466,
+          "exact_certificate_domain_fraction": 0.888,
+          "raw_ordered_actions_per_state": 100,
+          "represented_count_vectors_per_state": 55,
+          "represented_count_vector_fraction_of_ordered_actions": 0.55,
+          "mean_lp_calls": 10.501,
+          "mean_candidate_evaluations": 11.501,
+          "lp_call_fraction_of_raw_enumeration": 0.10501,
+          "lp_matrix_coefficient_fraction_of_raw_enumeration": 5.95435,
+          "candidate_evaluation_fraction_of_raw_enumeration": 0.11501,
+          "residual_fill_probe_fraction_of_raw_enumeration": 0.55901,
+          "dual_column_check_fraction_of_raw_enumeration": 0.55901,
+          "capacity_bridge": [
+            {
+              "load": 0.5,
+              "effective_slack_eta": 0.10964359942581603,
+              "finite_grid_alpha": 0.15778966321774446,
+              "residual_margin": -0.04814606379192843,
+              "residual_margin_positive": false
+            },
+            {
+              "load": 0.8,
+              "effective_slack_eta": 0.043857439770326384,
+              "finite_grid_alpha": 0.15778966321774446,
+              "residual_margin": -0.11393222344741807,
+              "residual_margin_positive": false
+            },
+            {
+              "load": 0.95,
+              "effective_slack_eta": 0.01096435994258163,
+              "finite_grid_alpha": 0.15778966321774446,
+              "residual_margin": -0.14682530327516283,
+              "residual_margin_positive": false
+            }
+          ],
+          "capacity_margin_passed": false,
+          "work_fraction_passed": false,
+          "tradeoff_passed": false
+        },
+        {
+          "lp_node_budget": 36,
+          "state_count": 1000,
+          "nonempty_state_count": 999,
+          "alpha": 0.03334448781975339,
+          "alpha_witness": {
+            "base_queue": [
+              5,
+              0,
+              5
+            ],
+            "scaled_queue": [
+              5,
+              0,
+              5
+            ],
+            "queue_l1": 10,
+            "value": 0.03334448781975339,
+            "score": 2.171160745749094,
+            "upper_bound": 2.504605623946628,
+            "gap": 0.3334448781975339,
+            "exact": false,
+            "option_counts": [
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            "option_indices": [
+              0,
+              7
+            ]
+          },
+          "normalized_gap_sum": 0.28833240284741846,
+          "exact_certificate_state_count": 985,
+          "lp_calls": 11750,
+          "successful_lp_calls": 11750,
+          "dual_certified_lp_calls": 11750,
+          "safe_fallback_lp_calls": 0,
+          "dual_repair_count": 355,
+          "candidate_evaluations": 12750,
+          "singleton_candidate_evaluations": 0,
+          "residual_fill_option_probes": 66319,
+          "branch_splits": 1683,
+          "lp_matrix_coefficients": 725237,
+          "dual_column_checks": 66319,
+          "frontier_regions_remaining": 64,
+          "inherited_unsolved_regions": 24,
+          "frontier_peak_sum": 1176,
+          "max_certified_normalized_gap": 0.03334448781975339,
+          "mean_certified_normalized_gap": 0.00028862102387128974,
+          "exact_certificate_domain_fraction": 0.985,
+          "raw_ordered_actions_per_state": 100,
+          "represented_count_vectors_per_state": 55,
+          "represented_count_vector_fraction_of_ordered_actions": 0.55,
+          "mean_lp_calls": 11.75,
+          "mean_candidate_evaluations": 12.75,
+          "lp_call_fraction_of_raw_enumeration": 0.1175,
+          "lp_matrix_coefficient_fraction_of_raw_enumeration": 7.25237,
+          "candidate_evaluation_fraction_of_raw_enumeration": 0.1275,
+          "residual_fill_probe_fraction_of_raw_enumeration": 0.66319,
+          "dual_column_check_fraction_of_raw_enumeration": 0.66319,
+          "capacity_bridge": [
+            {
+              "load": 0.5,
+              "effective_slack_eta": 0.10964359942581603,
+              "finite_grid_alpha": 0.03334448781975339,
+              "residual_margin": 0.07629911160606265,
+              "residual_margin_positive": true
+            },
+            {
+              "load": 0.8,
+              "effective_slack_eta": 0.043857439770326384,
+              "finite_grid_alpha": 0.03334448781975339,
+              "residual_margin": 0.010512951950572995,
+              "residual_margin_positive": true
+            },
+            {
+              "load": 0.95,
+              "effective_slack_eta": 0.01096435994258163,
+              "finite_grid_alpha": 0.03334448781975339,
+              "residual_margin": -0.02238012787717176,
+              "residual_margin_positive": false
+            }
+          ],
+          "capacity_margin_passed": false,
+          "work_fraction_passed": false,
+          "tradeoff_passed": false
+        },
+        {
+          "lp_node_budget": 72,
+          "state_count": 1000,
+          "nonempty_state_count": 999,
+          "alpha": 0.00274095519198953,
+          "alpha_witness": {
+            "base_queue": [
+              4,
+              2,
+              5
+            ],
+            "scaled_queue": [
+              4,
+              2,
+              5
+            ],
+            "queue_l1": 11,
+            "value": 0.00274095519198953,
+            "score": 2.1136107668950994,
+            "upper_bound": 2.1437612740069842,
+            "gap": 0.030150507111884828,
+            "exact": false,
+            "option_counts": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              1,
+              0
+            ],
+            "option_indices": [
+              6,
+              7
+            ]
+          },
+          "normalized_gap_sum": 0.004432790406556184,
+          "exact_certificate_state_count": 998,
+          "lp_calls": 11979,
+          "successful_lp_calls": 11979,
+          "dual_certified_lp_calls": 11979,
+          "safe_fallback_lp_calls": 0,
+          "dual_repair_count": 358,
+          "candidate_evaluations": 12979,
+          "singleton_candidate_evaluations": 0,
+          "residual_fill_option_probes": 68247,
+          "branch_splits": 1808,
+          "lp_matrix_coefficients": 749331,
+          "dual_column_checks": 68247,
+          "frontier_regions_remaining": 2,
+          "inherited_unsolved_regions": 0,
+          "frontier_peak_sum": 1176,
+          "max_certified_normalized_gap": 0.00274095519198953,
+          "mean_certified_normalized_gap": 4.437227634190375e-06,
+          "exact_certificate_domain_fraction": 0.998,
+          "raw_ordered_actions_per_state": 100,
+          "represented_count_vectors_per_state": 55,
+          "represented_count_vector_fraction_of_ordered_actions": 0.55,
+          "mean_lp_calls": 11.979,
+          "mean_candidate_evaluations": 12.979,
+          "lp_call_fraction_of_raw_enumeration": 0.11979,
+          "lp_matrix_coefficient_fraction_of_raw_enumeration": 7.49331,
+          "candidate_evaluation_fraction_of_raw_enumeration": 0.12979,
+          "residual_fill_probe_fraction_of_raw_enumeration": 0.68247,
+          "dual_column_check_fraction_of_raw_enumeration": 0.68247,
+          "capacity_bridge": [
+            {
+              "load": 0.5,
+              "effective_slack_eta": 0.10964359942581603,
+              "finite_grid_alpha": 0.00274095519198953,
+              "residual_margin": 0.1069026442338265,
+              "residual_margin_positive": true
+            },
+            {
+              "load": 0.8,
+              "effective_slack_eta": 0.043857439770326384,
+              "finite_grid_alpha": 0.00274095519198953,
+              "residual_margin": 0.04111648457833685,
+              "residual_margin_positive": true
+            },
+            {
+              "load": 0.95,
+              "effective_slack_eta": 0.01096435994258163,
+              "finite_grid_alpha": 0.00274095519198953,
+              "residual_margin": 0.0082234047505921,
+              "residual_margin_positive": true
+            }
+          ],
+          "capacity_margin_passed": true,
+          "work_fraction_passed": false,
+          "tradeoff_passed": false
+        }
+      ],
+      "first_quality_budget": 72,
+      "first_work_budget": null,
+      "first_tradeoff_budget": null
+    },
+    {
+      "lanes": 4,
+      "queue_scale": 2,
+      "state_count": 1000,
+      "raw_ordered_actions_per_state": 10000,
+      "represented_count_vectors_per_state": 715,
+      "budget_summaries": [
+        {
+          "lp_node_budget": 9,
+          "state_count": 1000,
+          "nonempty_state_count": 999,
+          "alpha": 0.32721789454587386,
+          "alpha_witness": {
+            "base_queue": [
+              1,
+              0,
+              12
+            ],
+            "scaled_queue": [
+              2,
+              0,
+              24
+            ],
+            "queue_l1": 26,
+            "value": 0.32721789454587386,
+            "score": 30.435995043289434,
+            "upper_bound": 38.943660301482154,
+            "gap": 8.50766525819272,
+            "exact": false,
+            "option_counts": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              0
+            ],
+            "option_indices": [
+              7,
+              7,
+              7,
+              7
+            ]
+          },
+          "normalized_gap_sum": 6.0834090193821995,
+          "exact_certificate_state_count": 903,
+          "lp_calls": 9000,
+          "successful_lp_calls": 9000,
+          "dual_certified_lp_calls": 9000,
+          "safe_fallback_lp_calls": 0,
+          "dual_repair_count": 342,
+          "candidate_evaluations": 10000,
+          "singleton_candidate_evaluations": 0,
+          "residual_fill_option_probes": 45000,
+          "branch_splits": 0,
+          "lp_matrix_coefficients": 465000,
+          "dual_column_checks": 45000,
+          "frontier_regions_remaining": 130,
+          "inherited_unsolved_regions": 0,
+          "frontier_peak_sum": 253,
+          "max_certified_normalized_gap": 0.32721789454587386,
+          "mean_certified_normalized_gap": 0.006089498517900099,
+          "exact_certificate_domain_fraction": 0.903,
+          "raw_ordered_actions_per_state": 10000,
+          "represented_count_vectors_per_state": 715,
+          "represented_count_vector_fraction_of_ordered_actions": 0.0715,
+          "mean_lp_calls": 9.0,
+          "mean_candidate_evaluations": 10.0,
+          "lp_call_fraction_of_raw_enumeration": 0.0009,
+          "lp_matrix_coefficient_fraction_of_raw_enumeration": 0.0465,
+          "candidate_evaluation_fraction_of_raw_enumeration": 0.001,
+          "residual_fill_probe_fraction_of_raw_enumeration": 0.0045,
+          "dual_column_check_fraction_of_raw_enumeration": 0.0045,
+          "capacity_bridge": [
+            {
+              "load": 0.5,
+              "effective_slack_eta": 0.21928719885163206,
+              "finite_grid_alpha": 0.32721789454587386,
+              "residual_margin": -0.1079306956942418,
+              "residual_margin_positive": false
+            },
+            {
+              "load": 0.8,
+              "effective_slack_eta": 0.08771487954065277,
+              "finite_grid_alpha": 0.32721789454587386,
+              "residual_margin": -0.2395030150052211,
+              "residual_margin_positive": false
+            },
+            {
+              "load": 0.95,
+              "effective_slack_eta": 0.02192871988516326,
+              "finite_grid_alpha": 0.32721789454587386,
+              "residual_margin": -0.3052891746607106,
+              "residual_margin_positive": false
+            }
+          ],
+          "capacity_margin_passed": false,
+          "work_fraction_passed": true,
+          "tradeoff_passed": false
+        },
+        {
+          "lp_node_budget": 18,
+          "state_count": 1000,
+          "nonempty_state_count": 999,
+          "alpha": 0.08348685413155438,
+          "alpha_witness": {
+            "base_queue": [
+              5,
+              0,
+              3
+            ],
+            "scaled_queue": [
+              10,
+              0,
+              6
+            ],
+            "queue_l1": 16,
+            "value": 0.08348685413155438,
+            "score": 7.079685230355801,
+            "upper_bound": 8.41547489646067,
+            "gap": 1.33578966610487,
+            "exact": false,
+            "option_counts": [
+              1,
+              0,
+              0,
+              3,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "option_indices": [
+              0,
+              3,
+              3,
+              3
+            ]
+          },
+          "normalized_gap_sum": 1.0745021348452455,
+          "exact_certificate_state_count": 963,
+          "lp_calls": 9678,
+          "successful_lp_calls": 9678,
+          "dual_certified_lp_calls": 9678,
+          "safe_fallback_lp_calls": 0,
+          "dual_repair_count": 349,
+          "candidate_evaluations": 10678,
+          "singleton_candidate_evaluations": 0,
+          "residual_fill_option_probes": 49804,
+          "branch_splits": 421,
+          "lp_matrix_coefficients": 520996,
+          "dual_column_checks": 49804,
+          "frontier_regions_remaining": 120,
+          "inherited_unsolved_regions": 50,
+          "frontier_peak_sum": 512,
+          "max_certified_normalized_gap": 0.08348685413155438,
+          "mean_certified_normalized_gap": 0.0010755777125578032,
+          "exact_certificate_domain_fraction": 0.963,
+          "raw_ordered_actions_per_state": 10000,
+          "represented_count_vectors_per_state": 715,
+          "represented_count_vector_fraction_of_ordered_actions": 0.0715,
+          "mean_lp_calls": 9.678,
+          "mean_candidate_evaluations": 10.678,
+          "lp_call_fraction_of_raw_enumeration": 0.0009678,
+          "lp_matrix_coefficient_fraction_of_raw_enumeration": 0.0520996,
+          "candidate_evaluation_fraction_of_raw_enumeration": 0.0010678,
+          "residual_fill_probe_fraction_of_raw_enumeration": 0.0049804,
+          "dual_column_check_fraction_of_raw_enumeration": 0.0049804,
+          "capacity_bridge": [
+            {
+              "load": 0.5,
+              "effective_slack_eta": 0.21928719885163206,
+              "finite_grid_alpha": 0.08348685413155438,
+              "residual_margin": 0.13580034472007768,
+              "residual_margin_positive": true
+            },
+            {
+              "load": 0.8,
+              "effective_slack_eta": 0.08771487954065277,
+              "finite_grid_alpha": 0.08348685413155438,
+              "residual_margin": 0.00422802540909839,
+              "residual_margin_positive": true
+            },
+            {
+              "load": 0.95,
+              "effective_slack_eta": 0.02192871988516326,
+              "finite_grid_alpha": 0.08348685413155438,
+              "residual_margin": -0.061558134246391116,
+              "residual_margin_positive": false
+            }
+          ],
+          "capacity_margin_passed": false,
+          "work_fraction_passed": false,
+          "tradeoff_passed": false
+        },
+        {
+          "lp_node_budget": 36,
+          "state_count": 1000,
+          "nonempty_state_count": 999,
+          "alpha": 0.049970050474495764,
+          "alpha_witness": {
+            "base_queue": [
+              4,
+              1,
+              3
+            ],
+            "scaled_queue": [
+              8,
+              2,
+              6
+            ],
+            "queue_l1": 16,
+            "value": 0.049970050474495764,
+            "score": 5.495387993927259,
+            "upper_bound": 6.294908801519191,
+            "gap": 0.7995208075919322,
+            "exact": false,
+            "option_counts": [
+              0,
+              0,
+              2,
+              0,
+              0,
+              0,
+              0,
+              2,
+              0
+            ],
+            "option_indices": [
+              2,
+              2,
+              7,
+              7
+            ]
+          },
+          "normalized_gap_sum": 0.2930836103822299,
+          "exact_certificate_state_count": 986,
+          "lp_calls": 10107,
+          "successful_lp_calls": 10107,
+          "dual_certified_lp_calls": 10107,
+          "safe_fallback_lp_calls": 0,
+          "dual_repair_count": 349,
+          "candidate_evaluations": 11107,
+          "singleton_candidate_evaluations": 0,
+          "residual_fill_option_probes": 53288,
+          "branch_splits": 653,
+          "lp_matrix_coefficients": 564340,
+          "dual_column_checks": 53288,
+          "frontier_regions_remaining": 70,
+          "inherited_unsolved_regions": 22,
+          "frontier_peak_sum": 537,
+          "max_certified_normalized_gap": 0.049970050474495764,
+          "mean_certified_normalized_gap": 0.0002933769873695995,
+          "exact_certificate_domain_fraction": 0.986,
+          "raw_ordered_actions_per_state": 10000,
+          "represented_count_vectors_per_state": 715,
+          "represented_count_vector_fraction_of_ordered_actions": 0.0715,
+          "mean_lp_calls": 10.107,
+          "mean_candidate_evaluations": 11.107,
+          "lp_call_fraction_of_raw_enumeration": 0.0010107,
+          "lp_matrix_coefficient_fraction_of_raw_enumeration": 0.056434,
+          "candidate_evaluation_fraction_of_raw_enumeration": 0.0011107,
+          "residual_fill_probe_fraction_of_raw_enumeration": 0.0053288,
+          "dual_column_check_fraction_of_raw_enumeration": 0.0053288,
+          "capacity_bridge": [
+            {
+              "load": 0.5,
+              "effective_slack_eta": 0.21928719885163206,
+              "finite_grid_alpha": 0.049970050474495764,
+              "residual_margin": 0.1693171483771363,
+              "residual_margin_positive": true
+            },
+            {
+              "load": 0.8,
+              "effective_slack_eta": 0.08771487954065277,
+              "finite_grid_alpha": 0.049970050474495764,
+              "residual_margin": 0.037744829066157004,
+              "residual_margin_positive": true
+            },
+            {
+              "load": 0.95,
+              "effective_slack_eta": 0.02192871988516326,
+              "finite_grid_alpha": 0.049970050474495764,
+              "residual_margin": -0.028041330589332503,
+              "residual_margin_positive": false
+            }
+          ],
+          "capacity_margin_passed": false,
+          "work_fraction_passed": false,
+          "tradeoff_passed": false
+        },
+        {
+          "lp_node_budget": 72,
+          "state_count": 1000,
+          "nonempty_state_count": 999,
+          "alpha": 0.019082709515783884,
+          "alpha_witness": {
+            "base_queue": [
+              4,
+              0,
+              3
+            ],
+            "scaled_queue": [
+              8,
+              0,
+              6
+            ],
+            "queue_l1": 14,
+            "value": 0.019082709515783884,
+            "score": 5.610316597640446,
+            "upper_bound": 5.87747453086142,
+            "gap": 0.26715793322097436,
+            "exact": false,
+            "option_counts": [
+              0,
+              0,
+              0,
+              2,
+              0,
+              0,
+              0,
+              2,
+              0
+            ],
+            "option_indices": [
+              3,
+              3,
+              7,
+              7
+            ]
+          },
+          "normalized_gap_sum": 0.04836465349632338,
+          "exact_certificate_state_count": 997,
+          "lp_calls": 10391,
+          "successful_lp_calls": 10391,
+          "dual_certified_lp_calls": 10391,
+          "safe_fallback_lp_calls": 0,
+          "dual_repair_count": 349,
+          "candidate_evaluations": 11391,
+          "singleton_candidate_evaluations": 0,
+          "residual_fill_option_probes": 55844,
+          "branch_splits": 801,
+          "lp_matrix_coefficients": 597568,
+          "dual_column_checks": 55844,
+          "frontier_regions_remaining": 14,
+          "inherited_unsolved_regions": 3,
+          "frontier_peak_sum": 542,
+          "max_certified_normalized_gap": 0.019082709515783884,
+          "mean_certified_normalized_gap": 4.8413066562886264e-05,
+          "exact_certificate_domain_fraction": 0.997,
+          "raw_ordered_actions_per_state": 10000,
+          "represented_count_vectors_per_state": 715,
+          "represented_count_vector_fraction_of_ordered_actions": 0.0715,
+          "mean_lp_calls": 10.391,
+          "mean_candidate_evaluations": 11.391,
+          "lp_call_fraction_of_raw_enumeration": 0.0010391,
+          "lp_matrix_coefficient_fraction_of_raw_enumeration": 0.0597568,
+          "candidate_evaluation_fraction_of_raw_enumeration": 0.0011391,
+          "residual_fill_probe_fraction_of_raw_enumeration": 0.0055844,
+          "dual_column_check_fraction_of_raw_enumeration": 0.0055844,
+          "capacity_bridge": [
+            {
+              "load": 0.5,
+              "effective_slack_eta": 0.21928719885163206,
+              "finite_grid_alpha": 0.019082709515783884,
+              "residual_margin": 0.20020448933584817,
+              "residual_margin_positive": true
+            },
+            {
+              "load": 0.8,
+              "effective_slack_eta": 0.08771487954065277,
+              "finite_grid_alpha": 0.019082709515783884,
+              "residual_margin": 0.06863217002486888,
+              "residual_margin_positive": true
+            },
+            {
+              "load": 0.95,
+              "effective_slack_eta": 0.02192871988516326,
+              "finite_grid_alpha": 0.019082709515783884,
+              "residual_margin": 0.0028460103693793773,
+              "residual_margin_positive": true
+            }
+          ],
+          "capacity_margin_passed": true,
+          "work_fraction_passed": false,
+          "tradeoff_passed": false
+        }
+      ],
+      "first_quality_budget": 72,
+      "first_work_budget": 9,
+      "first_tradeoff_budget": null
+    },
+    {
+      "lanes": 8,
+      "queue_scale": 4,
+      "state_count": 1000,
+      "raw_ordered_actions_per_state": 100000000,
+      "represented_count_vectors_per_state": 24310,
+      "budget_summaries": [
+        {
+          "lp_node_budget": 9,
+          "state_count": 1000,
+          "nonempty_state_count": 999,
+          "alpha": 0.40405971656676165,
+          "alpha_witness": {
+            "base_queue": [
+              0,
+              0,
+              12
+            ],
+            "scaled_queue": [
+              0,
+              0,
+              48
+            ],
+            "queue_l1": 48,
+            "value": 0.40405971656676165,
+            "score": 135.76406476643183,
+            "upper_bound": 155.1589311616364,
+            "gap": 19.39486639520456,
+            "exact": false,
+            "option_counts": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              3,
+              4
+            ],
+            "option_indices": [
+              6,
+              7,
+              7,
+              7,
+              8,
+              8,
+              8,
+              8
+            ]
+          },
+          "normalized_gap_sum": 7.724361137592068,
+          "exact_certificate_state_count": 904,
+          "lp_calls": 9000,
+          "successful_lp_calls": 9000,
+          "dual_certified_lp_calls": 9000,
+          "safe_fallback_lp_calls": 0,
+          "dual_repair_count": 342,
+          "candidate_evaluations": 10000,
+          "singleton_candidate_evaluations": 0,
+          "residual_fill_option_probes": 45000,
+          "branch_splits": 0,
+          "lp_matrix_coefficients": 465000,
+          "dual_column_checks": 45000,
+          "frontier_regions_remaining": 113,
+          "inherited_unsolved_regions": 0,
+          "frontier_peak_sum": 238,
+          "max_certified_normalized_gap": 0.40405971656676165,
+          "mean_certified_normalized_gap": 0.007732093230822891,
+          "exact_certificate_domain_fraction": 0.904,
+          "raw_ordered_actions_per_state": 100000000,
+          "represented_count_vectors_per_state": 24310,
+          "represented_count_vector_fraction_of_ordered_actions": 0.0002431,
+          "mean_lp_calls": 9.0,
+          "mean_candidate_evaluations": 10.0,
+          "lp_call_fraction_of_raw_enumeration": 9e-08,
+          "lp_matrix_coefficient_fraction_of_raw_enumeration": 4.65e-06,
+          "candidate_evaluation_fraction_of_raw_enumeration": 1e-07,
+          "residual_fill_probe_fraction_of_raw_enumeration": 4.5e-07,
+          "dual_column_check_fraction_of_raw_enumeration": 4.5e-07,
+          "capacity_bridge": [
+            {
+              "load": 0.5,
+              "effective_slack_eta": 0.43857439770326423,
+              "finite_grid_alpha": 0.40405971656676165,
+              "residual_margin": 0.03451468113650258,
+              "residual_margin_positive": true
+            },
+            {
+              "load": 0.8,
+              "effective_slack_eta": 0.17542975908130587,
+              "finite_grid_alpha": 0.40405971656676165,
+              "residual_margin": -0.22862995748545578,
+              "residual_margin_positive": false
+            },
+            {
+              "load": 0.95,
+              "effective_slack_eta": 0.043857439770326634,
+              "finite_grid_alpha": 0.40405971656676165,
+              "residual_margin": -0.360202276796435,
+              "residual_margin_positive": false
+            }
+          ],
+          "capacity_margin_passed": false,
+          "work_fraction_passed": true,
+          "tradeoff_passed": false
+        },
+        {
+          "lp_node_budget": 18,
+          "state_count": 1000,
+          "nonempty_state_count": 999,
+          "alpha": 0.26243501408405095,
+          "alpha_witness": {
+            "base_queue": [
+              1,
+              0,
+              12
+            ],
+            "scaled_queue": [
+              4,
+              0,
+              48
+            ],
+            "queue_l1": 52,
+            "value": 0.26243501408405095,
+            "score": 142.12802047355797,
+            "upper_bound": 155.77464120592862,
+            "gap": 13.64662073237065,
+            "exact": false,
+            "option_counts": [
+              1,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              1,
+              5
+            ],
+            "option_indices": [
+              0,
+              3,
+              7,
+              8,
+              8,
+              8,
+              8,
+              8
+            ]
+          },
+          "normalized_gap_sum": 1.6801139290572755,
+          "exact_certificate_state_count": 950,
+          "lp_calls": 9679,
+          "successful_lp_calls": 9679,
+          "dual_certified_lp_calls": 9679,
+          "safe_fallback_lp_calls": 0,
+          "dual_repair_count": 353,
+          "candidate_evaluations": 10679,
+          "singleton_candidate_evaluations": 0,
+          "residual_fill_option_probes": 49719,
+          "branch_splits": 427,
+          "lp_matrix_coefficients": 519365,
+          "dual_column_checks": 49719,
+          "frontier_regions_remaining": 173,
+          "inherited_unsolved_regions": 68,
+          "frontier_peak_sum": 509,
+          "max_certified_normalized_gap": 0.26243501408405095,
+          "mean_certified_normalized_gap": 0.0016817957247820575,
+          "exact_certificate_domain_fraction": 0.95,
+          "raw_ordered_actions_per_state": 100000000,
+          "represented_count_vectors_per_state": 24310,
+          "represented_count_vector_fraction_of_ordered_actions": 0.0002431,
+          "mean_lp_calls": 9.679,
+          "mean_candidate_evaluations": 10.679,
+          "lp_call_fraction_of_raw_enumeration": 9.679e-08,
+          "lp_matrix_coefficient_fraction_of_raw_enumeration": 5.19365e-06,
+          "candidate_evaluation_fraction_of_raw_enumeration": 1.0679e-07,
+          "residual_fill_probe_fraction_of_raw_enumeration": 4.9719e-07,
+          "dual_column_check_fraction_of_raw_enumeration": 4.9719e-07,
+          "capacity_bridge": [
+            {
+              "load": 0.5,
+              "effective_slack_eta": 0.43857439770326423,
+              "finite_grid_alpha": 0.26243501408405095,
+              "residual_margin": 0.17613938361921327,
+              "residual_margin_positive": true
+            },
+            {
+              "load": 0.8,
+              "effective_slack_eta": 0.17542975908130587,
+              "finite_grid_alpha": 0.26243501408405095,
+              "residual_margin": -0.08700525500274509,
+              "residual_margin_positive": false
+            },
+            {
+              "load": 0.95,
+              "effective_slack_eta": 0.043857439770326634,
+              "finite_grid_alpha": 0.26243501408405095,
+              "residual_margin": -0.21857757431372432,
+              "residual_margin_positive": false
+            }
+          ],
+          "capacity_margin_passed": false,
+          "work_fraction_passed": true,
+          "tradeoff_passed": false
+        },
+        {
+          "lp_node_budget": 36,
+          "state_count": 1000,
+          "nonempty_state_count": 999,
+          "alpha": 0.029220398946044134,
+          "alpha_witness": {
+            "base_queue": [
+              5,
+              0,
+              5
+            ],
+            "scaled_queue": [
+              20,
+              0,
+              20
+            ],
+            "queue_l1": 40,
+            "value": 0.029220398946044134,
+            "score": 45.416848647565516,
+            "upper_bound": 46.58566460540728,
+            "gap": 1.1688159578417654,
+            "exact": false,
+            "option_counts": [
+              0,
+              0,
+              0,
+              6,
+              0,
+              0,
+              0,
+              0,
+              2
+            ],
+            "option_indices": [
+              3,
+              3,
+              3,
+              3,
+              3,
+              3,
+              8,
+              8
+            ]
+          },
+          "normalized_gap_sum": 0.2928043030178515,
+          "exact_certificate_state_count": 980,
+          "lp_calls": 10301,
+          "successful_lp_calls": 10301,
+          "dual_certified_lp_calls": 10301,
+          "safe_fallback_lp_calls": 0,
+          "dual_repair_count": 356,
+          "candidate_evaluations": 11301,
+          "singleton_candidate_evaluations": 0,
+          "residual_fill_option_probes": 54551,
+          "branch_splits": 762,
+          "lp_matrix_coefficients": 578273,
+          "dual_column_checks": 54551,
+          "frontier_regions_remaining": 72,
+          "inherited_unsolved_regions": 30,
+          "frontier_peak_sum": 554,
+          "max_certified_normalized_gap": 0.029220398946044134,
+          "mean_certified_normalized_gap": 0.00029309740041826975,
+          "exact_certificate_domain_fraction": 0.98,
+          "raw_ordered_actions_per_state": 100000000,
+          "represented_count_vectors_per_state": 24310,
+          "represented_count_vector_fraction_of_ordered_actions": 0.0002431,
+          "mean_lp_calls": 10.301,
+          "mean_candidate_evaluations": 11.301,
+          "lp_call_fraction_of_raw_enumeration": 1.0301e-07,
+          "lp_matrix_coefficient_fraction_of_raw_enumeration": 5.78273e-06,
+          "candidate_evaluation_fraction_of_raw_enumeration": 1.1301e-07,
+          "residual_fill_probe_fraction_of_raw_enumeration": 5.4551e-07,
+          "dual_column_check_fraction_of_raw_enumeration": 5.4551e-07,
+          "capacity_bridge": [
+            {
+              "load": 0.5,
+              "effective_slack_eta": 0.43857439770326423,
+              "finite_grid_alpha": 0.029220398946044134,
+              "residual_margin": 0.4093539987572201,
+              "residual_margin_positive": true
+            },
+            {
+              "load": 0.8,
+              "effective_slack_eta": 0.17542975908130587,
+              "finite_grid_alpha": 0.029220398946044134,
+              "residual_margin": 0.14620936013526173,
+              "residual_margin_positive": true
+            },
+            {
+              "load": 0.95,
+              "effective_slack_eta": 0.043857439770326634,
+              "finite_grid_alpha": 0.029220398946044134,
+              "residual_margin": 0.0146370408242825,
+              "residual_margin_positive": true
+            }
+          ],
+          "capacity_margin_passed": true,
+          "work_fraction_passed": true,
+          "tradeoff_passed": true
+        },
+        {
+          "lp_node_budget": 72,
+          "state_count": 1000,
+          "nonempty_state_count": 999,
+          "alpha": 0.007421053700582646,
+          "alpha_witness": {
+            "base_queue": [
+              4,
+              2,
+              3
+            ],
+            "scaled_queue": [
+              16,
+              8,
+              12
+            ],
+            "queue_l1": 36,
+            "value": 0.007421053700582646,
+            "score": 26.715793322097362,
+            "upper_bound": 26.982951255318337,
+            "gap": 0.26715793322097525,
+            "exact": false,
+            "option_counts": [
+              1,
+              0,
+              0,
+              5,
+              0,
+              0,
+              0,
+              1,
+              1
+            ],
+            "option_indices": [
+              0,
+              3,
+              3,
+              3,
+              3,
+              3,
+              7,
+              8
+            ]
+          },
+          "normalized_gap_sum": 0.007421053700582646,
+          "exact_certificate_state_count": 999,
+          "lp_calls": 10640,
+          "successful_lp_calls": 10640,
+          "dual_certified_lp_calls": 10640,
+          "safe_fallback_lp_calls": 0,
+          "dual_repair_count": 356,
+          "candidate_evaluations": 11640,
+          "singleton_candidate_evaluations": 0,
+          "residual_fill_option_probes": 57501,
+          "branch_splits": 929,
+          "lp_matrix_coefficients": 616103,
+          "dual_column_checks": 57501,
+          "frontier_regions_remaining": 5,
+          "inherited_unsolved_regions": 2,
+          "frontier_peak_sum": 557,
+          "max_certified_normalized_gap": 0.007421053700582646,
+          "mean_certified_normalized_gap": 7.428482182765411e-06,
+          "exact_certificate_domain_fraction": 0.999,
+          "raw_ordered_actions_per_state": 100000000,
+          "represented_count_vectors_per_state": 24310,
+          "represented_count_vector_fraction_of_ordered_actions": 0.0002431,
+          "mean_lp_calls": 10.64,
+          "mean_candidate_evaluations": 11.64,
+          "lp_call_fraction_of_raw_enumeration": 1.064e-07,
+          "lp_matrix_coefficient_fraction_of_raw_enumeration": 6.16103e-06,
+          "candidate_evaluation_fraction_of_raw_enumeration": 1.164e-07,
+          "residual_fill_probe_fraction_of_raw_enumeration": 5.7501e-07,
+          "dual_column_check_fraction_of_raw_enumeration": 5.7501e-07,
+          "capacity_bridge": [
+            {
+              "load": 0.5,
+              "effective_slack_eta": 0.43857439770326423,
+              "finite_grid_alpha": 0.007421053700582646,
+              "residual_margin": 0.43115334400268157,
+              "residual_margin_positive": true
+            },
+            {
+              "load": 0.8,
+              "effective_slack_eta": 0.17542975908130587,
+              "finite_grid_alpha": 0.007421053700582646,
+              "residual_margin": 0.1680087053807232,
+              "residual_margin_positive": true
+            },
+            {
+              "load": 0.95,
+              "effective_slack_eta": 0.043857439770326634,
+              "finite_grid_alpha": 0.007421053700582646,
+              "residual_margin": 0.03643638606974399,
+              "residual_margin_positive": true
+            }
+          ],
+          "capacity_margin_passed": true,
+          "work_fraction_passed": true,
+          "tradeoff_passed": true
+        }
+      ],
+      "first_quality_budget": 36,
+      "first_work_budget": 9,
+      "first_tradeoff_budget": 36
+    },
+    {
+      "lanes": 16,
+      "queue_scale": 8,
+      "state_count": 1000,
+      "raw_ordered_actions_per_state": 10000000000000000,
+      "represented_count_vectors_per_state": 2042975,
+      "budget_summaries": [
+        {
+          "lp_node_budget": 9,
+          "state_count": 1000,
+          "nonempty_state_count": 999,
+          "alpha": 0.33671643047230165,
+          "alpha_witness": {
+            "base_queue": [
+              0,
+              0,
+              12
+            ],
+            "scaled_queue": [
+              0,
+              0,
+              96
+            ],
+            "queue_l1": 96,
+            "value": 0.33671643047230165,
+            "score": 588.3109473212046,
+            "upper_bound": 620.6357246465456,
+            "gap": 32.32477732534096,
+            "exact": false,
+            "option_counts": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              6,
+              9
+            ],
+            "option_indices": [
+              6,
+              7,
+              7,
+              7,
+              7,
+              7,
+              7,
+              8,
+              8,
+              8,
+              8,
+              8,
+              8,
+              8,
+              8,
+              8
+            ]
+          },
+          "normalized_gap_sum": 5.56838334402549,
+          "exact_certificate_state_count": 922,
+          "lp_calls": 9000,
+          "successful_lp_calls": 9000,
+          "dual_certified_lp_calls": 9000,
+          "safe_fallback_lp_calls": 0,
+          "dual_repair_count": 342,
+          "candidate_evaluations": 10000,
+          "singleton_candidate_evaluations": 0,
+          "residual_fill_option_probes": 45000,
+          "branch_splits": 0,
+          "lp_matrix_coefficients": 465000,
+          "dual_column_checks": 45000,
+          "frontier_regions_remaining": 84,
+          "inherited_unsolved_regions": 0,
+          "frontier_peak_sum": 216,
+          "max_certified_normalized_gap": 0.33671643047230165,
+          "mean_certified_normalized_gap": 0.005573957301326817,
+          "exact_certificate_domain_fraction": 0.922,
+          "raw_ordered_actions_per_state": 10000000000000000,
+          "represented_count_vectors_per_state": 2042975,
+          "represented_count_vector_fraction_of_ordered_actions": 2.042975e-10,
+          "mean_lp_calls": 9.0,
+          "mean_candidate_evaluations": 10.0,
+          "lp_call_fraction_of_raw_enumeration": 9e-16,
+          "lp_matrix_coefficient_fraction_of_raw_enumeration": 4.65e-14,
+          "candidate_evaluation_fraction_of_raw_enumeration": 1e-15,
+          "residual_fill_probe_fraction_of_raw_enumeration": 4.5e-15,
+          "dual_column_check_fraction_of_raw_enumeration": 4.5e-15,
+          "capacity_bridge": [
+            {
+              "load": 0.5,
+              "effective_slack_eta": 0.8771487954065282,
+              "finite_grid_alpha": 0.33671643047230165,
+              "residual_margin": 0.5404323649342266,
+              "residual_margin_positive": true
+            },
+            {
+              "load": 0.8,
+              "effective_slack_eta": 0.35085951816261174,
+              "finite_grid_alpha": 0.33671643047230165,
+              "residual_margin": 0.014143087690310086,
+              "residual_margin_positive": true
+            },
+            {
+              "load": 0.95,
+              "effective_slack_eta": 0.08771487954065327,
+              "finite_grid_alpha": 0.33671643047230165,
+              "residual_margin": -0.24900155093164839,
+              "residual_margin_positive": false
+            }
+          ],
+          "capacity_margin_passed": false,
+          "work_fraction_passed": true,
+          "tradeoff_passed": false
+        },
+        {
+          "lp_node_budget": 18,
+          "state_count": 1000,
+          "nonempty_state_count": 999,
+          "alpha": 0.09844486552693227,
+          "alpha_witness": {
+            "base_queue": [
+              1,
+              0,
+              12
+            ],
+            "scaled_queue": [
+              8,
+              0,
+              96
+            ],
+            "queue_l1": 104,
+            "value": 0.09844486552693227,
+            "score": 612.8602988089135,
+            "upper_bound": 623.0985648237145,
+            "gap": 10.238266014800956,
+            "exact": false,
+            "option_counts": [
+              1,
+              0,
+              0,
+              2,
+              0,
+              0,
+              0,
+              2,
+              11
+            ],
+            "option_indices": [
+              0,
+              3,
+              3,
+              7,
+              7,
+              8,
+              8,
+              8,
+              8,
+              8,
+              8,
+              8,
+              8,
+              8,
+              8,
+              8
+            ]
+          },
+          "normalized_gap_sum": 0.9053996032451027,
+          "exact_certificate_state_count": 969,
+          "lp_calls": 9502,
+          "successful_lp_calls": 9502,
+          "dual_certified_lp_calls": 9502,
+          "safe_fallback_lp_calls": 0,
+          "dual_repair_count": 359,
+          "candidate_evaluations": 10502,
+          "singleton_candidate_evaluations": 0,
+          "residual_fill_option_probes": 48179,
+          "branch_splits": 318,
+          "lp_matrix_coefficients": 499645,
+          "dual_column_checks": 48179,
+          "frontier_regions_remaining": 110,
+          "inherited_unsolved_regions": 52,
+          "frontier_peak_sum": 410,
+          "max_certified_normalized_gap": 0.09844486552693227,
+          "mean_certified_normalized_gap": 0.000906305909154257,
+          "exact_certificate_domain_fraction": 0.969,
+          "raw_ordered_actions_per_state": 10000000000000000,
+          "represented_count_vectors_per_state": 2042975,
+          "represented_count_vector_fraction_of_ordered_actions": 2.042975e-10,
+          "mean_lp_calls": 9.502,
+          "mean_candidate_evaluations": 10.502,
+          "lp_call_fraction_of_raw_enumeration": 9.502e-16,
+          "lp_matrix_coefficient_fraction_of_raw_enumeration": 4.99645e-14,
+          "candidate_evaluation_fraction_of_raw_enumeration": 1.0502e-15,
+          "residual_fill_probe_fraction_of_raw_enumeration": 4.8179e-15,
+          "dual_column_check_fraction_of_raw_enumeration": 4.8179e-15,
+          "capacity_bridge": [
+            {
+              "load": 0.5,
+              "effective_slack_eta": 0.8771487954065282,
+              "finite_grid_alpha": 0.09844486552693227,
+              "residual_margin": 0.7787039298795959,
+              "residual_margin_positive": true
+            },
+            {
+              "load": 0.8,
+              "effective_slack_eta": 0.35085951816261174,
+              "finite_grid_alpha": 0.09844486552693227,
+              "residual_margin": 0.25241465263567947,
+              "residual_margin_positive": true
+            },
+            {
+              "load": 0.95,
+              "effective_slack_eta": 0.08771487954065327,
+              "finite_grid_alpha": 0.09844486552693227,
+              "residual_margin": -0.010729985986279,
+              "residual_margin_positive": false
+            }
+          ],
+          "capacity_margin_passed": false,
+          "work_fraction_passed": true,
+          "tradeoff_passed": false
+        },
+        {
+          "lp_node_budget": 36,
+          "state_count": 1000,
+          "nonempty_state_count": 999,
+          "alpha": 0.09807484747146808,
+          "alpha_witness": {
+            "base_queue": [
+              1,
+              0,
+              12
+            ],
+            "scaled_queue": [
+              8,
+              0,
+              96
+            ],
+            "queue_l1": 104,
+            "value": 0.09807484747146808,
+            "score": 612.8602988089135,
+            "upper_bound": 623.0600829459462,
+            "gap": 10.19978413703268,
+            "exact": false,
+            "option_counts": [
+              1,
+              0,
+              0,
+              2,
+              0,
+              0,
+              0,
+              2,
+              11
+            ],
+            "option_indices": [
+              0,
+              3,
+              3,
+              7,
+              7,
+              8,
+              8,
+              8,
+              8,
+              8,
+              8,
+              8,
+              8,
+              8,
+              8,
+              8
+            ]
+          },
+          "normalized_gap_sum": 0.2225893162695681,
+          "exact_certificate_state_count": 988,
+          "lp_calls": 9849,
+          "successful_lp_calls": 9849,
+          "dual_certified_lp_calls": 9849,
+          "safe_fallback_lp_calls": 0,
+          "dual_repair_count": 364,
+          "candidate_evaluations": 10849,
+          "singleton_candidate_evaluations": 0,
+          "residual_fill_option_probes": 50684,
+          "branch_splits": 512,
+          "lp_matrix_coefficients": 529022,
+          "dual_column_checks": 50684,
+          "frontier_regions_remaining": 65,
+          "inherited_unsolved_regions": 22,
+          "frontier_peak_sum": 443,
+          "max_certified_normalized_gap": 0.09807484747146808,
+          "mean_certified_normalized_gap": 0.00022281212839796605,
+          "exact_certificate_domain_fraction": 0.988,
+          "raw_ordered_actions_per_state": 10000000000000000,
+          "represented_count_vectors_per_state": 2042975,
+          "represented_count_vector_fraction_of_ordered_actions": 2.042975e-10,
+          "mean_lp_calls": 9.849,
+          "mean_candidate_evaluations": 10.849,
+          "lp_call_fraction_of_raw_enumeration": 9.849e-16,
+          "lp_matrix_coefficient_fraction_of_raw_enumeration": 5.29022e-14,
+          "candidate_evaluation_fraction_of_raw_enumeration": 1.0849e-15,
+          "residual_fill_probe_fraction_of_raw_enumeration": 5.0684e-15,
+          "dual_column_check_fraction_of_raw_enumeration": 5.0684e-15,
+          "capacity_bridge": [
+            {
+              "load": 0.5,
+              "effective_slack_eta": 0.8771487954065282,
+              "finite_grid_alpha": 0.09807484747146808,
+              "residual_margin": 0.7790739479350601,
+              "residual_margin_positive": true
+            },
+            {
+              "load": 0.8,
+              "effective_slack_eta": 0.35085951816261174,
+              "finite_grid_alpha": 0.09807484747146808,
+              "residual_margin": 0.25278467069114363,
+              "residual_margin_positive": true
+            },
+            {
+              "load": 0.95,
+              "effective_slack_eta": 0.08771487954065327,
+              "finite_grid_alpha": 0.09807484747146808,
+              "residual_margin": -0.010359967930814812,
+              "residual_margin_positive": false
+            }
+          ],
+          "capacity_margin_passed": false,
+          "work_fraction_passed": true,
+          "tradeoff_passed": false
+        },
+        {
+          "lp_node_budget": 72,
+          "state_count": 1000,
+          "nonempty_state_count": 999,
+          "alpha": 0.01113158055087382,
+          "alpha_witness": {
+            "base_queue": [
+              4,
+              1,
+              1
+            ],
+            "scaled_queue": [
+              32,
+              8,
+              8
+            ],
+            "queue_l1": 48,
+            "value": 0.01113158055087382,
+            "score": 76.40716890119846,
+            "upper_bound": 76.9414847676404,
+            "gap": 0.5343158664419434,
+            "exact": false,
+            "option_counts": [
+              0,
+              0,
+              2,
+              10,
+              1,
+              2,
+              0,
+              0,
+              1
+            ],
+            "option_indices": [
+              2,
+              2,
+              3,
+              3,
+              3,
+              3,
+              3,
+              3,
+              3,
+              3,
+              3,
+              3,
+              4,
+              5,
+              5,
+              8
+            ]
+          },
+          "normalized_gap_sum": 0.032566270572048014,
+          "exact_certificate_state_count": 994,
+          "lp_calls": 10158,
+          "successful_lp_calls": 10158,
+          "dual_certified_lp_calls": 10158,
+          "safe_fallback_lp_calls": 0,
+          "dual_repair_count": 364,
+          "candidate_evaluations": 11158,
+          "singleton_candidate_evaluations": 0,
+          "residual_fill_option_probes": 53117,
+          "branch_splits": 680,
+          "lp_matrix_coefficients": 558695,
+          "dual_column_checks": 53117,
+          "frontier_regions_remaining": 31,
+          "inherited_unsolved_regions": 16,
+          "frontier_peak_sum": 456,
+          "max_certified_normalized_gap": 0.01113158055087382,
+          "mean_certified_normalized_gap": 3.25988694414895e-05,
+          "exact_certificate_domain_fraction": 0.994,
+          "raw_ordered_actions_per_state": 10000000000000000,
+          "represented_count_vectors_per_state": 2042975,
+          "represented_count_vector_fraction_of_ordered_actions": 2.042975e-10,
+          "mean_lp_calls": 10.158,
+          "mean_candidate_evaluations": 11.158,
+          "lp_call_fraction_of_raw_enumeration": 1.0158e-15,
+          "lp_matrix_coefficient_fraction_of_raw_enumeration": 5.58695e-14,
+          "candidate_evaluation_fraction_of_raw_enumeration": 1.1158e-15,
+          "residual_fill_probe_fraction_of_raw_enumeration": 5.3117e-15,
+          "dual_column_check_fraction_of_raw_enumeration": 5.3117e-15,
+          "capacity_bridge": [
+            {
+              "load": 0.5,
+              "effective_slack_eta": 0.8771487954065282,
+              "finite_grid_alpha": 0.01113158055087382,
+              "residual_margin": 0.8660172148556544,
+              "residual_margin_positive": true
+            },
+            {
+              "load": 0.8,
+              "effective_slack_eta": 0.35085951816261174,
+              "finite_grid_alpha": 0.01113158055087382,
+              "residual_margin": 0.3397279376117379,
+              "residual_margin_positive": true
+            },
+            {
+              "load": 0.95,
+              "effective_slack_eta": 0.08771487954065327,
+              "finite_grid_alpha": 0.01113158055087382,
+              "residual_margin": 0.07658329898977945,
+              "residual_margin_positive": true
+            }
+          ],
+          "capacity_margin_passed": true,
+          "work_fraction_passed": true,
+          "tradeoff_passed": true
+        }
+      ],
+      "first_quality_budget": 72,
+      "first_work_budget": 9,
+      "first_tradeoff_budget": 72
+    }
+  ],
+  "work_accounting": {
+    "count_space_trace_calls": 4000,
+    "checkpoint_reads": 16000,
+    "actual_cumulative_lp_calls": 43168,
+    "actual_cumulative_lp_matrix_coefficients": 2521697,
+    "counterfactual_lp_calls_if_checkpoints_restarted": 160535,
+    "lp_calls_avoided_by_cumulative_trace": 117367,
+    "capacity_certificate_calls": 12,
+    "r2_oracle_calls": 1000,
+    "r2_oracle_action_evaluations": 100000,
+    "r2_checkpoint_inequality_comparisons": 4000,
+    "scaled_ordered_action_evaluations": 0,
+    "count_vector_enumerations": 0,
+    "arrival_tapes": 0,
+    "trajectory_frames": 0,
+    "rng_initializations": 0,
+    "random_draws": 0
+  },
+  "scientific_decision": "CERTIFIED_WITH_HIGH_MATRIX_WORK_STOP",
+  "development_advance": false,
+  "claim_boundary": "A post-result deterministic development screen on the fixed synthetic 1,000-state scaling grid for identical replicas of the aligned nine-option lane model. The R2 oracle audit covers its 100 ordered actions. This is not an independent confirmation, physical multi-GPU measurement, trajectory result, all-queue theorem, or deployment decision.",
+  "limitations": [
+    "The mechanism and LP budgets were designed after observing the earlier scaling failure.",
+    "LP calls, matrix cells, and candidate evaluations are distinct logical-work units, not wall-clock equivalents.",
+    "The finite grid does not establish a uniform guarantee over all integer queues.",
+    "Synthetic lane replication does not measure physical multi-GPU interference."
+  ],
+  "next_step": "Preserve the fixed R4 matrix-work failure without changing its gate or budgets; assess R8/R16 only on a newly frozen independent large-action-regime queue set before any trajectory transition.",
+  "timing": {
+    "capacity_wall_s": 0.5442688170005567,
+    "lane_wall_s": {
+      "2": 14.182692976959515,
+      "4": 12.05184053099947,
+      "8": 12.92120270599844,
+      "16": 11.596115747001022
+    },
+    "total_wall_s": 51.2963226060383,
+    "timing_is_scientific_gate": false
+  }
+}

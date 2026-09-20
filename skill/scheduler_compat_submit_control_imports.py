@@ -166,6 +166,7 @@ from scheduler_control.commands import (
     cmd_claims as _cmd_claims_impl,
     cmd_compact as _cmd_compact_impl,
     cmd_priority as _cmd_priority_impl,
+    cmd_release_node as _cmd_release_node_impl,
     cmd_show as _cmd_show_impl,
     cmd_task_log as _cmd_task_log_impl,
 )

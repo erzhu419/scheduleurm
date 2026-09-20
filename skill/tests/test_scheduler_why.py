@@ -152,3 +152,32 @@ def test_cmd_why_applies_startup_cpu_reservations_before_fit_analysis(capsys):
     out = capsys.readouterr().out
     assert calls and calls[0][0]["tasks"][0]["id"] == "t1"
     assert "node-reject: cpu: need 12, free 0" in out
+
+
+def test_cmd_why_reports_campaign_reserved_node_for_foreign_task(tmp_path, capsys):
+    task = {
+        "id": "bapr", "status": "queued", "signature": "BAPR/new",
+        "est_vram_mb": 0, "ram_mb": 1024, "cpu_cores": 1,
+    }
+    node = {
+        "name": "jtl110gpu2", "alive": True, "free_cpu": 8,
+        "free_ram_mb": 64000, "gpus": [],
+    }
+    state = {
+        "tasks": [task],
+        "node_reservations": [{
+            "owner_task_id": "v4", "nodes": ["jtl110gpu2"],
+            "signature_prefix": "ScheduleurmBench/critical_gpu_joint95_v4/",
+            "until_file": str(tmp_path / "v4_done.ready"),
+        }],
+    }
+    deps = _deps(
+        state=state, nodes=[node],
+        node_configs={"jtl110gpu2": {"max_vram_per_task": None}},
+    )
+
+    why.cmd_why(SimpleNamespace(id="bapr", lock_timeout=None), deps=deps)
+
+    out = capsys.readouterr().out
+    assert "jtl110gpu2 : BLOCKED: node reserved for another campaign" in out
+    assert "jtl110gpu2 : FITS" not in out

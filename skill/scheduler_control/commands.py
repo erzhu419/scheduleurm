@@ -214,3 +214,30 @@ def cmd_priority(args, *, deps: ControlCommandDeps) -> None:
             )
             return
         sys.exit(f"task {args.id} not found")
+
+
+def cmd_release_node(args, *, deps: ControlCommandDeps) -> None:
+    """Release a campaign reservation after its owner and node work stop."""
+    with deps.state_lock():
+        state = deps.load_state()
+        reservations = state.get("node_reservations") or []
+        match = next(
+            (item for item in reservations if item.get("owner_task_id") == args.owner_task),
+            None,
+        )
+        if match is None:
+            sys.exit(f"no node reservation owned by {args.owner_task}")
+        active = [
+            task.get("id")
+            for task in state.get("tasks") or []
+            if task.get("status") in ("running", "launching", "queued")
+            and (
+                task.get("id") == args.owner_task
+                or str(task.get("signature") or "").startswith(match["signature_prefix"])
+            )
+        ]
+        if active:
+            sys.exit(f"reservation still has active campaign tasks: {', '.join(map(str, active))}")
+        state["node_reservations"] = [item for item in reservations if item is not match]
+        deps.save_state(state)
+    print(f"released {', '.join(match['nodes'])} from {args.owner_task}")

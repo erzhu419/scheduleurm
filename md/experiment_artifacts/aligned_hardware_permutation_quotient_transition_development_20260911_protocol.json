@@ -1,0 +1,1293 @@
+{
+  "registered_at_utc": "2026-09-10T18:35:35.704021+00:00",
+  "experiment": "aligned_hardware_permutation_quotient_authored_transition_v1",
+  "role": "development authored first-action transition veto on consumed changed states",
+  "source_predecessor": "aligned_hardware_permutation_quotient_shadow_development_20260911.json",
+  "registered_state_roster": "aligned_hardware_duration_tie_order_shadow_development_20260910_registered_states.json",
+  "budget": 26,
+  "state_count": 16,
+  "age_profiles": [
+    "coincident",
+    "unit_fifo"
+  ],
+  "arm_count": 2,
+  "registered_drain_count": 64,
+  "loads": [
+    0.5,
+    0.8,
+    0.95
+  ],
+  "seeds": [
+    41,
+    42,
+    43
+  ],
+  "model": {
+    "node": "jtl110gpu2",
+    "scenario_id": "q01:gpu_3080ti_12gb_dual_jtl110gpu2",
+    "lanes": 2,
+    "workloads": [
+      "gpu_cnn_torch_resnet50",
+      "gpu_heavy_jax_matmul",
+      "gpu_llm_distilgpt2"
+    ],
+    "scales": [
+      60.0,
+      40.0,
+      120.0
+    ],
+    "options": [
+      {
+        "action_id": "gpu_loaded:jtl110gpu2:cnn_after_llm",
+        "requirements": [
+          1,
+          0,
+          1
+        ],
+        "duration": 11.514578111707017,
+        "completion_offsets": [
+          [
+            10.431026738447038
+          ],
+          [],
+          [
+            11.514578111707017
+          ]
+        ],
+        "loaded": true,
+        "source_action_ids": [
+          "gpu_loaded:jtl110gpu2:cnn_after_llm",
+          "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1"
+        ],
+        "phases": [
+          [
+            "resident_initialization_s",
+            4.716920265498629
+          ],
+          [
+            "target_overlap_s",
+            5.714106472948409
+          ],
+          [
+            "resident_overlap_rate_native_per_s",
+            120.39972693896493
+          ],
+          [
+            "resident_remaining_native_units",
+            0.0
+          ],
+          [
+            "resident_dedicated_drain_s",
+            0.0
+          ],
+          [
+            "resident_finalization_s",
+            1.0835513732599793
+          ]
+        ]
+      },
+      {
+        "action_id": "gpu_loaded:jtl110gpu2:llm_after_cnn",
+        "requirements": [
+          1,
+          0,
+          1
+        ],
+        "duration": 11.936669718453734,
+        "completion_offsets": [
+          [
+            11.936669718453734
+          ],
+          [],
+          [
+            11.090642004449867
+          ]
+        ],
+        "loaded": true,
+        "source_action_ids": [
+          "gpu_loaded:jtl110gpu2:llm_after_cnn",
+          "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1"
+        ],
+        "phases": [
+          [
+            "resident_initialization_s",
+            4.669018776022396
+          ],
+          [
+            "target_overlap_s",
+            6.421623228427471
+          ],
+          [
+            "resident_overlap_rate_native_per_s",
+            16.652848248271273
+          ],
+          [
+            "resident_remaining_native_units",
+            0.0
+          ],
+          [
+            "resident_dedicated_drain_s",
+            0.0
+          ],
+          [
+            "resident_finalization_s",
+            0.846027714003867
+          ]
+        ]
+      },
+      {
+        "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+        "requirements": [
+          1,
+          0,
+          0
+        ],
+        "duration": 8.093888054475512,
+        "completion_offsets": [
+          [
+            8.093888054475512
+          ],
+          [],
+          []
+        ],
+        "loaded": false,
+        "source_action_ids": [
+          "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1"
+        ],
+        "phases": [
+          [
+            "initialization_s",
+            4.669018776022396
+          ],
+          [
+            "loop_s",
+            2.5788415644492484
+          ],
+          [
+            "finalization_s",
+            0.846027714003867
+          ]
+        ]
+      },
+      {
+        "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+        "requirements": [
+          3,
+          0,
+          0
+        ],
+        "duration": 14.972417070959636,
+        "completion_offsets": [
+          [
+            14.972417070959636,
+            14.972417070959636,
+            14.972417070959636
+          ],
+          [],
+          []
+        ],
+        "loaded": false,
+        "source_action_ids": [
+          "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3"
+        ],
+        "phases": [
+          [
+            "initialization_s",
+            6.583782343158832
+          ],
+          [
+            "loop_s",
+            7.48884139563465
+          ],
+          [
+            "finalization_s",
+            0.8997933321661549
+          ]
+        ]
+      },
+      {
+        "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+        "requirements": [
+          0,
+          1,
+          0
+        ],
+        "duration": 2.7928254592821196,
+        "completion_offsets": [
+          [],
+          [
+            2.7928254592821196
+          ],
+          []
+        ],
+        "loaded": false,
+        "source_action_ids": [
+          "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1"
+        ],
+        "phases": [
+          [
+            "initialization_s",
+            1.2277755779466062
+          ],
+          [
+            "loop_s",
+            1.194901513584997
+          ],
+          [
+            "finalization_s",
+            0.3701483677505166
+          ]
+        ]
+      },
+      {
+        "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+        "requirements": [
+          0,
+          3,
+          0
+        ],
+        "duration": 6.820477375410869,
+        "completion_offsets": [
+          [],
+          [
+            6.820477375410869,
+            6.820477375410869,
+            6.820477375410869
+          ],
+          []
+        ],
+        "loaded": false,
+        "source_action_ids": [
+          "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3"
+        ],
+        "phases": [
+          [
+            "initialization_s",
+            2.741113696925434
+          ],
+          [
+            "loop_s",
+            3.661079762986579
+          ],
+          [
+            "finalization_s",
+            0.41828391549885663
+          ]
+        ]
+      },
+      {
+        "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+        "requirements": [
+          0,
+          0,
+          1
+        ],
+        "duration": 7.4174495042607305,
+        "completion_offsets": [
+          [],
+          [],
+          [
+            7.4174495042607305
+          ]
+        ],
+        "loaded": false,
+        "source_action_ids": [
+          "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1"
+        ],
+        "phases": [
+          [
+            "initialization_s",
+            4.716920265498629
+          ],
+          [
+            "loop_s",
+            1.6169778655021219
+          ],
+          [
+            "finalization_s",
+            1.0835513732599793
+          ]
+        ]
+      },
+      {
+        "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+        "requirements": [
+          0,
+          0,
+          3
+        ],
+        "duration": 9.462480184740949,
+        "completion_offsets": [
+          [],
+          [],
+          [
+            9.462480184740949,
+            9.462480184740949,
+            9.462480184740949
+          ]
+        ],
+        "loaded": false,
+        "source_action_ids": [
+          "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3"
+        ],
+        "phases": [
+          [
+            "initialization_s",
+            5.648919066996314
+          ],
+          [
+            "loop_s",
+            2.6111246433283664
+          ],
+          [
+            "finalization_s",
+            1.202436474416269
+          ]
+        ]
+      },
+      {
+        "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p8",
+        "requirements": [
+          0,
+          0,
+          8
+        ],
+        "duration": 14.84929022616052,
+        "completion_offsets": [
+          [],
+          [],
+          [
+            14.84929022616052,
+            14.84929022616052,
+            14.84929022616052,
+            14.84929022616052,
+            14.84929022616052,
+            14.84929022616052,
+            14.84929022616052,
+            14.84929022616052
+          ]
+        ],
+        "loaded": false,
+        "source_action_ids": [
+          "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p8"
+        ],
+        "phases": [
+          [
+            "initialization_s",
+            7.840006518249538
+          ],
+          [
+            "loop_s",
+            5.504426018315827
+          ],
+          [
+            "finalization_s",
+            1.5048576895951555
+          ]
+        ]
+      }
+    ],
+    "excluded_actions": [
+      {
+        "action_id": "gpu_loaded:jtl110gpu2:cnn_after_rl",
+        "reason": "resident class has no arrivals in the three-class q01 protocol"
+      }
+    ],
+    "model_scope": "deterministic_cached_phase_complete_job_renewal"
+  },
+  "maximum_model_frame_duration_s": 14.972417070959636,
+  "maximum_registered_queue_jobs": 13,
+  "global_elapsed_frame_barrier_bound_s": 194.64142192247527,
+  "case_roster": [
+    {
+      "state_index": 279,
+      "queue": [
+        2,
+        2,
+        5
+      ],
+      "primary_population_visits": [
+        [
+          0.5,
+          41,
+          6,
+          69.0874686702421
+        ],
+        [
+          0.5,
+          42,
+          7,
+          80.60204678194913
+        ],
+        [
+          0.5,
+          43,
+          5,
+          57.572890558535086
+        ],
+        [
+          0.8,
+          41,
+          8,
+          92.11662489365614
+        ],
+        [
+          0.8,
+          42,
+          9,
+          103.63120300536315
+        ],
+        [
+          0.8,
+          43,
+          7,
+          80.60204678194913
+        ]
+      ],
+      "legacy_option_indices": [
+        0,
+        7
+      ],
+      "variant_option_indices": [
+        6,
+        7
+      ],
+      "registered_support_score_delta": 0.20298931063589687
+    },
+    {
+      "state_index": 423,
+      "queue": [
+        3,
+        1,
+        3
+      ],
+      "primary_population_visits": [
+        [
+          0.5,
+          41,
+          5,
+          74.86208535479818
+        ],
+        [
+          0.5,
+          42,
+          18,
+          269.50350727727346
+        ],
+        [
+          0.5,
+          43,
+          11,
+          164.696587780556
+        ],
+        [
+          0.8,
+          41,
+          10,
+          149.72417070959636
+        ],
+        [
+          0.8,
+          42,
+          4,
+          59.889668283838546
+        ],
+        [
+          0.8,
+          43,
+          10,
+          149.72417070959636
+        ],
+        [
+          0.95,
+          43,
+          2,
+          29.944834141919273
+        ]
+      ],
+      "legacy_option_indices": [
+        3,
+        7
+      ],
+      "variant_option_indices": [
+        2,
+        7
+      ],
+      "registered_support_score_delta": 0.06595576064267838
+    },
+    {
+      "state_index": 582,
+      "queue": [
+        4,
+        0,
+        4
+      ],
+      "primary_population_visits": [
+        [
+          0.5,
+          41,
+          4,
+          59.889668283838546
+        ],
+        [
+          0.5,
+          42,
+          2,
+          29.944834141919273
+        ],
+        [
+          0.8,
+          41,
+          3,
+          44.91725121287891
+        ],
+        [
+          0.8,
+          42,
+          3,
+          44.91725121287891
+        ],
+        [
+          0.8,
+          43,
+          3,
+          44.91725121287891
+        ]
+      ],
+      "legacy_option_indices": [
+        3,
+        7
+      ],
+      "variant_option_indices": [
+        0,
+        7
+      ],
+      "registered_support_score_delta": 0.13398099727343338
+    },
+    {
+      "state_index": 583,
+      "queue": [
+        4,
+        0,
+        5
+      ],
+      "primary_population_visits": [
+        [
+          0.5,
+          41,
+          1,
+          11.514578111707017
+        ],
+        [
+          0.5,
+          42,
+          2,
+          23.029156223414034
+        ],
+        [
+          0.5,
+          43,
+          1,
+          11.514578111707017
+        ],
+        [
+          0.8,
+          41,
+          1,
+          11.514578111707017
+        ],
+        [
+          0.8,
+          42,
+          2,
+          23.029156223414034
+        ],
+        [
+          0.8,
+          43,
+          1,
+          11.514578111707017
+        ]
+      ],
+      "legacy_option_indices": [
+        0,
+        7
+      ],
+      "variant_option_indices": [
+        6,
+        7
+      ],
+      "registered_support_score_delta": 0.029296450975969446
+    },
+    {
+      "state_index": 594,
+      "queue": [
+        4,
+        1,
+        4
+      ],
+      "primary_population_visits": [
+        [
+          0.5,
+          41,
+          2,
+          29.944834141919273
+        ],
+        [
+          0.5,
+          42,
+          10,
+          149.72417070959636
+        ],
+        [
+          0.5,
+          43,
+          5,
+          74.86208535479818
+        ],
+        [
+          0.8,
+          41,
+          7,
+          104.80691949671746
+        ],
+        [
+          0.8,
+          42,
+          6,
+          89.83450242575782
+        ],
+        [
+          0.8,
+          43,
+          10,
+          149.72417070959636
+        ]
+      ],
+      "legacy_option_indices": [
+        3,
+        7
+      ],
+      "variant_option_indices": [
+        7,
+        0
+      ],
+      "registered_support_score_delta": 0.13398099727343338
+    },
+    {
+      "state_index": 595,
+      "queue": [
+        4,
+        1,
+        5
+      ],
+      "primary_population_visits": [
+        [
+          0.5,
+          41,
+          2,
+          23.029156223414034
+        ],
+        [
+          0.5,
+          42,
+          1,
+          11.514578111707017
+        ],
+        [
+          0.8,
+          41,
+          8,
+          92.11662489365614
+        ],
+        [
+          0.8,
+          42,
+          5,
+          57.572890558535086
+        ],
+        [
+          0.8,
+          43,
+          9,
+          103.63120300536315
+        ],
+        [
+          0.95,
+          41,
+          1,
+          11.514578111707017
+        ],
+        [
+          0.95,
+          42,
+          3,
+          34.54373433512105
+        ]
+      ],
+      "legacy_option_indices": [
+        0,
+        7
+      ],
+      "variant_option_indices": [
+        6,
+        7
+      ],
+      "registered_support_score_delta": 0.029296450975969446
+    },
+    {
+      "state_index": 607,
+      "queue": [
+        4,
+        2,
+        4
+      ],
+      "primary_population_visits": [
+        [
+          0.5,
+          41,
+          3,
+          44.91725121287891
+        ],
+        [
+          0.5,
+          42,
+          3,
+          44.91725121287891
+        ],
+        [
+          0.5,
+          43,
+          1,
+          14.972417070959636
+        ],
+        [
+          0.8,
+          41,
+          7,
+          104.80691949671746
+        ],
+        [
+          0.8,
+          42,
+          16,
+          239.55867313535418
+        ],
+        [
+          0.8,
+          43,
+          12,
+          179.66900485151564
+        ],
+        [
+          0.95,
+          42,
+          2,
+          29.944834141919273
+        ]
+      ],
+      "legacy_option_indices": [
+        3,
+        7
+      ],
+      "variant_option_indices": [
+        7,
+        0
+      ],
+      "registered_support_score_delta": 0.13398099727343338
+    },
+    {
+      "state_index": 608,
+      "queue": [
+        4,
+        2,
+        5
+      ],
+      "primary_population_visits": [
+        [
+          0.5,
+          41,
+          3,
+          34.54373433512105
+        ],
+        [
+          0.5,
+          42,
+          1,
+          11.514578111707017
+        ],
+        [
+          0.5,
+          43,
+          2,
+          23.029156223414034
+        ],
+        [
+          0.8,
+          41,
+          12,
+          138.17493734048418
+        ],
+        [
+          0.8,
+          42,
+          18,
+          207.26240601072624
+        ],
+        [
+          0.8,
+          43,
+          18,
+          207.26240601072624
+        ],
+        [
+          0.95,
+          42,
+          1,
+          11.514578111707017
+        ],
+        [
+          0.95,
+          43,
+          1,
+          11.514578111707017
+        ]
+      ],
+      "legacy_option_indices": [
+        0,
+        7
+      ],
+      "variant_option_indices": [
+        6,
+        7
+      ],
+      "registered_support_score_delta": 0.029296450975969446
+    },
+    {
+      "state_index": 621,
+      "queue": [
+        4,
+        3,
+        5
+      ],
+      "primary_population_visits": [
+        [
+          0.5,
+          42,
+          1,
+          2.7928254592821196
+        ],
+        [
+          0.5,
+          43,
+          1,
+          2.7928254592821196
+        ],
+        [
+          0.8,
+          41,
+          11,
+          30.72108005210332
+        ],
+        [
+          0.8,
+          42,
+          8,
+          22.34260367425696
+        ],
+        [
+          0.8,
+          43,
+          16,
+          44.68520734851392
+        ]
+      ],
+      "legacy_option_indices": [
+        4,
+        4
+      ],
+      "variant_option_indices": [
+        5,
+        7
+      ],
+      "registered_support_score_delta": 0.38797095226833234
+    },
+    {
+      "state_index": 752,
+      "queue": [
+        5,
+        0,
+        4
+      ],
+      "primary_population_visits": [
+        [
+          0.5,
+          42,
+          1,
+          14.972417070959636
+        ],
+        [
+          0.8,
+          42,
+          2,
+          29.944834141919273
+        ],
+        [
+          0.8,
+          43,
+          1,
+          14.972417070959636
+        ],
+        [
+          0.95,
+          43,
+          1,
+          14.972417070959636
+        ]
+      ],
+      "legacy_option_indices": [
+        3,
+        7
+      ],
+      "variant_option_indices": [
+        0,
+        7
+      ],
+      "registered_support_score_delta": 0.02045897718766687
+    },
+    {
+      "state_index": 753,
+      "queue": [
+        5,
+        0,
+        5
+      ],
+      "primary_population_visits": [
+        [
+          0.8,
+          41,
+          2,
+          29.944834141919273
+        ],
+        [
+          0.8,
+          42,
+          1,
+          14.972417070959636
+        ],
+        [
+          0.8,
+          43,
+          1,
+          14.972417070959636
+        ]
+      ],
+      "legacy_option_indices": [
+        3,
+        7
+      ],
+      "variant_option_indices": [
+        0,
+        7
+      ],
+      "registered_support_score_delta": 0.16747624659179206
+    },
+    {
+      "state_index": 763,
+      "queue": [
+        5,
+        1,
+        4
+      ],
+      "primary_population_visits": [
+        [
+          0.5,
+          41,
+          1,
+          14.972417070959636
+        ],
+        [
+          0.5,
+          42,
+          2,
+          29.944834141919273
+        ],
+        [
+          0.8,
+          41,
+          6,
+          89.83450242575782
+        ],
+        [
+          0.8,
+          42,
+          3,
+          44.91725121287891
+        ],
+        [
+          0.8,
+          43,
+          5,
+          74.86208535479818
+        ]
+      ],
+      "legacy_option_indices": [
+        3,
+        7
+      ],
+      "variant_option_indices": [
+        0,
+        7
+      ],
+      "registered_support_score_delta": 0.02045897718766687
+    },
+    {
+      "state_index": 764,
+      "queue": [
+        5,
+        1,
+        5
+      ],
+      "primary_population_visits": [
+        [
+          0.5,
+          43,
+          1,
+          14.972417070959636
+        ],
+        [
+          0.8,
+          41,
+          10,
+          149.72417070959636
+        ],
+        [
+          0.8,
+          42,
+          12,
+          179.66900485151564
+        ],
+        [
+          0.8,
+          43,
+          12,
+          179.66900485151564
+        ],
+        [
+          0.95,
+          42,
+          1,
+          14.972417070959636
+        ]
+      ],
+      "legacy_option_indices": [
+        3,
+        7
+      ],
+      "variant_option_indices": [
+        0,
+        7
+      ],
+      "registered_support_score_delta": 0.16747624659179206
+    },
+    {
+      "state_index": 777,
+      "queue": [
+        5,
+        2,
+        4
+      ],
+      "primary_population_visits": [
+        [
+          0.5,
+          42,
+          1,
+          14.972417070959636
+        ],
+        [
+          0.5,
+          43,
+          2,
+          29.944834141919273
+        ],
+        [
+          0.8,
+          41,
+          9,
+          134.75175363863673
+        ],
+        [
+          0.8,
+          42,
+          15,
+          224.58625606439455
+        ],
+        [
+          0.8,
+          43,
+          8,
+          119.77933656767709
+        ]
+      ],
+      "legacy_option_indices": [
+        3,
+        7
+      ],
+      "variant_option_indices": [
+        0,
+        7
+      ],
+      "registered_support_score_delta": 0.02045897718766687
+    },
+    {
+      "state_index": 778,
+      "queue": [
+        5,
+        2,
+        5
+      ],
+      "primary_population_visits": [
+        [
+          0.5,
+          41,
+          1,
+          14.972417070959636
+        ],
+        [
+          0.5,
+          42,
+          1,
+          14.972417070959636
+        ],
+        [
+          0.8,
+          41,
+          12,
+          179.66900485151564
+        ],
+        [
+          0.8,
+          42,
+          5,
+          74.86208535479818
+        ],
+        [
+          0.8,
+          43,
+          4,
+          59.889668283838546
+        ],
+        [
+          0.95,
+          43,
+          1,
+          14.972417070959636
+        ]
+      ],
+      "legacy_option_indices": [
+        3,
+        7
+      ],
+      "variant_option_indices": [
+        0,
+        7
+      ],
+      "registered_support_score_delta": 0.16747624659179206
+    },
+    {
+      "state_index": 792,
+      "queue": [
+        5,
+        3,
+        5
+      ],
+      "primary_population_visits": [
+        [
+          0.8,
+          41,
+          17,
+          47.47803280779604
+        ],
+        [
+          0.8,
+          42,
+          12,
+          33.51390551138544
+        ],
+        [
+          0.8,
+          43,
+          16,
+          44.68520734851392
+        ],
+        [
+          0.95,
+          41,
+          1,
+          2.7928254592821196
+        ],
+        [
+          0.95,
+          42,
+          1,
+          2.7928254592821196
+        ],
+        [
+          0.95,
+          43,
+          1,
+          2.7928254592821196
+        ]
+      ],
+      "legacy_option_indices": [
+        4,
+        4
+      ],
+      "variant_option_indices": [
+        0,
+        7
+      ],
+      "registered_support_score_delta": 0.022798777743306964
+    }
+  ],
+  "rule": {
+    "population": "all jobs in each registered queue are visible at time zero; no future arrivals are generated",
+    "age_profiles": {
+      "coincident": "every visible job has age zero",
+      "unit_fifo": "within each class, FIFO rank j has age (queue_count - 1 - j) times the one-second frame-duration floor"
+    },
+    "baseline": "v4 K26 first action followed by v4 K26 until complete drain",
+    "variant": "permutation-quotient K26 first action followed by v4 K26 until complete drain",
+    "isolation": "only the first action differs; both branches use the same continuation rule but may visit different queues",
+    "fifo_execution": "preserve raw option_indices order, then option coordinate and completion-offset order",
+    "p90": "nearest-rank sorted_flow[ceil(0.9 * job_count) - 1]",
+    "drain_bound": "complete without truncation; each branch elapsed frame barriers must not exceed sum(queue) times the maximum model frame duration"
+  },
+  "fifo_pairing_fixture": {
+    "queue": [
+      1,
+      0,
+      4
+    ],
+    "forward_raw_option_indices": [
+      0,
+      7
+    ],
+    "reverse_raw_option_indices": [
+      7,
+      0
+    ],
+    "expected": "equal service, duration, score, completion-offset multiset, makespan, and mean; equal coincident sorted flows; unequal unit-FIFO nearest-rank P90"
+  },
+  "advance_gate": {
+    "all_execution_checks": true,
+    "all_16_unique_state_mean_flow_deltas_nonpositive": true,
+    "all_32_state_profile_nearest_rank_p90_deltas_nonpositive": true,
+    "all_9_primary_load_seed_weighted_flow_area_deltas_nonpositive": true,
+    "at_least_one_unique_state_has_strict_mean_flow_improvement": true,
+    "at_least_one_primary_load_seed_cell_has_strict_weighted_flow_area_improvement": true
+  },
+  "stopping_rule": "run the frozen 16 states, two age profiles, and two arms once; advance only if all mean, tail, and nine-cell gates pass with a strict local and weighted gain; otherwise preserve the assigned stop reason without changing states, ages, K, continuation, tolerance, or drain rule",
+  "prohibited_in_this_stage": "Poisson or other future arrivals, new states, age variants, repeated quotient decisions after the first frame, full trajectories, confirmation, and paper edits",
+  "interpretation": "a conservative local transition veto; occurrence weights come from the frozen v4 trajectories and are not quotient-policy trajectory outcomes"
+}

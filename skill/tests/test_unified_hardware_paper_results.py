@@ -3,7 +3,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from algorithm.experiments.unified_hardware_or_replay import (
+    _common_complete_runs,
+    _legacy_comparison_rows,
+    _pareto_rows,
     build_unified_hardware_or_replay,
 )
 from algorithm.experiments.unified_hardware_paper_results import (
@@ -14,7 +19,7 @@ from algorithm.experiments.unified_hardware_paper_results import (
 from skill.tests.test_unified_hardware_or_replay import _write_fixture, _write_json
 
 
-def test_passing_schema_v2_replay_exports_one_consistent_paper_summary(tmp_path):
+def test_passing_schema_v3_replay_exports_one_consistent_paper_summary(tmp_path):
     inputs = _write_fixture(tmp_path / "inputs")
     replay = build_unified_hardware_or_replay(
         cache_path=inputs["cache"],
@@ -108,7 +113,117 @@ def test_passing_schema_v2_replay_exports_one_consistent_paper_summary(tmp_path)
     assert "do not edit manually" in tex.read_text(encoding="utf-8")
 
 
-def test_schema_v1_or_nonpassing_replay_is_rejected(tmp_path):
+@pytest.mark.parametrize("failed_category", ["ours", "sota_style", "ablation"])
+def test_incomplete_tail_excludes_whole_trace_but_preserves_registered_population(
+    tmp_path, failed_category
+):
+    inputs = _write_fixture(tmp_path / "inputs")
+    replay = build_unified_hardware_or_replay(
+        cache_path=inputs["cache"],
+        loaded_ledger_path=inputs["ledger"],
+        migration_certificate_path=inputs["migration"],
+        loads=(0.50,),
+        seeds=(17,),
+        jobs_per_workload=3,
+    )
+    assert all(row["completion_status"] == "complete" for row in replay["runs"])
+    registered_ours = [
+        row for row in replay["runs"]
+        if row["scenario_kind"] == "hardware_local"
+        and row["migration_mode"] == "without_migration"
+        and row["policy_category"] == "ours"
+    ]
+    registered_online = sum(row["arrival_family"] != "static" for row in registered_ours)
+    failed_run = next(
+        row for row in replay["runs"]
+        if row["scenario_kind"] == "hardware_local"
+        and row["migration_mode"] == "without_migration"
+        and row["arrival_family"] != "static"
+        and row["policy_category"] == failed_category
+    )
+    excluded_key = (failed_run["scenario_id"], failed_run["trace_id"], failed_run["migration_mode"])
+    metrics = ("makespan_s", "mean_flow_s", "p90_flow_s")
+    for row in replay["runs"]:
+        # On retained traces every comparator beats ours by exactly twofold.
+        duration = 2.0 if row["policy_category"] == "ours" else 1.0
+        if (row["scenario_id"], row["trace_id"], row["migration_mode"]) == excluded_key:
+            # A per-policy deletion would leak an extreme apparent advantage
+            # for ours into the other comparators' aggregate ratios.
+            duration = 1.0 if row["policy_category"] == "ours" else 1e30
+        row.update({metric: duration for metric in metrics})
+    failed_run.update({metric: None for metric in metrics})
+    failed_run["completion_status"] = "incomplete_tail"
+    failed_run["completed_jobs"] -= 1
+    failed_run["unfinished_jobs"] = 1
+
+    common_runs = _common_complete_runs(replay["runs"])
+    assert not any(
+        (row["scenario_id"], row["trace_id"], row["migration_mode"]) == excluded_key
+        for row in common_runs
+    )
+    assert sum(
+        row["trace_id"] == failed_run["trace_id"] and row["migration_mode"] == "with_migration"
+        for row in common_runs
+    ) == replay["policy_count"]
+    replay["pareto_rows"] = _pareto_rows(common_runs)
+    replay["legacy_comparison_rows"] = _legacy_comparison_rows(common_runs)
+    replay_path = tmp_path / "replay.json"
+    slack_path = tmp_path / "slack.json"
+    merge_path = tmp_path / "loaded_merge.json"
+    _write_json(replay_path, replay)
+    _write_json(slack_path, _slack_fixture())
+    _write_json(merge_path, _merge_fixture(replay))
+
+    report = build_unified_hardware_paper_results(
+        replay_path=replay_path,
+        slack_path=slack_path,
+        loaded_merge_path=merge_path,
+    )
+
+    assert report["status"] == "PASS"
+    population = report["population"]
+    assert population["complete_matrix_run_count"] == len(replay["runs"])
+    assert population["registered_hardware_trace_count"] == len(registered_ours)
+    assert population["registered_online_trace_count"] == registered_online
+    assert population["hardware_trace_count"] == len(registered_ours) - 1
+    assert population["hardware_online_trace_count"] == registered_online - 1
+    assert population["excluded_incomplete_trace_count"] == 1
+    assert population["excluded_incomplete_online_trace_count"] == 1
+    assert population["incomplete_scheduleurm_run_count"] == int(failed_category == "ours")
+    assert population["incomplete_runs_by_policy"] == {
+        row["policy"]: int(row["policy"] == failed_run["policy"])
+        for row in replay["runs"]
+    }
+    assert population["incomplete_tail_rows"] == [
+        {key: failed_run[key] for key in (
+            "scenario_id", "trace_id", "policy", "completed_jobs",
+            "unfinished_jobs", "observation_horizon_s",
+        )}
+    ]
+    comparison_count = len(registered_ours) - 1
+    assert report["legacy"]["comparison_count"] == comparison_count
+    assert report["legacy"]["legacy_to_ours_makespan_geomean_ratio"] == pytest.approx(0.5)
+    assert report["legacy"]["legacy_to_ours_mean_flow_geomean_ratio"] == pytest.approx(0.5)
+    assert report["legacy"]["ours_strictly_dominates_every_row"] is False
+    assert report["online_legacy"]["comparison_count"] == registered_online - 1
+    assert report["sota_style"]["comparison_trace_count"] == comparison_count
+    assert report["sota_style"]["policy_trace_comparison_count"] == 7 * comparison_count
+    assert report["sota_style"]["ours_better_on_both_geomean_policy_count"] == 0
+    assert report["sota_style"]["ours_strictly_dominates_every_policy_in_every_trace"] is False
+    for row in report["sota_style"]["policies"].values():
+        assert row["comparison_count"] == comparison_count
+        assert row["baseline_to_ours_makespan_geomean_ratio"] == pytest.approx(0.5)
+        assert row["baseline_to_ours_mean_flow_geomean_ratio"] == pytest.approx(0.5)
+    for row in report["ablations"].values():
+        assert row["comparison_count"] == comparison_count
+        assert row["ablation_to_full_makespan_geomean_ratio"] == pytest.approx(0.5)
+        assert row["ablation_to_full_mean_flow_geomean_ratio"] == pytest.approx(0.5)
+    assert report["online_queues"]["run_count"] == registered_online - 1
+    assert "conditional ratios do not measure overall superiority" in report["claim_boundary"]
+
+
+@pytest.mark.parametrize("schema_version", [1, 2])
+def test_earlier_replay_schemas_are_rejected(tmp_path, schema_version):
     replay_path = tmp_path / "replay.json"
     slack_path = tmp_path / "slack.json"
     merge_path = tmp_path / "loaded_merge.json"
@@ -116,7 +231,7 @@ def test_schema_v1_or_nonpassing_replay_is_rejected(tmp_path):
         replay_path,
         {
             "gate": "unified_hardware_or_replay",
-            "schema_version": 1,
+            "schema_version": schema_version,
             "status": "PASS",
             "pass": True,
         },

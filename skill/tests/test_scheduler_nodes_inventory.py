@@ -67,6 +67,21 @@ def test_scheduler_imports_shared_node_inventory(sch):
     assert sch._canonical_node_name("node007-direct") == "node007"
 
 
+def test_bus_module_python_rewrites_to_each_nodes_torch_environment(sch):
+    command = (
+        "/home/erzhu419/anaconda3/bin/python -u -m "
+        "bus_experiments.run_policy_bank_train_v1 --seed 86003"
+    )
+    jtl = sch._apply_node_cmd_rewrites("jtl110gpu", command)
+    node007 = sch._apply_node_cmd_rewrites("node007", command)
+
+    assert jtl.startswith(
+        scheduler_nodes.OFFLINE_SUMO_PYTHON + " -u -m bus_experiments")
+    assert node007.startswith(
+        scheduler_nodes.NODE007_RESAC_JAX_ENV
+        + "/bin/python -u -m bus_experiments")
+
+
 def test_gpu_launch_debit_does_not_invent_thread_usage_without_configured_reserve(sch):
     nodes = [{
         "name": "node007",

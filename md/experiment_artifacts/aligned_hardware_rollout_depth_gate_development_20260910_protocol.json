@@ -1,0 +1,705 @@
+{
+  "registered_at_utc": "2026-09-10T11:54:27.697780+00:00",
+  "role": "development only; reuse original real and planning seeds",
+  "loads": [
+    0.5,
+    0.8,
+    0.95
+  ],
+  "seeds": [
+    41,
+    42,
+    43
+  ],
+  "planning_seeds": [
+    0,
+    1,
+    2
+  ],
+  "budget": 26,
+  "arrival_horizon_s": 20000.0,
+  "terminal_service_rates": [
+    0.1335789666104868,
+    0.29323460659958855,
+    0.35916419250378795
+  ],
+  "model": {
+    "node": "jtl110gpu2",
+    "scenario_id": "q01:gpu_3080ti_12gb_dual_jtl110gpu2",
+    "lanes": 2,
+    "workloads": [
+      "gpu_cnn_torch_resnet50",
+      "gpu_heavy_jax_matmul",
+      "gpu_llm_distilgpt2"
+    ],
+    "scales": [
+      60.0,
+      40.0,
+      120.0
+    ],
+    "options": [
+      {
+        "action_id": "gpu_loaded:jtl110gpu2:cnn_after_llm",
+        "requirements": [
+          1,
+          0,
+          1
+        ],
+        "duration": 11.514578111707017,
+        "completion_offsets": [
+          [
+            10.431026738447038
+          ],
+          [],
+          [
+            11.514578111707017
+          ]
+        ],
+        "loaded": true,
+        "source_action_ids": [
+          "gpu_loaded:jtl110gpu2:cnn_after_llm",
+          "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1"
+        ],
+        "phases": [
+          [
+            "resident_initialization_s",
+            4.716920265498629
+          ],
+          [
+            "target_overlap_s",
+            5.714106472948409
+          ],
+          [
+            "resident_overlap_rate_native_per_s",
+            120.39972693896493
+          ],
+          [
+            "resident_remaining_native_units",
+            0.0
+          ],
+          [
+            "resident_dedicated_drain_s",
+            0.0
+          ],
+          [
+            "resident_finalization_s",
+            1.0835513732599793
+          ]
+        ]
+      },
+      {
+        "action_id": "gpu_loaded:jtl110gpu2:llm_after_cnn",
+        "requirements": [
+          1,
+          0,
+          1
+        ],
+        "duration": 11.936669718453734,
+        "completion_offsets": [
+          [
+            11.936669718453734
+          ],
+          [],
+          [
+            11.090642004449867
+          ]
+        ],
+        "loaded": true,
+        "source_action_ids": [
+          "gpu_loaded:jtl110gpu2:llm_after_cnn",
+          "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1"
+        ],
+        "phases": [
+          [
+            "resident_initialization_s",
+            4.669018776022396
+          ],
+          [
+            "target_overlap_s",
+            6.421623228427471
+          ],
+          [
+            "resident_overlap_rate_native_per_s",
+            16.652848248271273
+          ],
+          [
+            "resident_remaining_native_units",
+            0.0
+          ],
+          [
+            "resident_dedicated_drain_s",
+            0.0
+          ],
+          [
+            "resident_finalization_s",
+            0.846027714003867
+          ]
+        ]
+      },
+      {
+        "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+        "requirements": [
+          1,
+          0,
+          0
+        ],
+        "duration": 8.093888054475512,
+        "completion_offsets": [
+          [
+            8.093888054475512
+          ],
+          [],
+          []
+        ],
+        "loaded": false,
+        "source_action_ids": [
+          "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1"
+        ],
+        "phases": [
+          [
+            "initialization_s",
+            4.669018776022396
+          ],
+          [
+            "loop_s",
+            2.5788415644492484
+          ],
+          [
+            "finalization_s",
+            0.846027714003867
+          ]
+        ]
+      },
+      {
+        "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+        "requirements": [
+          3,
+          0,
+          0
+        ],
+        "duration": 14.972417070959636,
+        "completion_offsets": [
+          [
+            14.972417070959636,
+            14.972417070959636,
+            14.972417070959636
+          ],
+          [],
+          []
+        ],
+        "loaded": false,
+        "source_action_ids": [
+          "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3"
+        ],
+        "phases": [
+          [
+            "initialization_s",
+            6.583782343158832
+          ],
+          [
+            "loop_s",
+            7.48884139563465
+          ],
+          [
+            "finalization_s",
+            0.8997933321661549
+          ]
+        ]
+      },
+      {
+        "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+        "requirements": [
+          0,
+          1,
+          0
+        ],
+        "duration": 2.7928254592821196,
+        "completion_offsets": [
+          [],
+          [
+            2.7928254592821196
+          ],
+          []
+        ],
+        "loaded": false,
+        "source_action_ids": [
+          "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1"
+        ],
+        "phases": [
+          [
+            "initialization_s",
+            1.2277755779466062
+          ],
+          [
+            "loop_s",
+            1.194901513584997
+          ],
+          [
+            "finalization_s",
+            0.3701483677505166
+          ]
+        ]
+      },
+      {
+        "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+        "requirements": [
+          0,
+          3,
+          0
+        ],
+        "duration": 6.820477375410869,
+        "completion_offsets": [
+          [],
+          [
+            6.820477375410869,
+            6.820477375410869,
+            6.820477375410869
+          ],
+          []
+        ],
+        "loaded": false,
+        "source_action_ids": [
+          "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3"
+        ],
+        "phases": [
+          [
+            "initialization_s",
+            2.741113696925434
+          ],
+          [
+            "loop_s",
+            3.661079762986579
+          ],
+          [
+            "finalization_s",
+            0.41828391549885663
+          ]
+        ]
+      },
+      {
+        "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1",
+        "requirements": [
+          0,
+          0,
+          1
+        ],
+        "duration": 7.4174495042607305,
+        "completion_offsets": [
+          [],
+          [],
+          [
+            7.4174495042607305
+          ]
+        ],
+        "loaded": false,
+        "source_action_ids": [
+          "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p1"
+        ],
+        "phases": [
+          [
+            "initialization_s",
+            4.716920265498629
+          ],
+          [
+            "loop_s",
+            1.6169778655021219
+          ],
+          [
+            "finalization_s",
+            1.0835513732599793
+          ]
+        ]
+      },
+      {
+        "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3",
+        "requirements": [
+          0,
+          0,
+          3
+        ],
+        "duration": 9.462480184740949,
+        "completion_offsets": [
+          [],
+          [],
+          [
+            9.462480184740949,
+            9.462480184740949,
+            9.462480184740949
+          ]
+        ],
+        "loaded": false,
+        "source_action_ids": [
+          "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p3"
+        ],
+        "phases": [
+          [
+            "initialization_s",
+            5.648919066996314
+          ],
+          [
+            "loop_s",
+            2.6111246433283664
+          ],
+          [
+            "finalization_s",
+            1.202436474416269
+          ]
+        ]
+      },
+      {
+        "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p8",
+        "requirements": [
+          0,
+          0,
+          8
+        ],
+        "duration": 14.84929022616052,
+        "completion_offsets": [
+          [],
+          [],
+          [
+            14.84929022616052,
+            14.84929022616052,
+            14.84929022616052,
+            14.84929022616052,
+            14.84929022616052,
+            14.84929022616052,
+            14.84929022616052,
+            14.84929022616052
+          ]
+        ],
+        "loaded": false,
+        "source_action_ids": [
+          "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_jtl110gpu2:empty:none:w1:p8"
+        ],
+        "phases": [
+          [
+            "initialization_s",
+            7.840006518249538
+          ],
+          [
+            "loop_s",
+            5.504426018315827
+          ],
+          [
+            "finalization_s",
+            1.5048576895951555
+          ]
+        ]
+      }
+    ],
+    "excluded_actions": [
+      {
+        "action_id": "gpu_loaded:jtl110gpu2:cnn_after_rl",
+        "reason": "resident class has no arrivals in the three-class q01 protocol"
+      }
+    ],
+    "model_scope": "deterministic_cached_phase_complete_job_renewal"
+  },
+  "certificates": [
+    {
+      "model_scope": "deterministic_cached_phase_complete_job_renewal",
+      "arrival_model": "independent Poisson job arrivals in physical time",
+      "arrival_rates": [
+        0.0667894833052434,
+        0.14661730329979422,
+        0.17958209625189392
+      ],
+      "arrival_direction": [
+        0.13357896661048682,
+        0.2932346065995885,
+        0.3591641925037879
+      ],
+      "load_factor": 0.5,
+      "full_boundary_scale": 0.9999999999999998,
+      "boundary_time_weights": [
+        0.0,
+        0.0,
+        0.0,
+        0.33333333333333326,
+        0.0,
+        0.3333333333333334,
+        0.0,
+        0.0,
+        0.33333333333333337
+      ],
+      "slack_time_weights": [
+        0.0,
+        0.0,
+        0.0,
+        0.44027161662742476,
+        0.0,
+        0.29130361487373174,
+        0.0,
+        0.0,
+        0.2684247684988435
+      ],
+      "support_slack_delta": 0.10964359942581603,
+      "projection_support_loss_rate": 0.0,
+      "effective_slack_eta": 0.10964359942581603,
+      "capacity_projection_passed": true,
+      "projection_check_count": 63,
+      "projection_failures": [],
+      "availability_loss_C": 22.564592260821584,
+      "second_moment_B": 173.46624577169922,
+      "tau_min": 1.0,
+      "tau_max": 14.972417070959636,
+      "max_departures": [
+        6,
+        6,
+        16
+      ],
+      "drift_constant": 511.312732136868,
+      "negative_drift_backlog_threshold": 4663.407027993623,
+      "conditional_model_drift_certified": true,
+      "physical_service_confidence_increased": false,
+      "queue_update": "Q_next = Q - physical_job_departures + Poisson(lambda * tau)",
+      "drift_bound": "E[Delta V | Q] <= B + tau_max*C - tau_min*effective_slack*sum(Q)",
+      "capacity_basis": "lanes times convex hull of all admitted lane requirements/max(1,duration)",
+      "capacity_global_combinations_enumerated": 0
+    },
+    {
+      "model_scope": "deterministic_cached_phase_complete_job_renewal",
+      "arrival_model": "independent Poisson job arrivals in physical time",
+      "arrival_rates": [
+        0.10686317328838943,
+        0.23458768527967075,
+        0.2873313540030302
+      ],
+      "arrival_direction": [
+        0.13357896661048682,
+        0.2932346065995885,
+        0.3591641925037879
+      ],
+      "load_factor": 0.8,
+      "full_boundary_scale": 0.9999999999999998,
+      "boundary_time_weights": [
+        0.0,
+        0.0,
+        0.0,
+        0.33333333333333326,
+        0.0,
+        0.3333333333333334,
+        0.0,
+        0.0,
+        0.33333333333333337
+      ],
+      "slack_time_weights": [
+        0.0,
+        0.0,
+        0.0,
+        0.3761086466509701,
+        0.0,
+        0.3165214459494926,
+        0.0,
+        0.0,
+        0.3073699073995373
+      ],
+      "support_slack_delta": 0.043857439770326384,
+      "projection_support_loss_rate": 0.0,
+      "effective_slack_eta": 0.043857439770326384,
+      "capacity_projection_passed": true,
+      "projection_check_count": 63,
+      "projection_failures": [],
+      "availability_loss_C": 22.564592260821584,
+      "second_moment_B": 185.4092723155254,
+      "tau_min": 1.0,
+      "tau_max": 14.972417070959636,
+      "max_departures": [
+        6,
+        6,
+        16
+      ],
+      "drift_constant": 523.2557586806943,
+      "negative_drift_backlog_threshold": 11930.832292557241,
+      "conditional_model_drift_certified": true,
+      "physical_service_confidence_increased": false,
+      "queue_update": "Q_next = Q - physical_job_departures + Poisson(lambda * tau)",
+      "drift_bound": "E[Delta V | Q] <= B + tau_max*C - tau_min*effective_slack*sum(Q)",
+      "capacity_basis": "lanes times convex hull of all admitted lane requirements/max(1,duration)",
+      "capacity_global_combinations_enumerated": 0
+    },
+    {
+      "model_scope": "deterministic_cached_phase_complete_job_renewal",
+      "arrival_model": "independent Poisson job arrivals in physical time",
+      "arrival_rates": [
+        0.12690001827996245,
+        0.27857287626960897,
+        0.3412059828785984
+      ],
+      "arrival_direction": [
+        0.13357896661048682,
+        0.2932346065995885,
+        0.3591641925037879
+      ],
+      "load_factor": 0.95,
+      "full_boundary_scale": 0.9999999999999998,
+      "boundary_time_weights": [
+        0.0,
+        0.0,
+        0.0,
+        0.33333333333333326,
+        0.0,
+        0.3333333333333334,
+        0.0,
+        0.0,
+        0.33333333333333337
+      ],
+      "slack_time_weights": [
+        0.0,
+        0.0,
+        0.0,
+        0.3440271616627425,
+        0.0,
+        0.3291303614873732,
+        0.0,
+        0.0,
+        0.3268424768498843
+      ],
+      "support_slack_delta": 0.01096435994258163,
+      "projection_support_loss_rate": 0.0,
+      "effective_slack_eta": 0.01096435994258163,
+      "capacity_projection_passed": true,
+      "projection_check_count": 63,
+      "projection_failures": [],
+      "availability_loss_C": 22.564592260821584,
+      "second_moment_B": 193.14233282891536,
+      "tau_min": 1.0,
+      "tau_max": 14.972417070959636,
+      "max_departures": [
+        6,
+        6,
+        16
+      ],
+      "drift_constant": 530.9888191940842,
+      "negative_drift_backlog_threshold": 48428.61981682255,
+      "conditional_model_drift_certified": true,
+      "physical_service_confidence_increased": false,
+      "queue_update": "Q_next = Q - physical_job_departures + Poisson(lambda * tau)",
+      "drift_bound": "E[Delta V | Q] <= B + tau_max*C - tau_min*effective_slack*sum(Q)",
+      "capacity_basis": "lanes times convex hull of all admitted lane requirements/max(1,duration)",
+      "capacity_global_combinations_enumerated": 0
+    }
+  ],
+  "policies": [
+    "v4_support",
+    "lookahead_cap_1pct",
+    "poisson_rollout_cap_1pct",
+    "mixed_successor_rollout_cap_1pct",
+    "rollout_depth_gated_cap_1pct"
+  ],
+  "gate_weights": [
+    8,
+    8,
+    3
+  ],
+  "gate_capacity": 48,
+  "strict_threshold": 96,
+  "activation": "w dot Q > 2C = 96 before candidate construction, including drain",
+  "branches": "active frozen mixed successors; inactive frozen v4; exactly one selector per frame",
+  "roster": "3 loads x 3 old real seeds x 11 runs = 99; v4 and analytic once, raw/mixed/gated each at planning seeds 0,1,2",
+  "controls": "all 72 v4, analytic, raw and always-mixed rows reproduce the frozen development metrics, decomposition and deterministic accounting",
+  "advance_criteria": {
+    "execution_checks_all_pass": true,
+    "each_load_mean_flow_ratio_vs_v4_upper": 1.0,
+    "each_load_mean_p90_ratio_vs_v4_upper": 1.0,
+    "strict_improvement_loads": [
+      0.8,
+      0.95
+    ],
+    "each_real_seed_planning_mean_flow_ratio_vs_v4_strict_upper": 1.0,
+    "role": "development advancement only"
+  },
+  "pairing": "matched load/real seed/planning seed; mean planning ratios within real seed, then mean real seeds",
+  "accounting": "gate setup once per run; one weighted queue scan per frame; inactive v4 attempts enter root and initial totals; mixed counters retain native totals and named subtotals",
+  "retained_continuation": "filter all old raw/mixed single-action cases by the same strict gate; no new replay and no gated-policy causal claim",
+  "retained_continuation_summary": {
+    "source": "aligned_hardware_mixed_successor_continuation_development_20260910.json",
+    "summary": {
+      "all_disagreement_occurrences": 554,
+      "retained_occurrences": 354,
+      "retained_unique_states": 74,
+      "improved": 189,
+      "worsened": 165,
+      "unchanged": 0,
+      "mean_mixed_minus_raw_delta_job_s": -207.31320847242634
+    },
+    "summary_by_load_and_source": [
+      {
+        "load": 0.5,
+        "source_policy": "poisson_rollout_cap_1pct",
+        "all_disagreement_occurrences": 2,
+        "retained_occurrences": 0,
+        "retained_unique_states": 0,
+        "improved": 0,
+        "worsened": 0,
+        "unchanged": 0,
+        "mean_mixed_minus_raw_delta_job_s": null
+      },
+      {
+        "load": 0.5,
+        "source_policy": "mixed_successor_rollout_cap_1pct",
+        "all_disagreement_occurrences": 3,
+        "retained_occurrences": 0,
+        "retained_unique_states": 0,
+        "improved": 0,
+        "worsened": 0,
+        "unchanged": 0,
+        "mean_mixed_minus_raw_delta_job_s": null
+      },
+      {
+        "load": 0.8,
+        "source_policy": "poisson_rollout_cap_1pct",
+        "all_disagreement_occurrences": 166,
+        "retained_occurrences": 70,
+        "retained_unique_states": 19,
+        "improved": 36,
+        "worsened": 34,
+        "unchanged": 0,
+        "mean_mixed_minus_raw_delta_job_s": -116.57624753618605
+      },
+      {
+        "load": 0.8,
+        "source_policy": "mixed_successor_rollout_cap_1pct",
+        "all_disagreement_occurrences": 131,
+        "retained_occurrences": 46,
+        "retained_unique_states": 11,
+        "improved": 21,
+        "worsened": 25,
+        "unchanged": 0,
+        "mean_mixed_minus_raw_delta_job_s": -163.10468527898405
+      },
+      {
+        "load": 0.95,
+        "source_policy": "poisson_rollout_cap_1pct",
+        "all_disagreement_occurrences": 121,
+        "retained_occurrences": 113,
+        "retained_unique_states": 47,
+        "improved": 63,
+        "worsened": 50,
+        "unchanged": 0,
+        "mean_mixed_minus_raw_delta_job_s": -227.47225968607498
+      },
+      {
+        "load": 0.95,
+        "source_policy": "mixed_successor_rollout_cap_1pct",
+        "all_disagreement_occurrences": 131,
+        "retained_occurrences": 125,
+        "retained_unique_states": 46,
+        "improved": 69,
+        "worsened": 56,
+        "unchanged": 0,
+        "mean_mixed_minus_raw_delta_job_s": -256.1708608347693
+      }
+    ],
+    "gate_queue_coordinate_evaluations": 1662,
+    "gate_threshold_comparisons": 554,
+    "new_selector_calls": 0,
+    "new_replays": 0,
+    "new_random_draws": 0,
+    "role": "retained raw-versus-mixed interventions under common v4; gate filtering only, with no new replay"
+  },
+  "protocol_setup_requirement_reads": 54,
+  "stopping_rule": "all 99 registered development runs once; no threshold fitting, added seeds or confirmation data",
+  "execution_workers": 3
+}

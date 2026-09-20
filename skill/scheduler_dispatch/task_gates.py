@@ -11,7 +11,9 @@ class DispatchTaskGateDeps:
     clear_disallowed_cpu_fallback_selection: Callable[[dict], bool]
     reconcile_queued_launch_artifacts_before_dispatch: Callable[[dict, dict], dict | None]
     task_run_identity: Callable[[dict], object]
-    same_run_identity_live_artifact_reason: Callable[[dict, dict, object], str]
+    same_run_identity_live_artifact_reason: Callable[
+        [dict, dict, object, dict | None], str
+    ]
     eviction_cooldown_block_reason: Callable[[dict], str]
     queued_wait_for_file_block_reason: Callable[[dict], str]
     queued_cpu_training_block_reason: Callable[[dict], str]
@@ -37,6 +39,7 @@ def apply_dispatch_task_gates(
     *,
     state: dict,
     running_keys: set,
+    identity_index: dict | None = None,
     deps: DispatchTaskGateDeps,
 ) -> DispatchTaskGateResult:
     """Apply pre-placement gates for one queued task.
@@ -80,6 +83,7 @@ def apply_dispatch_task_gates(
         task,
         state,
         run_key,
+        identity_index,
     )
     if terminal_artifact_reason:
         task["last_block_reason"] = terminal_artifact_reason

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Draw a four-quadrant SOTA-style policy-semantics comparison."""
+"""Draw a four-quadrant comparison on jointly completed replay traces."""
 
 from __future__ import annotations
 
@@ -13,6 +13,9 @@ from pathlib import Path
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
+
+from algorithm.experiments.unified_hardware_or_replay import _common_complete_runs
+from algorithm.experiments.unified_hardware_paper_results import SOTA_POLICY_LABELS
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -63,16 +66,6 @@ QUADRANT_TITLES = {
     "q11": "q11 high CPU / high GPU",
 }
 
-POLICY_LABELS = {
-    "throughput_table_goodput": "Gavel/Pollux/Sia goodput",
-    "delay_oracle": "SRPT/Gittins delay",
-    "interference_guard": "IADeep/Salus guard",
-    "finish_time_fairness": "Gavel finish-time",
-    "resource_adaptive_goodput": "Sia/Pollux adaptive",
-    "packing_guard": "Salus/IADeep packing",
-    "quadrant_composite": "best quadrant composite",
-}
-
 POLICY_COLORS = {
     "throughput_table_goodput": "#4C78A8",
     "delay_oracle": "#F58518",
@@ -102,6 +95,10 @@ POLICY_ID_TO_BASELINE = {
     "sota_salus_iadeep_packing_guard": "packing_guard",
     "sota_quadrant_composite": "quadrant_composite",
 }
+POLICY_LABELS = {
+    baseline: SOTA_POLICY_LABELS[policy_id]
+    for policy_id, baseline in POLICY_ID_TO_BASELINE.items()
+}
 
 
 def load_report(path: Path = ARTIFACT) -> dict:
@@ -121,14 +118,18 @@ def unified_quadrant_points(report: dict) -> dict[str, dict[str, dict[str, float
     The replay stores ``ours / baseline``.  The figure contract is the inverse:
     each SOTA-style point is ``baseline / ours`` and Scheduleurm is fixed at
     ``(1, 1)``.  Only hardware-local scenarios and the without-migration view
-    enter the four-quadrant figure; controlled migration counterfactuals are
-    reported separately.
+    enter the four-quadrant figure. Every policy is evaluated on the same
+    traces, conditional on completion by all registered policies.
     """
 
     hardware_ids = {
         str(row.get("scenario_id") or "")
         for row in report.get("scenarios") or []
         if row.get("scenario_kind") == "hardware_local"
+    }
+    complete_trace_keys = {
+        (row["scenario_id"], row["trace_id"], row["migration_mode"])
+        for row in _common_complete_runs(report["runs"])
     }
     by_quad: dict[str, dict[str, list[tuple[float, float]]]] = {
         key: defaultdict(list) for key in QUADRANTS
@@ -137,6 +138,8 @@ def unified_quadrant_points(report: dict) -> dict[str, dict[str, dict[str, float
         if str(row.get("scenario_id") or "") not in hardware_ids:
             continue
         if row.get("migration_mode") != "without_migration":
+            continue
+        if (row["scenario_id"], row["trace_id"], row["migration_mode"]) not in complete_trace_keys:
             continue
         quadrant = str(row.get("quadrant") or "")
         if quadrant not in by_quad:
@@ -158,6 +161,38 @@ def unified_quadrant_points(report: dict) -> dict[str, dict[str, dict[str, float
                 (1.0 / ours_to_baseline_flow, 1.0 / ours_to_baseline_makespan)
             )
     return _aggregate_points(by_quad)
+
+
+def figure_population(report: dict) -> dict:
+    """Record the shared completion condition and the traces it excludes."""
+    hardware = {
+        str(row["scenario_id"]): str(row["quadrant"])
+        for row in report["scenarios"]
+        if row.get("scenario_kind") == "hardware_local"
+    }
+    registered = [
+        row for row in report["runs"]
+        if row["scenario_id"] in hardware
+        and row["migration_mode"] == "without_migration"
+    ]
+    registered_keys = {(row["scenario_id"], row["trace_id"]) for row in registered}
+    complete_keys = {
+        (row["scenario_id"], row["trace_id"])
+        for row in _common_complete_runs(registered)
+    }
+    excluded_keys = registered_keys - complete_keys
+    return {
+        "aggregation_population": "all_registered_policies_complete_on_same_trace",
+        "registered_hardware_trace_count": len(registered_keys),
+        "included_complete_trace_count": len(complete_keys),
+        "excluded_incomplete_trace_count": len(excluded_keys),
+        "excluded_incomplete_trace_count_by_quadrant": {
+            quadrant: sum(hardware[scenario_id] == quadrant for scenario_id, _ in excluded_keys)
+            for quadrant in QUADRANTS
+        },
+        "registered_hardware_scenario_ids": sorted(hardware),
+        "included_hardware_scenario_ids": sorted({scenario_id for scenario_id, _ in complete_keys}),
+    }
 
 
 def legacy_quadrant_points(report: dict) -> dict[str, dict[str, dict[str, float]]]:
@@ -206,22 +241,21 @@ def draw(*, artifact: Path = ARTIFACT, output: Path = OUT) -> None:
     report = json.loads(artifact_raw.decode("utf-8"))
     _validate_final_replay(report)
     points = quadrant_points(report)
+    population = figure_population(report)
     best_by_quadrant = scenario_best_policies(report)
-    fig, axes = plt.subplots(2, 2, figsize=(7.05, 5.65), sharex=True, sharey=True)
-    fig.subplots_adjust(left=0.08, right=0.995, top=0.88, bottom=0.20, wspace=0.12, hspace=0.25)
+    fig, axes = plt.subplots(2, 2, figsize=(7.05, 5.65))
+    fig.subplots_adjust(left=0.09, right=0.985, top=0.86, bottom=0.20, wspace=0.26, hspace=0.32)
     flat = axes.ravel()
-    all_values = [1.0]
-    for quadrant in QUADRANTS:
-        for point in points.get(quadrant, {}).values():
-            all_values.extend([point["x"], point["y"]])
-    lo = min(0.995, min(all_values) - 0.006)
-    hi = max(1.025, max(all_values) + 0.010)
+    axis_ranges = {}
 
     handles = {}
     for ax, quadrant in zip(flat, ("q00", "q01", "q10", "q11")):
         ax.axvline(1.0, color="#9aa4b2", lw=0.7, ls="--", zorder=0)
         ax.axhline(1.0, color="#9aa4b2", lw=0.7, ls="--", zorder=0)
-        ax.scatter(1.0, 1.0, marker="*", s=88, color="#C62828", edgecolor="white", linewidth=0.55, zorder=5)
+        if points.get(quadrant):
+            ax.scatter(1.0, 1.0, marker="*", s=88, color="#C62828", edgecolor="white", linewidth=0.55, zorder=5)
+        else:
+            ax.text(0.5, 0.5, "No common completed traces", transform=ax.transAxes, ha="center")
         best_policy = best_by_quadrant.get(quadrant) or _best_policy(points.get(quadrant, {}))
         for policy, point in sorted(points.get(quadrant, {}).items()):
             label = POLICY_LABELS.get(policy, policy)
@@ -240,26 +274,60 @@ def draw(*, artifact: Path = ARTIFACT, output: Path = OUT) -> None:
             )
             handles[label] = h
         ax.set_title(QUADRANT_TITLES[quadrant], loc="left", fontweight="bold", pad=3)
-        ax.set_xlim(lo, hi)
-        ax.set_ylim(lo, hi)
+        x_limits = _padded_limits([1.0] + [point["x"] for point in points.get(quadrant, {}).values()])
+        y_limits = _padded_limits([1.0] + [point["y"] for point in points.get(quadrant, {}).values()])
+        ax.set_xlim(*x_limits)
+        ax.set_ylim(*y_limits)
+        ax.xaxis.set_major_locator(mpl.ticker.MaxNLocator(4, steps=[1, 2, 2.5, 5, 10]))
+        ax.yaxis.set_major_locator(mpl.ticker.MaxNLocator(4, steps=[1, 2, 2.5, 5, 10]))
+        ax.ticklabel_format(useOffset=False)
+        axis_ranges[quadrant] = {"x": x_limits, "y": y_limits}
         ax.grid(True, color="#e7ebf0", lw=0.45)
         if best_policy:
             ax.text(
-                0.97,
+                0.03,
                 0.94,
-                "nearest SOTA\n" + POLICY_LABELS.get(best_policy, best_policy),
+                "nearest rule\n" + POLICY_LABELS.get(best_policy, best_policy),
                 transform=ax.transAxes,
-                ha="right",
+                ha="left",
                 va="top",
                 fontsize=5.6,
                 color="#1f2937",
                 bbox=dict(boxstyle="round,pad=0.22", facecolor="white", edgecolor="#cfd6df", linewidth=0.5),
             )
+        if quadrant == "q00":
+            near_points = {
+                policy: point for policy, point in points.get(quadrant, {}).items()
+                if abs(point["x"] - 1.0) <= 0.1 and abs(point["y"] - 1.0) <= 0.1
+            }
+            inset = ax.inset_axes([0.14, 0.28, 0.44, 0.43])
+            inset.axvline(1.0, color="#9aa4b2", lw=0.6, ls="--")
+            inset.axhline(1.0, color="#9aa4b2", lw=0.6, ls="--")
+            inset.scatter(1.0, 1.0, marker="*", s=54, color="#C62828", edgecolor="white", linewidth=0.4, zorder=5)
+            for policy, point in sorted(near_points.items()):
+                inset.scatter(
+                    point["x"], point["y"], s=22,
+                    color=POLICY_COLORS[policy], marker=POLICY_MARKERS[policy],
+                    edgecolor="white", linewidth=0.3, zorder=3,
+                )
+            inset.set_xlim(*_padded_limits([1.0] + [point["x"] for point in near_points.values()]))
+            inset.set_ylim(*_padded_limits([1.0] + [point["y"] for point in near_points.values()]))
+            inset.xaxis.set_major_locator(mpl.ticker.MaxNLocator(3))
+            inset.yaxis.set_major_locator(mpl.ticker.MaxNLocator(3))
+            inset.ticklabel_format(useOffset=False)
+            inset.tick_params(labelsize=4.8, pad=1, length=2)
+            inset.set_title("Near (1, 1)", fontsize=5.5, loc="left", pad=2)
+            for spine in inset.spines.values():
+                spine.set_visible(True)
+                spine.set_color("#9aa4b2")
+                spine.set_linewidth(0.5)
+            axis_ranges[quadrant]["inset_x"] = inset.get_xlim()
+            axis_ranges[quadrant]["inset_y"] = inset.get_ylim()
 
-    axes[1, 0].set_xlabel("Mean-flow cost (SOTA / Scheduleurm)")
-    axes[1, 1].set_xlabel("Mean-flow cost (SOTA / Scheduleurm)")
-    axes[0, 0].set_ylabel("Makespan cost (SOTA / Scheduleurm)")
-    axes[1, 0].set_ylabel("Makespan cost (SOTA / Scheduleurm)")
+    axes[1, 0].set_xlabel("Mean-flow cost (baseline / Scheduleurm)")
+    axes[1, 1].set_xlabel("Mean-flow cost (baseline / Scheduleurm)")
+    axes[0, 0].set_ylabel("Makespan cost (baseline / Scheduleurm)")
+    axes[1, 0].set_ylabel("Makespan cost (baseline / Scheduleurm)")
     scheduleurm_handle = Line2D(
         [0],
         [0],
@@ -284,11 +352,21 @@ def draw(*, artifact: Path = ARTIFACT, output: Path = OUT) -> None:
     fig.text(
         0.02,
         0.965,
-        "Four-quadrant measured-cache policy-semantics comparison (geometric-mean cost; lower is better)",
+        "Measured-cache policy comparison",
         ha="left",
         va="top",
         fontsize=7.7,
         fontweight="bold",
+    )
+    fig.text(
+        0.02,
+        0.925,
+        f"Common completed traces: {population['included_complete_trace_count']}; "
+        f"incomplete traces excluded: {population['excluded_incomplete_trace_count']}\n"
+        "Geometric-mean cost; lower is better. Axes vary by panel; q00 inset expands the near-unity group.",
+        ha="left",
+        va="top",
+        fontsize=6.6,
     )
     output = Path(output)
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -313,15 +391,12 @@ def draw(*, artifact: Path = ARTIFACT, output: Path = OUT) -> None:
                 "normalization": "baseline_policy_cost_divided_by_scheduleurm_cost",
                 "included_scenario_kind": "hardware_local",
                 "included_migration_mode": "without_migration",
-                "aggregation": "geometric_mean_across_registered_scenarios_and_traces",
-                "included_hardware_scenario_ids": sorted(
-                    str(row["scenario_id"])
-                    for row in report["scenarios"]
-                    if row.get("scenario_kind") == "hardware_local"
-                ),
+                "aggregation": "geometric_mean_across_common_complete_traces",
+                **population,
                 "points": points,
+                "axis_ranges": axis_ranges,
                 "best_sota_by_quadrant": best_by_quadrant,
-                "nearest_sota_definition": "minimum maximum aggregate cost ratio; ties broken by sum then policy id",
+                "nearest_sota_definition": "minimum maximum aggregate cost ratio; ties broken by sum, nonduplicate label, then policy id",
             },
             indent=2,
             sort_keys=True,
@@ -334,7 +409,7 @@ def draw(*, artifact: Path = ARTIFACT, output: Path = OUT) -> None:
 def _validate_final_replay(report: dict) -> None:
     expected = {
         "gate": "unified_hardware_or_replay",
-        "schema_version": 2,
+        "schema_version": 3,
         "status": "PASS",
         "pass": True,
         "comparison_kind": "same-cache_policy-semantics",
@@ -354,7 +429,18 @@ def _validate_final_replay(report: dict) -> None:
 def _best_policy(points: dict[str, dict[str, float]]) -> str:
     if not points:
         return ""
-    return min(points, key=lambda p: (max(points[p]["x"], points[p]["y"]), points[p]["x"] + points[p]["y"], p))
+    return min(points, key=lambda p: (
+        max(points[p]["x"], points[p]["y"]),
+        points[p]["x"] + points[p]["y"],
+        "(duplicate)" in POLICY_LABELS.get(p, p),
+        p,
+    ))
+
+
+def _padded_limits(values: list[float]) -> tuple[float, float]:
+    low, high = min(values), max(values)
+    margin = max(0.001, 0.12 * (high - low))
+    return low - margin, high + margin
 
 
 def scenario_best_policies(report: dict) -> dict[str, str]:

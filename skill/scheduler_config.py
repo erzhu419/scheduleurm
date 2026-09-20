@@ -159,6 +159,12 @@ def build_scheduler_config_exports(*, environ=None, home=None) -> dict:
         "LAUNCH_EXEC_LOCK_FILE": state_dir / ".launch_exec.lock",
         "LAUNCH_EXEC_MAX_WORKERS": max(1, _env_int(env, "SCHEDULEURM_LAUNCH_EXEC_MAX_WORKERS", "48")),
         "LAUNCH_EXEC_MAX_PER_NODE": max(1, _env_int(env, "SCHEDULEURM_LAUNCH_EXEC_MAX_PER_NODE", "12")),
+        "LAUNCH_COMMIT_BATCH_SIZE": max(
+            1, _env_int(env, "SCHEDULEURM_LAUNCH_COMMIT_BATCH_SIZE", "48")
+        ),
+        "LAUNCH_COMMIT_MAX_DELAY_S": max(
+            0.05, _env_float(env, "SCHEDULEURM_LAUNCH_COMMIT_MAX_DELAY_S", "2.0")
+        ),
         "LAUNCH_EXEC_LOCK_TIMEOUT_S": _env_float(env, "SCHEDULEURM_LAUNCH_EXEC_LOCK_TIMEOUT_S", "900"),
         "WATCH_PHASE_WARN_S": _env_float(env, "SCHEDULEURM_WATCH_PHASE_WARN_S", "3.0"),
         "NODE_DOWN_REQUEUE_S": 300,

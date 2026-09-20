@@ -71,6 +71,30 @@ def _clear_unknown_terminal_diagnosis_deferred(task: dict) -> None:
     task.pop("unknown_terminal_diagnosis_deferred_at", None)
 
 
+def _apply_snapshot_result_artifacts(
+    task: dict,
+    precomputed_terminal: Optional[dict],
+    *,
+    snapshot_supplied: bool,
+    deps: RunningLifecycleDeps,
+) -> None:
+    """Apply precomputed artifacts without falling back to remote I/O under a lock."""
+    try:
+        if precomputed_terminal and isinstance(
+            precomputed_terminal.get("result_artifacts"), list
+        ):
+            deps.apply_discovered_result_artifacts(
+                task,
+                precomputed_terminal.get("result_artifacts") or [],
+            )
+        elif snapshot_supplied:
+            task["result_artifacts_pending"] = True
+        else:
+            deps.record_result_artifacts(task)
+    except Exception:
+        pass
+
+
 def handle_unknown_probe_result(
     task: dict,
     state: dict,
@@ -90,6 +114,12 @@ def handle_unknown_probe_result(
     threshold = int(task.get("node_down_requeue_s") or deps.node_down_requeue_s)
     if unknown_for < threshold:
         return
+    terminal_snapshot_supplied = terminal_diagnostics is not None
+    precomputed_terminal = (terminal_diagnostics or {}).get(
+        str(task.get("id") or "")
+    )
+    if not deps.terminal_diagnostic_matches(task, precomputed_terminal):
+        precomputed_terminal = None
     cached_success = deps.cached_task_success_marker(task)
     if cached_success:
         now_done = deps.now()
@@ -113,10 +143,12 @@ def handle_unknown_probe_result(
             deps.release_task_claims_and_intents(task)
         except Exception:
             pass
-        try:
-            deps.record_result_artifacts(task)
-        except Exception:
-            pass
+        _apply_snapshot_result_artifacts(
+            task,
+            precomputed_terminal,
+            snapshot_supplied=terminal_snapshot_supplied,
+            deps=deps,
+        )
         return
     launch_state = str((res or {}).get("launch_safety_state") or "unknown")
     launch_reason = str(
@@ -132,12 +164,7 @@ def handle_unknown_probe_result(
             f"({launch_reason})"
         )
         return
-    precomputed_terminal = (terminal_diagnostics or {}).get(
-        str(task.get("id") or "")
-    )
-    if not deps.terminal_diagnostic_matches(task, precomputed_terminal):
-        precomputed_terminal = None
-    if terminal_diagnostics is not None and (
+    if terminal_snapshot_supplied and (
         precomputed_terminal is None
         or not isinstance(precomputed_terminal.get("diagnosis"), dict)
     ):
@@ -172,16 +199,12 @@ def handle_unknown_probe_result(
             deps.release_task_claims_and_intents(task)
         except Exception:
             pass
-        try:
-            if precomputed_terminal is not None:
-                deps.apply_discovered_result_artifacts(
-                    task,
-                    list(precomputed_terminal.get("result_artifacts") or []),
-                )
-            else:
-                deps.record_result_artifacts(task)
-        except Exception:
-            pass
+        _apply_snapshot_result_artifacts(
+            task,
+            precomputed_terminal,
+            snapshot_supplied=terminal_snapshot_supplied,
+            deps=deps,
+        )
         return
     reason = (
         f"node/probe unknown for {int(unknown_for)}s on {task.get('node')}; "
@@ -322,6 +345,22 @@ def handle_dead_probe_result(task: dict, state: dict, res: dict,
             "process exited; terminal log/result diagnosis pending outside state lock"
         )
         return
+    if terminal_snapshot_supplied and precomputed_terminal is not None:
+        if res.get("terminal_ok") is True:
+            diagnostic_ready = isinstance(
+                precomputed_terminal.get("completed_log_crash"), (list, tuple)
+            )
+        else:
+            diagnostic_ready = isinstance(
+                precomputed_terminal.get("diagnosis"), dict
+            )
+        if not diagnostic_ready and not res.get("terminal_cancelled"):
+            task["terminal_transition_deferred"] = True
+            task["terminal_transition_deferred_at"] = deps.now()
+            task["last_block_reason"] = (
+                "process exited; terminal log/result diagnosis pending outside state lock"
+            )
+            return
     cached_success = None
     if (
         res.get("terminal_diagnosis_deferred")
@@ -470,19 +509,17 @@ def handle_dead_probe_result(task: dict, state: dict, res: dict,
                 new_id = deps.requeue_after_crash(task, state)
                 if new_id:
                     task["requeued_as"] = new_id
-    try:
-        if precomputed_terminal and isinstance(precomputed_terminal.get("result_artifacts"), list):
-            deps.apply_discovered_result_artifacts(task, precomputed_terminal.get("result_artifacts") or [])
-        elif terminal_snapshot_supplied or (
-            res.get("terminal_diagnosis_deferred")
-            and terminal_ok is None
-            and not bool(task.get("result_dir") or task.get("result_dirs"))
-        ):
-            task["result_artifacts_pending"] = True
-        else:
-            deps.record_result_artifacts(task)
-    except Exception:
-        pass
+    defer_artifact_discovery = terminal_snapshot_supplied or (
+        res.get("terminal_diagnosis_deferred")
+        and terminal_ok is None
+        and not bool(task.get("result_dir") or task.get("result_dirs"))
+    )
+    _apply_snapshot_result_artifacts(
+        task,
+        precomputed_terminal,
+        snapshot_supplied=defer_artifact_discovery,
+        deps=deps,
+    )
     duration_s = 0
     if task.get("started_at") and task.get("finished_at"):
         duration_start = float(

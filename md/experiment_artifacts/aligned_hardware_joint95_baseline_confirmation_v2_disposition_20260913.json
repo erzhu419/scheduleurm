@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "artifact_type": "registered_experiment_disposition",
+  "experiment": "aligned_hardware_joint95_baseline_confirmation_v2",
+  "status": "SUPERSEDED_BEFORE_EXECUTION",
+  "execution_authorized": false,
+  "terminal_result_observed": false,
+  "old_registration": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/aligned_hardware_joint95_baseline_confirmation_v2_20260913_protocol.json",
+  "old_fixed_sources": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/aligned_hardware_joint95_baseline_confirmation_v2_20260913_fixed_sources.json",
+  "old_result": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/aligned_hardware_joint95_baseline_confirmation_v2_20260913.json",
+  "reason": "A review-only task-grid helper was inserted before the case-seed return, leaving the frozen v2 _run_case_seed function without a return value. The upstream campaign fail-stop blocked v2 before any trajectory task ran or result was written.",
+  "repair": "Version 3 restores the case-seed row return before the task-grid helper and adds a direct common-tape return regression test.",
+  "successor_experiment": "aligned_hardware_joint95_baseline_confirmation_v3",
+  "successor_registration": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/aligned_hardware_joint95_baseline_confirmation_v3_20260913_protocol.json",
+  "paper_edited": false
+}

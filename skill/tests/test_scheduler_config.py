@@ -21,6 +21,8 @@ def test_config_exports_defaults_and_paths(tmp_path):
     assert cfg["WATCH_DISPATCH_MAX_QUEUED_PER_CYCLE"] == 1024
     assert cfg["LAUNCH_EXEC_MAX_WORKERS"] == 48
     assert cfg["LAUNCH_EXEC_MAX_PER_NODE"] == 12
+    assert cfg["LAUNCH_COMMIT_BATCH_SIZE"] == 48
+    assert cfg["LAUNCH_COMMIT_MAX_DELAY_S"] == 2.0
     assert cfg["LAUNCH_STAGING_MAX_CANDIDATES_PER_PASS"] == 256
     assert cfg["LAUNCH_STAGING_WORKERS"] == 12
     assert cfg["ETA_TAIL_PROBE_TIMEOUT_S"] == 10
@@ -63,6 +65,8 @@ def test_config_exports_respects_env_overrides(tmp_path):
             "SCHEDULEURM_RUNNING_PROBE_MAX_WORKERS": "5",
             "SCHEDULEURM_RUNNING_PROBE_TIMEOUT_S": "11",
             "SCHEDULEURM_CANCEL_KILL_MAX_WORKERS": "7",
+            "SCHEDULEURM_LAUNCH_COMMIT_BATCH_SIZE": "24",
+            "SCHEDULEURM_LAUNCH_COMMIT_MAX_DELAY_S": "1.25",
             "SCHEDULEURM_WATCH_DISPATCH_MAX_QUEUED_PER_CYCLE": "33",
             "SCHEDULEURM_ETA_TAIL_PROBE_TIMEOUT_S": "6",
             "SCHEDULEURM_ETA_REFRESH_MIN_INTERVAL_S": "45",
@@ -96,6 +100,8 @@ def test_config_exports_respects_env_overrides(tmp_path):
     assert cfg["RUNNING_PROBE_MAX_WORKERS"] == 5
     assert cfg["RUNNING_PROBE_TIMEOUT_S"] == 11
     assert cfg["CANCEL_KILL_MAX_WORKERS"] == 7
+    assert cfg["LAUNCH_COMMIT_BATCH_SIZE"] == 24
+    assert cfg["LAUNCH_COMMIT_MAX_DELAY_S"] == 1.25
     assert cfg["WATCH_DISPATCH_MAX_QUEUED_PER_CYCLE"] == 33
     assert cfg["ETA_TAIL_PROBE_TIMEOUT_S"] == 6
     assert cfg["ETA_REFRESH_MIN_INTERVAL_S"] == 45

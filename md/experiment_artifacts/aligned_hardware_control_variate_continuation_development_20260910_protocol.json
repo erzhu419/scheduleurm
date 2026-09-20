@@ -1,0 +1,46 @@
+{
+  "registered_at_utc": "2026-09-10T08:59:50.181769+00:00",
+  "role": "development mechanism diagnosis using consumed seeds",
+  "loads": [
+    0.5,
+    0.8,
+    0.95
+  ],
+  "seeds": [
+    41,
+    42,
+    43
+  ],
+  "planning_seeds": [
+    0,
+    1,
+    2
+  ],
+  "source_policies": [
+    "poisson_rollout_cap_1pct",
+    "control_variate_rollout_cap_1pct"
+  ],
+  "budget": 26,
+  "arrival_horizon_s": 20000.0,
+  "terminal_service_rates": [
+    0.1335789666104868,
+    0.29323460659958855,
+    0.35916419250378795
+  ],
+  "source_comparison": "54 original trajectories; native RNG and counters unchanged; on active frames compare opposite selector with cloned pre-call RNG states",
+  "state_roster": "all physical action disagreements in every source frame, including drain; same service/duration/sorted class offsets means same action",
+  "intervention": "identical prefix, raw-first versus CV-first once, then common frozen v4 K26 on the original arrival tape until all original jobs complete",
+  "sign": "all intervention deltas CV-first minus raw-first; fixed sampled margins challenger minus incumbent before orientation",
+  "area_partition": "current/future use each action's own frame boundary",
+  "repeated_sampling": {
+    "samples_per_unique_load_queue_pair": 64,
+    "rng_namespace": "aligned-cv-continuation:{sample_index}:{coordinate}",
+    "reuse": "one fixed contender-pair estimate per load/queue, shared by occurrences; sample ids crossed across states",
+    "estimate": "raw and corrected fixed-contender means, variances and Monte Carlo standard errors; no selected-minimum margin",
+    "descriptive_preference": "unresolved when absolute mean <= two MC standard errors; no performance gate"
+  },
+  "residual_partition": "realized minus discovery estimate = fresh proxy mean minus discovery estimate + realized minus fresh proxy mean",
+  "diagnostic_cost": "native source work, shadow searches and RNG copies, cached continuation searches, replay frames, and every fresh-sample search/draw reported separately; none added to online K",
+  "stopping_rule": "all 54 sources and all disagreements once, then 64 fresh samples for every unique load/queue; no outcome-based filtering, tuning or extra seeds",
+  "execution_workers": 3
+}

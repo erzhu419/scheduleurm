@@ -330,6 +330,7 @@ def build_scheduler_cli_deps(namespace: Mapping[str, Any]) -> SchedulerCliDeps:
         cmd_record_vram=_ns(namespace, "cmd_record_vram"),
         cmd_history=_ns(namespace, "cmd_history"),
         cmd_priority=_ns(namespace, "cmd_priority"),
+        cmd_release_node=_ns(namespace, "cmd_release_node"),
         cmd_edit=_ns(namespace, "cmd_edit"),
         cmd_why=_ns(namespace, "cmd_why"),
         cmd_tui=_ns(namespace, "cmd_tui"),

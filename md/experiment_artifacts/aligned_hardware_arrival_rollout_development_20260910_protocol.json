@@ -1,0 +1,59 @@
+{
+  "registered_at_utc": "2026-09-09T18:36:28.635906+00:00",
+  "base_protocol": {
+    "arrival_horizon_s": 20000.0,
+    "loads": [
+      0.5,
+      0.8,
+      0.95
+    ],
+    "seeds": [
+      41,
+      42,
+      43
+    ],
+    "budgets": [
+      10,
+      14,
+      26,
+      120
+    ],
+    "exact_reference_budget": 120,
+    "arrival_model": "independent Poisson arrivals per second; common tape across budgets",
+    "job_sizes": "fixed task-native canonical units",
+    "dispatch": "global synchronous frames; released jobs only; FIFO within class",
+    "score": "queue weighted actual frame departures divided by actual frame duration",
+    "budget_unit": "candidate construction or feasibility attempt; seeds included",
+    "stopping_rule": "stop arrivals at horizon, then drain the same finite prefix"
+  },
+  "role": "development only; no confirmation seeds",
+  "policies": [
+    "v4_support",
+    "lookahead_cap_1pct",
+    "recycled_rollout_cap_1pct",
+    "arrival_rollout_cap_1pct"
+  ],
+  "main_policy": "arrival_rollout_cap_1pct",
+  "main_budget": 26,
+  "terminal_service_rates": [
+    0.1335789666104868,
+    0.29323460659958855,
+    0.35916419250378795
+  ],
+  "changed_rule": "replace active rollout objective by first-frame area plus two paid successor areas plus a common-arrival fluid tail",
+  "arrival_path": "class i arrivals at (n-0.5)/lambda_i for n>=1 through common H; zero-rate classes have no arrivals; one path shared by both contenders",
+  "common_horizon_s": 44.91725121287891,
+  "horizon_rule": "H=3*maximum effective catalogue duration covers both first-frame-plus-two-successor paths; all arrivals through H are included and eventually cleared",
+  "batch_area": "unserved visible jobs times frame duration plus actual completion offsets plus each within-frame arrival's barrier wait; new arrivals become dispatchable at the next boundary",
+  "successor": "two integer feasible frames per contender; same q_i/mu_i class priority, largest fitting measured pure batch and maximal homogeneous lane copies as frozen batch rollout; idle also costs one attempt",
+  "tail": "from each path's last boundary, integrate nonnegative fluid queues at the frozen per-class mu through remaining shared arrivals to H, then stop arrivals and clear; no extra frame construction",
+  "objective": "complete holding area on this deterministic common population; old Poisson current/terminal formulas remain challenger diagnostics only and are not added to the path objective",
+  "current_search": "unchanged recycled rollout frontier, K-4 reservation when seeds plus four fit, two old analytic contenders, seed and 1% floor, unused-reserve recovery and support fallback",
+  "costs": "charge current plus successor attempts<=K; separately count path generation and arrival reads, queue updates, fluid integration, candidate pricing and completion reads",
+  "known_counterexample": "describe new prediction and action at the previously observed (1,4,8), without requiring it to improve or using a future tape",
+  "zero_arrivals": "path area mathematically reduces to the previous batch objective when all lambda are zero",
+  "controls": "full-K v4, full-K analytic lookahead, and frozen recycled rollout; reproduce 108 controls from the preceding development artifact",
+  "reference": "v4 K120 remains the exact support reference",
+  "stopping_rule": "all 144 cases once; no changing arrival phase, horizon, terminal rule or budget allocation after outcomes",
+  "execution_workers": 3
+}

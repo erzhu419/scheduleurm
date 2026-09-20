@@ -39,7 +39,7 @@ DEFAULT_LOADED_LEDGER = ARTIFACT_ROOT / "critical_gpu_loaded_action_ledger_20260
 DEFAULT_MIGRATION_CERTIFICATE = ARTIFACT_ROOT / "unified_migration_recalibration_certificate_20260809.json"
 DEFAULT_OUTPUT = ARTIFACT_ROOT / "unified_hardware_or_replay_20260809.json"
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 EXPECTED_QUADRANTS = ("q00", "q01", "q10", "q11")
 EXPECTED_ARRIVAL_FAMILIES = ("static", "poisson", "bursty", "load_sweep")
 EXPECTED_MIGRATION_MODES = ("without_migration", "with_migration")
@@ -347,8 +347,9 @@ def build_unified_hardware_or_replay(
             trace_protocols=trace_protocols,
             jobs_per_workload=jobs_per_workload,
         )
-        pareto_rows = _pareto_rows(runs)
-        legacy_rows = _legacy_comparison_rows(runs)
+        comparison_runs = _common_complete_runs(runs)
+        pareto_rows = _pareto_rows(comparison_runs)
+        legacy_rows = _legacy_comparison_rows(comparison_runs)
         checks = _coverage_checks(
             scenarios=scenarios,
             policies=policies,
@@ -381,13 +382,19 @@ def build_unified_hardware_or_replay(
         ],
         "input_manifest": _input_manifest(inputs),
         "scenario_count": len(scenarios),
-        "scenarios": [scenario.snapshot() for scenario in scenarios],
+        "scenarios": [
+            {**scenario.snapshot(), **({"load_reference": _dedicated_load_reference(scenario)}
+             if scenario.scenario_kind == "hardware_local" else {})}
+            for scenario in scenarios
+        ],
         "policy_count": len(policies),
         "policies": [policy.snapshot() for policy in policies],
         "trace_protocol_count": len(trace_protocols),
         "trace_protocols": [dict(row) for row in trace_protocols],
         "run_count": len(runs),
         "runs": runs,
+        "incomplete_run_count": sum(row["completion_status"] != "complete" for row in runs),
+        "comparison_cohort": "all_registered_policies_complete_on_same_trace_and_mode",
         "pareto_rows": pareto_rows,
         "legacy_comparison_rows": legacy_rows,
         "coverage_checks": checks,
@@ -436,6 +443,8 @@ def _report_header(
         "selection_service_view": "lower_service",
         "evaluation_service_view": "phase_aware_natural_completion",
         "comparison_kind": "same-cache_policy-semantics",
+        "decision_information": "released_ready_jobs_only",
+        "load_reference": "equal_time_mix_of_best_dedicated_lower_service_actions",
         "full_stack_external_binary_comparison": False,
         "audited_predecessor_boundaries": {
             "critical_gpu_statewise_sota_replay_gate": "static/Poisson GPU scopes only",
@@ -1045,6 +1054,44 @@ def _run_matrix(
     return runs
 
 
+def _dedicated_load_reference(scenario: Scenario) -> dict[str, Any]:
+    """Fix a joint arrival direction on the dedicated-action convex boundary.
+
+    Every workload receives the same fraction of each shared lane.  If its
+    fastest dedicated lower-service rate is m_k and there are R lanes and n
+    workloads, the reference work-arrival rate is R * m_k / n.  Thus scaling
+    this vector by r gives sum_k lambda_k / (R * m_k) = r.  Loaded and migration
+    actions do not define this reference, which is not their capacity boundary.
+    """
+    time_share = 1.0 / len(scenario.workload_keys)
+    dedicated_rates: dict[str, float] = {}
+    for workload_key in scenario.workload_keys:
+        dedicated = [
+            action.lower.lower_service
+            for action in scenario.actions
+            if action.lower.workload_key == workload_key
+            and not action.lower.loaded_action
+            and not action.lower.migration_action
+        ]
+        if not dedicated:
+            raise ValueError(
+                f"{scenario.scenario_id}: no dedicated load reference for {workload_key}"
+            )
+        dedicated_rates[workload_key] = max(dedicated)
+    return {
+        "basis": "equal_time_dedicated_convex_reference",
+        "resource_count": scenario.resource_count,
+        "workload_time_shares": {
+            workload_key: time_share for workload_key in scenario.workload_keys
+        },
+        "dedicated_lower_service_per_lane": dedicated_rates,
+        "reference_work_rates": {
+            workload_key: scenario.resource_count * rate * time_share
+            for workload_key, rate in dedicated_rates.items()
+        },
+    }
+
+
 def _build_trace(
     scenario: Scenario,
     protocol: Mapping[str, Any],
@@ -1058,6 +1105,7 @@ def _build_trace(
     rng = random.Random(f"{scenario.scenario_id}|{family}|{process}|{load}|{seed}")
     jobs: list[TraceJob] = []
     unit_scales: dict[str, float] = {}
+    load_reference = _dedicated_load_reference(scenario)
     for workload_key in scenario.workload_keys:
         actions = [action for action in scenario.actions if action.lower.workload_key == workload_key]
         if not actions:
@@ -1075,21 +1123,11 @@ def _build_trace(
         # costs. This avoids treating probe duration as a service advantage.
         canonical_units = min(action_units)
         unit_scales[workload_key] = canonical_units
-        dedicated = [
-            action
-            for action in actions
-            if not action.lower.loaded_action and not action.lower.migration_action
-        ]
-        capacity_actions = dedicated or actions
-        lower_capacity = (
-            max(action.lower.lower_service for action in capacity_actions)
-            * scenario.resource_count
-        )
         arrivals = _arrival_times(
             count=int(jobs_per_workload),
             process=process,
             load_factor=(float(load) if load is not None else None),
-            lower_capacity=lower_capacity,
+            lower_capacity=load_reference["reference_work_rates"][workload_key],
             canonical_units=canonical_units,
             rng=rng,
         )
@@ -1167,9 +1205,12 @@ def _run_policy(
         quadrant=scenario.quadrant,
         resource_count=scenario.resource_count,
     )
-    flows = [completions[job.job_id] - job.arrival_s for job in trace.jobs]
-    makespan = max(completions.values(), default=0.0)
-    system_population = _system_population_metrics(trace.jobs, completions)
+    complete = len(completions) == len(trace.jobs)
+    flows = [completions[job.job_id] - job.arrival_s for job in trace.jobs if job.job_id in completions]
+    makespan = max(completions.values(), default=0.0) if complete else None
+    system_population = _system_population_metrics(
+        trace.jobs, completions, horizon=float(queue_metrics["observation_horizon_s"])
+    )
     return {
         "scenario_id": scenario.scenario_id,
         "scenario_kind": scenario.scenario_kind,
@@ -1186,9 +1227,12 @@ def _run_policy(
         "policy_semantic_key": policy.semantic_key,
         "job_count": len(trace.jobs),
         "completed_jobs": len(completions),
+        "completion_status": "complete" if complete else "incomplete_tail",
+        "unfinished_jobs": len(trace.jobs) - len(completions),
+        "observation_horizon_s": queue_metrics["observation_horizon_s"],
         "makespan_s": makespan,
-        "mean_flow_s": mean(flows) if flows else 0.0,
-        "p90_flow_s": _quantile(flows, 0.90),
+        "mean_flow_s": (mean(flows) if flows else 0.0) if complete else None,
+        "p90_flow_s": _quantile(flows, 0.90) if complete else None,
         "mean_queue_backlog_jobs": queue_metrics["mean_queue_backlog_jobs"],
         "max_queue_backlog_jobs": queue_metrics["max_queue_backlog_jobs"],
         "tail_drain_deferral_count": queue_metrics["tail_drain_deferral_count"],
@@ -1235,14 +1279,11 @@ def _simulate_scenario(
     list[dict[str, Any]],
     dict[str, float | int],
 ]:
-    states = {
-        job.job_id: ReplayJobState(
-            job=job,
-            remaining_units=float(job.total_units),
-            available_at=float(job.arrival_s),
-        )
-        for job in trace.jobs
-    }
+    # The event source owns future arrivals. Only released jobs enter the
+    # decision state; neither candidate filtering nor scoring sees the suffix.
+    arrivals = iter(sorted(trace.jobs, key=lambda job: (job.arrival_s, job.job_id)))
+    next_job = next(arrivals, None)
+    states: dict[str, ReplayJobState] = {}
     available = [0.0 for _ in range(max(1, int(resource_count)))]
     completions: dict[str, float] = {}
     counts: dict[str, int] = {}
@@ -1252,9 +1293,22 @@ def _simulate_scenario(
         (float(job.arrival_s), 1) for job in trace.jobs
     ]
     unit_scales = trace.unit_scales()
-    while states:
+    def next_event_time(now: float) -> float | None:
+        times = [state.available_at for state in states.values() if state.available_at > now + 1e-12]
+        if next_job is not None:
+            times.append(float(next_job.arrival_s))
+        return min(times) if times else None
+
+    while states or next_job is not None:
         lane = min(range(len(available)), key=lambda index: (available[index], index))
         now = float(available[lane])
+        while next_job is not None and next_job.arrival_s <= now + 1e-12:
+            states[next_job.job_id] = ReplayJobState(
+                job=next_job,
+                remaining_units=float(next_job.total_units),
+                available_at=float(next_job.arrival_s),
+            )
+            next_job = next(arrivals, None)
         ready = [
             state
             for state in states.values()
@@ -1262,11 +1316,8 @@ def _simulate_scenario(
             and state.available_at <= now + 1e-12
         ]
         if not ready:
-            next_time = min(
-                max(state.job.arrival_s, state.available_at)
-                for state in states.values()
-            )
-            if next_time <= now + 1e-12:
+            next_time = next_event_time(now)
+            if next_time is None or next_time <= now + 1e-12:
                 raise ValueError("joint replay cannot advance to a ready job")
             available[lane] = next_time
             continue
@@ -1278,56 +1329,26 @@ def _simulate_scenario(
             if _requirements_satisfied(action.lower.job_requirements(), ready_counts)
         ]
         if not feasible:
-            future = [
-                max(state.job.arrival_s, state.available_at)
-                for state in states.values()
-                if max(state.job.arrival_s, state.available_at) > now + 1e-12
-            ]
-            if future:
-                available[lane] = min(future)
+            next_time = next_event_time(now)
+            if next_time is not None:
+                available[lane] = next_time
                 continue
-            raise ValueError(
-                f"no feasible joint action for ready counts {ready_counts!r}"
-            )
+            break
 
         tail_drain_guard_applied = False
-        ready_drainable = _tail_drain_feasible_actions(
+        drainable = _tail_drain_feasible_actions(
             feasible=feasible,
             action_family=actions,
             remaining_counts=ready_counts,
         )
-        population_drainable = _tail_drain_feasible_actions(
-            feasible=feasible,
-            action_family=actions,
-            remaining_counts=_state_counts(tuple(states.values())),
-        )
-        population_ids = {
-            action.lower.action_id for action in population_drainable
-        }
-        drainable = tuple(
-            action
-            for action in ready_drainable
-            if action.lower.action_id in population_ids
-        )
         if not drainable:
-            remaining_population = _state_counts(tuple(states.values()))
-            if not _population_drainable_by_dedicated_actions(
-                action_family=actions,
-                remaining_counts=remaining_population,
-            ):
-                raise ValueError(
-                    f"registered population is not drainable: {remaining_population!r}"
-                )
-            future = [
-                max(state.job.arrival_s, state.available_at)
-                for state in states.values()
-                if max(state.job.arrival_s, state.available_at) > now + 1e-12
-            ]
-            if not future:
-                raise ValueError(
-                    f"drainable population has no safe ready action: {remaining_population!r}"
-                )
-            available[lane] = min(future)
+            # The policy waits whenever the visible queue cannot be drained.
+            # The simulator advances to the next event, or records an unfinished
+            # tail if the finite event source is exhausted.
+            next_time = next_event_time(now)
+            if next_time is None:
+                break
+            available[lane] = next_time
             tail_drain_deferrals += 1
             continue
         if len(drainable) < len(feasible):
@@ -1353,6 +1374,11 @@ def _simulate_scenario(
             workload_unit_scales=unit_scales,
             remaining_counts=remaining_counts,
             oldest_ready_workload=oldest_ready_workload,
+        )
+        selected_score = _lower_frame_score(selected_lower, normalized_backlog, unit_scales)
+        best_score = max(
+            _lower_frame_score(candidate.lower, normalized_backlog, unit_scales)
+            for candidate in feasible
         )
         action = next(
             action for action in feasible
@@ -1440,16 +1466,21 @@ def _simulate_scenario(
                     key: len(value) for key, value in residents.items()
                 },
                 "tail_drain_guard_applied": tail_drain_guard_applied,
+                "feasible_action_ids": [candidate.lower.action_id for candidate in feasible],
                 "resource_lane": lane,
                 "frame_start_s": now,
                 "frame_end_s": batch_end,
                 "remaining_count_before": len(ready),
                 "ready_count_before": len(ready),
                 "normalized_backlog_vector": normalized_backlog,
+                "selected_lower_frame_score": selected_score,
+                "maximum_lower_frame_score": best_score,
+                "lower_frame_oracle_gap": best_score - selected_score,
             }
         )
-    horizon = max(completions.values(), default=0.0)
-    queue_metrics = _queue_metrics(queue_events, horizon=horizon)
+    horizon = max((*completions.values(), *(job.arrival_s for job in trace.jobs)), default=0.0)
+    queue_metrics = _queue_metrics(queue_events, horizon=horizon, unfinished_count=len(states))
+    queue_metrics["observation_horizon_s"] = horizon
     queue_metrics["tail_drain_deferral_count"] = tail_drain_deferrals
     return completions, counts, audits, queue_metrics
 
@@ -1494,7 +1525,7 @@ def _tail_drain_feasible_actions(
     action_family: Sequence[ReplayAction],
     remaining_counts: Mapping[str, int],
 ) -> tuple[ReplayAction, ...]:
-    """Keep actions whose registered finite population remains drainable."""
+    """Keep actions whose currently visible ready remainder is drainable."""
 
     widths = _dedicated_drain_widths(action_family)
 
@@ -1511,18 +1542,6 @@ def _tail_drain_feasible_actions(
         ):
             out.append(action)
     return tuple(out)
-
-
-def _population_drainable_by_dedicated_actions(
-    *,
-    action_family: Sequence[ReplayAction],
-    remaining_counts: Mapping[str, int],
-) -> bool:
-    widths = _dedicated_drain_widths(action_family)
-    return all(
-        _integer_drainable(count, widths.get(key, set()))
-        for key, count in remaining_counts.items()
-    )
 
 
 def _dedicated_drain_widths(
@@ -1571,13 +1590,18 @@ def _job_order_key(
     *,
     batch_width: int = 1,
 ) -> tuple[Any, ...]:
-    if policy.semantic_key in {
-        "delay_oracle",
-        "ablation_delay_only",
+    robust_family = policy.semantic_key in {
         "robust_maxweight",
-    }:
+        "ablation_support_only",
+        "ablation_delay_only",
+        "ablation_no_bounded_penalty",
+        "ablation_no_loaded_ledger",
+        "ablation_no_migration",
+        "ablation_high_profile_tiebreak",
+    }
+    if policy.semantic_key == "delay_oracle" or robust_family:
         if (
-            policy.semantic_key == "robust_maxweight"
+            robust_family
             and int(batch_width) > 1
             and _quadrant_for_workload(state.job.workload_key) != "q01"
         ):
@@ -1587,14 +1611,16 @@ def _job_order_key(
 
 
 def _system_population_metrics(
-    jobs: Sequence[TraceJob], completions: Mapping[str, float]
+    jobs: Sequence[TraceJob], completions: Mapping[str, float], *, horizon: float | None = None
 ) -> dict[str, float | int]:
     events: dict[float, list[int]] = {}
     for job in jobs:
+        events.setdefault(float(job.arrival_s), [0, 0])[0] += 1
+        if job.job_id not in completions:
+            continue
         completion = _finite_float(completions[job.job_id], "completion time")
         if completion + 1e-12 < job.arrival_s:
             raise ValueError(f"{job.job_id}: completion precedes arrival")
-        events.setdefault(float(job.arrival_s), [0, 0])[0] += 1
         events.setdefault(completion, [0, 0])[1] += 1
     if not events:
         return {"mean_unfinished_jobs": 0.0, "max_unfinished_jobs": 0}
@@ -1611,7 +1637,8 @@ def _system_population_metrics(
         if count < 0:
             raise ValueError("backlog event accounting became negative")
         previous = timestamp
-    horizon = max(events)
+    horizon = max(events) if horizon is None else horizon
+    area += count * (horizon - previous)
     return {
         "mean_unfinished_jobs": area / horizon if horizon > 0.0 else 0.0,
         "max_unfinished_jobs": maximum,
@@ -1619,7 +1646,7 @@ def _system_population_metrics(
 
 
 def _queue_metrics(
-    events: Sequence[tuple[float, int]], *, horizon: float
+    events: Sequence[tuple[float, int]], *, horizon: float, unfinished_count: int = 0
 ) -> dict[str, float | int]:
     grouped: dict[float, list[int]] = {}
     for timestamp, delta in events:
@@ -1641,12 +1668,44 @@ def _queue_metrics(
         if count < 0:
             raise ValueError("queue event accounting became negative")
         previous = timestamp
-    if count != 0:
+    if count != unfinished_count:
         raise ValueError(f"queue event accounting did not close: {count}")
+    area += count * (horizon - previous)
     return {
         "mean_queue_backlog_jobs": area / horizon if horizon > 0.0 else 0.0,
         "max_queue_backlog_jobs": maximum,
     }
+
+
+def _lower_frame_score(
+    action: LowerAction, backlog_vector: Mapping[str, float],
+    workload_unit_scales: Mapping[str, float], *, penalty: bool = True,
+) -> float:
+    """Canonical lower-service frame proxy; not the evaluated frame duration."""
+
+    requirements = action.job_requirements()
+    target_units = (
+        float(action.batch_width())
+        * _positive_float(
+            workload_unit_scales.get(action.workload_key),
+            f"unit scale {action.workload_key}",
+        )
+    )
+    holding_time = target_units / _positive_float(
+        action.lower_service,
+        f"target lower service {action.action_id}",
+    )
+    value = 0.0
+    for key, rate in action.lower_service_vector:
+        scale = _positive_float(
+            workload_unit_scales.get(key),
+            f"unit scale {key}",
+        )
+        admitted_work = float(requirements.get(key, 0)) * scale
+        service_quantum = min(admitted_work, float(rate) * holding_time)
+        service_rate_jobs = service_quantum / scale / holding_time
+        value += max(0.0, float(backlog_vector.get(key, 0.0))) * service_rate_jobs
+    return value - (action.penalty_units if penalty else 0.0)
 
 
 def _select_lower_action(
@@ -1680,31 +1739,7 @@ def _select_lower_action(
         return value - (action.penalty_units if penalty else 0.0)
 
     def frame_support(action: LowerAction, *, penalty: bool = True) -> float:
-        """Semi-Markov support rate with finite resident work truncation."""
-
-        requirements = action.job_requirements()
-        target_units = (
-            float(action.batch_width())
-            * _positive_float(
-                workload_unit_scales.get(action.workload_key),
-                f"unit scale {action.workload_key}",
-            )
-        )
-        holding_time = target_units / _positive_float(
-            action.lower_service,
-            f"target lower service {action.action_id}",
-        )
-        value = 0.0
-        for key, rate in action.lower_service_vector:
-            scale = _positive_float(
-                workload_unit_scales.get(key),
-                f"unit scale {key}",
-            )
-            admitted_work = float(requirements.get(key, 0)) * scale
-            service_quantum = min(admitted_work, float(rate) * holding_time)
-            service_rate_jobs = service_quantum / scale / holding_time
-            value += max(0.0, float(backlog_vector.get(key, 0.0))) * service_rate_jobs
-        return value - (action.penalty_units if penalty else 0.0)
+        return _lower_frame_score(action, backlog_vector, workload_unit_scales, penalty=penalty)
 
     def target_support(action: LowerAction, *, penalty: bool = True) -> float:
         value = float(
@@ -1739,9 +1774,9 @@ def _select_lower_action(
                 action.action_id,
             ),
         )
-    if semantic in {"throughput_table_goodput", "finish_time_fairness", "ablation_support_only"}:
+    if semantic in {"throughput_table_goodput", "finish_time_fairness"}:
         return max(feasible, key=lambda action: (target_support(action), -lower_flow(action), -action.profile, action.action_id))
-    if semantic in {"delay_oracle", "ablation_delay_only"}:
+    if semantic == "delay_oracle":
         return min(feasible, key=lambda action: (lower_flow(action), -target_support(action), low_profile_key(action)))
     if semantic == "interference_guard":
         unshared = [action for action in feasible if not action.loaded_action]
@@ -1792,37 +1827,45 @@ def _select_lower_action(
                 action.action_id,
             ),
         )
-    if semantic == "ablation_no_bounded_penalty":
-        return max(feasible, key=lambda action: (frame_support(action, penalty=False), -lower_flow(action), -action.profile, action.action_id))
-    if semantic == "ablation_high_profile_tiebreak":
-        guarded = _support_guard(
-            feasible,
-            frame_support,
-            relative_tolerance=1e-9,
-        )
-        return min(guarded, key=lambda action: (lower_flow(action), -action.profile, action.action_id))
-    if semantic in {"ablation_no_loaded_ledger", "ablation_no_migration", "robust_maxweight"}:
-        if semantic == "robust_maxweight" and all(
-            action.batch_width() == 1
-            and not action.loaded_action
-            and not action.migration_action
-            for action in feasible
-        ):
-            return min(
-                feasible,
-                key=lambda action: (
-                    lower_flow(action),
-                    -frame_support(action),
-                    action.action_id,
-                ),
+    if semantic in {
+        "robust_maxweight",
+        "ablation_support_only",
+        "ablation_delay_only",
+        "ablation_no_bounded_penalty",
+        "ablation_no_loaded_ledger",
+        "ablation_no_migration",
+        "ablation_high_profile_tiebreak",
+    }:
+        def robust_key(action: LowerAction) -> tuple[Any, ...]:
+            # The full policy uses delay only to break exact support ties.
+            score = -frame_support(action, penalty=semantic != "ablation_no_bounded_penalty")
+            delay = lower_flow(action)
+            objectives = (
+                (delay, score)
+                if semantic == "ablation_delay_only"
+                else (score, delay if semantic != "ablation_support_only" else 0.0)
             )
-        guarded = _support_guard(
-            feasible,
-            frame_support,
-            relative_tolerance=1e-9,
-        )
-        return min(guarded, key=lambda action: (lower_flow(action), low_profile_key(action)))
+            return (
+                *objectives,
+                -action.profile if semantic == "ablation_high_profile_tiebreak" else action.profile,
+                action.penalty_units if semantic != "ablation_no_bounded_penalty" else 0.0,
+                action.action_id,
+            )
+
+        return min(feasible, key=robust_key)
     raise ValueError(f"unsupported policy semantics {semantic!r}")
+
+
+def _common_complete_runs(runs: Sequence[Mapping[str, Any]]) -> list[Mapping[str, Any]]:
+    """Use one shared completed cohort for every performance comparator."""
+    excluded = {
+        (row["scenario_id"], row["trace_id"], row["migration_mode"])
+        for row in runs if row["completion_status"] != "complete"
+    }
+    return [
+        row for row in runs
+        if (row["scenario_id"], row["trace_id"], row["migration_mode"]) not in excluded
+    ]
 
 
 def _pareto_rows(runs: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
@@ -1975,7 +2018,19 @@ def _coverage_checks(
         "all_ablation_policies_registered": ablation_names == {name for name, _ in ABLATION_POLICIES},
         "legacy_fixed_caps_registered": legacy_names == {LEGACY_POLICY},
         "complete_policy_arrival_migration_matrix": matrix_keys == expected_keys,
-        "all_jobs_naturally_completed": all(int(row["completed_jobs"]) == int(row["job_count"]) for row in runs),
+        "all_jobs_completed_or_reported_unfinished": all(
+            int(row["completed_jobs"]) + int(row["unfinished_jobs"]) == int(row["job_count"])
+            and ((row["completion_status"] == "complete") == (int(row["unfinished_jobs"]) == 0))
+            and (row["completion_status"] == "complete" or all(
+                row[key] is None for key in ("makespan_s", "mean_flow_s", "p90_flow_s")
+            ))
+            for row in runs
+        ),
+        "robust_selector_maximizes_lower_frame_proxy": all(
+            audit["lower_frame_oracle_gap"] == 0.0
+            for row in runs if row["policy_semantic_key"] == "robust_maxweight"
+            for audit in row["selection_audit"]
+        ),
         "all_selection_bound_to_lower_service": all(
             row["selection_service_view"] == "lower_service"
             and all(audit["selection_service_view"] == "lower_service" for audit in row["selection_audit"])
@@ -2446,7 +2501,7 @@ def _claim_boundary() -> str:
 
 def write_report(report: Mapping[str, Any], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    content = json.dumps(dict(report), indent=2, sort_keys=True) + "\n"
+    content = json.dumps(dict(report), separators=(",", ":"), sort_keys=True) + "\n"
     fd, temporary = tempfile.mkstemp(prefix=f".{path.name}.", dir=str(path.parent))
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as handle:

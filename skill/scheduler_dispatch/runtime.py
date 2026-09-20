@@ -293,13 +293,17 @@ def build_dispatch_runtime_exports(namespace: dict[str, Any]) -> dict[str, Any]:
         events: list,
         lock_timeout=None,
         mark_notified_launch: bool = False,
+        progress_fn=None,
     ) -> list:
         return _ns(namespace, "_execute_deferred_launches_impl")(
             events,
             lock_timeout=lock_timeout,
             mark_notified_launch=mark_notified_launch,
+            progress_fn=progress_fn,
             deps=_ns(namespace, "_DeferredLaunchDeps")(
                 max_workers=_ns(namespace, "LAUNCH_EXEC_MAX_WORKERS"),
+                commit_batch_size=_ns(namespace, "LAUNCH_COMMIT_BATCH_SIZE"),
+                commit_max_delay_s=_ns(namespace, "LAUNCH_COMMIT_MAX_DELAY_S"),
                 launch=_ns(namespace, "launch"),
                 launch_exec_slot_lock=lambda node: _ns(namespace, "launch_exec_slot_lock")(
                     node,

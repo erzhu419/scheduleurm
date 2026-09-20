@@ -86,6 +86,12 @@ def test_ckpt_and_incremental_result_protection():
         deps=_deps(artifacts=[{"kind": "file", "path": "/tmp/results.csv"}]),
     )
 
+    controller = {"protect_from_auto_eviction": True, "cmd": "python controller.py"}
+    assert task_evict_loss_protected(controller, deps=_deps())
+    summary = summarize_task_for_resource_log(controller, deps=_deps())
+    assert summary["protect_from_auto_eviction"] is True
+    assert summary["evict_loss_protected"] is True
+
 
 def test_resource_snapshot_summarizes_same_gpu_tasks():
     target = {

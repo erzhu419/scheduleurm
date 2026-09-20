@@ -90,6 +90,26 @@ def _eligible_running(
     ]
 
 
+def _prefer_unprotected_candidates(
+    candidates: list[dict],
+    deps: PostDispatchThresholdDeps,
+) -> tuple[list[dict], list[dict], bool]:
+    """Prefer loss-tolerant victims, but retain an observable operability fallback."""
+    protected = [
+        task for task in candidates if deps.task_evict_loss_protected(task)
+    ]
+    protected_ids = {id(task) for task in protected}
+    unprotected = [task for task in candidates if id(task) not in protected_ids]
+    fallback_used = bool(candidates) and not unprotected
+    return (unprotected or candidates), protected, fallback_used
+
+
+def _protection_fallback_note(used: bool) -> str:
+    if not used:
+        return ""
+    return "; all eligible tasks are loss-protected, using operability fallback"
+
+
 def _evict(
     victim: dict,
     state: dict,
@@ -157,9 +177,9 @@ def _enforce_local_cpu_budget(
             }, feishu_enabled=False)
             return
     while reserved > budget and len(tasks_here) > 1:
-        protected = [task for task in tasks_here if deps.task_evict_loss_protected(task)]
-        protected_ids = {id(task) for task in protected}
-        candidates = [task for task in tasks_here if id(task) not in protected_ids] or tasks_here
+        candidates, protected, protection_fallback_used = (
+            _prefer_unprotected_candidates(tasks_here, deps)
+        )
         if not candidates:
             break
         victim = max(candidates, key=lambda task: _cpu_victim_key(task, deps))
@@ -171,12 +191,14 @@ def _enforce_local_cpu_budget(
             "cpu_budget": budget,
             "same_node_tasks": [deps.summarize_task_for_resource_log(task) for task in tasks_here],
             "protected_evict_loss_task_ids": [task.get("id") for task in protected],
+            "protection_fallback_used": protection_fallback_used,
             "selection": "least_progress_then_newest_then_highest_cpu",
         }
         reason = (
             f"evicted from local after CPU budget breach "
             f"(reserved={reserved}/{budget}); "
             f"victim selected by least progress / newest / highest CPU"
+            f"{_protection_fallback_note(protection_fallback_used)}"
         )
         freed = max(0, int(victim.get("cpu_cores") or deps.default_cpu_cores))
         _evict(victim, state, reason, payload, evicted, evicted_set, deps)
@@ -209,15 +231,19 @@ def _enforce_gpu_freeze_line(
     )
     if len(tasks_here) < 2:
         return
-    candidates = [
+    eligible_candidates = [
         task for task in tasks_here
         if _gpu_evict_candidate(task, deps)
         and not deps.task_ignores_one_third_pack_rule(
             task, deps.node_configs.get(task.get("node") or "", {}))
     ]
-    if not candidates:
+    if not eligible_candidates:
         return
-    protected = [task for task in tasks_here if task not in candidates]
+    candidates, loss_protected, protection_fallback_used = (
+        _prefer_unprotected_candidates(eligible_candidates, deps)
+    )
+    eligible_ids = {id(task) for task in eligible_candidates}
+    stable_protected = [task for task in tasks_here if id(task) not in eligible_ids]
     victim = max(candidates, key=lambda task: _gpu_victim_key(task, deps))
     payload = {
         "kind": "gpu_one_third",
@@ -226,7 +252,13 @@ def _enforce_gpu_freeze_line(
         "gpu_idx": gpu["idx"],
         "gpu": deps.gpu_threshold_snapshot(gpu),
         "same_gpu_tasks": [deps.summarize_task_for_resource_log(task) for task in tasks_here],
-        "protected_stable_progress_task_ids": [task.get("id") for task in protected],
+        "protected_stable_progress_task_ids": [
+            task.get("id") for task in stable_protected
+        ],
+        "protected_evict_loss_task_ids": [
+            task.get("id") for task in loss_protected
+        ],
+        "protection_fallback_used": protection_fallback_used,
         "selection": "newest_launch_rollback_then_no_progress_then_least_progress",
     }
     reason = (
@@ -234,6 +266,7 @@ def _enforce_gpu_freeze_line(
         f"(mem={deps.format_mem_gb(gpu['used_mb'])}/{deps.format_mem_gb(gpu['total_mb'])}, "
         f"freeze={deps.format_mem_gb(freeze)}, util={gpu.get('util_pct','?')}%); "
         f"victim selected by newest launch rollback / no progress / least progress"
+        f"{_protection_fallback_note(protection_fallback_used)}"
     )
     _evict(victim, state, reason, payload, evicted, evicted_set, deps)
 
@@ -252,9 +285,9 @@ def _enforce_ram_headroom(
         state, evicted_set, lambda task, node_name=node["name"]: task.get("node") == node_name, deps)
     if len(tasks_here) < 2:
         return
-    protected = [task for task in tasks_here if deps.task_evict_loss_protected(task)]
-    protected_ids = {id(task) for task in protected}
-    candidates = [task for task in tasks_here if id(task) not in protected_ids] or tasks_here
+    candidates, protected, protection_fallback_used = (
+        _prefer_unprotected_candidates(tasks_here, deps)
+    )
     victim = max(candidates, key=lambda task: _ram_victim_key(task, deps))
     payload = {
         "kind": "node_ram_headroom",
@@ -266,6 +299,7 @@ def _enforce_ram_headroom(
         "protected_ckpt_task_ids": [
             task.get("id") for task in protected if deps.ckpt_task_evict_protected(task)
         ],
+        "protection_fallback_used": protection_fallback_used,
         "selection": "highest_ram_pressure_then_least_progress_then_newest_loss_aware",
     }
     reason = (
@@ -275,6 +309,7 @@ def _enforce_ram_headroom(
         f"headroom={deps.format_mem_gb(ram['headroom_mb'])}, "
         f"grace={deps.format_mem_gb(ram['headroom_grace_mb'])}); "
         f"victim selected by RAM pressure / least progress / newest with loss protection"
+        f"{_protection_fallback_note(protection_fallback_used)}"
     )
     _evict(victim, state, reason, payload, evicted, evicted_set, deps)
 

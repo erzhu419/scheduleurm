@@ -1,0 +1,59 @@
+{
+  "registered_at_utc": "2026-09-09T17:04:39.583741+00:00",
+  "base_protocol": {
+    "arrival_horizon_s": 20000.0,
+    "loads": [
+      0.5,
+      0.8,
+      0.95
+    ],
+    "seeds": [
+      41,
+      42,
+      43
+    ],
+    "budgets": [
+      10,
+      14,
+      26,
+      120
+    ],
+    "exact_reference_budget": 120,
+    "arrival_model": "independent Poisson arrivals per second; common tape across budgets",
+    "job_sizes": "fixed task-native canonical units",
+    "dispatch": "global synchronous frames; released jobs only; FIFO within class",
+    "score": "queue weighted actual frame departures divided by actual frame duration",
+    "budget_unit": "candidate construction or feasibility attempt; seeds included",
+    "stopping_rule": "stop arrivals at horizon, then drain the same finite prefix"
+  },
+  "role": "development only, original seeds 41/42/43; no confirmation seeds",
+  "policies": [
+    "v4_support",
+    "lookahead_cap_1pct",
+    "backlog_gated_lookahead_cap_1pct"
+  ],
+  "main_policy": "backlog_gated_lookahead_cap_1pct",
+  "main_budget": 26,
+  "gate_derivation": "b_i=max_a D_ai; w_i=lcm(b)/b_i; C=lanes*max_a(w dot D_a)",
+  "gate_weights": [
+    8,
+    8,
+    3
+  ],
+  "gate_capacity": 48,
+  "activation": "strict w dot Q > C, from visible queues before candidate generation, including drain",
+  "gate_interpretation": "every feasible frame has w dot D<=C, so activation implies some visible work must remain; the converse need not hold",
+  "branches": "active: frozen lookahead with terminal weight 1 and 1% cap; inactive: frozen v4",
+  "support": "both branches retain the seed lower bound; active loss<=1% of paid support incumbent, inactive loss=0",
+  "accounting": "exactly one search per frame; gate setup reads counted once per run, one weighted queue scan per frame; prediction work only on active frames",
+  "terminal_service_rates": [
+    0.1335789666104868,
+    0.29323460659958855,
+    0.35916419250378795
+  ],
+  "arrival_rate_input": "same registered per-class rates throughout arrival window and drain",
+  "reference": "v4 at K120; K120 of a cost selector is not the exact support reference",
+  "estimator": "arithmetic mean of paired seed mean-flow ratios; development descriptions, no confirmation intervals",
+  "stopping_rule": "all 108 cases once, one catalogue-derived gate; no threshold fitting or roster changes after results",
+  "execution_workers": 3
+}

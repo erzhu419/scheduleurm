@@ -2409,14 +2409,16 @@ def test_invariant_race_guard_includes_launching():
     dispatch_core_src = open(os.path.join(SCHED_DIR, "scheduler_dispatch/core.py")).read()
     # Dedup key is run identity, not signature alone. Same identity duplicates
     # still block; same broad signature with different cmd/cwd/env can run.
-    idx = dispatch_core_src.find("running_keys = {")
-    check("running_keys comprehension found",
-          idx > 0 and "def build_dispatch_queue_plan(" in dispatch_core_src,
+    idx = dispatch_core_src.find("running_keys = set()")
+    check("running_keys index found",
+          idx > 0
+          and "def build_dispatch_queue_plan(" in dispatch_core_src
+          and "run_key = task_run_identity(task)" in dispatch_core_src,
           diag="dedup key is run identity, not signature alone")
     if idx > 0:
-        block = dispatch_core_src[idx:idx + 400]
+        block = dispatch_core_src[idx:idx + 700]
         check("running_keys includes 'launching' state",
-              "launching" in block,
+              'status in ("running", "launching")' in block,
               diag=block[:300])
 
 
@@ -10455,8 +10457,8 @@ def test_phase3_4_6_7_8_claim_one_third_corrupt_recovery_atomic_deploy():
     dispatch_task_gates_src = open(os.path.join(SCHED_DIR, "scheduler_dispatch/task_gates.py")).read()
     check("3.4.12 P2-2: dispatch dedup uses _task_run_identity, not sig alone",
           "build_dispatch_queue_plan" in dispatch_core_src
-          and "running_keys = {" in dispatch_core_src
-          and "task_run_identity(t)" in dispatch_core_src,
+          and "running_keys = set()" in dispatch_core_src
+          and "run_key = task_run_identity(task)" in dispatch_core_src,
           diag="lets independent experiments with same family signature run in parallel")
     check("3.4.12 P2-2: in-loop add uses run identity too",
           "running_keys.add(launched_key)" in dispatch_launch_execution_src,
@@ -11252,8 +11254,8 @@ def test_phase3_0_3_migration_trigger():
     do_idx = src.find("def do_dispatch")
     next_def = src.find("\ndef ", do_idx + 5)
     body = src[do_idx:next_def]
-    cm_idx = body.find("deps.consider_migration(state, nodes)")
-    pp_idx = body.find("deps.preempt_for_high_priority(state, nodes)")
+    cm_idx = body.find("deps.consider_migration(")
+    pp_idx = body.find("deps.preempt_for_high_priority(")
     check("_do_dispatch calls _consider_migration",
           cm_idx > 0)
     check("migration runs BEFORE preemption (so placement loop sees new pin)",

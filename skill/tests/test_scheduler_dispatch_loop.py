@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from types import SimpleNamespace
 
 from skill.scheduler_dispatch_loop import (
@@ -80,10 +81,17 @@ def _deps(
             queued=queued,
             global_batch_plan=global_batch_plan,
             global_batch_event=global_batch_event,
+            identity_index={
+                "tasks_by_id": {
+                    task["id"]: task for task in state["tasks"] if task.get("id")
+                },
+                "terminal_by_run_key": {},
+            },
         )
 
-    def apply_gate(task, *, state, running_keys, deps):
+    def apply_gate(task, *, state, running_keys, identity_index, deps):
         calls.append(("gate", task["id"]))
+        assert identity_index["tasks_by_id"][task["id"]] is task
         return SimpleNamespace(
             events=[{"type": "gate_seen", "task_id": task["id"]}],
             skip_task=task["id"] in gate_skips,
@@ -246,6 +254,52 @@ def test_do_dispatch_happy_path_records_migration_preempt_global_batch_resume_an
         None, None, ["n1", "n2"],
     ) in calls
     assert any(call[0] == "launch" and call[1] == "t1" for call in calls)
+
+
+def test_campaign_reservation_blocks_foreign_queued_task_until_release_marker(tmp_path):
+    marker = tmp_path / "campaign_done.ready"
+    owner = _task("owner", status="running", node="local", signature="campaign/controller")
+    own_job = _task("own", signature="campaign/wave54")
+    foreign = _task("foreign", signature="BAPR/next", require_node="n1")
+    state = {
+        "tasks": [owner, own_job, foreign],
+        "node_reservations": [{
+            "owner_task_id": "owner", "nodes": ["n1"],
+            "signature_prefix": "campaign/", "until_file": str(marker),
+        }],
+    }
+    calls = []
+    events, _ = do_dispatch(state, [{"name": "n1"}, {"name": "n2"}], deps=_deps(calls))
+    assert own_job["status"] == "running"
+    assert foreign["status"] == "queued"
+    assert "reserved" in foreign["last_block_reason"]
+    assert not any(call[0] == "launch" and call[1] == "foreign" for call in calls)
+
+    marker.write_text("done\n")
+    do_dispatch(state, [{"name": "n1"}, {"name": "n2"}], deps=_deps([]))
+    assert foreign["status"] == "running"
+    assert state["node_reservations"] == []
+
+
+def test_campaign_reservation_routes_unpinned_foreign_task_to_other_node(tmp_path):
+    task = _task("foreign", signature="BAPR/new")
+    state = {"tasks": [task], "node_reservations": [{
+        "owner_task_id": "owner", "nodes": ["n1"],
+        "signature_prefix": "campaign/", "until_file": str(tmp_path / "done"),
+    }]}
+    calls = []
+    seen = {}
+    deps = replace(
+        _deps(calls),
+        pick_placement=lambda task, nodes, extra_allowed_nodes=None: (nodes[0]["name"], None),
+        consider_migration=lambda state, nodes: seen.setdefault("migration", [n["name"] for n in nodes]) and [],
+        preempt_for_high_priority=lambda state, nodes: seen.setdefault("preemption", nodes) and [],
+    )
+    do_dispatch(state, [{"name": "n1"}, {"name": "n2"}], deps=deps)
+    assert task["status"] == "running"
+    assert task["node"] == "n2"
+    assert seen["migration"] == ["n2"]
+    assert seen["preemption"][0]["measurement_reservation_active"] is True
 
 
 def test_enforced_global_batch_launches_only_selected_tasks_at_exact_actions():

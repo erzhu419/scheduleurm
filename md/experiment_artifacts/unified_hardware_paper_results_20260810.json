@@ -1,94 +1,94 @@
 {
   "ablations": {
     "ablation_delay_only": {
-      "ablation_strictly_dominates_full_count": 9,
-      "ablation_to_full_makespan_geomean_ratio": 1.2814017158741133,
-      "ablation_to_full_mean_flow_geomean_ratio": 1.3114308891083106,
-      "comparison_count": 528
+      "ablation_strictly_dominates_full_count": 13,
+      "ablation_to_full_makespan_geomean_ratio": 1.2250809816410608,
+      "ablation_to_full_mean_flow_geomean_ratio": 1.2939750952483469,
+      "comparison_count": 525
     },
     "ablation_high_profile_tiebreak": {
-      "ablation_strictly_dominates_full_count": 17,
-      "ablation_to_full_makespan_geomean_ratio": 1.00696561571358,
-      "ablation_to_full_mean_flow_geomean_ratio": 1.0103275183420695,
-      "comparison_count": 528
+      "ablation_strictly_dominates_full_count": 0,
+      "ablation_to_full_makespan_geomean_ratio": 1.0,
+      "ablation_to_full_mean_flow_geomean_ratio": 1.0,
+      "comparison_count": 525
     },
     "ablation_no_bounded_penalty": {
-      "ablation_strictly_dominates_full_count": 17,
-      "ablation_to_full_makespan_geomean_ratio": 1.00696561571358,
-      "ablation_to_full_mean_flow_geomean_ratio": 1.0103275183420695,
-      "comparison_count": 528
+      "ablation_strictly_dominates_full_count": 0,
+      "ablation_to_full_makespan_geomean_ratio": 1.0,
+      "ablation_to_full_mean_flow_geomean_ratio": 1.0,
+      "comparison_count": 525
     },
     "ablation_no_loaded_ledger": {
-      "ablation_strictly_dominates_full_count": 6,
-      "ablation_to_full_makespan_geomean_ratio": 1.018126731049861,
-      "ablation_to_full_mean_flow_geomean_ratio": 1.0493365996011006,
-      "comparison_count": 528
+      "ablation_strictly_dominates_full_count": 0,
+      "ablation_to_full_makespan_geomean_ratio": 1.0020583805317453,
+      "ablation_to_full_mean_flow_geomean_ratio": 1.035099163997125,
+      "comparison_count": 525
     },
     "ablation_no_migration": {
-      "ablation_strictly_dominates_full_count": 17,
-      "ablation_to_full_makespan_geomean_ratio": 1.00696561571358,
-      "ablation_to_full_mean_flow_geomean_ratio": 1.0103275183420695,
-      "comparison_count": 528
+      "ablation_strictly_dominates_full_count": 0,
+      "ablation_to_full_makespan_geomean_ratio": 1.0,
+      "ablation_to_full_mean_flow_geomean_ratio": 1.0,
+      "comparison_count": 525
     },
     "ablation_support_only": {
-      "ablation_strictly_dominates_full_count": 12,
-      "ablation_to_full_makespan_geomean_ratio": 1.0132881596313144,
-      "ablation_to_full_mean_flow_geomean_ratio": 1.0309629576108685,
-      "comparison_count": 528
+      "ablation_strictly_dominates_full_count": 0,
+      "ablation_to_full_makespan_geomean_ratio": 1.0,
+      "ablation_to_full_mean_flow_geomean_ratio": 1.0,
+      "comparison_count": 525
     }
   },
-  "claim_boundary": "These are paper-facing summaries of the exact schema-v2 measured-cache policy-semantics population. Legacy is fixed-cap semantics on the same cache; external policies are not full-stack binary executions. Performance diagnostics are reported even when superiority is false and are never used as input-gate assumptions.",
+  "claim_boundary": "These are paper-facing summaries of the causal schema-v3 measured-cache policy-semantics population. Legacy is fixed-cap semantics on the same cache; external policies are not full-stack binary executions. Performance diagnostics are reported even when superiority is false and are never used as input-gate assumptions. Finite completion ratios use only traces on which all registered policies complete; incomplete tails are reported separately and these conditional ratios do not measure overall superiority.",
   "errors": [],
   "gate": "unified_hardware_paper_results",
   "legacy": {
     "by_arrival_family": {
       "bursty": {
         "comparison_count": 48,
-        "legacy_to_ours_makespan_geomean_ratio": 1.7244122052052209,
-        "legacy_to_ours_makespan_median_ratio": 1.2301112683500879,
+        "legacy_to_ours_makespan_geomean_ratio": 1.6907258533038192,
+        "legacy_to_ours_makespan_median_ratio": 1.1501609260835073,
         "legacy_to_ours_makespan_p05_ratio": 1.0,
         "legacy_to_ours_makespan_p95_ratio": 4.041277110619222,
         "legacy_to_ours_makespan_worst_ratio": 1.0,
-        "legacy_to_ours_mean_flow_geomean_ratio": 2.208136261627742,
-        "legacy_to_ours_mean_flow_median_ratio": 1.9707624404030966,
+        "legacy_to_ours_mean_flow_geomean_ratio": 2.1890111860082495,
+        "legacy_to_ours_mean_flow_median_ratio": 1.924469145321013,
         "legacy_to_ours_mean_flow_p05_ratio": 1.0,
         "legacy_to_ours_mean_flow_p95_ratio": 7.442576902813363,
         "legacy_to_ours_mean_flow_worst_ratio": 0.9973202567145671
       },
       "load_sweep": {
-        "comparison_count": 384,
-        "legacy_to_ours_makespan_geomean_ratio": 1.5903848770411548,
-        "legacy_to_ours_makespan_median_ratio": 1.2563578736555678,
+        "comparison_count": 382,
+        "legacy_to_ours_makespan_geomean_ratio": 1.5547015715665147,
+        "legacy_to_ours_makespan_median_ratio": 1.1387554415697385,
         "legacy_to_ours_makespan_p05_ratio": 1.0,
-        "legacy_to_ours_makespan_p95_ratio": 4.036506165359556,
+        "legacy_to_ours_makespan_p95_ratio": 4.036673709532329,
         "legacy_to_ours_makespan_worst_ratio": 0.9894107961999521,
-        "legacy_to_ours_mean_flow_geomean_ratio": 2.4126317425072044,
-        "legacy_to_ours_mean_flow_median_ratio": 1.9381667124262956,
+        "legacy_to_ours_mean_flow_geomean_ratio": 2.356323653098648,
+        "legacy_to_ours_mean_flow_median_ratio": 1.8992510235316327,
         "legacy_to_ours_mean_flow_p05_ratio": 1.0,
-        "legacy_to_ours_mean_flow_p95_ratio": 11.75187936256251,
+        "legacy_to_ours_mean_flow_p95_ratio": 11.785813777718753,
         "legacy_to_ours_mean_flow_worst_ratio": 0.9850942133251172
       },
       "poisson": {
-        "comparison_count": 48,
-        "legacy_to_ours_makespan_geomean_ratio": 1.6564853073374093,
-        "legacy_to_ours_makespan_median_ratio": 1.3756220566570005,
+        "comparison_count": 47,
+        "legacy_to_ours_makespan_geomean_ratio": 1.625284421217718,
+        "legacy_to_ours_makespan_median_ratio": 1.4054184984991784,
         "legacy_to_ours_makespan_p05_ratio": 1.0,
-        "legacy_to_ours_makespan_p95_ratio": 4.016021137446055,
+        "legacy_to_ours_makespan_p95_ratio": 4.0179984839341145,
         "legacy_to_ours_makespan_worst_ratio": 0.9877457133374057,
-        "legacy_to_ours_mean_flow_geomean_ratio": 2.6235026424570065,
-        "legacy_to_ours_mean_flow_median_ratio": 2.1633370373439784,
+        "legacy_to_ours_mean_flow_geomean_ratio": 2.582068488673733,
+        "legacy_to_ours_mean_flow_median_ratio": 2.0871696488661846,
         "legacy_to_ours_mean_flow_p05_ratio": 1.0,
-        "legacy_to_ours_mean_flow_p95_ratio": 12.490750122857712,
+        "legacy_to_ours_mean_flow_p95_ratio": 12.497948928834461,
         "legacy_to_ours_mean_flow_worst_ratio": 0.9958063372548129
       },
       "static": {
         "comparison_count": 48,
-        "legacy_to_ours_makespan_geomean_ratio": 1.949871099002849,
-        "legacy_to_ours_makespan_median_ratio": 1.952505138003363,
+        "legacy_to_ours_makespan_geomean_ratio": 1.947791717611407,
+        "legacy_to_ours_makespan_median_ratio": 1.939405662050378,
         "legacy_to_ours_makespan_p05_ratio": 1.0244409985689664,
         "legacy_to_ours_makespan_p95_ratio": 4.084247197410413,
         "legacy_to_ours_makespan_worst_ratio": 1.0114527711235455,
-        "legacy_to_ours_mean_flow_geomean_ratio": 2.128521429462994,
+        "legacy_to_ours_mean_flow_geomean_ratio": 2.128329589271965,
         "legacy_to_ours_mean_flow_median_ratio": 1.7020192040657591,
         "legacy_to_ours_mean_flow_p05_ratio": 0.9934178530721103,
         "legacy_to_ours_mean_flow_p95_ratio": 6.003741607663871,
@@ -111,16 +111,16 @@
       },
       "q01": {
         "comparison_count": 132,
-        "legacy_to_ours_makespan_geomean_ratio": 1.1392285028491997,
-        "legacy_to_ours_makespan_median_ratio": 1.1272966639215665,
+        "legacy_to_ours_makespan_geomean_ratio": 1.0403787513817246,
+        "legacy_to_ours_makespan_median_ratio": 1.0,
         "legacy_to_ours_makespan_p05_ratio": 1.0,
-        "legacy_to_ours_makespan_p95_ratio": 1.4210679473270802,
-        "legacy_to_ours_makespan_worst_ratio": 0.9988466279265168,
-        "legacy_to_ours_mean_flow_geomean_ratio": 1.5618216918243628,
-        "legacy_to_ours_mean_flow_median_ratio": 1.4274938548006166,
-        "legacy_to_ours_mean_flow_p05_ratio": 1.232440096922637,
-        "legacy_to_ours_mean_flow_p95_ratio": 2.6161036541478024,
-        "legacy_to_ours_mean_flow_worst_ratio": 1.0936613387063958
+        "legacy_to_ours_makespan_p95_ratio": 1.202240521772468,
+        "legacy_to_ours_makespan_worst_ratio": 0.9982641348362944,
+        "legacy_to_ours_mean_flow_geomean_ratio": 1.416261667963837,
+        "legacy_to_ours_mean_flow_median_ratio": 1.3769574716981874,
+        "legacy_to_ours_mean_flow_p05_ratio": 1.053085152239586,
+        "legacy_to_ours_mean_flow_p95_ratio": 2.1974619160411417,
+        "legacy_to_ours_mean_flow_worst_ratio": 1.0171501808897179
       },
       "q10": {
         "comparison_count": 198,
@@ -136,30 +136,30 @@
         "legacy_to_ours_mean_flow_worst_ratio": 1.4924051853820905
       },
       "q11": {
-        "comparison_count": 132,
-        "legacy_to_ours_makespan_geomean_ratio": 1.0083258827108432,
+        "comparison_count": 129,
+        "legacy_to_ours_makespan_geomean_ratio": 1.0084274575056924,
         "legacy_to_ours_makespan_median_ratio": 1.0,
         "legacy_to_ours_makespan_p05_ratio": 1.0,
-        "legacy_to_ours_makespan_p95_ratio": 1.0333198104060066,
+        "legacy_to_ours_makespan_p95_ratio": 1.0338674359014104,
         "legacy_to_ours_makespan_worst_ratio": 0.9877457133374057,
-        "legacy_to_ours_mean_flow_geomean_ratio": 1.0051553635603874,
+        "legacy_to_ours_mean_flow_geomean_ratio": 1.0052496223784508,
         "legacy_to_ours_mean_flow_median_ratio": 1.0,
-        "legacy_to_ours_mean_flow_p05_ratio": 0.9947324030724962,
-        "legacy_to_ours_mean_flow_p95_ratio": 1.0094815855137511,
+        "legacy_to_ours_mean_flow_p05_ratio": 0.9946231904432227,
+        "legacy_to_ours_mean_flow_p95_ratio": 1.0097447751538726,
         "legacy_to_ours_mean_flow_worst_ratio": 0.9850942133251172
       }
     },
-    "comparison_count": 528,
+    "comparison_count": 525,
     "legacy_strictly_dominates_ours_count": 5,
-    "legacy_to_ours_makespan_geomean_ratio": 1.6381370208834314,
-    "legacy_to_ours_makespan_median_ratio": 1.2938451502826511,
+    "legacy_to_ours_makespan_geomean_ratio": 1.6056618939781393,
+    "legacy_to_ours_makespan_median_ratio": 1.1712454987797696,
     "legacy_to_ours_makespan_p05_ratio": 1.0,
-    "legacy_to_ours_makespan_p95_ratio": 4.0433270413413425,
+    "legacy_to_ours_makespan_p95_ratio": 4.043495335139865,
     "legacy_to_ours_makespan_worst_ratio": 0.9877457133374057,
-    "legacy_to_ours_mean_flow_geomean_ratio": 2.3842719587618846,
-    "legacy_to_ours_mean_flow_median_ratio": 1.9380156519906155,
+    "legacy_to_ours_mean_flow_geomean_ratio": 2.337903983133531,
+    "legacy_to_ours_mean_flow_median_ratio": 1.862342452881913,
     "legacy_to_ours_mean_flow_p05_ratio": 1.0,
-    "legacy_to_ours_mean_flow_p95_ratio": 11.45746815974605,
+    "legacy_to_ours_mean_flow_p95_ratio": 11.460026162883963,
     "legacy_to_ours_mean_flow_worst_ratio": 0.9850942133251172,
     "ours_strictly_dominates_every_row": false
   },
@@ -429,41 +429,41 @@
     "by_arrival_family": {
       "bursty": {
         "comparison_count": 48,
-        "legacy_to_ours_makespan_geomean_ratio": 1.7244122052052209,
-        "legacy_to_ours_makespan_median_ratio": 1.2301112683500879,
+        "legacy_to_ours_makespan_geomean_ratio": 1.6907258533038192,
+        "legacy_to_ours_makespan_median_ratio": 1.1501609260835073,
         "legacy_to_ours_makespan_p05_ratio": 1.0,
         "legacy_to_ours_makespan_p95_ratio": 4.041277110619222,
         "legacy_to_ours_makespan_worst_ratio": 1.0,
-        "legacy_to_ours_mean_flow_geomean_ratio": 2.208136261627742,
-        "legacy_to_ours_mean_flow_median_ratio": 1.9707624404030966,
+        "legacy_to_ours_mean_flow_geomean_ratio": 2.1890111860082495,
+        "legacy_to_ours_mean_flow_median_ratio": 1.924469145321013,
         "legacy_to_ours_mean_flow_p05_ratio": 1.0,
         "legacy_to_ours_mean_flow_p95_ratio": 7.442576902813363,
         "legacy_to_ours_mean_flow_worst_ratio": 0.9973202567145671
       },
       "load_sweep": {
-        "comparison_count": 384,
-        "legacy_to_ours_makespan_geomean_ratio": 1.5903848770411548,
-        "legacy_to_ours_makespan_median_ratio": 1.2563578736555678,
+        "comparison_count": 382,
+        "legacy_to_ours_makespan_geomean_ratio": 1.5547015715665147,
+        "legacy_to_ours_makespan_median_ratio": 1.1387554415697385,
         "legacy_to_ours_makespan_p05_ratio": 1.0,
-        "legacy_to_ours_makespan_p95_ratio": 4.036506165359556,
+        "legacy_to_ours_makespan_p95_ratio": 4.036673709532329,
         "legacy_to_ours_makespan_worst_ratio": 0.9894107961999521,
-        "legacy_to_ours_mean_flow_geomean_ratio": 2.4126317425072044,
-        "legacy_to_ours_mean_flow_median_ratio": 1.9381667124262956,
+        "legacy_to_ours_mean_flow_geomean_ratio": 2.356323653098648,
+        "legacy_to_ours_mean_flow_median_ratio": 1.8992510235316327,
         "legacy_to_ours_mean_flow_p05_ratio": 1.0,
-        "legacy_to_ours_mean_flow_p95_ratio": 11.75187936256251,
+        "legacy_to_ours_mean_flow_p95_ratio": 11.785813777718753,
         "legacy_to_ours_mean_flow_worst_ratio": 0.9850942133251172
       },
       "poisson": {
-        "comparison_count": 48,
-        "legacy_to_ours_makespan_geomean_ratio": 1.6564853073374093,
-        "legacy_to_ours_makespan_median_ratio": 1.3756220566570005,
+        "comparison_count": 47,
+        "legacy_to_ours_makespan_geomean_ratio": 1.625284421217718,
+        "legacy_to_ours_makespan_median_ratio": 1.4054184984991784,
         "legacy_to_ours_makespan_p05_ratio": 1.0,
-        "legacy_to_ours_makespan_p95_ratio": 4.016021137446055,
+        "legacy_to_ours_makespan_p95_ratio": 4.0179984839341145,
         "legacy_to_ours_makespan_worst_ratio": 0.9877457133374057,
-        "legacy_to_ours_mean_flow_geomean_ratio": 2.6235026424570065,
-        "legacy_to_ours_mean_flow_median_ratio": 2.1633370373439784,
+        "legacy_to_ours_mean_flow_geomean_ratio": 2.582068488673733,
+        "legacy_to_ours_mean_flow_median_ratio": 2.0871696488661846,
         "legacy_to_ours_mean_flow_p05_ratio": 1.0,
-        "legacy_to_ours_mean_flow_p95_ratio": 12.490750122857712,
+        "legacy_to_ours_mean_flow_p95_ratio": 12.497948928834461,
         "legacy_to_ours_mean_flow_worst_ratio": 0.9958063372548129
       }
     },
@@ -483,16 +483,16 @@
       },
       "q01": {
         "comparison_count": 120,
-        "legacy_to_ours_makespan_geomean_ratio": 1.1290707340153106,
-        "legacy_to_ours_makespan_median_ratio": 1.1168086581510066,
+        "legacy_to_ours_makespan_geomean_ratio": 1.0222219445737084,
+        "legacy_to_ours_makespan_median_ratio": 1.0,
         "legacy_to_ours_makespan_p05_ratio": 1.0,
-        "legacy_to_ours_makespan_p95_ratio": 1.397464137286232,
-        "legacy_to_ours_makespan_worst_ratio": 0.9988466279265168,
-        "legacy_to_ours_mean_flow_geomean_ratio": 1.5479130474157379,
-        "legacy_to_ours_mean_flow_median_ratio": 1.4026561086337188,
-        "legacy_to_ours_mean_flow_p05_ratio": 1.228091892107143,
-        "legacy_to_ours_mean_flow_p95_ratio": 2.681261010165949,
-        "legacy_to_ours_mean_flow_worst_ratio": 1.0936613387063958
+        "legacy_to_ours_makespan_p95_ratio": 1.142094166791949,
+        "legacy_to_ours_makespan_worst_ratio": 0.9982641348362944,
+        "legacy_to_ours_mean_flow_geomean_ratio": 1.390034163013575,
+        "legacy_to_ours_mean_flow_median_ratio": 1.3372498466683638,
+        "legacy_to_ours_mean_flow_p05_ratio": 1.0505230219388255,
+        "legacy_to_ours_mean_flow_p95_ratio": 2.1073648567931884,
+        "legacy_to_ours_mean_flow_worst_ratio": 1.0171501808897179
       },
       "q10": {
         "comparison_count": 180,
@@ -508,77 +508,77 @@
         "legacy_to_ours_mean_flow_worst_ratio": 1.4924051853820905
       },
       "q11": {
-        "comparison_count": 120,
-        "legacy_to_ours_makespan_geomean_ratio": 1.0039214764438003,
+        "comparison_count": 117,
+        "legacy_to_ours_makespan_geomean_ratio": 1.0039202878774778,
         "legacy_to_ours_makespan_median_ratio": 1.0,
         "legacy_to_ours_makespan_p05_ratio": 1.0,
-        "legacy_to_ours_makespan_p95_ratio": 1.0201901822194064,
+        "legacy_to_ours_makespan_p95_ratio": 1.020364169577149,
         "legacy_to_ours_makespan_worst_ratio": 0.9877457133374057,
-        "legacy_to_ours_mean_flow_geomean_ratio": 1.0010378355014102,
+        "legacy_to_ours_mean_flow_geomean_ratio": 1.0010359702126128,
         "legacy_to_ours_mean_flow_median_ratio": 1.0,
-        "legacy_to_ours_mean_flow_p05_ratio": 0.9973089331229177,
-        "legacy_to_ours_mean_flow_p95_ratio": 1.0076831715190564,
+        "legacy_to_ours_mean_flow_p05_ratio": 0.9972749623479696,
+        "legacy_to_ours_mean_flow_p95_ratio": 1.0077568291930405,
         "legacy_to_ours_mean_flow_worst_ratio": 0.9850942133251172
       }
     },
-    "comparison_count": 480,
+    "comparison_count": 477,
     "legacy_strictly_dominates_ours_count": 5,
-    "legacy_to_ours_makespan_geomean_ratio": 1.6098472035419065,
-    "legacy_to_ours_makespan_median_ratio": 1.2563578736555678,
+    "legacy_to_ours_makespan_geomean_ratio": 1.574753199051062,
+    "legacy_to_ours_makespan_median_ratio": 1.141827924665079,
     "legacy_to_ours_makespan_p05_ratio": 1.0,
-    "legacy_to_ours_makespan_p95_ratio": 4.0369501604311555,
+    "legacy_to_ours_makespan_p95_ratio": 4.037528196868472,
     "legacy_to_ours_makespan_worst_ratio": 0.9877457133374057,
-    "legacy_to_ours_mean_flow_geomean_ratio": 2.4114794622030638,
-    "legacy_to_ours_mean_flow_median_ratio": 1.9609695343937532,
+    "legacy_to_ours_mean_flow_geomean_ratio": 2.360103790352902,
+    "legacy_to_ours_mean_flow_median_ratio": 1.9123564981319279,
     "legacy_to_ours_mean_flow_p05_ratio": 1.0,
-    "legacy_to_ours_mean_flow_p95_ratio": 11.803659602140694,
+    "legacy_to_ours_mean_flow_p95_ratio": 11.806295452672158,
     "legacy_to_ours_mean_flow_worst_ratio": 0.9850942133251172,
     "ours_strictly_dominates_every_row": false
   },
   "online_queues": {
     "distributions": {
       "maximum_queue_backlog_jobs": {
-        "count": 480,
-        "maximum": 37.0,
-        "mean": 9.152083333333334,
-        "median": 7.0,
+        "count": 477,
+        "maximum": 25.0,
+        "mean": 7.155136268343815,
+        "median": 6.0,
         "minimum": 1.0,
         "p05": 2.0,
-        "p95": 23.049999999999955
+        "p95": 15.0
       },
       "maximum_unfinished_jobs": {
-        "count": 480,
-        "maximum": 42.0,
-        "mean": 12.320833333333333,
-        "median": 9.0,
+        "count": 477,
+        "maximum": 34.0,
+        "mean": 9.568134171907756,
+        "median": 8.0,
         "minimum": 2.0,
         "p05": 3.0,
-        "p95": 32.0
+        "p95": 18.0
       },
       "time_weighted_queue_backlog_jobs": {
-        "count": 480,
-        "maximum": 14.491228956203681,
-        "mean": 2.9223004408827715,
-        "median": 1.8676756757868676,
+        "count": 477,
+        "maximum": 10.466853657613918,
+        "mean": 1.6710769408183919,
+        "median": 1.0141135724400583,
         "minimum": 0.0,
-        "p05": 0.10751645291994348,
-        "p95": 9.65664946764746
+        "p05": 0.028434771793228487,
+        "p95": 4.982385000162213
       },
       "time_weighted_unfinished_jobs": {
-        "count": 480,
-        "maximum": 20.896246990056053,
-        "mean": 5.815768444612645,
-        "median": 4.437098098460492,
+        "count": 477,
+        "maximum": 16.12617959269306,
+        "mean": 3.914696989237747,
+        "median": 3.2063021400104645,
         "minimum": 0.2919555600125423,
-        "p05": 0.8415165446493325,
-        "p95": 15.339863064534903
+        "p05": 0.6814157838395218,
+        "p95": 8.898402245608503
       }
     },
-    "maximum_queue_backlog_jobs": 37,
-    "maximum_unfinished_jobs": 42,
-    "mean_of_time_weighted_queue_backlog_jobs": 2.9223004408827715,
-    "mean_of_time_weighted_unfinished_jobs": 5.815768444612645,
-    "run_count": 480
+    "maximum_queue_backlog_jobs": 25,
+    "maximum_unfinished_jobs": 34,
+    "mean_of_time_weighted_queue_backlog_jobs": 1.6710769408183919,
+    "mean_of_time_weighted_unfinished_jobs": 3.914696989237747,
+    "run_count": 477
   },
   "pass": true,
   "population": {
@@ -589,13 +589,395 @@
       "static"
     ],
     "complete_matrix_run_count": 16920,
-    "hardware_online_scheduleurm_run_count": 480,
-    "hardware_online_trace_count": 480,
+    "excluded_incomplete_online_trace_count": 3,
+    "excluded_incomplete_trace_count": 3,
+    "hardware_online_scheduleurm_run_count": 477,
+    "hardware_online_trace_count": 477,
     "hardware_scenario_count": 16,
-    "hardware_scheduleurm_run_count": 528,
+    "hardware_scheduleurm_run_count": 525,
     "hardware_static_scheduleurm_run_count": 48,
     "hardware_static_trace_count": 48,
-    "hardware_trace_count": 528,
+    "hardware_trace_count": 525,
+    "incomplete_runs_by_policy": {
+      "ablation_delay_only": 3,
+      "ablation_high_profile_tiebreak": 3,
+      "ablation_no_bounded_penalty": 3,
+      "ablation_no_loaded_ledger": 3,
+      "ablation_no_migration": 3,
+      "ablation_support_only": 3,
+      "legacy_fixed_caps": 3,
+      "scheduleurm_unified_robust_maxweight": 3,
+      "sota_gavel_finish_time_fairness": 3,
+      "sota_gavel_pollux_sia_table_goodput": 3,
+      "sota_iadeep_salus_interference_guard": 3,
+      "sota_quadrant_composite": 3,
+      "sota_salus_iadeep_packing_guard": 3,
+      "sota_sia_pollux_resource_adaptive": 3,
+      "sota_srpt_gittins_mean_flow_oracle": 3
+    },
+    "incomplete_scheduleurm_run_count": 3,
+    "incomplete_tail_rows": [
+      {
+        "completed_jobs": 15,
+        "observation_horizon_s": 1758.470553369516,
+        "policy": "scheduleurm_unified_robust_maxweight",
+        "scenario_id": "q11:gpu_2080ti_11gb_quad_node007",
+        "trace_id": "q11:gpu_2080ti_11gb_quad_node007:load_sweep:poisson:load=0.950:seed=41",
+        "unfinished_jobs": 1
+      },
+      {
+        "completed_jobs": 15,
+        "observation_horizon_s": 1758.470553369516,
+        "policy": "legacy_fixed_caps",
+        "scenario_id": "q11:gpu_2080ti_11gb_quad_node007",
+        "trace_id": "q11:gpu_2080ti_11gb_quad_node007:load_sweep:poisson:load=0.950:seed=41",
+        "unfinished_jobs": 1
+      },
+      {
+        "completed_jobs": 15,
+        "observation_horizon_s": 1758.470553369516,
+        "policy": "sota_gavel_pollux_sia_table_goodput",
+        "scenario_id": "q11:gpu_2080ti_11gb_quad_node007",
+        "trace_id": "q11:gpu_2080ti_11gb_quad_node007:load_sweep:poisson:load=0.950:seed=41",
+        "unfinished_jobs": 1
+      },
+      {
+        "completed_jobs": 15,
+        "observation_horizon_s": 1758.470553369516,
+        "policy": "sota_srpt_gittins_mean_flow_oracle",
+        "scenario_id": "q11:gpu_2080ti_11gb_quad_node007",
+        "trace_id": "q11:gpu_2080ti_11gb_quad_node007:load_sweep:poisson:load=0.950:seed=41",
+        "unfinished_jobs": 1
+      },
+      {
+        "completed_jobs": 15,
+        "observation_horizon_s": 1758.470553369516,
+        "policy": "sota_iadeep_salus_interference_guard",
+        "scenario_id": "q11:gpu_2080ti_11gb_quad_node007",
+        "trace_id": "q11:gpu_2080ti_11gb_quad_node007:load_sweep:poisson:load=0.950:seed=41",
+        "unfinished_jobs": 1
+      },
+      {
+        "completed_jobs": 15,
+        "observation_horizon_s": 1758.470553369516,
+        "policy": "sota_quadrant_composite",
+        "scenario_id": "q11:gpu_2080ti_11gb_quad_node007",
+        "trace_id": "q11:gpu_2080ti_11gb_quad_node007:load_sweep:poisson:load=0.950:seed=41",
+        "unfinished_jobs": 1
+      },
+      {
+        "completed_jobs": 15,
+        "observation_horizon_s": 1758.470553369516,
+        "policy": "sota_gavel_finish_time_fairness",
+        "scenario_id": "q11:gpu_2080ti_11gb_quad_node007",
+        "trace_id": "q11:gpu_2080ti_11gb_quad_node007:load_sweep:poisson:load=0.950:seed=41",
+        "unfinished_jobs": 1
+      },
+      {
+        "completed_jobs": 15,
+        "observation_horizon_s": 1758.470553369516,
+        "policy": "sota_sia_pollux_resource_adaptive",
+        "scenario_id": "q11:gpu_2080ti_11gb_quad_node007",
+        "trace_id": "q11:gpu_2080ti_11gb_quad_node007:load_sweep:poisson:load=0.950:seed=41",
+        "unfinished_jobs": 1
+      },
+      {
+        "completed_jobs": 15,
+        "observation_horizon_s": 1758.470553369516,
+        "policy": "sota_salus_iadeep_packing_guard",
+        "scenario_id": "q11:gpu_2080ti_11gb_quad_node007",
+        "trace_id": "q11:gpu_2080ti_11gb_quad_node007:load_sweep:poisson:load=0.950:seed=41",
+        "unfinished_jobs": 1
+      },
+      {
+        "completed_jobs": 15,
+        "observation_horizon_s": 1758.470553369516,
+        "policy": "ablation_support_only",
+        "scenario_id": "q11:gpu_2080ti_11gb_quad_node007",
+        "trace_id": "q11:gpu_2080ti_11gb_quad_node007:load_sweep:poisson:load=0.950:seed=41",
+        "unfinished_jobs": 1
+      },
+      {
+        "completed_jobs": 15,
+        "observation_horizon_s": 1758.470553369516,
+        "policy": "ablation_delay_only",
+        "scenario_id": "q11:gpu_2080ti_11gb_quad_node007",
+        "trace_id": "q11:gpu_2080ti_11gb_quad_node007:load_sweep:poisson:load=0.950:seed=41",
+        "unfinished_jobs": 1
+      },
+      {
+        "completed_jobs": 15,
+        "observation_horizon_s": 1758.470553369516,
+        "policy": "ablation_no_bounded_penalty",
+        "scenario_id": "q11:gpu_2080ti_11gb_quad_node007",
+        "trace_id": "q11:gpu_2080ti_11gb_quad_node007:load_sweep:poisson:load=0.950:seed=41",
+        "unfinished_jobs": 1
+      },
+      {
+        "completed_jobs": 15,
+        "observation_horizon_s": 1758.470553369516,
+        "policy": "ablation_no_loaded_ledger",
+        "scenario_id": "q11:gpu_2080ti_11gb_quad_node007",
+        "trace_id": "q11:gpu_2080ti_11gb_quad_node007:load_sweep:poisson:load=0.950:seed=41",
+        "unfinished_jobs": 1
+      },
+      {
+        "completed_jobs": 15,
+        "observation_horizon_s": 1758.470553369516,
+        "policy": "ablation_no_migration",
+        "scenario_id": "q11:gpu_2080ti_11gb_quad_node007",
+        "trace_id": "q11:gpu_2080ti_11gb_quad_node007:load_sweep:poisson:load=0.950:seed=41",
+        "unfinished_jobs": 1
+      },
+      {
+        "completed_jobs": 15,
+        "observation_horizon_s": 1758.470553369516,
+        "policy": "ablation_high_profile_tiebreak",
+        "scenario_id": "q11:gpu_2080ti_11gb_quad_node007",
+        "trace_id": "q11:gpu_2080ti_11gb_quad_node007:load_sweep:poisson:load=0.950:seed=41",
+        "unfinished_jobs": 1
+      },
+      {
+        "completed_jobs": 13,
+        "observation_horizon_s": 1790.8235419967868,
+        "policy": "scheduleurm_unified_robust_maxweight",
+        "scenario_id": "q11:gpu_3080ti_12gb_dual_gpu_a",
+        "trace_id": "q11:gpu_3080ti_12gb_dual_gpu_a:poisson:poisson:load=0.850:seed=43",
+        "unfinished_jobs": 3
+      },
+      {
+        "completed_jobs": 13,
+        "observation_horizon_s": 1790.8235419967868,
+        "policy": "legacy_fixed_caps",
+        "scenario_id": "q11:gpu_3080ti_12gb_dual_gpu_a",
+        "trace_id": "q11:gpu_3080ti_12gb_dual_gpu_a:poisson:poisson:load=0.850:seed=43",
+        "unfinished_jobs": 3
+      },
+      {
+        "completed_jobs": 13,
+        "observation_horizon_s": 1790.8235419967868,
+        "policy": "sota_gavel_pollux_sia_table_goodput",
+        "scenario_id": "q11:gpu_3080ti_12gb_dual_gpu_a",
+        "trace_id": "q11:gpu_3080ti_12gb_dual_gpu_a:poisson:poisson:load=0.850:seed=43",
+        "unfinished_jobs": 3
+      },
+      {
+        "completed_jobs": 13,
+        "observation_horizon_s": 1790.8235419967868,
+        "policy": "sota_srpt_gittins_mean_flow_oracle",
+        "scenario_id": "q11:gpu_3080ti_12gb_dual_gpu_a",
+        "trace_id": "q11:gpu_3080ti_12gb_dual_gpu_a:poisson:poisson:load=0.850:seed=43",
+        "unfinished_jobs": 3
+      },
+      {
+        "completed_jobs": 13,
+        "observation_horizon_s": 1790.8235419967868,
+        "policy": "sota_iadeep_salus_interference_guard",
+        "scenario_id": "q11:gpu_3080ti_12gb_dual_gpu_a",
+        "trace_id": "q11:gpu_3080ti_12gb_dual_gpu_a:poisson:poisson:load=0.850:seed=43",
+        "unfinished_jobs": 3
+      },
+      {
+        "completed_jobs": 13,
+        "observation_horizon_s": 1790.8235419967868,
+        "policy": "sota_quadrant_composite",
+        "scenario_id": "q11:gpu_3080ti_12gb_dual_gpu_a",
+        "trace_id": "q11:gpu_3080ti_12gb_dual_gpu_a:poisson:poisson:load=0.850:seed=43",
+        "unfinished_jobs": 3
+      },
+      {
+        "completed_jobs": 13,
+        "observation_horizon_s": 1790.8235419967868,
+        "policy": "sota_gavel_finish_time_fairness",
+        "scenario_id": "q11:gpu_3080ti_12gb_dual_gpu_a",
+        "trace_id": "q11:gpu_3080ti_12gb_dual_gpu_a:poisson:poisson:load=0.850:seed=43",
+        "unfinished_jobs": 3
+      },
+      {
+        "completed_jobs": 13,
+        "observation_horizon_s": 1790.8235419967868,
+        "policy": "sota_sia_pollux_resource_adaptive",
+        "scenario_id": "q11:gpu_3080ti_12gb_dual_gpu_a",
+        "trace_id": "q11:gpu_3080ti_12gb_dual_gpu_a:poisson:poisson:load=0.850:seed=43",
+        "unfinished_jobs": 3
+      },
+      {
+        "completed_jobs": 13,
+        "observation_horizon_s": 1790.8235419967868,
+        "policy": "sota_salus_iadeep_packing_guard",
+        "scenario_id": "q11:gpu_3080ti_12gb_dual_gpu_a",
+        "trace_id": "q11:gpu_3080ti_12gb_dual_gpu_a:poisson:poisson:load=0.850:seed=43",
+        "unfinished_jobs": 3
+      },
+      {
+        "completed_jobs": 13,
+        "observation_horizon_s": 1790.8235419967868,
+        "policy": "ablation_support_only",
+        "scenario_id": "q11:gpu_3080ti_12gb_dual_gpu_a",
+        "trace_id": "q11:gpu_3080ti_12gb_dual_gpu_a:poisson:poisson:load=0.850:seed=43",
+        "unfinished_jobs": 3
+      },
+      {
+        "completed_jobs": 13,
+        "observation_horizon_s": 1790.8235419967868,
+        "policy": "ablation_delay_only",
+        "scenario_id": "q11:gpu_3080ti_12gb_dual_gpu_a",
+        "trace_id": "q11:gpu_3080ti_12gb_dual_gpu_a:poisson:poisson:load=0.850:seed=43",
+        "unfinished_jobs": 3
+      },
+      {
+        "completed_jobs": 13,
+        "observation_horizon_s": 1790.8235419967868,
+        "policy": "ablation_no_bounded_penalty",
+        "scenario_id": "q11:gpu_3080ti_12gb_dual_gpu_a",
+        "trace_id": "q11:gpu_3080ti_12gb_dual_gpu_a:poisson:poisson:load=0.850:seed=43",
+        "unfinished_jobs": 3
+      },
+      {
+        "completed_jobs": 13,
+        "observation_horizon_s": 1790.8235419967868,
+        "policy": "ablation_no_loaded_ledger",
+        "scenario_id": "q11:gpu_3080ti_12gb_dual_gpu_a",
+        "trace_id": "q11:gpu_3080ti_12gb_dual_gpu_a:poisson:poisson:load=0.850:seed=43",
+        "unfinished_jobs": 3
+      },
+      {
+        "completed_jobs": 13,
+        "observation_horizon_s": 1790.8235419967868,
+        "policy": "ablation_no_migration",
+        "scenario_id": "q11:gpu_3080ti_12gb_dual_gpu_a",
+        "trace_id": "q11:gpu_3080ti_12gb_dual_gpu_a:poisson:poisson:load=0.850:seed=43",
+        "unfinished_jobs": 3
+      },
+      {
+        "completed_jobs": 13,
+        "observation_horizon_s": 1790.8235419967868,
+        "policy": "ablation_high_profile_tiebreak",
+        "scenario_id": "q11:gpu_3080ti_12gb_dual_gpu_a",
+        "trace_id": "q11:gpu_3080ti_12gb_dual_gpu_a:poisson:poisson:load=0.850:seed=43",
+        "unfinished_jobs": 3
+      },
+      {
+        "completed_jobs": 15,
+        "observation_horizon_s": 2851.0707714684513,
+        "policy": "scheduleurm_unified_robust_maxweight",
+        "scenario_id": "q11:gpu_3080ti_12gb_dual_gpu_b",
+        "trace_id": "q11:gpu_3080ti_12gb_dual_gpu_b:load_sweep:poisson:load=0.700:seed=43",
+        "unfinished_jobs": 1
+      },
+      {
+        "completed_jobs": 15,
+        "observation_horizon_s": 2872.7187665887864,
+        "policy": "legacy_fixed_caps",
+        "scenario_id": "q11:gpu_3080ti_12gb_dual_gpu_b",
+        "trace_id": "q11:gpu_3080ti_12gb_dual_gpu_b:load_sweep:poisson:load=0.700:seed=43",
+        "unfinished_jobs": 1
+      },
+      {
+        "completed_jobs": 15,
+        "observation_horizon_s": 2872.7187665887864,
+        "policy": "sota_gavel_pollux_sia_table_goodput",
+        "scenario_id": "q11:gpu_3080ti_12gb_dual_gpu_b",
+        "trace_id": "q11:gpu_3080ti_12gb_dual_gpu_b:load_sweep:poisson:load=0.700:seed=43",
+        "unfinished_jobs": 1
+      },
+      {
+        "completed_jobs": 15,
+        "observation_horizon_s": 2851.0707714684513,
+        "policy": "sota_srpt_gittins_mean_flow_oracle",
+        "scenario_id": "q11:gpu_3080ti_12gb_dual_gpu_b",
+        "trace_id": "q11:gpu_3080ti_12gb_dual_gpu_b:load_sweep:poisson:load=0.700:seed=43",
+        "unfinished_jobs": 1
+      },
+      {
+        "completed_jobs": 15,
+        "observation_horizon_s": 2872.7187665887864,
+        "policy": "sota_iadeep_salus_interference_guard",
+        "scenario_id": "q11:gpu_3080ti_12gb_dual_gpu_b",
+        "trace_id": "q11:gpu_3080ti_12gb_dual_gpu_b:load_sweep:poisson:load=0.700:seed=43",
+        "unfinished_jobs": 1
+      },
+      {
+        "completed_jobs": 15,
+        "observation_horizon_s": 2872.7187665887864,
+        "policy": "sota_quadrant_composite",
+        "scenario_id": "q11:gpu_3080ti_12gb_dual_gpu_b",
+        "trace_id": "q11:gpu_3080ti_12gb_dual_gpu_b:load_sweep:poisson:load=0.700:seed=43",
+        "unfinished_jobs": 1
+      },
+      {
+        "completed_jobs": 15,
+        "observation_horizon_s": 2872.7187665887864,
+        "policy": "sota_gavel_finish_time_fairness",
+        "scenario_id": "q11:gpu_3080ti_12gb_dual_gpu_b",
+        "trace_id": "q11:gpu_3080ti_12gb_dual_gpu_b:load_sweep:poisson:load=0.700:seed=43",
+        "unfinished_jobs": 1
+      },
+      {
+        "completed_jobs": 15,
+        "observation_horizon_s": 2872.7187665887864,
+        "policy": "sota_sia_pollux_resource_adaptive",
+        "scenario_id": "q11:gpu_3080ti_12gb_dual_gpu_b",
+        "trace_id": "q11:gpu_3080ti_12gb_dual_gpu_b:load_sweep:poisson:load=0.700:seed=43",
+        "unfinished_jobs": 1
+      },
+      {
+        "completed_jobs": 15,
+        "observation_horizon_s": 2872.7187665887864,
+        "policy": "sota_salus_iadeep_packing_guard",
+        "scenario_id": "q11:gpu_3080ti_12gb_dual_gpu_b",
+        "trace_id": "q11:gpu_3080ti_12gb_dual_gpu_b:load_sweep:poisson:load=0.700:seed=43",
+        "unfinished_jobs": 1
+      },
+      {
+        "completed_jobs": 15,
+        "observation_horizon_s": 2851.0707714684513,
+        "policy": "ablation_support_only",
+        "scenario_id": "q11:gpu_3080ti_12gb_dual_gpu_b",
+        "trace_id": "q11:gpu_3080ti_12gb_dual_gpu_b:load_sweep:poisson:load=0.700:seed=43",
+        "unfinished_jobs": 1
+      },
+      {
+        "completed_jobs": 15,
+        "observation_horizon_s": 2851.0707714684513,
+        "policy": "ablation_delay_only",
+        "scenario_id": "q11:gpu_3080ti_12gb_dual_gpu_b",
+        "trace_id": "q11:gpu_3080ti_12gb_dual_gpu_b:load_sweep:poisson:load=0.700:seed=43",
+        "unfinished_jobs": 1
+      },
+      {
+        "completed_jobs": 15,
+        "observation_horizon_s": 2851.0707714684513,
+        "policy": "ablation_no_bounded_penalty",
+        "scenario_id": "q11:gpu_3080ti_12gb_dual_gpu_b",
+        "trace_id": "q11:gpu_3080ti_12gb_dual_gpu_b:load_sweep:poisson:load=0.700:seed=43",
+        "unfinished_jobs": 1
+      },
+      {
+        "completed_jobs": 15,
+        "observation_horizon_s": 2851.0707714684513,
+        "policy": "ablation_no_loaded_ledger",
+        "scenario_id": "q11:gpu_3080ti_12gb_dual_gpu_b",
+        "trace_id": "q11:gpu_3080ti_12gb_dual_gpu_b:load_sweep:poisson:load=0.700:seed=43",
+        "unfinished_jobs": 1
+      },
+      {
+        "completed_jobs": 15,
+        "observation_horizon_s": 2851.0707714684513,
+        "policy": "ablation_no_migration",
+        "scenario_id": "q11:gpu_3080ti_12gb_dual_gpu_b",
+        "trace_id": "q11:gpu_3080ti_12gb_dual_gpu_b:load_sweep:poisson:load=0.700:seed=43",
+        "unfinished_jobs": 1
+      },
+      {
+        "completed_jobs": 15,
+        "observation_horizon_s": 2851.0707714684513,
+        "policy": "ablation_high_profile_tiebreak",
+        "scenario_id": "q11:gpu_3080ti_12gb_dual_gpu_b",
+        "trace_id": "q11:gpu_3080ti_12gb_dual_gpu_b:load_sweep:poisson:load=0.700:seed=43",
+        "unfinished_jobs": 1
+      }
+    ],
     "migration_scenario_count": 12,
     "policy_count": 15,
     "quadrants": [
@@ -603,55 +985,57 @@
       "q01",
       "q10",
       "q11"
-    ]
+    ],
+    "registered_hardware_trace_count": 528,
+    "registered_online_trace_count": 480
   },
   "queues": {
     "distributions": {
       "maximum_queue_backlog_jobs": {
-        "count": 480,
-        "maximum": 37.0,
-        "mean": 9.152083333333334,
-        "median": 7.0,
+        "count": 477,
+        "maximum": 25.0,
+        "mean": 7.155136268343815,
+        "median": 6.0,
         "minimum": 1.0,
         "p05": 2.0,
-        "p95": 23.049999999999955
+        "p95": 15.0
       },
       "maximum_unfinished_jobs": {
-        "count": 480,
-        "maximum": 42.0,
-        "mean": 12.320833333333333,
-        "median": 9.0,
+        "count": 477,
+        "maximum": 34.0,
+        "mean": 9.568134171907756,
+        "median": 8.0,
         "minimum": 2.0,
         "p05": 3.0,
-        "p95": 32.0
+        "p95": 18.0
       },
       "time_weighted_queue_backlog_jobs": {
-        "count": 480,
-        "maximum": 14.491228956203681,
-        "mean": 2.9223004408827715,
-        "median": 1.8676756757868676,
+        "count": 477,
+        "maximum": 10.466853657613918,
+        "mean": 1.6710769408183919,
+        "median": 1.0141135724400583,
         "minimum": 0.0,
-        "p05": 0.10751645291994348,
-        "p95": 9.65664946764746
+        "p05": 0.028434771793228487,
+        "p95": 4.982385000162213
       },
       "time_weighted_unfinished_jobs": {
-        "count": 480,
-        "maximum": 20.896246990056053,
-        "mean": 5.815768444612645,
-        "median": 4.437098098460492,
+        "count": 477,
+        "maximum": 16.12617959269306,
+        "mean": 3.914696989237747,
+        "median": 3.2063021400104645,
         "minimum": 0.2919555600125423,
-        "p05": 0.8415165446493325,
-        "p95": 15.339863064534903
+        "p05": 0.6814157838395218,
+        "p95": 8.898402245608503
       }
     },
-    "maximum_queue_backlog_jobs": 37,
-    "maximum_unfinished_jobs": 42,
-    "mean_of_time_weighted_queue_backlog_jobs": 2.9223004408827715,
-    "mean_of_time_weighted_unfinished_jobs": 5.815768444612645,
-    "run_count": 480
+    "maximum_queue_backlog_jobs": 25,
+    "maximum_unfinished_jobs": 34,
+    "mean_of_time_weighted_queue_backlog_jobs": 1.6710769408183919,
+    "mean_of_time_weighted_unfinished_jobs": 3.914696989237747,
+    "run_count": 477
   },
   "replay_path": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/unified_hardware_or_replay_20260809.json",
-  "replay_sha256": "9238ce6b40e236c745a909a7d49fac94711616358ab34eff5874bf66ddcc79e1",
+  "replay_sha256": "7f5c55067e50440392c8cb7fb449dec13c0d67e0b2d1462300fb6fef3583cf56",
   "schema_version": 1,
   "slack": {
     "load_fraction": 0.8,
@@ -691,7 +1075,7 @@
   "slack_path": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_all_hardware_statewise_slack_20260810.json",
   "slack_sha256": "3d9de21a02fc7ef968df9164ab9559e273717dfd95a87ef0913758a18c739582",
   "sota_style": {
-    "baseline_strictly_dominates_ours_count": 71,
+    "baseline_strictly_dominates_ours_count": 88,
     "by_quadrant": {
       "q00": {
         "baseline_strictly_dominates_ours_count": 0,
@@ -703,13 +1087,13 @@
         "worst_ours_to_dominating_baseline_mean_flow_ratio": 1.0
       },
       "q01": {
-        "baseline_strictly_dominates_ours_count": 35,
-        "ours_strictly_dominates_baseline_count": 755,
+        "baseline_strictly_dominates_ours_count": 52,
+        "ours_strictly_dominates_baseline_count": 747,
         "policy_trace_comparison_count": 924,
         "trace_count": 132,
-        "worst_ours_to_dominating_baseline_cost_ratio": 1.0598556960440242,
-        "worst_ours_to_dominating_baseline_makespan_ratio": 1.0313595712198396,
-        "worst_ours_to_dominating_baseline_mean_flow_ratio": 1.0598556960440242
+        "worst_ours_to_dominating_baseline_cost_ratio": 1.0637660835934044,
+        "worst_ours_to_dominating_baseline_makespan_ratio": 1.0291613962654744,
+        "worst_ours_to_dominating_baseline_mean_flow_ratio": 1.0637660835934044
       },
       "q10": {
         "baseline_strictly_dominates_ours_count": 4,
@@ -722,82 +1106,82 @@
       },
       "q11": {
         "baseline_strictly_dominates_ours_count": 32,
-        "ours_strictly_dominates_baseline_count": 340,
-        "policy_trace_comparison_count": 924,
-        "trace_count": 132,
+        "ours_strictly_dominates_baseline_count": 333,
+        "policy_trace_comparison_count": 903,
+        "trace_count": 129,
         "worst_ours_to_dominating_baseline_cost_ratio": 1.0124063172303623,
         "worst_ours_to_dominating_baseline_makespan_ratio": 1.0124063172303623,
         "worst_ours_to_dominating_baseline_mean_flow_ratio": 1.011201883125668
       }
     },
-    "comparison_trace_count": 528,
+    "comparison_trace_count": 525,
     "ours_better_on_both_geomean_policy_count": 7,
     "ours_not_dominated_in_every_trace": false,
-    "ours_strictly_dominates_baseline_count": 2446,
+    "ours_strictly_dominates_baseline_count": 2431,
     "ours_strictly_dominates_every_policy_in_every_trace": false,
     "policies": {
       "sota_gavel_finish_time_fairness": {
-        "baseline_strictly_dominates_ours_count": 12,
-        "baseline_to_ours_makespan_geomean_ratio": 1.0132881596313144,
-        "baseline_to_ours_mean_flow_geomean_ratio": 1.0309629576108685,
-        "comparison_count": 528,
-        "ours_strictly_dominates_baseline_count": 349
+        "baseline_strictly_dominates_ours_count": 13,
+        "baseline_to_ours_makespan_geomean_ratio": 1.007813659412513,
+        "baseline_to_ours_mean_flow_geomean_ratio": 1.028216872329005,
+        "comparison_count": 525,
+        "ours_strictly_dominates_baseline_count": 357
       },
       "sota_gavel_pollux_sia_table_goodput": {
-        "baseline_strictly_dominates_ours_count": 12,
-        "baseline_to_ours_makespan_geomean_ratio": 1.0132881596313144,
-        "baseline_to_ours_mean_flow_geomean_ratio": 1.0309629576108685,
-        "comparison_count": 528,
-        "ours_strictly_dominates_baseline_count": 349
+        "baseline_strictly_dominates_ours_count": 13,
+        "baseline_to_ours_makespan_geomean_ratio": 1.007813659412513,
+        "baseline_to_ours_mean_flow_geomean_ratio": 1.028216872329005,
+        "comparison_count": 525,
+        "ours_strictly_dominates_baseline_count": 357
       },
       "sota_iadeep_salus_interference_guard": {
         "baseline_strictly_dominates_ours_count": 6,
-        "baseline_to_ours_makespan_geomean_ratio": 1.019173390534981,
-        "baseline_to_ours_mean_flow_geomean_ratio": 1.0511188054033207,
-        "comparison_count": 528,
-        "ours_strictly_dominates_baseline_count": 373
+        "baseline_to_ours_makespan_geomean_ratio": 1.0100074342819596,
+        "baseline_to_ours_mean_flow_geomean_ratio": 1.0445273889011986,
+        "comparison_count": 525,
+        "ours_strictly_dominates_baseline_count": 380
       },
       "sota_quadrant_composite": {
-        "baseline_strictly_dominates_ours_count": 11,
-        "baseline_to_ours_makespan_geomean_ratio": 1.215221074051422,
-        "baseline_to_ours_mean_flow_geomean_ratio": 1.2412308982585376,
-        "comparison_count": 528,
-        "ours_strictly_dominates_baseline_count": 373
+        "baseline_strictly_dominates_ours_count": 12,
+        "baseline_to_ours_makespan_geomean_ratio": 1.2099113461582216,
+        "baseline_to_ours_mean_flow_geomean_ratio": 1.2392384175798725,
+        "comparison_count": 525,
+        "ours_strictly_dominates_baseline_count": 381
       },
       "sota_salus_iadeep_packing_guard": {
-        "baseline_strictly_dominates_ours_count": 12,
-        "baseline_to_ours_makespan_geomean_ratio": 1.2811700519187679,
-        "baseline_to_ours_mean_flow_geomean_ratio": 1.326606808395707,
-        "comparison_count": 528,
-        "ours_strictly_dominates_baseline_count": 392
+        "baseline_strictly_dominates_ours_count": 15,
+        "baseline_to_ours_makespan_geomean_ratio": 1.2269233868606035,
+        "baseline_to_ours_mean_flow_geomean_ratio": 1.3074385420598407,
+        "comparison_count": 525,
+        "ours_strictly_dominates_baseline_count": 375
       },
       "sota_sia_pollux_resource_adaptive": {
-        "baseline_strictly_dominates_ours_count": 9,
-        "baseline_to_ours_makespan_geomean_ratio": 1.0367104071026085,
-        "baseline_to_ours_mean_flow_geomean_ratio": 1.0530844501743297,
-        "comparison_count": 528,
-        "ours_strictly_dominates_baseline_count": 360
+        "baseline_strictly_dominates_ours_count": 14,
+        "baseline_to_ours_makespan_geomean_ratio": 1.0148653346252896,
+        "baseline_to_ours_mean_flow_geomean_ratio": 1.0611788226138392,
+        "comparison_count": 525,
+        "ours_strictly_dominates_baseline_count": 351
       },
       "sota_srpt_gittins_mean_flow_oracle": {
-        "baseline_strictly_dominates_ours_count": 9,
-        "baseline_to_ours_makespan_geomean_ratio": 1.2814017158741133,
-        "baseline_to_ours_mean_flow_geomean_ratio": 1.3114308891083108,
-        "comparison_count": 528,
-        "ours_strictly_dominates_baseline_count": 250
+        "baseline_strictly_dominates_ours_count": 15,
+        "baseline_to_ours_makespan_geomean_ratio": 1.2267838025564048,
+        "baseline_to_ours_mean_flow_geomean_ratio": 1.2925098910435042,
+        "comparison_count": 525,
+        "ours_strictly_dominates_baseline_count": 230
       }
     },
-    "policy_trace_comparison_count": 3696
+    "policy_trace_comparison_count": 3675
   },
   "static_legacy": {
     "by_arrival_family": {
       "static": {
         "comparison_count": 48,
-        "legacy_to_ours_makespan_geomean_ratio": 1.949871099002849,
-        "legacy_to_ours_makespan_median_ratio": 1.952505138003363,
+        "legacy_to_ours_makespan_geomean_ratio": 1.947791717611407,
+        "legacy_to_ours_makespan_median_ratio": 1.939405662050378,
         "legacy_to_ours_makespan_p05_ratio": 1.0244409985689664,
         "legacy_to_ours_makespan_p95_ratio": 4.084247197410413,
         "legacy_to_ours_makespan_worst_ratio": 1.0114527711235455,
-        "legacy_to_ours_mean_flow_geomean_ratio": 2.128521429462994,
+        "legacy_to_ours_mean_flow_geomean_ratio": 2.128329589271965,
         "legacy_to_ours_mean_flow_median_ratio": 1.7020192040657591,
         "legacy_to_ours_mean_flow_p05_ratio": 0.9934178530721103,
         "legacy_to_ours_mean_flow_p95_ratio": 6.003741607663871,
@@ -820,15 +1204,15 @@
       },
       "q01": {
         "comparison_count": 12,
-        "legacy_to_ours_makespan_geomean_ratio": 1.2459705000829855,
+        "legacy_to_ours_makespan_geomean_ratio": 1.240664084861077,
         "legacy_to_ours_makespan_median_ratio": 1.2028351051231798,
         "legacy_to_ours_makespan_p05_ratio": 1.1295968820117692,
-        "legacy_to_ours_makespan_p95_ratio": 1.5323462171474098,
+        "legacy_to_ours_makespan_p95_ratio": 1.5058252453800824,
         "legacy_to_ours_makespan_worst_ratio": 1.1277305022809216,
-        "legacy_to_ours_mean_flow_geomean_ratio": 1.7079704185052287,
+        "legacy_to_ours_mean_flow_geomean_ratio": 1.707354755307965,
         "legacy_to_ours_mean_flow_median_ratio": 1.5617769836733006,
         "legacy_to_ours_mean_flow_p05_ratio": 1.4985842228956705,
-        "legacy_to_ours_mean_flow_p95_ratio": 2.372898007199887,
+        "legacy_to_ours_mean_flow_p95_ratio": 2.369481614983295,
         "legacy_to_ours_mean_flow_worst_ratio": 1.495239193591098
       },
       "q10": {
@@ -860,12 +1244,12 @@
     },
     "comparison_count": 48,
     "legacy_strictly_dominates_ours_count": 0,
-    "legacy_to_ours_makespan_geomean_ratio": 1.949871099002849,
-    "legacy_to_ours_makespan_median_ratio": 1.952505138003363,
+    "legacy_to_ours_makespan_geomean_ratio": 1.947791717611407,
+    "legacy_to_ours_makespan_median_ratio": 1.939405662050378,
     "legacy_to_ours_makespan_p05_ratio": 1.0244409985689664,
     "legacy_to_ours_makespan_p95_ratio": 4.084247197410413,
     "legacy_to_ours_makespan_worst_ratio": 1.0114527711235455,
-    "legacy_to_ours_mean_flow_geomean_ratio": 2.128521429462994,
+    "legacy_to_ours_mean_flow_geomean_ratio": 2.128329589271965,
     "legacy_to_ours_mean_flow_median_ratio": 1.7020192040657591,
     "legacy_to_ours_mean_flow_p05_ratio": 0.9934178530721103,
     "legacy_to_ours_mean_flow_p95_ratio": 6.003741607663871,
@@ -901,8 +1285,8 @@
     },
     {
       "display_label": "q01 cpu_a",
-      "legacy_to_ours_makespan_geomean_ratio": 1.5278412681374627,
-      "legacy_to_ours_mean_flow_geomean_ratio": 2.3676771100138527,
+      "legacy_to_ours_makespan_geomean_ratio": 1.5019796129064562,
+      "legacy_to_ours_mean_flow_geomean_ratio": 2.364265098509517,
       "legacy_to_ours_p90_flow_geomean_ratio": 1.7020915775397245,
       "node_bucket": "gpu_2080_8gb_dual:cpu_a",
       "quadrant": "q01",

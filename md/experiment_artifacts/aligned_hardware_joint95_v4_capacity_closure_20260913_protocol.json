@@ -1,0 +1,1969 @@
+{
+  "action_mapping": [
+    {
+      "action_id": "gpu_loaded:gpu_b:cnn_after_llm",
+      "action_kind": "loaded",
+      "completion_rule": "all admitted jobs complete at the serial upper duration",
+      "composition": "serial_loaded_target_plus_fresh_resident_p1_drain_upper",
+      "functional_ids": [
+        "loaded:cnn_after_llm:target_completion_time",
+        "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion"
+      ],
+      "loaded": true,
+      "requirements": [
+        1,
+        0,
+        1
+      ]
+    },
+    {
+      "action_id": "gpu_loaded:gpu_b:llm_after_cnn",
+      "action_kind": "loaded",
+      "completion_rule": "all admitted jobs complete at the serial upper duration",
+      "composition": "serial_loaded_target_plus_fresh_resident_p1_drain_upper",
+      "functional_ids": [
+        "loaded:llm_after_cnn:target_completion_time",
+        "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion"
+      ],
+      "loaded": true,
+      "requirements": [
+        1,
+        0,
+        1
+      ]
+    },
+    {
+      "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+      "action_kind": "dedicated",
+      "completion_rule": "all admitted jobs complete at the serial upper duration",
+      "composition": "dedicated_empty_drain_upper",
+      "functional_ids": [
+        "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion"
+      ],
+      "loaded": false,
+      "requirements": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+      "action_kind": "dedicated",
+      "completion_rule": "all admitted jobs complete at the serial upper duration",
+      "composition": "dedicated_empty_drain_upper",
+      "functional_ids": [
+        "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion"
+      ],
+      "loaded": false,
+      "requirements": [
+        3,
+        0,
+        0
+      ]
+    },
+    {
+      "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+      "action_kind": "dedicated",
+      "completion_rule": "all admitted jobs complete at the serial upper duration",
+      "composition": "dedicated_empty_drain_upper",
+      "functional_ids": [
+        "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion"
+      ],
+      "loaded": false,
+      "requirements": [
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+      "action_kind": "dedicated",
+      "completion_rule": "all admitted jobs complete at the serial upper duration",
+      "composition": "dedicated_empty_drain_upper",
+      "functional_ids": [
+        "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion"
+      ],
+      "loaded": false,
+      "requirements": [
+        0,
+        3,
+        0
+      ]
+    },
+    {
+      "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+      "action_kind": "dedicated",
+      "completion_rule": "all admitted jobs complete at the serial upper duration",
+      "composition": "dedicated_empty_drain_upper",
+      "functional_ids": [
+        "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion"
+      ],
+      "loaded": false,
+      "requirements": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+      "action_kind": "dedicated",
+      "completion_rule": "all admitted jobs complete at the serial upper duration",
+      "composition": "dedicated_empty_drain_upper",
+      "functional_ids": [
+        "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion"
+      ],
+      "loaded": false,
+      "requirements": [
+        0,
+        0,
+        3
+      ]
+    },
+    {
+      "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8",
+      "action_kind": "dedicated",
+      "completion_rule": "all admitted jobs complete at the serial upper duration",
+      "composition": "dedicated_empty_drain_upper",
+      "functional_ids": [
+        "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=8:drain_completion"
+      ],
+      "loaded": false,
+      "requirements": [
+        0,
+        0,
+        8
+      ]
+    }
+  ],
+  "candidate_evidence_reuse_pre_audit": {
+    "numeric_comparison_authorized": false,
+    "numeric_comparison_count": 0,
+    "reasons": [
+      {
+        "code": "ACTION_DURATION_CATALOGUE_MISMATCH",
+        "detail": "The joint envelope uses frozen training predictors and a serial loaded complete-frame composition; the old trajectory epsilon used the point-model durations.",
+        "differing_action_ids_at_zero_margin": [
+          "gpu_loaded:gpu_b:cnn_after_llm",
+          "gpu_loaded:gpu_b:llm_after_cnn",
+          "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+          "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+          "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+          "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+          "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+          "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+          "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8"
+        ]
+      },
+      {
+        "code": "VISITED_STATE_POPULATION_MISMATCH",
+        "detail": "The old aggregate epsilon covers queues visited by point-duration trajectories. Those complete states are not materialized as a fixed static roster, and changed frame durations change physical-time arrival boundaries."
+      }
+    ],
+    "required_replacement": "a separately registered same-envelope static selector screen over an explicit fixed queue roster before any new trajectory",
+    "status": "CANDIDATE_SUPPORT_EVIDENCE_UNAVAILABLE"
+  },
+  "candidate_evidence_source": {
+    "case_evidence": [
+      {
+        "fixed_lp_budget": 36,
+        "lanes": 8,
+        "load": 0.8,
+        "maximum_fixed_certified_gap_per_job": 0.11884599235197722,
+        "source_effective_slack_eta": 0.17542975908130587,
+        "source_trajectory_support_gate_passed": true
+      },
+      {
+        "fixed_lp_budget": 36,
+        "lanes": 8,
+        "load": 0.95,
+        "maximum_fixed_certified_gap_per_job": 0.12981617881864219,
+        "source_effective_slack_eta": 0.043857439770326634,
+        "source_trajectory_support_gate_passed": false
+      },
+      {
+        "fixed_lp_budget": 72,
+        "lanes": 16,
+        "load": 0.8,
+        "maximum_fixed_certified_gap_per_job": 0.0946946783848318,
+        "source_effective_slack_eta": 0.35085951816261174,
+        "source_trajectory_support_gate_passed": true
+      },
+      {
+        "fixed_lp_budget": 72,
+        "lanes": 16,
+        "load": 0.95,
+        "maximum_fixed_certified_gap_per_job": 0.09641713519827087,
+        "source_effective_slack_eta": 0.08771487954065327,
+        "source_trajectory_support_gate_passed": false
+      }
+    ],
+    "experiment": "aligned_hardware_count_space_bnb_trajectory_transition_v1",
+    "protocol_contract": {
+      "arrival_horizon_s": 600.0,
+      "arrival_model": "independent class-wise Poisson arrivals using the existing aligned-frame stream key aligned-frame:{seed}:{coordinate}",
+      "arrival_seeds": [
+        6041,
+        6042,
+        6043,
+        6044,
+        6045,
+        6046,
+        6047,
+        6048
+      ],
+      "dispatch": "global synchronous frames, FIFO within class, arrivals during a frame become eligible only at the next frame boundary",
+      "experiment": "aligned_hardware_count_space_bnb_trajectory_transition_v1",
+      "lane_budget_pairs": [
+        {
+          "fixed_lp_budget": 36,
+          "lanes": 8
+        },
+        {
+          "fixed_lp_budget": 72,
+          "lanes": 16
+        }
+      ],
+      "loads": [
+        0.8,
+        0.95
+      ],
+      "model": {
+        "excluded_actions": [
+          {
+            "action_id": "gpu_loaded:gpu_b:cnn_after_rl",
+            "reason": "resident class has no arrivals in the three-class q01 protocol"
+          }
+        ],
+        "lanes": 2,
+        "model_scope": "deterministic_cached_phase_complete_job_renewal",
+        "node": "gpu_b",
+        "options": [
+          {
+            "action_id": "gpu_loaded:gpu_b:cnn_after_llm",
+            "completion_offsets": [
+              [
+                10.431026738447038
+              ],
+              [],
+              [
+                11.514578111707017
+              ]
+            ],
+            "duration": 11.514578111707017,
+            "loaded": true,
+            "phases": [
+              [
+                "resident_initialization_s",
+                4.716920265498629
+              ],
+              [
+                "target_overlap_s",
+                5.714106472948409
+              ],
+              [
+                "resident_overlap_rate_native_per_s",
+                120.39972693896493
+              ],
+              [
+                "resident_remaining_native_units",
+                0.0
+              ],
+              [
+                "resident_dedicated_drain_s",
+                0.0
+              ],
+              [
+                "resident_finalization_s",
+                1.0835513732599793
+              ]
+            ],
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "source_action_ids": [
+              "gpu_loaded:gpu_b:cnn_after_llm",
+              "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1"
+            ]
+          },
+          {
+            "action_id": "gpu_loaded:gpu_b:llm_after_cnn",
+            "completion_offsets": [
+              [
+                11.936669718453734
+              ],
+              [],
+              [
+                11.090642004449867
+              ]
+            ],
+            "duration": 11.936669718453734,
+            "loaded": true,
+            "phases": [
+              [
+                "resident_initialization_s",
+                4.669018776022396
+              ],
+              [
+                "target_overlap_s",
+                6.421623228427471
+              ],
+              [
+                "resident_overlap_rate_native_per_s",
+                16.652848248271273
+              ],
+              [
+                "resident_remaining_native_units",
+                0.0
+              ],
+              [
+                "resident_dedicated_drain_s",
+                0.0
+              ],
+              [
+                "resident_finalization_s",
+                0.846027714003867
+              ]
+            ],
+            "requirements": [
+              1,
+              0,
+              1
+            ],
+            "source_action_ids": [
+              "gpu_loaded:gpu_b:llm_after_cnn",
+              "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1"
+            ]
+          },
+          {
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+            "completion_offsets": [
+              [
+                8.093888054475512
+              ],
+              [],
+              []
+            ],
+            "duration": 8.093888054475512,
+            "loaded": false,
+            "phases": [
+              [
+                "initialization_s",
+                4.669018776022396
+              ],
+              [
+                "loop_s",
+                2.5788415644492484
+              ],
+              [
+                "finalization_s",
+                0.846027714003867
+              ]
+            ],
+            "requirements": [
+              1,
+              0,
+              0
+            ],
+            "source_action_ids": [
+              "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1"
+            ]
+          },
+          {
+            "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+            "completion_offsets": [
+              [
+                14.972417070959636,
+                14.972417070959636,
+                14.972417070959636
+              ],
+              [],
+              []
+            ],
+            "duration": 14.972417070959636,
+            "loaded": false,
+            "phases": [
+              [
+                "initialization_s",
+                6.583782343158832
+              ],
+              [
+                "loop_s",
+                7.48884139563465
+              ],
+              [
+                "finalization_s",
+                0.8997933321661549
+              ]
+            ],
+            "requirements": [
+              3,
+              0,
+              0
+            ],
+            "source_action_ids": [
+              "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3"
+            ]
+          },
+          {
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+            "completion_offsets": [
+              [],
+              [
+                2.7928254592821196
+              ],
+              []
+            ],
+            "duration": 2.7928254592821196,
+            "loaded": false,
+            "phases": [
+              [
+                "initialization_s",
+                1.2277755779466062
+              ],
+              [
+                "loop_s",
+                1.194901513584997
+              ],
+              [
+                "finalization_s",
+                0.3701483677505166
+              ]
+            ],
+            "requirements": [
+              0,
+              1,
+              0
+            ],
+            "source_action_ids": [
+              "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1"
+            ]
+          },
+          {
+            "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+            "completion_offsets": [
+              [],
+              [
+                6.820477375410869,
+                6.820477375410869,
+                6.820477375410869
+              ],
+              []
+            ],
+            "duration": 6.820477375410869,
+            "loaded": false,
+            "phases": [
+              [
+                "initialization_s",
+                2.741113696925434
+              ],
+              [
+                "loop_s",
+                3.661079762986579
+              ],
+              [
+                "finalization_s",
+                0.41828391549885663
+              ]
+            ],
+            "requirements": [
+              0,
+              3,
+              0
+            ],
+            "source_action_ids": [
+              "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3"
+            ]
+          },
+          {
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+            "completion_offsets": [
+              [],
+              [],
+              [
+                7.4174495042607305
+              ]
+            ],
+            "duration": 7.4174495042607305,
+            "loaded": false,
+            "phases": [
+              [
+                "initialization_s",
+                4.716920265498629
+              ],
+              [
+                "loop_s",
+                1.6169778655021219
+              ],
+              [
+                "finalization_s",
+                1.0835513732599793
+              ]
+            ],
+            "requirements": [
+              0,
+              0,
+              1
+            ],
+            "source_action_ids": [
+              "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1"
+            ]
+          },
+          {
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+            "completion_offsets": [
+              [],
+              [],
+              [
+                9.462480184740949,
+                9.462480184740949,
+                9.462480184740949
+              ]
+            ],
+            "duration": 9.462480184740949,
+            "loaded": false,
+            "phases": [
+              [
+                "initialization_s",
+                5.648919066996314
+              ],
+              [
+                "loop_s",
+                2.6111246433283664
+              ],
+              [
+                "finalization_s",
+                1.202436474416269
+              ]
+            ],
+            "requirements": [
+              0,
+              0,
+              3
+            ],
+            "source_action_ids": [
+              "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3"
+            ]
+          },
+          {
+            "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8",
+            "completion_offsets": [
+              [],
+              [],
+              [
+                14.84929022616052,
+                14.84929022616052,
+                14.84929022616052,
+                14.84929022616052,
+                14.84929022616052,
+                14.84929022616052,
+                14.84929022616052,
+                14.84929022616052
+              ]
+            ],
+            "duration": 14.84929022616052,
+            "loaded": false,
+            "phases": [
+              [
+                "initialization_s",
+                7.840006518249538
+              ],
+              [
+                "loop_s",
+                5.504426018315827
+              ],
+              [
+                "finalization_s",
+                1.5048576895951555
+              ]
+            ],
+            "requirements": [
+              0,
+              0,
+              8
+            ],
+            "source_action_ids": [
+              "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8"
+            ]
+          }
+        ],
+        "scales": [
+          60.0,
+          40.0,
+          120.0
+        ],
+        "scenario_id": "q01:gpu_3080ti_12gb_dual_gpu_b",
+        "workloads": [
+          "gpu_cnn_torch_resnet50",
+          "gpu_heavy_jax_matmul",
+          "gpu_llm_distilgpt2"
+        ]
+      },
+      "primary_cases": [
+        {
+          "fixed_lp_budget": 36,
+          "lanes": 8,
+          "load": 0.8
+        },
+        {
+          "fixed_lp_budget": 36,
+          "lanes": 8,
+          "load": 0.95
+        },
+        {
+          "fixed_lp_budget": 72,
+          "lanes": 16,
+          "load": 0.8
+        },
+        {
+          "fixed_lp_budget": 72,
+          "lanes": 16,
+          "load": 0.95
+        }
+      ],
+      "stopping_rule": "stop arrivals at 600 seconds and drain the identical finite tape to completion under both policies",
+      "trajectory_support_gate": "for each case, the maximum fixed-budget returned gap/L1 over every visited frame and seed is strictly below the same-lane capacity eta"
+    },
+    "scientific_decision": "COUNT_SPACE_TRAJECTORY_TRANSITION_FAIL_STOP",
+    "status": "PASS",
+    "trajectory_transition_advance": false
+  },
+  "claim_boundary": "A one-future-visit 95% joint upper-time audit and conditional local complete-frame capacity calculation based only on the independent joint95-v4 19+1 cohort. It is not time-uniform physical coverage, a trajectory result, or candidate-search closure without separate same-model static support evidence.",
+  "collection_contract": {
+    "collection_prefix": "critical_gpu_joint95_v4",
+    "coverage_contract": {
+      "calibration_joint_waves": [
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92
+      ],
+      "calibration_unit_count": 19,
+      "finite_sample_rank": 19,
+      "finite_sample_rank_rule": "ceil((n_calibration + 1) * (1 - alpha))",
+      "holdout_joint_wave": 93,
+      "holdout_unit_count": 1,
+      "method": "paired_joint_wave_max_split_conformal",
+      "miscoverage_alpha": 0.05,
+      "nominal_simultaneous_coverage": 0.95
+    },
+    "gate": "critical_gpu_joint95_v4_registration",
+    "hardware_class": "NVIDIA_RTX_3080Ti_12GB",
+    "historical_training_inputs": {
+      "eligible_joint_calibration_units": 0,
+      "empty_gate": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_stochastic_lcb_gate_v8_gpu_b_20260803.json",
+      "loaded_gate": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_stochastic_lcb_gate_gpu_b_20260809.json",
+      "post_hoc_pairing_forbidden": true,
+      "role": "frozen_point_predictors_only"
+    },
+    "joint_work_items": [
+      {
+        "joint_unit_id": "critical_gpu_joint95_v4_gpu_b_r74",
+        "joint_wave": 74,
+        "scored_functional_ids": [
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=8:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "loaded:cnn_after_llm:target_completion_time",
+          "loaded:llm_after_cnn:target_completion_time"
+        ],
+        "split_role": "calibration"
+      },
+      {
+        "joint_unit_id": "critical_gpu_joint95_v4_gpu_b_r75",
+        "joint_wave": 75,
+        "scored_functional_ids": [
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=8:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "loaded:cnn_after_llm:target_completion_time",
+          "loaded:llm_after_cnn:target_completion_time"
+        ],
+        "split_role": "calibration"
+      },
+      {
+        "joint_unit_id": "critical_gpu_joint95_v4_gpu_b_r76",
+        "joint_wave": 76,
+        "scored_functional_ids": [
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=8:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "loaded:cnn_after_llm:target_completion_time",
+          "loaded:llm_after_cnn:target_completion_time"
+        ],
+        "split_role": "calibration"
+      },
+      {
+        "joint_unit_id": "critical_gpu_joint95_v4_gpu_b_r77",
+        "joint_wave": 77,
+        "scored_functional_ids": [
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=8:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "loaded:cnn_after_llm:target_completion_time",
+          "loaded:llm_after_cnn:target_completion_time"
+        ],
+        "split_role": "calibration"
+      },
+      {
+        "joint_unit_id": "critical_gpu_joint95_v4_gpu_b_r78",
+        "joint_wave": 78,
+        "scored_functional_ids": [
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=8:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "loaded:cnn_after_llm:target_completion_time",
+          "loaded:llm_after_cnn:target_completion_time"
+        ],
+        "split_role": "calibration"
+      },
+      {
+        "joint_unit_id": "critical_gpu_joint95_v4_gpu_b_r79",
+        "joint_wave": 79,
+        "scored_functional_ids": [
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=8:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "loaded:cnn_after_llm:target_completion_time",
+          "loaded:llm_after_cnn:target_completion_time"
+        ],
+        "split_role": "calibration"
+      },
+      {
+        "joint_unit_id": "critical_gpu_joint95_v4_gpu_b_r80",
+        "joint_wave": 80,
+        "scored_functional_ids": [
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=8:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "loaded:cnn_after_llm:target_completion_time",
+          "loaded:llm_after_cnn:target_completion_time"
+        ],
+        "split_role": "calibration"
+      },
+      {
+        "joint_unit_id": "critical_gpu_joint95_v4_gpu_b_r81",
+        "joint_wave": 81,
+        "scored_functional_ids": [
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=8:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "loaded:cnn_after_llm:target_completion_time",
+          "loaded:llm_after_cnn:target_completion_time"
+        ],
+        "split_role": "calibration"
+      },
+      {
+        "joint_unit_id": "critical_gpu_joint95_v4_gpu_b_r82",
+        "joint_wave": 82,
+        "scored_functional_ids": [
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=8:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "loaded:cnn_after_llm:target_completion_time",
+          "loaded:llm_after_cnn:target_completion_time"
+        ],
+        "split_role": "calibration"
+      },
+      {
+        "joint_unit_id": "critical_gpu_joint95_v4_gpu_b_r83",
+        "joint_wave": 83,
+        "scored_functional_ids": [
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=8:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "loaded:cnn_after_llm:target_completion_time",
+          "loaded:llm_after_cnn:target_completion_time"
+        ],
+        "split_role": "calibration"
+      },
+      {
+        "joint_unit_id": "critical_gpu_joint95_v4_gpu_b_r84",
+        "joint_wave": 84,
+        "scored_functional_ids": [
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=8:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "loaded:cnn_after_llm:target_completion_time",
+          "loaded:llm_after_cnn:target_completion_time"
+        ],
+        "split_role": "calibration"
+      },
+      {
+        "joint_unit_id": "critical_gpu_joint95_v4_gpu_b_r85",
+        "joint_wave": 85,
+        "scored_functional_ids": [
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=8:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "loaded:cnn_after_llm:target_completion_time",
+          "loaded:llm_after_cnn:target_completion_time"
+        ],
+        "split_role": "calibration"
+      },
+      {
+        "joint_unit_id": "critical_gpu_joint95_v4_gpu_b_r86",
+        "joint_wave": 86,
+        "scored_functional_ids": [
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=8:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "loaded:cnn_after_llm:target_completion_time",
+          "loaded:llm_after_cnn:target_completion_time"
+        ],
+        "split_role": "calibration"
+      },
+      {
+        "joint_unit_id": "critical_gpu_joint95_v4_gpu_b_r87",
+        "joint_wave": 87,
+        "scored_functional_ids": [
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=8:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "loaded:cnn_after_llm:target_completion_time",
+          "loaded:llm_after_cnn:target_completion_time"
+        ],
+        "split_role": "calibration"
+      },
+      {
+        "joint_unit_id": "critical_gpu_joint95_v4_gpu_b_r88",
+        "joint_wave": 88,
+        "scored_functional_ids": [
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=8:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "loaded:cnn_after_llm:target_completion_time",
+          "loaded:llm_after_cnn:target_completion_time"
+        ],
+        "split_role": "calibration"
+      },
+      {
+        "joint_unit_id": "critical_gpu_joint95_v4_gpu_b_r89",
+        "joint_wave": 89,
+        "scored_functional_ids": [
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=8:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "loaded:cnn_after_llm:target_completion_time",
+          "loaded:llm_after_cnn:target_completion_time"
+        ],
+        "split_role": "calibration"
+      },
+      {
+        "joint_unit_id": "critical_gpu_joint95_v4_gpu_b_r90",
+        "joint_wave": 90,
+        "scored_functional_ids": [
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=8:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "loaded:cnn_after_llm:target_completion_time",
+          "loaded:llm_after_cnn:target_completion_time"
+        ],
+        "split_role": "calibration"
+      },
+      {
+        "joint_unit_id": "critical_gpu_joint95_v4_gpu_b_r91",
+        "joint_wave": 91,
+        "scored_functional_ids": [
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=8:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "loaded:cnn_after_llm:target_completion_time",
+          "loaded:llm_after_cnn:target_completion_time"
+        ],
+        "split_role": "calibration"
+      },
+      {
+        "joint_unit_id": "critical_gpu_joint95_v4_gpu_b_r92",
+        "joint_wave": 92,
+        "scored_functional_ids": [
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=8:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "loaded:cnn_after_llm:target_completion_time",
+          "loaded:llm_after_cnn:target_completion_time"
+        ],
+        "split_role": "calibration"
+      },
+      {
+        "joint_unit_id": "critical_gpu_joint95_v4_gpu_b_r93",
+        "joint_wave": 93,
+        "scored_functional_ids": [
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=8:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "loaded:cnn_after_llm:target_completion_time",
+          "loaded:llm_after_cnn:target_completion_time"
+        ],
+        "split_role": "holdout"
+      }
+    ],
+    "node": "gpu_b",
+    "node_bucket": "gpu_3080ti_12gb_dual",
+    "prior_joint_evidence_eligibility": {
+      "v1_joint_scores_eligible_for_v4_margin": 0,
+      "v1_joint_units_eligible_for_v4_calibration": 0,
+      "v1_joint_units_eligible_for_v4_holdout": 0,
+      "v2_joint_scores_eligible_for_v4_margin": 0,
+      "v2_joint_units_eligible_for_v4_calibration": 0,
+      "v2_joint_units_eligible_for_v4_holdout": 0,
+      "v3_joint_scores_eligible_for_v4_margin": 0,
+      "v3_joint_units_eligible_for_v4_calibration": 0,
+      "v3_joint_units_eligible_for_v4_holdout": 0
+    },
+    "protocol": "critical_gpu_joint95_natural_completion_v4",
+    "registered": true,
+    "results_contract": {
+      "campaign_fail_stop_sentinel": "campaign_fail_stop.json",
+      "results_directory": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_joint95_v4_results",
+      "v1_result_prefix_forbidden": "critical_gpu_joint95_v1",
+      "v2_result_prefix_forbidden": "critical_gpu_joint95_v2",
+      "v3_result_prefix_forbidden": "critical_gpu_joint95_v3",
+      "v4_result_prefix": "critical_gpu_joint95_v4"
+    },
+    "schema_version": 1,
+    "score_contract": {
+      "cell_score": "actual_time / frozen_predicted_time - 1",
+      "empty_mean_task_jct_role": "collected_suite_diagnostic_not_scored",
+      "joint_wave_score": "maximum cell_score over exactly nine registered functionals",
+      "loaded_resident_overlap_service_role": "collected_suite_diagnostic_not_scored",
+      "margin": "max(0, nineteenth order statistic of 19 joint-wave scores)"
+    },
+    "scored_functionals": [
+      {
+        "direction": "upper_time",
+        "frozen_predictor": "frozen_training_phase_model_drain_prediction_s",
+        "functional": "drain_completion",
+        "functional_id": "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+        "identity": "workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1",
+        "observation_field": "drain_completion_s",
+        "source": "empty"
+      },
+      {
+        "direction": "upper_time",
+        "frozen_predictor": "frozen_training_phase_model_drain_prediction_s",
+        "functional": "drain_completion",
+        "functional_id": "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+        "identity": "workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3",
+        "observation_field": "drain_completion_s",
+        "source": "empty"
+      },
+      {
+        "direction": "upper_time",
+        "frozen_predictor": "frozen_training_phase_model_drain_prediction_s",
+        "functional": "drain_completion",
+        "functional_id": "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=8:drain_completion",
+        "identity": "workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=8",
+        "observation_field": "drain_completion_s",
+        "source": "empty"
+      },
+      {
+        "direction": "upper_time",
+        "frozen_predictor": "frozen_training_phase_model_drain_prediction_s",
+        "functional": "drain_completion",
+        "functional_id": "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+        "identity": "workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1",
+        "observation_field": "drain_completion_s",
+        "source": "empty"
+      },
+      {
+        "direction": "upper_time",
+        "frozen_predictor": "frozen_training_phase_model_drain_prediction_s",
+        "functional": "drain_completion",
+        "functional_id": "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+        "identity": "workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3",
+        "observation_field": "drain_completion_s",
+        "source": "empty"
+      },
+      {
+        "direction": "upper_time",
+        "frozen_predictor": "frozen_training_phase_model_drain_prediction_s",
+        "functional": "drain_completion",
+        "functional_id": "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+        "identity": "workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1",
+        "observation_field": "drain_completion_s",
+        "source": "empty"
+      },
+      {
+        "direction": "upper_time",
+        "frozen_predictor": "frozen_training_phase_model_drain_prediction_s",
+        "functional": "drain_completion",
+        "functional_id": "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+        "identity": "workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3",
+        "observation_field": "drain_completion_s",
+        "source": "empty"
+      },
+      {
+        "direction": "upper_time",
+        "frozen_predictor": "frozen_training_phase_model_target_prediction_s",
+        "functional": "target_completion_time",
+        "functional_id": "loaded:cnn_after_llm:target_completion_time",
+        "identity": "cnn_after_llm",
+        "observation_field": "target_canonical_completion_s",
+        "source": "loaded"
+      },
+      {
+        "direction": "upper_time",
+        "frozen_predictor": "frozen_training_phase_model_target_prediction_s",
+        "functional": "target_completion_time",
+        "functional_id": "loaded:llm_after_cnn:target_completion_time",
+        "identity": "llm_after_cnn",
+        "observation_field": "target_canonical_completion_s",
+        "source": "loaded"
+      }
+    ],
+    "status": "REGISTERED_READY_FOR_SEPARATE_LAUNCH"
+  },
+  "decision_rule": {
+    "CAPACITY_ESTABLISHED_CANDIDATE_PENDING": "coverage and every frozen capacity case pass, but comparable candidate-support evidence is unavailable for at least one required case",
+    "JOINT95_ALIGNED_CAPACITY_CLOSURE_PASS": "coverage, every frozen capacity case, and every required same-model/same-state candidate-support comparison pass",
+    "JOINT95_CANDIDATE_SUPPORT_FAIL_STOP": "coverage and capacity pass, comparable same-model/same-state epsilon evidence exists, and at least one epsilon is not strictly below eta",
+    "JOINT95_HOLDOUT_COVERAGE_FAIL_STOP": "the independent wave-33 joint score exceeds the frozen rank-19 margin",
+    "JOINT95_NO_POSITIVE_CAPACITY_MARGIN_STOP": "coverage passes, but at least one frozen lane/load case has a nonpositive effective capacity slack or a failed structural projection"
+  },
+  "experiment": "aligned_hardware_joint95_v4_capacity_closure",
+  "fixed_capacity_contract": {
+    "base_lanes": 2,
+    "candidate_support_loads": [
+      0.8,
+      0.95
+    ],
+    "capacity_lanes": [
+      8,
+      16
+    ],
+    "common_capacity_scale_formula": "min over R in {8,16} of max s such that s*(R/2)*lambda_point_R2 is in the joint-envelope convex complete-frame service region",
+    "eta_formula": "eta_R(load) = max_{w>=0,sum(w)<=1} min_i [R*sum_a w_a*requirements[a,i]/max(1,tau_upper[a]) - arrival_R(load)[i]] - projection_support_loss_R",
+    "fixed_arrival_direction_base_R2": [
+      0.13357896661048682,
+      0.2932346065995885,
+      0.3591641925037879
+    ],
+    "fixed_point_boundary_arrivals_base_R2": [
+      0.1335789666104868,
+      0.29323460659958844,
+      0.35916419250378784
+    ],
+    "fixed_point_boundary_scale_base_R2": 0.9999999999999998,
+    "lane_scaling_rule": "arrival_R(load) = load * (R / 2) * fixed_point_boundary_arrivals_base_R2",
+    "loads": [
+      0.5,
+      0.8,
+      0.95
+    ],
+    "positive_capacity_gate": "every registered R/load structural projection passes and eta_R(load) > 0"
+  },
+  "gate": "aligned_hardware_joint95_v4_capacity_closure_runner",
+  "joint_data_eligibility": {
+    "eligible_calibration_waves": [
+      74,
+      75,
+      76,
+      77,
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      84,
+      85,
+      86,
+      87,
+      88,
+      89,
+      90,
+      91,
+      92
+    ],
+    "eligible_campaign": "critical_gpu_joint95_v4",
+    "eligible_holdout_wave": 93,
+    "v1_joint_results_read": 0,
+    "v1_joint_scores_used": 0,
+    "v1_joint_units_used": 0,
+    "v2_joint_results_read": 0,
+    "v2_joint_scores_used": 0,
+    "v2_joint_units_used": 0,
+    "v3_joint_results_read": 0,
+    "v3_joint_scores_used": 0,
+    "v3_joint_units_used": 0
+  },
+  "point_reference_model": {
+    "excluded_actions": [
+      {
+        "action_id": "gpu_loaded:gpu_b:cnn_after_rl",
+        "reason": "resident class has no arrivals in the three-class q01 protocol"
+      }
+    ],
+    "lanes": 2,
+    "model_scope": "deterministic_cached_phase_complete_job_renewal",
+    "node": "gpu_b",
+    "options": [
+      {
+        "action_id": "gpu_loaded:gpu_b:cnn_after_llm",
+        "completion_offsets": [
+          [
+            10.431026738447038
+          ],
+          [],
+          [
+            11.514578111707017
+          ]
+        ],
+        "duration": 11.514578111707017,
+        "loaded": true,
+        "phases": [
+          [
+            "resident_initialization_s",
+            4.716920265498629
+          ],
+          [
+            "target_overlap_s",
+            5.714106472948409
+          ],
+          [
+            "resident_overlap_rate_native_per_s",
+            120.39972693896493
+          ],
+          [
+            "resident_remaining_native_units",
+            0.0
+          ],
+          [
+            "resident_dedicated_drain_s",
+            0.0
+          ],
+          [
+            "resident_finalization_s",
+            1.0835513732599793
+          ]
+        ],
+        "requirements": [
+          1,
+          0,
+          1
+        ],
+        "source_action_ids": [
+          "gpu_loaded:gpu_b:cnn_after_llm",
+          "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1"
+        ]
+      },
+      {
+        "action_id": "gpu_loaded:gpu_b:llm_after_cnn",
+        "completion_offsets": [
+          [
+            11.936669718453734
+          ],
+          [],
+          [
+            11.090642004449867
+          ]
+        ],
+        "duration": 11.936669718453734,
+        "loaded": true,
+        "phases": [
+          [
+            "resident_initialization_s",
+            4.669018776022396
+          ],
+          [
+            "target_overlap_s",
+            6.421623228427471
+          ],
+          [
+            "resident_overlap_rate_native_per_s",
+            16.652848248271273
+          ],
+          [
+            "resident_remaining_native_units",
+            0.0
+          ],
+          [
+            "resident_dedicated_drain_s",
+            0.0
+          ],
+          [
+            "resident_finalization_s",
+            0.846027714003867
+          ]
+        ],
+        "requirements": [
+          1,
+          0,
+          1
+        ],
+        "source_action_ids": [
+          "gpu_loaded:gpu_b:llm_after_cnn",
+          "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1"
+        ]
+      },
+      {
+        "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+        "completion_offsets": [
+          [
+            8.093888054475512
+          ],
+          [],
+          []
+        ],
+        "duration": 8.093888054475512,
+        "loaded": false,
+        "phases": [
+          [
+            "initialization_s",
+            4.669018776022396
+          ],
+          [
+            "loop_s",
+            2.5788415644492484
+          ],
+          [
+            "finalization_s",
+            0.846027714003867
+          ]
+        ],
+        "requirements": [
+          1,
+          0,
+          0
+        ],
+        "source_action_ids": [
+          "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1"
+        ]
+      },
+      {
+        "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+        "completion_offsets": [
+          [
+            14.972417070959636,
+            14.972417070959636,
+            14.972417070959636
+          ],
+          [],
+          []
+        ],
+        "duration": 14.972417070959636,
+        "loaded": false,
+        "phases": [
+          [
+            "initialization_s",
+            6.583782343158832
+          ],
+          [
+            "loop_s",
+            7.48884139563465
+          ],
+          [
+            "finalization_s",
+            0.8997933321661549
+          ]
+        ],
+        "requirements": [
+          3,
+          0,
+          0
+        ],
+        "source_action_ids": [
+          "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3"
+        ]
+      },
+      {
+        "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+        "completion_offsets": [
+          [],
+          [
+            2.7928254592821196
+          ],
+          []
+        ],
+        "duration": 2.7928254592821196,
+        "loaded": false,
+        "phases": [
+          [
+            "initialization_s",
+            1.2277755779466062
+          ],
+          [
+            "loop_s",
+            1.194901513584997
+          ],
+          [
+            "finalization_s",
+            0.3701483677505166
+          ]
+        ],
+        "requirements": [
+          0,
+          1,
+          0
+        ],
+        "source_action_ids": [
+          "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1"
+        ]
+      },
+      {
+        "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+        "completion_offsets": [
+          [],
+          [
+            6.820477375410869,
+            6.820477375410869,
+            6.820477375410869
+          ],
+          []
+        ],
+        "duration": 6.820477375410869,
+        "loaded": false,
+        "phases": [
+          [
+            "initialization_s",
+            2.741113696925434
+          ],
+          [
+            "loop_s",
+            3.661079762986579
+          ],
+          [
+            "finalization_s",
+            0.41828391549885663
+          ]
+        ],
+        "requirements": [
+          0,
+          3,
+          0
+        ],
+        "source_action_ids": [
+          "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3"
+        ]
+      },
+      {
+        "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+        "completion_offsets": [
+          [],
+          [],
+          [
+            7.4174495042607305
+          ]
+        ],
+        "duration": 7.4174495042607305,
+        "loaded": false,
+        "phases": [
+          [
+            "initialization_s",
+            4.716920265498629
+          ],
+          [
+            "loop_s",
+            1.6169778655021219
+          ],
+          [
+            "finalization_s",
+            1.0835513732599793
+          ]
+        ],
+        "requirements": [
+          0,
+          0,
+          1
+        ],
+        "source_action_ids": [
+          "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1"
+        ]
+      },
+      {
+        "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+        "completion_offsets": [
+          [],
+          [],
+          [
+            9.462480184740949,
+            9.462480184740949,
+            9.462480184740949
+          ]
+        ],
+        "duration": 9.462480184740949,
+        "loaded": false,
+        "phases": [
+          [
+            "initialization_s",
+            5.648919066996314
+          ],
+          [
+            "loop_s",
+            2.6111246433283664
+          ],
+          [
+            "finalization_s",
+            1.202436474416269
+          ]
+        ],
+        "requirements": [
+          0,
+          0,
+          3
+        ],
+        "source_action_ids": [
+          "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3"
+        ]
+      },
+      {
+        "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8",
+        "completion_offsets": [
+          [],
+          [],
+          [
+            14.84929022616052,
+            14.84929022616052,
+            14.84929022616052,
+            14.84929022616052,
+            14.84929022616052,
+            14.84929022616052,
+            14.84929022616052,
+            14.84929022616052
+          ]
+        ],
+        "duration": 14.84929022616052,
+        "loaded": false,
+        "phases": [
+          [
+            "initialization_s",
+            7.840006518249538
+          ],
+          [
+            "loop_s",
+            5.504426018315827
+          ],
+          [
+            "finalization_s",
+            1.5048576895951555
+          ]
+        ],
+        "requirements": [
+          0,
+          0,
+          8
+        ],
+        "source_action_ids": [
+          "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8"
+        ]
+      }
+    ],
+    "scales": [
+      60.0,
+      40.0,
+      120.0
+    ],
+    "scenario_id": "q01:gpu_3080ti_12gb_dual_gpu_b",
+    "workloads": [
+      "gpu_cnn_torch_resnet50",
+      "gpu_heavy_jax_matmul",
+      "gpu_llm_distilgpt2"
+    ]
+  },
+  "predictor_anchor": [
+    {
+      "functional": "drain_completion",
+      "functional_id": "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+      "identity": "workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1",
+      "predicted_time_s": 7.345849541015923,
+      "source": "empty"
+    },
+    {
+      "functional": "drain_completion",
+      "functional_id": "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+      "identity": "workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3",
+      "predicted_time_s": 9.54536774198641,
+      "source": "empty"
+    },
+    {
+      "functional": "drain_completion",
+      "functional_id": "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=8:drain_completion",
+      "identity": "workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=8",
+      "predicted_time_s": 15.301557433034759,
+      "source": "empty"
+    },
+    {
+      "functional": "drain_completion",
+      "functional_id": "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+      "identity": "workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1",
+      "predicted_time_s": 2.830800350977836,
+      "source": "empty"
+    },
+    {
+      "functional": "drain_completion",
+      "functional_id": "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+      "identity": "workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3",
+      "predicted_time_s": 6.908509265037421,
+      "source": "empty"
+    },
+    {
+      "functional": "drain_completion",
+      "functional_id": "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+      "identity": "workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1",
+      "predicted_time_s": 8.320095933013363,
+      "source": "empty"
+    },
+    {
+      "functional": "drain_completion",
+      "functional_id": "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+      "identity": "workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3",
+      "predicted_time_s": 15.05348000743437,
+      "source": "empty"
+    },
+    {
+      "functional": "target_completion_time",
+      "functional_id": "loaded:cnn_after_llm:target_completion_time",
+      "identity": "cnn_after_llm",
+      "predicted_time_s": 5.731614196575304,
+      "source": "loaded"
+    },
+    {
+      "functional": "target_completion_time",
+      "functional_id": "loaded:llm_after_cnn:target_completion_time",
+      "identity": "llm_after_cnn",
+      "predicted_time_s": 6.388818699764472,
+      "source": "loaded"
+    }
+  ],
+  "prohibited": [
+    "reading v4 visit values or the v4 results directory during registration",
+    "using any v1-v3 joint visit, score, margin, release, or results directory",
+    "post-result changes to functionals, score, rank, action mapping, lanes, loads, or arrival direction",
+    "new trajectory construction or post-result load selection",
+    "selector execution in this runner",
+    "numeric reuse of epsilon when model or state-population contracts differ",
+    "server pulls or paper edits"
+  ],
+  "registered": true,
+  "registered_at_utc": "2026-09-13T14:59:59.462887+00:00",
+  "registration_scope": {
+    "margin_computed": false,
+    "rng_draws": 0,
+    "selector_invoked": false,
+    "server_pull_performed": false,
+    "trajectory_built": false,
+    "v1_joint_results_directory_read": false,
+    "v1_joint_visit_values_read": false,
+    "v2_joint_results_directory_read": false,
+    "v2_joint_visit_values_read": false,
+    "v3_joint_results_directory_read": false,
+    "v3_joint_visit_values_read": false,
+    "v4_joint_results_directory_read": false,
+    "v4_joint_visit_values_read": false
+  },
+  "run_preconditions": [
+    "v4 waves 74..92 each have exactly one dispatcher-valid first-attempt PASS terminal",
+    "all nineteen v4 calibration terminals equal the registered predictor anchor",
+    "the v4 holdout_release validates and freezes rank 19 (the maximum)",
+    "v4 wave 93 has exactly one dispatcher-valid post-release PASS terminal",
+    "no v1-v3 or unregistered result artifact is present in the v4 results directory",
+    "all frozen source contracts still match this registration"
+  ],
+  "schema_version": 1,
+  "score_and_envelope_contract": {
+    "cell_score": "actual_time / frozen_predicted_time - 1",
+    "complete_frame_offsets": "all admitted jobs complete at the action upper duration",
+    "dedicated_action_upper": "its empty drain duration component upper",
+    "duration_component_upper": "predicted_time * (1 + margin)",
+    "faster_negative_scores": "do not enlarge the upper-time margin",
+    "finite_sample_rank": 19,
+    "forbidden_shortcut": "do not use predicted_service*(1-margin); reciprocal time scaling is required",
+    "joint_wave_score": "max of the exactly nine registered cell scores",
+    "loaded_action_upper": "loaded target duration component upper + fresh resident empty-p1 drain duration component upper",
+    "lower_complete_job_service": "requirements / max(1, upper_complete_frame_duration)",
+    "lower_native_service": "requirements * canonical_native_scale / max(1, upper_complete_frame_duration)",
+    "one_sided_margin": "max(0, raw_rank_score)",
+    "raw_rank_score": "sorted(v4_calibration_joint_scores)[18]"
+  },
+  "source_paths": {
+    "collection_manifest": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_joint95_v4_collection_manifest_20260913.json",
+    "count_space_trajectory_protocol": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/aligned_hardware_count_space_bnb_trajectory_transition_20260913_protocol.json",
+    "count_space_trajectory_result": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/aligned_hardware_count_space_bnb_trajectory_transition_20260913.json",
+    "holdout_release": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_joint95_v4_results/holdout_release.json",
+    "joint_results_directory": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_joint95_v4_results",
+    "lcb_envelope_protocol": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/aligned_hardware_lcb_frame_envelope_shadow_development_20260912_protocol.json"
+  },
+  "status": "REGISTERED_AWAITING_JOINT95_V4_DATA",
+  "zero_margin_action_envelopes": [
+    {
+      "action_id": "gpu_loaded:gpu_b:cnn_after_llm",
+      "action_kind": "loaded",
+      "complete_job_lower_service_rates_per_s": [
+        0.07646742671711607,
+        0.0,
+        0.07646742671711607
+      ],
+      "completion_offsets_all_equal_upper_duration": true,
+      "components": [
+        {
+          "functional_id": "loaded:cnn_after_llm:target_completion_time",
+          "predicted_time_s": 5.731614196575304,
+          "upper_time_s": 5.731614196575304
+        },
+        {
+          "functional_id": "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "predicted_time_s": 7.345849541015923,
+          "upper_time_s": 7.345849541015923
+        }
+      ],
+      "composition": "serial_loaded_target_plus_fresh_resident_p1_drain_upper",
+      "margin_multiplier": 1.0,
+      "native_unit_lower_service_rates_per_s": [
+        4.5880456030269645,
+        0.0,
+        9.176091206053929
+      ],
+      "requirements": [
+        1,
+        0,
+        1
+      ],
+      "upper_complete_frame_duration_s": 13.077463737591227
+    },
+    {
+      "action_id": "gpu_loaded:gpu_b:llm_after_cnn",
+      "action_kind": "loaded",
+      "complete_job_lower_service_rates_per_s": [
+        0.06798598162855381,
+        0.0,
+        0.06798598162855381
+      ],
+      "completion_offsets_all_equal_upper_duration": true,
+      "components": [
+        {
+          "functional_id": "loaded:llm_after_cnn:target_completion_time",
+          "predicted_time_s": 6.388818699764472,
+          "upper_time_s": 6.388818699764472
+        },
+        {
+          "functional_id": "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "predicted_time_s": 8.320095933013363,
+          "upper_time_s": 8.320095933013363
+        }
+      ],
+      "composition": "serial_loaded_target_plus_fresh_resident_p1_drain_upper",
+      "margin_multiplier": 1.0,
+      "native_unit_lower_service_rates_per_s": [
+        4.079158897713228,
+        0.0,
+        8.158317795426456
+      ],
+      "requirements": [
+        1,
+        0,
+        1
+      ],
+      "upper_complete_frame_duration_s": 14.708914632777834
+    },
+    {
+      "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+      "action_kind": "dedicated",
+      "complete_job_lower_service_rates_per_s": [
+        0.12019092184166934,
+        0.0,
+        0.0
+      ],
+      "completion_offsets_all_equal_upper_duration": true,
+      "components": [
+        {
+          "functional_id": "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "predicted_time_s": 8.320095933013363,
+          "upper_time_s": 8.320095933013363
+        }
+      ],
+      "composition": "dedicated_empty_drain_upper",
+      "margin_multiplier": 1.0,
+      "native_unit_lower_service_rates_per_s": [
+        7.21145531050016,
+        0.0,
+        0.0
+      ],
+      "requirements": [
+        1,
+        0,
+        0
+      ],
+      "upper_complete_frame_duration_s": 8.320095933013363
+    },
+    {
+      "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+      "action_kind": "dedicated",
+      "complete_job_lower_service_rates_per_s": [
+        0.19928946652324966,
+        0.0,
+        0.0
+      ],
+      "completion_offsets_all_equal_upper_duration": true,
+      "components": [
+        {
+          "functional_id": "empty:workload_env=resnet50_synthetic_train_amp_b32_224|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "predicted_time_s": 15.05348000743437,
+          "upper_time_s": 15.05348000743437
+        }
+      ],
+      "composition": "dedicated_empty_drain_upper",
+      "margin_multiplier": 1.0,
+      "native_unit_lower_service_rates_per_s": [
+        11.95736799139498,
+        0.0,
+        0.0
+      ],
+      "requirements": [
+        3,
+        0,
+        0
+      ],
+      "upper_complete_frame_duration_s": 15.05348000743437
+    },
+    {
+      "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+      "action_kind": "dedicated",
+      "complete_job_lower_service_rates_per_s": [
+        0.0,
+        0.3532569860161889,
+        0.0
+      ],
+      "completion_offsets_all_equal_upper_duration": true,
+      "components": [
+        {
+          "functional_id": "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "predicted_time_s": 2.830800350977836,
+          "upper_time_s": 2.830800350977836
+        }
+      ],
+      "composition": "dedicated_empty_drain_upper",
+      "margin_multiplier": 1.0,
+      "native_unit_lower_service_rates_per_s": [
+        0.0,
+        14.130279440647556,
+        0.0
+      ],
+      "requirements": [
+        0,
+        1,
+        0
+      ],
+      "upper_complete_frame_duration_s": 2.830800350977836
+    },
+    {
+      "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+      "action_kind": "dedicated",
+      "complete_job_lower_service_rates_per_s": [
+        0.0,
+        0.43424708354701036,
+        0.0
+      ],
+      "completion_offsets_all_equal_upper_duration": true,
+      "components": [
+        {
+          "functional_id": "empty:workload_env=jax_matmul_8192|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "predicted_time_s": 6.908509265037421,
+          "upper_time_s": 6.908509265037421
+        }
+      ],
+      "composition": "dedicated_empty_drain_upper",
+      "margin_multiplier": 1.0,
+      "native_unit_lower_service_rates_per_s": [
+        0.0,
+        17.369883341880413,
+        0.0
+      ],
+      "requirements": [
+        0,
+        3,
+        0
+      ],
+      "upper_complete_frame_duration_s": 6.908509265037421
+    },
+    {
+      "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+      "action_kind": "dedicated",
+      "complete_job_lower_service_rates_per_s": [
+        0.0,
+        0.0,
+        0.1361312935170329
+      ],
+      "completion_offsets_all_equal_upper_duration": true,
+      "components": [
+        {
+          "functional_id": "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=1:drain_completion",
+          "predicted_time_s": 7.345849541015923,
+          "upper_time_s": 7.345849541015923
+        }
+      ],
+      "composition": "dedicated_empty_drain_upper",
+      "margin_multiplier": 1.0,
+      "native_unit_lower_service_rates_per_s": [
+        0.0,
+        0.0,
+        16.335755222043947
+      ],
+      "requirements": [
+        0,
+        0,
+        1
+      ],
+      "upper_complete_frame_duration_s": 7.345849541015923
+    },
+    {
+      "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+      "action_kind": "dedicated",
+      "complete_job_lower_service_rates_per_s": [
+        0.0,
+        0.0,
+        0.3142885723306553
+      ],
+      "completion_offsets_all_equal_upper_duration": true,
+      "components": [
+        {
+          "functional_id": "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=3:drain_completion",
+          "predicted_time_s": 9.54536774198641,
+          "upper_time_s": 9.54536774198641
+        }
+      ],
+      "composition": "dedicated_empty_drain_upper",
+      "margin_multiplier": 1.0,
+      "native_unit_lower_service_rates_per_s": [
+        0.0,
+        0.0,
+        37.71462867967864
+      ],
+      "requirements": [
+        0,
+        0,
+        3
+      ],
+      "upper_complete_frame_duration_s": 9.54536774198641
+    },
+    {
+      "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8",
+      "action_kind": "dedicated",
+      "complete_job_lower_service_rates_per_s": [
+        0.0,
+        0.0,
+        0.5228225973082113
+      ],
+      "completion_offsets_all_equal_upper_duration": true,
+      "components": [
+        {
+          "functional_id": "empty:workload_env=distilgpt2_forward_fp16_b2_s128|node_bucket=gpu_3080ti_12gb_dual|resource_state=empty|profile=8:drain_completion",
+          "predicted_time_s": 15.301557433034759,
+          "upper_time_s": 15.301557433034759
+        }
+      ],
+      "composition": "dedicated_empty_drain_upper",
+      "margin_multiplier": 1.0,
+      "native_unit_lower_service_rates_per_s": [
+        0.0,
+        0.0,
+        62.73871167698536
+      ],
+      "requirements": [
+        0,
+        0,
+        8
+      ],
+      "upper_complete_frame_duration_s": 15.301557433034759
+    }
+  ]
+}

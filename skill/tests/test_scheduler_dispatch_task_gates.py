@@ -11,7 +11,9 @@ def _deps(**overrides):
         "clear_disallowed_cpu_fallback_selection": lambda task: False,
         "reconcile_queued_launch_artifacts_before_dispatch": lambda task, state: None,
         "task_run_identity": lambda task: task.get("identity"),
-        "same_run_identity_live_artifact_reason": lambda task, state, run_key: "",
+        "same_run_identity_live_artifact_reason": (
+            lambda task, state, run_key, identity_index=None: ""
+        ),
         "eviction_cooldown_block_reason": lambda task: "",
         "queued_wait_for_file_block_reason": lambda task: "",
         "queued_cpu_training_block_reason": lambda task: "",
@@ -79,7 +81,9 @@ def test_dispatch_task_gates_blocks_terminal_artifact_before_other_reasons():
         state={"tasks": [task]},
         running_keys=set(),
         deps=_deps(
-            same_run_identity_live_artifact_reason=lambda task, state, run_key: "terminal artifact",
+            same_run_identity_live_artifact_reason=(
+                lambda task, state, run_key, identity_index=None: "terminal artifact"
+            ),
             eviction_cooldown_block_reason=lambda task: "cooldown",
         ),
     )

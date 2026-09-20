@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 from skill.scheduler_running.lifecycle import (
     RunningLifecycleDeps,
     apply_alive_probe_result,
@@ -191,6 +193,31 @@ def test_handle_unknown_probe_result_marks_done_when_cached_success_exists():
     assert calls["record_result"] == ["t-unknown"]
 
 
+def test_cached_success_with_snapshot_never_discovers_artifacts_under_state_lock():
+    deps, calls = _deps(cached_success="Training complete", now=100.0)
+    task = {
+        "id": "t-unknown",
+        "status": "running",
+        "node": "node001",
+        "reroute_on_node_down": True,
+        "probe_unknown_since": 90.0,
+        "started_at": 40.0,
+        "log_path": "/tmp/log",
+    }
+
+    handle_unknown_probe_result(
+        task,
+        {"tasks": [task]},
+        {"state": "unknown", "error": "ssh failed"},
+        {},
+        deps=deps,
+    )
+
+    assert task["status"] == "done"
+    assert task["result_artifacts_pending"] is True
+    assert "record_result" not in calls
+
+
 def test_handle_unknown_probe_result_reuses_inconclusive_batch_probe():
     deps, calls = _deps(now=100.0)
     task = {
@@ -333,6 +360,43 @@ def test_handle_dead_probe_result_legacy_external_completed_records_history_and_
     assert calls["runtime"] == [("t-done", {"duration_s": 19})]
 
 
+def test_handle_dead_probe_result_local_zero_exit_empty_log_does_not_retry():
+    deps, calls = _deps(now=100.0, completed_crash=(False, ""))
+    task = {
+        "id": "t-local-silent",
+        "status": "running",
+        "signature": "scheduleurm/repro/zero-exit-silent",
+        "started_at": 80.0,
+        "cmd": "python3 -c 'pass'",
+        "log_path": "/tmp/sched_t-local-silent.log",
+        "peak_vram_mb": 0,
+        "peak_ram_mb": 128,
+        "cpu_cores": 1,
+    }
+
+    handle_dead_probe_result(
+        task,
+        {"tasks": [task]},
+        {
+            "state": "dead",
+            "terminal_ok": True,
+            "backend_state": "LOCAL_EXIT_STATUS",
+            "exit_code": 0,
+            "backend_finished_at": 99.5,
+            "terminal_reason": "launcher exit-status sentinel recorded rc=0",
+            "terminal_diagnosis_deferred": True,
+        },
+        None,
+        None,
+        deps=deps,
+    )
+
+    assert task["status"] == "done"
+    assert task["exit_code"] == 0
+    assert "requeued_as" not in task
+    assert "requeue" not in calls
+
+
 def test_handle_dead_probe_result_completed_log_crash_requeues():
     deps, calls = _deps(completed_crash=(True, "ModuleNotFoundError"), now=100.0)
     task = {
@@ -358,6 +422,40 @@ def test_handle_dead_probe_result_completed_log_crash_requeues():
     assert task["last_block_reason"] == "ModuleNotFoundError"
     assert task["requeued_as"] == "t-retry"
     assert calls["requeue"] == ["t-crash"]
+
+
+def test_incomplete_terminal_snapshot_defers_without_lock_inner_log_scan():
+    def should_not_scan(task):
+        raise AssertionError("terminal log scan must stay outside the state lock")
+
+    deps, calls = _deps(now=100.0)
+    deps = replace(deps, scan_completed_log_for_crash=should_not_scan)
+    task = {
+        "id": "t-incomplete-snapshot",
+        "status": "running",
+        "signature": "sig",
+        "started_at": 80.0,
+        "log_path": "/tmp/log",
+    }
+
+    handle_dead_probe_result(
+        task,
+        {"tasks": [task]},
+        {
+            "state": "dead",
+            "terminal_ok": True,
+            "backend_state": "LOCAL_EXIT_STATUS",
+            "exit_code": 0,
+        },
+        None,
+        {"t-incomplete-snapshot": {"error": "snapshot timed out"}},
+        deps=deps,
+    )
+
+    assert task["status"] == "running"
+    assert task["terminal_transition_deferred"] is True
+    assert "outside state lock" in task["last_block_reason"]
+    assert "release" not in calls
 
 
 def test_handle_dead_probe_result_deferred_local_pid_dead_avoids_inline_log_diagnosis():

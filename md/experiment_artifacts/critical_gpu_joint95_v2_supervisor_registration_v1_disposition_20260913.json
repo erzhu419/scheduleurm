@@ -1,0 +1,28 @@
+{
+  "created_at_utc": "2026-09-13T01:49:52.610302+00:00",
+  "gate": "critical_gpu_joint95_v2_supervisor_registration_disposition",
+  "incident": {
+    "affected_controller_task_id": "t93357",
+    "affected_wave": 34,
+    "attempt_status_at_disposition": "WAIT_SCHEDULER_ACK",
+    "attempt_terminal_at_disposition": false,
+    "completed_measurements_at_disposition": 0,
+    "controller_status_at_disposition": "running",
+    "exit_code": 2,
+    "supervisor_status": "failed",
+    "supervisor_task_id": "t93355",
+    "trigger": "collection_status read an exact attempt01 partial while its controller remained active"
+  },
+  "replacement_registration": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_joint95_v2_supervisor_registration_v2_20260913.json",
+  "replacement_rule": "check active joint95 controllers before collection_status; wait without mutation while any is active",
+  "schema_version": 1,
+  "scientific_effect": {
+    "campaign_manifest_changed": false,
+    "joint_units_created": 0,
+    "measurements_invalidated": 0,
+    "running_attempt_changed": false
+  },
+  "status": "SUPERSEDED_AFTER_CONTROL_ORDER_FAILURE",
+  "superseded_registration": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_joint95_v2_supervisor_registration_20260913.json",
+  "v1_resubmission_authorized": false
+}

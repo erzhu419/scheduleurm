@@ -87,6 +87,7 @@ def test_execute_launch_intents_uses_batch_commit_when_provided():
         _intent("t0002", "node002"),
     ]
     batch_calls = []
+    progress = []
 
     def launch(task, node_state=None):
         task["status"] = "running"
@@ -113,9 +114,11 @@ def test_execute_launch_intents_uses_batch_commit_when_provided():
         batch_commit_fn=batch_commit,
         slot_lock_factory=lambda node: _null_lock(),
         notify_fn=lambda *args, **kwargs: None,
+        progress_fn=progress.append,
     )
 
     assert batch_calls == [[(1, "t0001", True, "ok t0001"), (2, "t0002", True, "ok t0002")]]
+    assert progress == [{"completed": 2, "total": 2}]
     assert [ev["task_id"] for ev in out] == ["before", "t0001", "t0002"]
 
 
@@ -200,3 +203,60 @@ def test_execute_launch_intents_commits_completed_work_before_slow_tail_finishes
         "fast-3",
         "slow",
     ]
+
+
+def test_commit_delay_starts_when_first_launch_finishes_not_when_launching_starts():
+    release_first = threading.Event()
+    release_second = threading.Event()
+    release_tail = threading.Event()
+    first_commit = threading.Event()
+    batch_calls = []
+
+    def launch(task, node_state=None):
+        gate = {
+            "first": release_first,
+            "second": release_second,
+            "tail": release_tail,
+        }[task["id"]]
+        assert gate.wait(timeout=3)
+        task["status"] = "running"
+        return True, "ok"
+
+    def batch_commit(records):
+        batch_calls.append([record["task"]["id"] for record in records])
+        first_commit.set()
+        return {
+            record["idx"]: [{"type": "launched", "task_id": record["task"]["id"]}]
+            for record in records
+        }
+
+    worker = threading.Thread(
+        target=execute_launch_intents,
+        kwargs={
+            "events": [
+                _intent("first", "node001"),
+                _intent("second", "node002"),
+                _intent("tail", "node003"),
+            ],
+            "max_workers": 3,
+            "launch_fn": launch,
+            "commit_fn": lambda *args: [],
+            "batch_commit_fn": batch_commit,
+            "slot_lock_factory": lambda node: _null_lock(),
+            "notify_fn": lambda *args, **kwargs: None,
+            "commit_batch_size": 10,
+            "commit_max_delay_s": 0.1,
+        },
+    )
+    worker.start()
+    time.sleep(0.15)
+    release_first.set()
+    time.sleep(0.02)
+    release_second.set()
+
+    assert first_commit.wait(timeout=1)
+    assert batch_calls[0] == ["first", "second"]
+
+    release_tail.set()
+    worker.join(timeout=3)
+    assert worker.is_alive() is False

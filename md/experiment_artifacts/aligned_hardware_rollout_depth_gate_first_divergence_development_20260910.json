@@ -1,0 +1,4882 @@
+{
+  "experiment": "aligned_hardware_rollout_depth_gate_first_divergence_v1",
+  "status": "PASS",
+  "checks": {
+    "three_registered_gated_sources_reproduced": true,
+    "at_most_one_first_physical_divergence_per_source": true,
+    "first_divergence_scan_stops_at_first_or_exhausts_source": true,
+    "first_divergence_prefix_accounting_holds": true,
+    "first_divergences_are_active_and_strict": true,
+    "first_divergence_actions_are_physically_distinct": true,
+    "two_common_v4_replay_branches_per_divergence": true,
+    "v4_first_branches_reproduce_frozen_v4_physically": true,
+    "paired_area_and_flow_component_identities_hold": true,
+    "full_first_suffix_identities_hold": true,
+    "diagnostic_work_accounting_holds": true,
+    "diagnostic_shadow_and_continuation_add_no_randomness": true,
+    "common_continuation_uses_only_v4": true,
+    "registered_sources_unchanged": true
+  },
+  "protocol": {
+    "registered_at_utc": "2026-09-10T12:30:11.510781+00:00",
+    "role": "development failure diagnosis on consumed data only",
+    "source_experiment": "aligned_hardware_rollout_depth_gate_development_20260910.json",
+    "selected_failed_cell": {
+      "load": 0.8,
+      "real_seed": 41
+    },
+    "load": 0.8,
+    "real_seed": 41,
+    "planning_seeds": [
+      0,
+      1,
+      2
+    ],
+    "budget": 26,
+    "arrival_horizon_s": 20000.0,
+    "terminal_service_rates": [
+      0.1335789666104868,
+      0.29323460659958855,
+      0.35916419250378795
+    ],
+    "model": {
+      "node": "gpu_b",
+      "scenario_id": "q01:gpu_3080ti_12gb_dual_gpu_b",
+      "lanes": 2,
+      "workloads": [
+        "gpu_cnn_torch_resnet50",
+        "gpu_heavy_jax_matmul",
+        "gpu_llm_distilgpt2"
+      ],
+      "scales": [
+        60.0,
+        40.0,
+        120.0
+      ],
+      "options": [
+        {
+          "action_id": "gpu_loaded:gpu_b:cnn_after_llm",
+          "requirements": [
+            1,
+            0,
+            1
+          ],
+          "duration": 11.514578111707017,
+          "completion_offsets": [
+            [
+              10.431026738447038
+            ],
+            [],
+            [
+              11.514578111707017
+            ]
+          ],
+          "loaded": true,
+          "source_action_ids": [
+            "gpu_loaded:gpu_b:cnn_after_llm",
+            "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1"
+          ],
+          "phases": [
+            [
+              "resident_initialization_s",
+              4.716920265498629
+            ],
+            [
+              "target_overlap_s",
+              5.714106472948409
+            ],
+            [
+              "resident_overlap_rate_native_per_s",
+              120.39972693896493
+            ],
+            [
+              "resident_remaining_native_units",
+              0.0
+            ],
+            [
+              "resident_dedicated_drain_s",
+              0.0
+            ],
+            [
+              "resident_finalization_s",
+              1.0835513732599793
+            ]
+          ]
+        },
+        {
+          "action_id": "gpu_loaded:gpu_b:llm_after_cnn",
+          "requirements": [
+            1,
+            0,
+            1
+          ],
+          "duration": 11.936669718453734,
+          "completion_offsets": [
+            [
+              11.936669718453734
+            ],
+            [],
+            [
+              11.090642004449867
+            ]
+          ],
+          "loaded": true,
+          "source_action_ids": [
+            "gpu_loaded:gpu_b:llm_after_cnn",
+            "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1"
+          ],
+          "phases": [
+            [
+              "resident_initialization_s",
+              4.669018776022396
+            ],
+            [
+              "target_overlap_s",
+              6.421623228427471
+            ],
+            [
+              "resident_overlap_rate_native_per_s",
+              16.652848248271273
+            ],
+            [
+              "resident_remaining_native_units",
+              0.0
+            ],
+            [
+              "resident_dedicated_drain_s",
+              0.0
+            ],
+            [
+              "resident_finalization_s",
+              0.846027714003867
+            ]
+          ]
+        },
+        {
+          "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+          "requirements": [
+            1,
+            0,
+            0
+          ],
+          "duration": 8.093888054475512,
+          "completion_offsets": [
+            [
+              8.093888054475512
+            ],
+            [],
+            []
+          ],
+          "loaded": false,
+          "source_action_ids": [
+            "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1"
+          ],
+          "phases": [
+            [
+              "initialization_s",
+              4.669018776022396
+            ],
+            [
+              "loop_s",
+              2.5788415644492484
+            ],
+            [
+              "finalization_s",
+              0.846027714003867
+            ]
+          ]
+        },
+        {
+          "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+          "requirements": [
+            3,
+            0,
+            0
+          ],
+          "duration": 14.972417070959636,
+          "completion_offsets": [
+            [
+              14.972417070959636,
+              14.972417070959636,
+              14.972417070959636
+            ],
+            [],
+            []
+          ],
+          "loaded": false,
+          "source_action_ids": [
+            "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3"
+          ],
+          "phases": [
+            [
+              "initialization_s",
+              6.583782343158832
+            ],
+            [
+              "loop_s",
+              7.48884139563465
+            ],
+            [
+              "finalization_s",
+              0.8997933321661549
+            ]
+          ]
+        },
+        {
+          "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+          "requirements": [
+            0,
+            1,
+            0
+          ],
+          "duration": 2.7928254592821196,
+          "completion_offsets": [
+            [],
+            [
+              2.7928254592821196
+            ],
+            []
+          ],
+          "loaded": false,
+          "source_action_ids": [
+            "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1"
+          ],
+          "phases": [
+            [
+              "initialization_s",
+              1.2277755779466062
+            ],
+            [
+              "loop_s",
+              1.194901513584997
+            ],
+            [
+              "finalization_s",
+              0.3701483677505166
+            ]
+          ]
+        },
+        {
+          "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+          "requirements": [
+            0,
+            3,
+            0
+          ],
+          "duration": 6.820477375410869,
+          "completion_offsets": [
+            [],
+            [
+              6.820477375410869,
+              6.820477375410869,
+              6.820477375410869
+            ],
+            []
+          ],
+          "loaded": false,
+          "source_action_ids": [
+            "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3"
+          ],
+          "phases": [
+            [
+              "initialization_s",
+              2.741113696925434
+            ],
+            [
+              "loop_s",
+              3.661079762986579
+            ],
+            [
+              "finalization_s",
+              0.41828391549885663
+            ]
+          ]
+        },
+        {
+          "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+          "requirements": [
+            0,
+            0,
+            1
+          ],
+          "duration": 7.4174495042607305,
+          "completion_offsets": [
+            [],
+            [],
+            [
+              7.4174495042607305
+            ]
+          ],
+          "loaded": false,
+          "source_action_ids": [
+            "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1"
+          ],
+          "phases": [
+            [
+              "initialization_s",
+              4.716920265498629
+            ],
+            [
+              "loop_s",
+              1.6169778655021219
+            ],
+            [
+              "finalization_s",
+              1.0835513732599793
+            ]
+          ]
+        },
+        {
+          "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+          "requirements": [
+            0,
+            0,
+            3
+          ],
+          "duration": 9.462480184740949,
+          "completion_offsets": [
+            [],
+            [],
+            [
+              9.462480184740949,
+              9.462480184740949,
+              9.462480184740949
+            ]
+          ],
+          "loaded": false,
+          "source_action_ids": [
+            "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3"
+          ],
+          "phases": [
+            [
+              "initialization_s",
+              5.648919066996314
+            ],
+            [
+              "loop_s",
+              2.6111246433283664
+            ],
+            [
+              "finalization_s",
+              1.202436474416269
+            ]
+          ]
+        },
+        {
+          "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8",
+          "requirements": [
+            0,
+            0,
+            8
+          ],
+          "duration": 14.84929022616052,
+          "completion_offsets": [
+            [],
+            [],
+            [
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052
+            ]
+          ],
+          "loaded": false,
+          "source_action_ids": [
+            "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8"
+          ],
+          "phases": [
+            [
+              "initialization_s",
+              7.840006518249538
+            ],
+            [
+              "loop_s",
+              5.504426018315827
+            ],
+            [
+              "finalization_s",
+              1.5048576895951555
+            ]
+          ]
+        }
+      ],
+      "excluded_actions": [
+        {
+          "action_id": "gpu_loaded:gpu_b:cnn_after_rl",
+          "reason": "resident class has no arrivals in the three-class q01 protocol"
+        }
+      ],
+      "model_scope": "deterministic_cached_phase_complete_job_renewal"
+    },
+    "certificate": {
+      "model_scope": "deterministic_cached_phase_complete_job_renewal",
+      "arrival_model": "independent Poisson job arrivals in physical time",
+      "arrival_rates": [
+        0.10686317328838943,
+        0.23458768527967075,
+        0.2873313540030302
+      ],
+      "arrival_direction": [
+        0.13357896661048682,
+        0.2932346065995885,
+        0.3591641925037879
+      ],
+      "load_factor": 0.8,
+      "full_boundary_scale": 0.9999999999999998,
+      "boundary_time_weights": [
+        0.0,
+        0.0,
+        0.0,
+        0.33333333333333326,
+        0.0,
+        0.3333333333333334,
+        0.0,
+        0.0,
+        0.33333333333333337
+      ],
+      "slack_time_weights": [
+        0.0,
+        0.0,
+        0.0,
+        0.3761086466509701,
+        0.0,
+        0.3165214459494926,
+        0.0,
+        0.0,
+        0.3073699073995373
+      ],
+      "support_slack_delta": 0.043857439770326384,
+      "projection_support_loss_rate": 0.0,
+      "effective_slack_eta": 0.043857439770326384,
+      "capacity_projection_passed": true,
+      "projection_check_count": 63,
+      "projection_failures": [],
+      "availability_loss_C": 22.564592260821584,
+      "second_moment_B": 185.4092723155254,
+      "tau_min": 1.0,
+      "tau_max": 14.972417070959636,
+      "max_departures": [
+        6,
+        6,
+        16
+      ],
+      "drift_constant": 523.2557586806943,
+      "negative_drift_backlog_threshold": 11930.832292557241,
+      "conditional_model_drift_certified": true,
+      "physical_service_confidence_increased": false,
+      "queue_update": "Q_next = Q - physical_job_departures + Poisson(lambda * tau)",
+      "drift_bound": "E[Delta V | Q] <= B + tau_max*C - tau_min*effective_slack*sum(Q)",
+      "capacity_basis": "lanes times convex hull of all admitted lane requirements/max(1,duration)",
+      "capacity_global_combinations_enumerated": 0
+    },
+    "gate_weights": [
+      8,
+      8,
+      3
+    ],
+    "gate_capacity": 48,
+    "strict_threshold": 96,
+    "source_rows": [
+      {
+        "load": 0.8,
+        "seed": 41,
+        "budget": 26,
+        "policy": "rollout_depth_gated_cap_1pct",
+        "planning_seed": 0,
+        "metrics": {
+          "budget": 26,
+          "arrival_horizon_s": 20000.0,
+          "elapsed_including_drain_s": 20040.204865859887,
+          "job_count": 12697,
+          "completed_jobs": 12697,
+          "makespan_s": 20040.204865859887,
+          "mean_flow_s": 28.554548221996562,
+          "p90_flow_s": 50.569884793416804,
+          "time_average_unfinished_jobs": 18.09148664903791,
+          "frame_boundary_mean_backlog": 14.22212350066637,
+          "frame_boundary_peak_backlog": 34,
+          "frame_count": 2251,
+          "loaded_frame_count": 80,
+          "exact_selection_frame_count": 1670,
+          "candidate_attempts": 38230,
+          "mean_candidate_attempts": 16.983562860950688,
+          "bound_option_probes": 225100,
+          "bound_threshold_evaluations": 161016,
+          "local_score_evaluations": 20707,
+          "feasible_candidate_evaluations": 32033,
+          "peak_search_frontier": 9,
+          "maximum_candidate_attempts_per_frame": 26,
+          "maximum_certified_candidate_gap": 1.2385234704659807,
+          "maximum_certified_gap_per_job": 0.08648636261162614,
+          "maximum_full_support_deficit": 5.050746457084516,
+          "maximum_expected_drift_bound_violation": 0.0,
+          "maximum_queue_recursion_violation": 0.0,
+          "selected_option_counts": {
+            "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1": 35,
+            "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3": 1068,
+            "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1": 1021,
+            "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3": 1218,
+            "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1": 75,
+            "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3": 672,
+            "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8": 313,
+            "gpu_loaded:gpu_b:cnn_after_llm": 94
+          },
+          "frame_audit_prefix": [
+            {
+              "start_s": 0.0,
+              "duration_s": 1.0,
+              "queue_before": [
+                0,
+                0,
+                0
+              ],
+              "departures": [
+                0,
+                0,
+                0
+              ],
+              "arrivals_during_frame": [
+                1,
+                0,
+                0
+              ],
+              "queue_after": [
+                1,
+                0,
+                0
+              ],
+              "option_indices": [
+                null,
+                null
+              ],
+              "score": 0.0,
+              "upper_bound": 0.0,
+              "candidate_gap": 0.0,
+              "attempts": 10,
+              "expected_drift": 0.38889631972722166,
+              "expected_drift_bound": 207.973864576347
+            },
+            {
+              "start_s": 1.0,
+              "duration_s": 8.093888054475512,
+              "queue_before": [
+                1,
+                0,
+                0
+              ],
+              "departures": [
+                1,
+                0,
+                0
+              ],
+              "arrivals_during_frame": [
+                0,
+                0,
+                3
+              ],
+              "queue_after": [
+                0,
+                0,
+                3
+              ],
+              "option_indices": [
+                2,
+                null
+              ],
+              "score": 0.12355001616893509,
+              "upper_bound": 0.12355001616893509,
+              "candidate_gap": 0.0,
+              "attempts": 10,
+              "expected_drift": 6.925559233459273,
+              "expected_drift_bound": 367.6895788616429
+            },
+            {
+              "start_s": 9.093888054475512,
+              "duration_s": 9.462480184740949,
+              "queue_before": [
+                0,
+                0,
+                3
+              ],
+              "departures": [
+                0,
+                0,
+                3
+              ],
+              "arrivals_during_frame": [
+                2,
+                4,
+                3
+              ],
+              "queue_after": [
+                2,
+                4,
+                3
+              ],
+              "option_indices": [
+                7,
+                null
+              ],
+              "score": 0.9511248451027948,
+              "upper_bound": 0.9511248451027948,
+              "candidate_gap": 0.0,
+              "attempts": 10,
+              "expected_drift": 5.14600699526903,
+              "expected_drift_bound": 397.68127899596806
+            },
+            {
+              "start_s": 18.55636823921646,
+              "duration_s": 2.7928254592821196,
+              "queue_before": [
+                2,
+                4,
+                3
+              ],
+              "departures": [
+                0,
+                2,
+                0
+              ],
+              "arrivals_during_frame": [
+                0,
+                1,
+                1
+              ],
+              "queue_after": [
+                2,
+                3,
+                4
+              ],
+              "option_indices": [
+                4,
+                4
+              ],
+              "score": 2.864482624007716,
+              "upper_bound": 2.864482624007716,
+              "candidate_gap": 0.0,
+              "attempts": 11,
+              "expected_drift": -0.2262049696431312,
+              "expected_drift_bound": 247.32586449054273
+            },
+            {
+              "start_s": 21.34919369849858,
+              "duration_s": 9.462480184740949,
+              "queue_before": [
+                2,
+                3,
+                4
+              ],
+              "departures": [
+                0,
+                3,
+                3
+              ],
+              "arrivals_during_frame": [
+                0,
+                2,
+                2
+              ],
+              "queue_after": [
+                2,
+                2,
+                3
+              ],
+              "option_indices": [
+                7,
+                5
+              ],
+              "score": 2.2192913052398544,
+              "upper_bound": 2.2192913052398544,
+              "candidate_gap": 0.0,
+              "attempts": 14,
+              "expected_drift": 2.3872555584173334,
+              "expected_drift_bound": 395.19127806728693
+            },
+            {
+              "start_s": 30.81167388323953,
+              "duration_s": 2.7928254592821196,
+              "queue_before": [
+                2,
+                2,
+                3
+              ],
+              "departures": [
+                0,
+                2,
+                0
+              ],
+              "arrivals_during_frame": [
+                0,
+                0,
+                0
+              ],
+              "queue_after": [
+                2,
+                0,
+                3
+              ],
+              "option_indices": [
+                4,
+                4
+              ],
+              "score": 1.432241312003858,
+              "upper_bound": 1.432241312003858,
+              "candidate_gap": 0.0,
+              "attempts": 24,
+              "expected_drift": 2.463470110590617,
+              "expected_drift_bound": 247.57083683928172
+            },
+            {
+              "start_s": 33.60449934252165,
+              "duration_s": 9.462480184740949,
+              "queue_before": [
+                2,
+                0,
+                3
+              ],
+              "departures": [
+                1,
+                0,
+                3
+              ],
+              "arrivals_during_frame": [
+                0,
+                3,
+                3
+              ],
+              "queue_after": [
+                1,
+                3,
+                3
+              ],
+              "option_indices": [
+                2,
+                7
+              ],
+              "score": 1.1624859217923047,
+              "upper_bound": 1.1624859217923047,
+              "candidate_gap": 0.0,
+              "attempts": 19,
+              "expected_drift": 4.657197654988951,
+              "expected_drift_bound": 396.8512786864077
+            },
+            {
+              "start_s": 43.066979527262596,
+              "duration_s": 2.7928254592821196,
+              "queue_before": [
+                1,
+                3,
+                3
+              ],
+              "departures": [
+                0,
+                2,
+                0
+              ],
+              "arrivals_during_frame": [
+                0,
+                0,
+                0
+              ],
+              "queue_after": [
+                1,
+                1,
+                3
+              ],
+              "option_indices": [
+                4,
+                4
+              ],
+              "score": 2.148361968005787,
+              "upper_bound": 2.148361968005787,
+              "candidate_gap": 0.0,
+              "attempts": 10,
+              "expected_drift": 0.820182379454252,
+              "expected_drift_bound": 247.57083683928172
+            }
+          ]
+        },
+        "decomposition": {
+          "status": "PASS",
+          "arrival_horizon_s": 20000.0,
+          "elapsed_including_drain_s": 20040.204865859887,
+          "frame_count": 2251,
+          "job_count": 12697,
+          "completed_jobs": 12697,
+          "flow_area_job_seconds": 362557.09877468826,
+          "flow_area_components": {
+            "deferred_visible": 163208.7097477743,
+            "new_arrival_barrier": 70987.60619932419,
+            "dispatch_to_completion": 128360.78282758976
+          },
+          "mean_flow_s": 28.5545482219964,
+          "mean_deferred_visible_wait_s": 12.854115913032551,
+          "mean_arrival_barrier_wait_s": 5.59089597537404,
+          "mean_dispatch_to_completion_s": 10.109536333589805,
+          "reconstructed_completion_flow_area_job_seconds": 362557.09877469,
+          "flow_identity_error_job_seconds": -1.7462298274040222e-09,
+          "by_class": {
+            "gpu_cnn_torch_resnet50": {
+              "job_count": 2145,
+              "completed_jobs": 2145,
+              "flow_area_job_seconds": 115514.76421644389,
+              "flow_area_components": {
+                "deferred_visible": 72196.6151763914,
+                "new_arrival_barrier": 11869.953629677237,
+                "dispatch_to_completion": 31448.195410375254
+              },
+              "mean_flow_s": 53.85303693074307,
+              "mean_deferred_visible_wait_s": 33.65809565332932,
+              "mean_arrival_barrier_wait_s": 5.5337779159334435,
+              "mean_dispatch_to_completion_s": 14.661163361480305,
+              "reconstructed_completion_flow_area_job_seconds": 115514.76421644456,
+              "flow_identity_error_job_seconds": -6.693881005048752e-10
+            },
+            "gpu_heavy_jax_matmul": {
+              "job_count": 4675,
+              "completed_jobs": 4675,
+              "flow_area_job_seconds": 101504.52419324197,
+              "flow_area_components": {
+                "deferred_visible": 47258.73767893505,
+                "new_arrival_barrier": 26472.287390628364,
+                "dispatch_to_completion": 27773.499123678554
+              },
+              "mean_flow_s": 21.712197688394006,
+              "mean_deferred_visible_wait_s": 10.10882089388985,
+              "mean_arrival_barrier_wait_s": 5.6625213669793295,
+              "mean_dispatch_to_completion_s": 5.940855427524824,
+              "reconstructed_completion_flow_area_job_seconds": 101504.52419324261,
+              "flow_identity_error_job_seconds": -6.402842700481415e-10
+            },
+            "gpu_llm_distilgpt2": {
+              "job_count": 5877,
+              "completed_jobs": 5877,
+              "flow_area_job_seconds": 145537.81036500237,
+              "flow_area_components": {
+                "deferred_visible": 43753.35689244784,
+                "new_arrival_barrier": 32645.365179018583,
+                "dispatch_to_completion": 69139.08829353596
+              },
+              "mean_flow_s": 24.763962968351603,
+              "mean_deferred_visible_wait_s": 7.444845481103937,
+              "mean_arrival_barrier_wait_s": 5.554766918328839,
+              "mean_dispatch_to_completion_s": 11.764350568918829,
+              "reconstructed_completion_flow_area_job_seconds": 145537.81036500284,
+              "flow_identity_error_job_seconds": -4.656612873077393e-10
+            }
+          },
+          "frame_duration_mean_s": 8.90280091775206,
+          "frame_duration_time_weighted_mean_s": 11.168214421383762,
+          "occupied_lane_seconds": 37896.002324180976,
+          "global_barrier_idle_lane_seconds": 2184.407407538861,
+          "unassigned_lane_seconds": 29.76664320275931,
+          "completed_lane_barrier_seconds": 2154.6407643361017,
+          "total_lane_seconds": 40080.409731719774,
+          "loaded_frame_count": 80,
+          "by_action_multiset": [
+            {
+              "action_multiset": [
+                {
+                  "action_id": null,
+                  "count": 2
+                }
+              ],
+              "frame_count": 1,
+              "total_duration_s": 1.0,
+              "flow_area_components": {
+                "deferred_visible": 0.0,
+                "new_arrival_barrier": 0.014168877961441728,
+                "dispatch_to_completion": 0.0
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": null,
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                }
+              ],
+              "frame_count": 1,
+              "total_duration_s": 8.093888054475512,
+              "flow_area_components": {
+                "deferred_visible": 0.0,
+                "new_arrival_barrier": 11.831305372829625,
+                "dispatch_to_completion": 8.093888054475512
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": null,
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 1,
+              "total_duration_s": 9.462480184740949,
+              "flow_area_components": {
+                "deferred_visible": 0.0,
+                "new_arrival_barrier": 36.187790920204186,
+                "dispatch_to_completion": 28.38744055422285
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 2
+                }
+              ],
+              "frame_count": 509,
+              "total_duration_s": 1421.5481587745892,
+              "flow_area_components": {
+                "deferred_visible": 12372.216784619768,
+                "new_arrival_barrier": 1328.7768375247438,
+                "dispatch_to_completion": 2843.0963175491784
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 40,
+              "total_duration_s": 378.4992073896381,
+              "flow_area_components": {
+                "deferred_visible": 1428.8345078958832,
+                "new_arrival_barrier": 1229.0898768043585,
+                "dispatch_to_completion": 1953.9549072182197
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 14,
+              "total_duration_s": 132.4747225863733,
+              "flow_area_components": {
+                "deferred_visible": 198.71208387955994,
+                "new_arrival_barrier": 296.31621163543895,
+                "dispatch_to_completion": 510.73860052177724
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 2
+                }
+              ],
+              "frame_count": 9,
+              "total_duration_s": 72.84499249027961,
+              "flow_area_components": {
+                "deferred_visible": 137.5960969260837,
+                "new_arrival_barrier": 188.30153073977368,
+                "dispatch_to_completion": 145.68998498055922
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 69,
+              "total_duration_s": 652.9111327471254,
+              "flow_area_components": {
+                "deferred_visible": 2526.4822093258335,
+                "new_arrival_barrier": 1933.8937111304563,
+                "dispatch_to_completion": 2470.537414035367
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 2
+                }
+              ],
+              "frame_count": 362,
+              "total_duration_s": 3425.4178268762084,
+              "flow_area_components": {
+                "deferred_visible": 27356.030214086066,
+                "new_arrival_barrier": 10534.462781002128,
+                "dispatch_to_completion": 20552.50696125734
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 2
+                }
+              ],
+              "frame_count": 220,
+              "total_duration_s": 3293.93175561112,
+              "flow_area_components": {
+                "deferred_visible": 27100.074898436942,
+                "new_arrival_barrier": 15903.78319160823,
+                "dispatch_to_completion": 19763.59053366672
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8",
+                  "count": 1
+                }
+              ],
+              "frame_count": 82,
+              "total_duration_s": 1217.6417985451626,
+              "flow_area_components": {
+                "deferred_visible": 7795.877368734273,
+                "new_arrival_barrier": 5905.695229357659,
+                "dispatch_to_completion": 11418.971822712367
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 2
+                }
+              ],
+              "frame_count": 548,
+              "total_duration_s": 3737.621601725197,
+              "flow_area_components": {
+                "deferred_visible": 44128.48861890824,
+                "new_arrival_barrier": 8035.051972917159,
+                "dispatch_to_completion": 22425.72961035082
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8",
+                  "count": 1
+                }
+              ],
+              "frame_count": 91,
+              "total_duration_s": 1351.2854105806073,
+              "flow_area_components": {
+                "deferred_visible": 14285.01719756642,
+                "new_arrival_barrier": 6487.5831178764665,
+                "dispatch_to_completion": 13393.540375079136
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8",
+                  "count": 1
+                }
+              ],
+              "frame_count": 118,
+              "total_duration_s": 1766.745214373237,
+              "flow_area_components": {
+                "deferred_visible": 16110.320768352569,
+                "new_arrival_barrier": 8243.071877555103,
+                "dispatch_to_completion": 19317.96561661524
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 95,
+              "total_duration_s": 1422.3796217411655,
+              "flow_area_components": {
+                "deferred_visible": 4955.87005048764,
+                "new_arrival_barrier": 6076.903169743508,
+                "dispatch_to_completion": 6963.945717874667
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "gpu_loaded:gpu_b:cnn_after_llm",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8",
+                  "count": 1
+                }
+              ],
+              "frame_count": 16,
+              "total_duration_s": 237.5886436185683,
+              "flow_area_components": {
+                "deferred_visible": 1559.1754737468545,
+                "new_arrival_barrier": 1087.7951374791362,
+                "dispatch_to_completion": 2251.838826551011
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "gpu_loaded:gpu_b:cnn_after_llm",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 18,
+              "total_duration_s": 269.50350727727346,
+              "flow_area_components": {
+                "deferred_visible": 733.6484364770222,
+                "new_arrival_barrier": 1340.2280062176226,
+                "dispatch_to_completion": 1203.5314091345933
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "gpu_loaded:gpu_b:cnn_after_llm",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 32,
+              "total_duration_s": 368.4664995746244,
+              "flow_area_components": {
+                "deferred_visible": 1888.3908103199508,
+                "new_arrival_barrier": 1314.412888368839,
+                "dispatch_to_completion": 1610.6574529400607
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "gpu_loaded:gpu_b:cnn_after_llm",
+                  "count": 2
+                }
+              ],
+              "frame_count": 14,
+              "total_duration_s": 161.2040935638982,
+              "flow_area_components": {
+                "deferred_visible": 161.20409356389823,
+                "new_arrival_barrier": 576.6129351684933,
+                "dispatch_to_completion": 614.4769358043134
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8",
+                  "count": 2
+                }
+              ],
+              "frame_count": 3,
+              "total_duration_s": 44.54787067848156,
+              "flow_area_components": {
+                "deferred_visible": 415.78012633249455,
+                "new_arrival_barrier": 278.5566025387716,
+                "dispatch_to_completion": 712.7659308557049
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 2
+                }
+              ],
+              "frame_count": 2,
+              "total_duration_s": 14.834899008521461,
+              "flow_area_components": {
+                "deferred_visible": 22.25234851278219,
+                "new_arrival_barrier": 14.578752060724582,
+                "dispatch_to_completion": 29.669798017042922
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": null,
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                }
+              ],
+              "frame_count": 1,
+              "total_duration_s": 2.7928254592821196,
+              "flow_area_components": {
+                "deferred_visible": 2.7928254592821196,
+                "new_arrival_barrier": 4.889655477449196,
+                "dispatch_to_completion": 2.7928254592821196
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 2,
+              "total_duration_s": 18.924960369481898,
+              "flow_area_components": {
+                "deferred_visible": 0.0,
+                "new_arrival_barrier": 89.85522380827024,
+                "dispatch_to_completion": 62.36053202700994
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                }
+              ],
+              "frame_count": 1,
+              "total_duration_s": 8.093888054475512,
+              "flow_area_components": {
+                "deferred_visible": 0.0,
+                "new_arrival_barrier": 17.198292850109283,
+                "dispatch_to_completion": 15.511337558736242
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 1,
+              "total_duration_s": 14.972417070959636,
+              "flow_area_components": {
+                "deferred_visible": 29.944834141919273,
+                "new_arrival_barrier": 52.51593228877391,
+                "dispatch_to_completion": 53.01113926735442
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": null,
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                }
+              ],
+              "frame_count": 1,
+              "total_duration_s": 7.4174495042607305,
+              "flow_area_components": {
+                "deferred_visible": 0.0,
+                "new_arrival_barrier": 0.0,
+                "dispatch_to_completion": 7.4174495042607305
+              }
+            }
+          ],
+          "time_regions": {
+            "arrival_window": {
+              "start_s": 0.0,
+              "end_s": 20000.0,
+              "flow_area_job_seconds": 362119.57712122565,
+              "flow_area_components": {
+                "deferred_visible": 163007.27738442225,
+                "new_arrival_barrier": 70986.20469018268,
+                "dispatch_to_completion": 128126.09504662069
+              },
+              "mean_flow_contribution_s": 28.520089558259876
+            },
+            "drain": {
+              "start_s": 20000.0,
+              "end_s": 20040.204865859887,
+              "flow_area_job_seconds": 437.52165346262336,
+              "flow_area_components": {
+                "deferred_visible": 201.43236335203983,
+                "new_arrival_barrier": 1.4015091415058123,
+                "dispatch_to_completion": 234.68778096907772
+              },
+              "mean_flow_contribution_s": 0.03445866373652228
+            }
+          }
+        },
+        "selector_accounting": {
+          "root_attempts": 38154,
+          "rollout_attempts": 76,
+          "cost_candidate_evaluations": 865,
+          "rollout_cost_candidate_evaluations": 38,
+          "completion_offset_reads": 6944,
+          "physical_action_completion_offset_reads": 0,
+          "rollout_completion_offset_reads": 539,
+          "next_queue_coordinate_evaluations": 2595,
+          "terminal_value_coordinate_evaluations": 2895,
+          "rollout_terminal_value_coordinate_evaluations": 300,
+          "rollout_class_evaluations": 448,
+          "rollout_profile_probes": 154,
+          "rollout_setup_requirement_reads": 513,
+          "rollout_population_jobs": 930,
+          "rollout_arrival_event_generations": 547,
+          "rollout_arrival_rate_reads": 57,
+          "rollout_arrival_event_reads": 1336,
+          "rollout_tail_segments": 186,
+          "rollout_queue_coordinate_evaluations": 752,
+          "rollout_current_completion_offset_reads": 385,
+          "rollout_random_draws": 604,
+          "rollout_lane_fill_evaluations": 152,
+          "rollout_mixed_priority_coordinate_evaluations": 448,
+          "rollout_mixed_profile_probes": 154,
+          "rollout_temporary_queue_updates": 152,
+          "selector_wall_s": 0.4277365188463591,
+          "selector_mean_wall_ms": 0.19002066585800048,
+          "mean_cost_candidate_evaluations": 0.38427365615282094,
+          "rollout_frames": 19,
+          "rollout_vetoed_frames": 10,
+          "rollout_accepted_frames": 9,
+          "rollout_frame_fraction": 0.008440693025322079,
+          "support_search_exact_frames": 1679,
+          "lower_support_than_search_incumbent_frames": 9,
+          "minimum_seed_support_margin": 0.0,
+          "minimum_support_floor_margin": 0.0,
+          "maximum_relative_support_loss": 0.008875167281167126,
+          "maximum_rollout_cost_excess_over_incumbent": 0.0,
+          "maximum_budget_identity_error": 0,
+          "initial_root_attempts": 37645,
+          "recycled_candidate_attempts": 509,
+          "initial_cost_candidate_evaluations": 865,
+          "recycled_cost_candidate_evaluations": 0,
+          "reclaimed_reserve_frames": 766,
+          "current_search_resumed_frames": 132,
+          "maximum_stage_identity_error": 0,
+          "maximum_path_population_error": 0,
+          "maximum_random_draw_identity_error": 0,
+          "rollout_rng_initializations": 3,
+          "rng_setup_wall_s": 4.032597644254565e-05,
+          "gate_setup_wall_s": 2.3063999833539128e-05,
+          "gate_setup_requirement_reads": 54,
+          "gate_queue_coordinate_evaluations": 6753,
+          "gate_threshold_comparisons": 2251,
+          "mixed_branch_frames": 785,
+          "v4_branch_frames": 1466,
+          "mixed_branch_duration_s": 7543.517063502885
+        }
+      },
+      {
+        "load": 0.8,
+        "seed": 41,
+        "budget": 26,
+        "policy": "rollout_depth_gated_cap_1pct",
+        "planning_seed": 1,
+        "metrics": {
+          "budget": 26,
+          "arrival_horizon_s": 20000.0,
+          "elapsed_including_drain_s": 20040.16646311239,
+          "job_count": 12697,
+          "completed_jobs": 12697,
+          "makespan_s": 20040.16646311239,
+          "mean_flow_s": 28.65394629293172,
+          "p90_flow_s": 50.50428746838588,
+          "time_average_unfinished_jobs": 18.15449770594617,
+          "frame_boundary_mean_backlog": 14.253982300884955,
+          "frame_boundary_peak_backlog": 36,
+          "frame_count": 2260,
+          "loaded_frame_count": 72,
+          "exact_selection_frame_count": 1667,
+          "candidate_attempts": 38738,
+          "mean_candidate_attempts": 17.14070796460177,
+          "bound_option_probes": 226000,
+          "bound_threshold_evaluations": 165227,
+          "local_score_evaluations": 20743,
+          "feasible_candidate_evaluations": 32384,
+          "peak_search_frontier": 9,
+          "maximum_candidate_attempts_per_frame": 26,
+          "maximum_certified_candidate_gap": 1.3721024370764674,
+          "maximum_certified_gap_per_job": 0.08648636261162614,
+          "maximum_full_support_deficit": 5.050746457084516,
+          "maximum_expected_drift_bound_violation": 0.0,
+          "maximum_queue_recursion_violation": 0.0,
+          "selected_option_counts": {
+            "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1": 41,
+            "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3": 1096,
+            "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1": 1012,
+            "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3": 1221,
+            "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1": 80,
+            "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3": 673,
+            "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8": 303,
+            "gpu_loaded:gpu_b:cnn_after_llm": 85
+          },
+          "frame_audit_prefix": [
+            {
+              "start_s": 0.0,
+              "duration_s": 1.0,
+              "queue_before": [
+                0,
+                0,
+                0
+              ],
+              "departures": [
+                0,
+                0,
+                0
+              ],
+              "arrivals_during_frame": [
+                1,
+                0,
+                0
+              ],
+              "queue_after": [
+                1,
+                0,
+                0
+              ],
+              "option_indices": [
+                null,
+                null
+              ],
+              "score": 0.0,
+              "upper_bound": 0.0,
+              "candidate_gap": 0.0,
+              "attempts": 10,
+              "expected_drift": 0.38889631972722166,
+              "expected_drift_bound": 207.973864576347
+            },
+            {
+              "start_s": 1.0,
+              "duration_s": 8.093888054475512,
+              "queue_before": [
+                1,
+                0,
+                0
+              ],
+              "departures": [
+                1,
+                0,
+                0
+              ],
+              "arrivals_during_frame": [
+                0,
+                0,
+                3
+              ],
+              "queue_after": [
+                0,
+                0,
+                3
+              ],
+              "option_indices": [
+                2,
+                null
+              ],
+              "score": 0.12355001616893509,
+              "upper_bound": 0.12355001616893509,
+              "candidate_gap": 0.0,
+              "attempts": 10,
+              "expected_drift": 6.925559233459273,
+              "expected_drift_bound": 367.6895788616429
+            },
+            {
+              "start_s": 9.093888054475512,
+              "duration_s": 9.462480184740949,
+              "queue_before": [
+                0,
+                0,
+                3
+              ],
+              "departures": [
+                0,
+                0,
+                3
+              ],
+              "arrivals_during_frame": [
+                2,
+                4,
+                3
+              ],
+              "queue_after": [
+                2,
+                4,
+                3
+              ],
+              "option_indices": [
+                7,
+                null
+              ],
+              "score": 0.9511248451027948,
+              "upper_bound": 0.9511248451027948,
+              "candidate_gap": 0.0,
+              "attempts": 10,
+              "expected_drift": 5.14600699526903,
+              "expected_drift_bound": 397.68127899596806
+            },
+            {
+              "start_s": 18.55636823921646,
+              "duration_s": 2.7928254592821196,
+              "queue_before": [
+                2,
+                4,
+                3
+              ],
+              "departures": [
+                0,
+                2,
+                0
+              ],
+              "arrivals_during_frame": [
+                0,
+                1,
+                1
+              ],
+              "queue_after": [
+                2,
+                3,
+                4
+              ],
+              "option_indices": [
+                4,
+                4
+              ],
+              "score": 2.864482624007716,
+              "upper_bound": 2.864482624007716,
+              "candidate_gap": 0.0,
+              "attempts": 11,
+              "expected_drift": -0.2262049696431312,
+              "expected_drift_bound": 247.32586449054273
+            },
+            {
+              "start_s": 21.34919369849858,
+              "duration_s": 9.462480184740949,
+              "queue_before": [
+                2,
+                3,
+                4
+              ],
+              "departures": [
+                0,
+                3,
+                3
+              ],
+              "arrivals_during_frame": [
+                0,
+                2,
+                2
+              ],
+              "queue_after": [
+                2,
+                2,
+                3
+              ],
+              "option_indices": [
+                7,
+                5
+              ],
+              "score": 2.2192913052398544,
+              "upper_bound": 2.2192913052398544,
+              "candidate_gap": 0.0,
+              "attempts": 14,
+              "expected_drift": 2.3872555584173334,
+              "expected_drift_bound": 395.19127806728693
+            },
+            {
+              "start_s": 30.81167388323953,
+              "duration_s": 2.7928254592821196,
+              "queue_before": [
+                2,
+                2,
+                3
+              ],
+              "departures": [
+                0,
+                2,
+                0
+              ],
+              "arrivals_during_frame": [
+                0,
+                0,
+                0
+              ],
+              "queue_after": [
+                2,
+                0,
+                3
+              ],
+              "option_indices": [
+                4,
+                4
+              ],
+              "score": 1.432241312003858,
+              "upper_bound": 1.432241312003858,
+              "candidate_gap": 0.0,
+              "attempts": 24,
+              "expected_drift": 2.463470110590617,
+              "expected_drift_bound": 247.57083683928172
+            },
+            {
+              "start_s": 33.60449934252165,
+              "duration_s": 9.462480184740949,
+              "queue_before": [
+                2,
+                0,
+                3
+              ],
+              "departures": [
+                1,
+                0,
+                3
+              ],
+              "arrivals_during_frame": [
+                0,
+                3,
+                3
+              ],
+              "queue_after": [
+                1,
+                3,
+                3
+              ],
+              "option_indices": [
+                2,
+                7
+              ],
+              "score": 1.1624859217923047,
+              "upper_bound": 1.1624859217923047,
+              "candidate_gap": 0.0,
+              "attempts": 19,
+              "expected_drift": 4.657197654988951,
+              "expected_drift_bound": 396.8512786864077
+            },
+            {
+              "start_s": 43.066979527262596,
+              "duration_s": 2.7928254592821196,
+              "queue_before": [
+                1,
+                3,
+                3
+              ],
+              "departures": [
+                0,
+                2,
+                0
+              ],
+              "arrivals_during_frame": [
+                0,
+                0,
+                0
+              ],
+              "queue_after": [
+                1,
+                1,
+                3
+              ],
+              "option_indices": [
+                4,
+                4
+              ],
+              "score": 2.148361968005787,
+              "upper_bound": 2.148361968005787,
+              "candidate_gap": 0.0,
+              "attempts": 10,
+              "expected_drift": 0.820182379454252,
+              "expected_drift_bound": 247.57083683928172
+            }
+          ]
+        },
+        "decomposition": {
+          "status": "PASS",
+          "arrival_horizon_s": 20000.0,
+          "elapsed_including_drain_s": 20040.16646311239,
+          "frame_count": 2260,
+          "job_count": 12697,
+          "completed_jobs": 12697,
+          "flow_area_job_seconds": 363819.1560813517,
+          "flow_area_components": {
+            "deferred_visible": 164641.68109719202,
+            "new_arrival_barrier": 71240.48078848969,
+            "dispatch_to_completion": 127936.99419566995
+          },
+          "mean_flow_s": 28.653946292931533,
+          "mean_deferred_visible_wait_s": 12.966974962368434,
+          "mean_arrival_barrier_wait_s": 5.610812064935787,
+          "mean_dispatch_to_completion_s": 10.07615926562731,
+          "reconstructed_completion_flow_area_job_seconds": 363819.15608135413,
+          "flow_identity_error_job_seconds": -2.444721758365631e-09,
+          "by_class": {
+            "gpu_cnn_torch_resnet50": {
+              "job_count": 2145,
+              "completed_jobs": 2145,
+              "flow_area_job_seconds": 115510.24705984734,
+              "flow_area_components": {
+                "deferred_visible": 72334.6379879575,
+                "new_arrival_barrier": 11727.81232262089,
+                "dispatch_to_completion": 31447.796749268964
+              },
+              "mean_flow_s": 53.85093103023186,
+              "mean_deferred_visible_wait_s": 33.72244195242774,
+              "mean_arrival_barrier_wait_s": 5.467511572317431,
+              "mean_dispatch_to_completion_s": 14.660977505486697,
+              "reconstructed_completion_flow_area_job_seconds": 115510.24705984796,
+              "flow_identity_error_job_seconds": -6.111804395914078e-10
+            },
+            "gpu_heavy_jax_matmul": {
+              "job_count": 4675,
+              "completed_jobs": 4675,
+              "flow_area_job_seconds": 102537.70633064312,
+              "flow_area_components": {
+                "deferred_visible": 48452.07076724025,
+                "new_arrival_barrier": 26275.887572479176,
+                "dispatch_to_completion": 27809.747990923694
+              },
+              "mean_flow_s": 21.93319921511083,
+              "mean_deferred_visible_wait_s": 10.364079308500589,
+              "mean_arrival_barrier_wait_s": 5.620510710690733,
+              "mean_dispatch_to_completion_s": 5.948609195919507,
+              "reconstructed_completion_flow_area_job_seconds": 102537.70633064443,
+              "flow_identity_error_job_seconds": -1.3096723705530167e-09
+            },
+            "gpu_llm_distilgpt2": {
+              "job_count": 5877,
+              "completed_jobs": 5877,
+              "flow_area_job_seconds": 145771.2026908612,
+              "flow_area_components": {
+                "deferred_visible": 43854.97234199427,
+                "new_arrival_barrier": 33236.780893389616,
+                "dispatch_to_completion": 68679.4494554773
+              },
+              "mean_flow_s": 24.80367580242661,
+              "mean_deferred_visible_wait_s": 7.462135841755023,
+              "mean_arrival_barrier_wait_s": 5.65539916511649,
+              "mean_dispatch_to_completion_s": 11.686140795555096,
+              "reconstructed_completion_flow_area_job_seconds": 145771.20269086174,
+              "flow_identity_error_job_seconds": -5.529727786779404e-10
+            }
+          },
+          "frame_duration_mean_s": 8.86733029341256,
+          "frame_duration_time_weighted_mean_s": 11.102253621438765,
+          "occupied_lane_seconds": 38004.77665999861,
+          "global_barrier_idle_lane_seconds": 2075.556266226288,
+          "unassigned_lane_seconds": 40.19015026108589,
+          "completed_lane_barrier_seconds": 2035.366115965202,
+          "total_lane_seconds": 40080.33292622478,
+          "loaded_frame_count": 72,
+          "by_action_multiset": [
+            {
+              "action_multiset": [
+                {
+                  "action_id": null,
+                  "count": 2
+                }
+              ],
+              "frame_count": 1,
+              "total_duration_s": 1.0,
+              "flow_area_components": {
+                "deferred_visible": 0.0,
+                "new_arrival_barrier": 0.014168877961441728,
+                "dispatch_to_completion": 0.0
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": null,
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                }
+              ],
+              "frame_count": 1,
+              "total_duration_s": 8.093888054475512,
+              "flow_area_components": {
+                "deferred_visible": 0.0,
+                "new_arrival_barrier": 11.831305372829625,
+                "dispatch_to_completion": 8.093888054475512
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": null,
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 2,
+              "total_duration_s": 18.924960369481898,
+              "flow_area_components": {
+                "deferred_visible": 0.0,
+                "new_arrival_barrier": 76.66116706586695,
+                "dispatch_to_completion": 56.7748811084457
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 2
+                }
+              ],
+              "frame_count": 504,
+              "total_duration_s": 1407.5840314781788,
+              "flow_area_components": {
+                "deferred_visible": 12444.83024656113,
+                "new_arrival_barrier": 1151.9772917780501,
+                "dispatch_to_completion": 2815.1680629563575
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 40,
+              "total_duration_s": 378.4992073896381,
+              "flow_area_components": {
+                "deferred_visible": 1381.5221069721788,
+                "new_arrival_barrier": 1043.211134007247,
+                "dispatch_to_completion": 1953.9549072182197
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 23,
+              "total_duration_s": 217.63704424904176,
+              "flow_area_components": {
+                "deferred_visible": 321.7243262811923,
+                "new_arrival_barrier": 613.8379734523146,
+                "dispatch_to_completion": 839.0705580000628
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 2
+                }
+              ],
+              "frame_count": 6,
+              "total_duration_s": 48.563328326853075,
+              "flow_area_components": {
+                "deferred_visible": 56.65721638132858,
+                "new_arrival_barrier": 164.08717062947295,
+                "dispatch_to_completion": 97.12665665370615
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 67,
+              "total_duration_s": 633.9861723776436,
+              "flow_area_components": {
+                "deferred_visible": 2498.09476877161,
+                "new_arrival_barrier": 2018.79451751635,
+                "dispatch_to_completion": 2398.9276339184
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 2
+                }
+              ],
+              "frame_count": 379,
+              "total_duration_s": 3586.279990016802,
+              "flow_area_components": {
+                "deferred_visible": 29002.501766231013,
+                "new_arrival_barrier": 11011.481031856847,
+                "dispatch_to_completion": 21517.679940100916
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 2
+                }
+              ],
+              "frame_count": 219,
+              "total_duration_s": 3278.9593385401604,
+              "flow_area_components": {
+                "deferred_visible": 27130.01973257886,
+                "new_arrival_barrier": 15396.4884336763,
+                "dispatch_to_completion": 19673.756031240962
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8",
+                  "count": 1
+                }
+              ],
+              "frame_count": 77,
+              "total_duration_s": 1143.39534741436,
+              "flow_area_components": {
+                "deferred_visible": 7409.795822854099,
+                "new_arrival_barrier": 5342.206681294181,
+                "dispatch_to_completion": 10722.693053034784
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 2
+                }
+              ],
+              "frame_count": 552,
+              "total_duration_s": 3764.9035112268407,
+              "flow_area_components": {
+                "deferred_visible": 44305.82103066898,
+                "new_arrival_barrier": 8153.044759427408,
+                "dispatch_to_completion": 22589.42106736068
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8",
+                  "count": 1
+                }
+              ],
+              "frame_count": 127,
+              "total_duration_s": 1901.4969680118738,
+              "flow_area_components": {
+                "deferred_visible": 17742.31422908717,
+                "new_arrival_barrier": 9072.150028562977,
+                "dispatch_to_completion": 20791.36977381471
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8",
+                  "count": 1
+                }
+              ],
+              "frame_count": 88,
+              "total_duration_s": 1306.7375399021257,
+              "flow_area_components": {
+                "deferred_visible": 14017.72997349553,
+                "new_arrival_barrier": 6586.962028431606,
+                "dispatch_to_completion": 12951.995087988615
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 85,
+              "total_duration_s": 1272.655451031569,
+              "flow_area_components": {
+                "deferred_visible": 4491.725121287891,
+                "new_arrival_barrier": 6228.116137565334,
+                "dispatch_to_completion": 6230.898800203649
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "gpu_loaded:gpu_b:cnn_after_llm",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 33,
+              "total_duration_s": 379.9810776863314,
+              "flow_area_components": {
+                "deferred_visible": 1992.0220133253135,
+                "new_arrival_barrier": 1334.01151819393,
+                "dispatch_to_completion": 1660.9904983444376
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "gpu_loaded:gpu_b:cnn_after_llm",
+                  "count": 2
+                }
+              ],
+              "frame_count": 13,
+              "total_duration_s": 149.6895154521912,
+              "flow_area_components": {
+                "deferred_visible": 195.74782789901928,
+                "new_arrival_barrier": 484.5779854935287,
+                "dispatch_to_completion": 570.5857261040053
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "gpu_loaded:gpu_b:cnn_after_llm",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 19,
+              "total_duration_s": 284.4759243482331,
+              "flow_area_components": {
+                "deferred_visible": 643.8139340512644,
+                "new_arrival_barrier": 1433.484393470476,
+                "dispatch_to_completion": 1270.3942651976263
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 4,
+              "total_duration_s": 59.889668283838546,
+              "flow_area_components": {
+                "deferred_visible": 44.91725121287891,
+                "new_arrival_barrier": 260.6930926106809,
+                "dispatch_to_completion": 212.0445570694177
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 2
+                }
+              ],
+              "frame_count": 6,
+              "total_duration_s": 44.50469702556438,
+              "flow_area_components": {
+                "deferred_visible": 37.08724752130365,
+                "new_arrival_barrier": 97.6201792173465,
+                "dispatch_to_completion": 89.00939405112877
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "gpu_loaded:gpu_b:cnn_after_llm",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8",
+                  "count": 1
+                }
+              ],
+              "frame_count": 7,
+              "total_duration_s": 103.94503158312364,
+              "flow_area_components": {
+                "deferred_visible": 460.3279970109761,
+                "new_arrival_barrier": 599.3209685174493,
+                "dispatch_to_completion": 985.1794866160674
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": null,
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                }
+              ],
+              "frame_count": 4,
+              "total_duration_s": 11.171301837128478,
+              "flow_area_components": {
+                "deferred_visible": 19.549778214974836,
+                "new_arrival_barrier": 9.699485818822268,
+                "dispatch_to_completion": 11.171301837128478
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8",
+                  "count": 2
+                }
+              ],
+              "frame_count": 2,
+              "total_duration_s": 29.69858045232104,
+              "flow_area_components": {
+                "deferred_visible": 445.4787067848156,
+                "new_arrival_barrier": 150.2093356527157,
+                "dispatch_to_completion": 475.1772872371366
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                }
+              ],
+              "frame_count": 1,
+              "total_duration_s": 8.093888054475512,
+              "flow_area_components": {
+                "deferred_visible": 0.0,
+                "new_arrival_barrier": 0.0,
+                "dispatch_to_completion": 15.511337558736242
+              }
+            }
+          ],
+          "time_regions": {
+            "arrival_window": {
+              "start_s": 0.0,
+              "end_s": 20000.0,
+              "flow_area_job_seconds": 363380.3869575445,
+              "flow_area_components": {
+                "deferred_visible": 164420.36357299567,
+                "new_arrival_barrier": 71217.90849276952,
+                "dispatch_to_completion": 127742.11489177929
+              },
+              "mean_flow_contribution_s": 28.61938937997515
+            },
+            "drain": {
+              "start_s": 20000.0,
+              "end_s": 20040.16646311239,
+              "flow_area_job_seconds": 438.7691238071711,
+              "flow_area_components": {
+                "deferred_visible": 221.31752419634722,
+                "new_arrival_barrier": 22.57229572016513,
+                "dispatch_to_completion": 194.87930389065878
+              },
+              "mean_flow_contribution_s": 0.03455691295638112
+            }
+          }
+        },
+        "selector_accounting": {
+          "root_attempts": 38670,
+          "rollout_attempts": 68,
+          "cost_candidate_evaluations": 894,
+          "rollout_cost_candidate_evaluations": 34,
+          "completion_offset_reads": 6970,
+          "physical_action_completion_offset_reads": 0,
+          "rollout_completion_offset_reads": 450,
+          "next_queue_coordinate_evaluations": 2682,
+          "terminal_value_coordinate_evaluations": 2960,
+          "rollout_terminal_value_coordinate_evaluations": 278,
+          "rollout_class_evaluations": 403,
+          "rollout_profile_probes": 146,
+          "rollout_setup_requirement_reads": 459,
+          "rollout_population_jobs": 836,
+          "rollout_arrival_event_generations": 474,
+          "rollout_arrival_rate_reads": 51,
+          "rollout_arrival_event_reads": 1180,
+          "rollout_tail_segments": 176,
+          "rollout_queue_coordinate_evaluations": 692,
+          "rollout_current_completion_offset_reads": 352,
+          "rollout_random_draws": 525,
+          "rollout_lane_fill_evaluations": 136,
+          "rollout_mixed_priority_coordinate_evaluations": 403,
+          "rollout_mixed_profile_probes": 146,
+          "rollout_temporary_queue_updates": 136,
+          "selector_wall_s": 0.4356112305249553,
+          "selector_mean_wall_ms": 0.1927483320906882,
+          "mean_cost_candidate_evaluations": 0.39557522123893807,
+          "rollout_frames": 17,
+          "rollout_vetoed_frames": 7,
+          "rollout_accepted_frames": 10,
+          "rollout_frame_fraction": 0.00752212389380531,
+          "support_search_exact_frames": 1677,
+          "lower_support_than_search_incumbent_frames": 10,
+          "minimum_seed_support_margin": 0.0,
+          "minimum_support_floor_margin": 0.0,
+          "maximum_relative_support_loss": 0.008875167281167126,
+          "maximum_rollout_cost_excess_over_incumbent": 0.0,
+          "maximum_budget_identity_error": 0,
+          "initial_root_attempts": 38079,
+          "recycled_candidate_attempts": 591,
+          "initial_cost_candidate_evaluations": 894,
+          "recycled_cost_candidate_evaluations": 0,
+          "reclaimed_reserve_frames": 802,
+          "current_search_resumed_frames": 154,
+          "maximum_stage_identity_error": 0,
+          "maximum_path_population_error": 0,
+          "maximum_random_draw_identity_error": 0,
+          "rollout_rng_initializations": 3,
+          "rng_setup_wall_s": 4.0687009459361434e-05,
+          "gate_setup_wall_s": 1.9757018890231848e-05,
+          "gate_setup_requirement_reads": 54,
+          "gate_queue_coordinate_evaluations": 6780,
+          "gate_threshold_comparisons": 2260,
+          "mixed_branch_frames": 819,
+          "v4_branch_frames": 1441,
+          "mixed_branch_duration_s": 7772.98354284651
+        }
+      },
+      {
+        "load": 0.8,
+        "seed": 41,
+        "budget": 26,
+        "policy": "rollout_depth_gated_cap_1pct",
+        "planning_seed": 2,
+        "metrics": {
+          "budget": 26,
+          "arrival_horizon_s": 20000.0,
+          "elapsed_including_drain_s": 20042.454948808136,
+          "job_count": 12697,
+          "completed_jobs": 12697,
+          "makespan_s": 20042.454948808136,
+          "mean_flow_s": 28.371218837692282,
+          "p90_flow_s": 49.85058384569311,
+          "time_average_unfinished_jobs": 17.973315469700026,
+          "frame_boundary_mean_backlog": 14.102348249889234,
+          "frame_boundary_peak_backlog": 37,
+          "frame_count": 2257,
+          "loaded_frame_count": 81,
+          "exact_selection_frame_count": 1673,
+          "candidate_attempts": 38808,
+          "mean_candidate_attempts": 17.194505981391227,
+          "bound_option_probes": 225700,
+          "bound_threshold_evaluations": 167270,
+          "local_score_evaluations": 20575,
+          "feasible_candidate_evaluations": 32427,
+          "peak_search_frontier": 9,
+          "maximum_candidate_attempts_per_frame": 26,
+          "maximum_certified_candidate_gap": 1.3721024370764674,
+          "maximum_certified_gap_per_job": 0.08648636261162614,
+          "maximum_full_support_deficit": 5.050746457084516,
+          "maximum_expected_drift_bound_violation": 0.0,
+          "maximum_queue_recursion_violation": 0.0,
+          "selected_option_counts": {
+            "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1": 42,
+            "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3": 1063,
+            "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1": 1027,
+            "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3": 1216,
+            "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1": 80,
+            "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3": 669,
+            "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8": 314,
+            "gpu_loaded:gpu_b:cnn_after_llm": 96
+          },
+          "frame_audit_prefix": [
+            {
+              "start_s": 0.0,
+              "duration_s": 1.0,
+              "queue_before": [
+                0,
+                0,
+                0
+              ],
+              "departures": [
+                0,
+                0,
+                0
+              ],
+              "arrivals_during_frame": [
+                1,
+                0,
+                0
+              ],
+              "queue_after": [
+                1,
+                0,
+                0
+              ],
+              "option_indices": [
+                null,
+                null
+              ],
+              "score": 0.0,
+              "upper_bound": 0.0,
+              "candidate_gap": 0.0,
+              "attempts": 10,
+              "expected_drift": 0.38889631972722166,
+              "expected_drift_bound": 207.973864576347
+            },
+            {
+              "start_s": 1.0,
+              "duration_s": 8.093888054475512,
+              "queue_before": [
+                1,
+                0,
+                0
+              ],
+              "departures": [
+                1,
+                0,
+                0
+              ],
+              "arrivals_during_frame": [
+                0,
+                0,
+                3
+              ],
+              "queue_after": [
+                0,
+                0,
+                3
+              ],
+              "option_indices": [
+                2,
+                null
+              ],
+              "score": 0.12355001616893509,
+              "upper_bound": 0.12355001616893509,
+              "candidate_gap": 0.0,
+              "attempts": 10,
+              "expected_drift": 6.925559233459273,
+              "expected_drift_bound": 367.6895788616429
+            },
+            {
+              "start_s": 9.093888054475512,
+              "duration_s": 9.462480184740949,
+              "queue_before": [
+                0,
+                0,
+                3
+              ],
+              "departures": [
+                0,
+                0,
+                3
+              ],
+              "arrivals_during_frame": [
+                2,
+                4,
+                3
+              ],
+              "queue_after": [
+                2,
+                4,
+                3
+              ],
+              "option_indices": [
+                7,
+                null
+              ],
+              "score": 0.9511248451027948,
+              "upper_bound": 0.9511248451027948,
+              "candidate_gap": 0.0,
+              "attempts": 10,
+              "expected_drift": 5.14600699526903,
+              "expected_drift_bound": 397.68127899596806
+            },
+            {
+              "start_s": 18.55636823921646,
+              "duration_s": 2.7928254592821196,
+              "queue_before": [
+                2,
+                4,
+                3
+              ],
+              "departures": [
+                0,
+                2,
+                0
+              ],
+              "arrivals_during_frame": [
+                0,
+                1,
+                1
+              ],
+              "queue_after": [
+                2,
+                3,
+                4
+              ],
+              "option_indices": [
+                4,
+                4
+              ],
+              "score": 2.864482624007716,
+              "upper_bound": 2.864482624007716,
+              "candidate_gap": 0.0,
+              "attempts": 11,
+              "expected_drift": -0.2262049696431312,
+              "expected_drift_bound": 247.32586449054273
+            },
+            {
+              "start_s": 21.34919369849858,
+              "duration_s": 9.462480184740949,
+              "queue_before": [
+                2,
+                3,
+                4
+              ],
+              "departures": [
+                0,
+                3,
+                3
+              ],
+              "arrivals_during_frame": [
+                0,
+                2,
+                2
+              ],
+              "queue_after": [
+                2,
+                2,
+                3
+              ],
+              "option_indices": [
+                7,
+                5
+              ],
+              "score": 2.2192913052398544,
+              "upper_bound": 2.2192913052398544,
+              "candidate_gap": 0.0,
+              "attempts": 14,
+              "expected_drift": 2.3872555584173334,
+              "expected_drift_bound": 395.19127806728693
+            },
+            {
+              "start_s": 30.81167388323953,
+              "duration_s": 2.7928254592821196,
+              "queue_before": [
+                2,
+                2,
+                3
+              ],
+              "departures": [
+                0,
+                2,
+                0
+              ],
+              "arrivals_during_frame": [
+                0,
+                0,
+                0
+              ],
+              "queue_after": [
+                2,
+                0,
+                3
+              ],
+              "option_indices": [
+                4,
+                4
+              ],
+              "score": 1.432241312003858,
+              "upper_bound": 1.432241312003858,
+              "candidate_gap": 0.0,
+              "attempts": 24,
+              "expected_drift": 2.463470110590617,
+              "expected_drift_bound": 247.57083683928172
+            },
+            {
+              "start_s": 33.60449934252165,
+              "duration_s": 9.462480184740949,
+              "queue_before": [
+                2,
+                0,
+                3
+              ],
+              "departures": [
+                1,
+                0,
+                3
+              ],
+              "arrivals_during_frame": [
+                0,
+                3,
+                3
+              ],
+              "queue_after": [
+                1,
+                3,
+                3
+              ],
+              "option_indices": [
+                2,
+                7
+              ],
+              "score": 1.1624859217923047,
+              "upper_bound": 1.1624859217923047,
+              "candidate_gap": 0.0,
+              "attempts": 19,
+              "expected_drift": 4.657197654988951,
+              "expected_drift_bound": 396.8512786864077
+            },
+            {
+              "start_s": 43.066979527262596,
+              "duration_s": 2.7928254592821196,
+              "queue_before": [
+                1,
+                3,
+                3
+              ],
+              "departures": [
+                0,
+                2,
+                0
+              ],
+              "arrivals_during_frame": [
+                0,
+                0,
+                0
+              ],
+              "queue_after": [
+                1,
+                1,
+                3
+              ],
+              "option_indices": [
+                4,
+                4
+              ],
+              "score": 2.148361968005787,
+              "upper_bound": 2.148361968005787,
+              "candidate_gap": 0.0,
+              "attempts": 10,
+              "expected_drift": 0.820182379454252,
+              "expected_drift_bound": 247.57083683928172
+            }
+          ]
+        },
+        "decomposition": {
+          "status": "PASS",
+          "arrival_horizon_s": 20000.0,
+          "elapsed_including_drain_s": 20042.454948808136,
+          "frame_count": 2257,
+          "job_count": 12697,
+          "completed_jobs": 12697,
+          "flow_area_job_seconds": 360229.3655821766,
+          "flow_area_components": {
+            "deferred_visible": 161243.10051810188,
+            "new_arrival_barrier": 70669.9071089793,
+            "dispatch_to_completion": 128316.35795509542
+          },
+          "mean_flow_s": 28.3712188376921,
+          "mean_deferred_visible_wait_s": 12.699306963700234,
+          "mean_arrival_barrier_wait_s": 5.565874388357825,
+          "mean_dispatch_to_completion_s": 10.10603748563404,
+          "reconstructed_completion_flow_area_job_seconds": 360229.36558217753,
+          "flow_identity_error_job_seconds": -9.313225746154785e-10,
+          "by_class": {
+            "gpu_cnn_torch_resnet50": {
+              "job_count": 2145,
+              "completed_jobs": 2145,
+              "flow_area_job_seconds": 114176.9016133592,
+              "flow_area_components": {
+                "deferred_visible": 70874.60929238712,
+                "new_arrival_barrier": 11911.32939437725,
+                "dispatch_to_completion": 31390.962926594828
+              },
+              "mean_flow_s": 53.22932476147282,
+              "mean_deferred_visible_wait_s": 33.041775893886765,
+              "mean_arrival_barrier_wait_s": 5.553067316725991,
+              "mean_dispatch_to_completion_s": 14.634481550860059,
+              "reconstructed_completion_flow_area_job_seconds": 114176.90161335944,
+              "flow_identity_error_job_seconds": -2.473825588822365e-10
+            },
+            "gpu_heavy_jax_matmul": {
+              "job_count": 4675,
+              "completed_jobs": 4675,
+              "flow_area_job_seconds": 100963.10725934905,
+              "flow_area_components": {
+                "deferred_visible": 47177.47215735004,
+                "new_arrival_barrier": 26036.301889817234,
+                "dispatch_to_completion": 27749.333212181788
+              },
+              "mean_flow_s": 21.596386579539903,
+              "mean_deferred_visible_wait_s": 10.09143789462033,
+              "mean_arrival_barrier_wait_s": 5.569262436324542,
+              "mean_dispatch_to_completion_s": 5.935686248595035,
+              "reconstructed_completion_flow_area_job_seconds": 100963.10725934968,
+              "flow_identity_error_job_seconds": -6.257323548197746e-10
+            },
+            "gpu_llm_distilgpt2": {
+              "job_count": 5877,
+              "completed_jobs": 5877,
+              "flow_area_job_seconds": 145089.35670946835,
+              "flow_area_components": {
+                "deferred_visible": 43191.01906836473,
+                "new_arrival_barrier": 32722.27582478482,
+                "dispatch_to_completion": 69176.0618163188
+              },
+              "mean_flow_s": 24.687656407940846,
+              "mean_deferred_visible_wait_s": 7.349160978112086,
+              "mean_arrival_barrier_wait_s": 5.567853637023111,
+              "mean_dispatch_to_completion_s": 11.77064179280565,
+              "reconstructed_completion_flow_area_job_seconds": 145089.3567094684,
+              "flow_identity_error_job_seconds": -5.820766091346741e-11
+            }
+          },
+          "frame_duration_mean_s": 8.880130681793592,
+          "frame_duration_time_weighted_mean_s": 11.138976818627716,
+          "occupied_lane_seconds": 37938.511580401544,
+          "global_barrier_idle_lane_seconds": 2146.3983172148555,
+          "unassigned_lane_seconds": 34.60449934252165,
+          "completed_lane_barrier_seconds": 2111.793817872334,
+          "total_lane_seconds": 40084.90989761627,
+          "loaded_frame_count": 81,
+          "by_action_multiset": [
+            {
+              "action_multiset": [
+                {
+                  "action_id": null,
+                  "count": 2
+                }
+              ],
+              "frame_count": 1,
+              "total_duration_s": 1.0,
+              "flow_area_components": {
+                "deferred_visible": 0.0,
+                "new_arrival_barrier": 0.014168877961441728,
+                "dispatch_to_completion": 0.0
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": null,
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                }
+              ],
+              "frame_count": 1,
+              "total_duration_s": 8.093888054475512,
+              "flow_area_components": {
+                "deferred_visible": 0.0,
+                "new_arrival_barrier": 11.831305372829625,
+                "dispatch_to_completion": 8.093888054475512
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": null,
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 2,
+              "total_duration_s": 18.924960369481898,
+              "flow_area_components": {
+                "deferred_visible": 0.0,
+                "new_arrival_barrier": 59.03238979107778,
+                "dispatch_to_completion": 56.7748811084457
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 2
+                }
+              ],
+              "frame_count": 512,
+              "total_duration_s": 1429.9266351524354,
+              "flow_area_components": {
+                "deferred_visible": 12349.874180945522,
+                "new_arrival_barrier": 1217.1611090075867,
+                "dispatch_to_completion": 2859.853270304871
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 37,
+              "total_duration_s": 350.1117668354152,
+              "flow_area_components": {
+                "deferred_visible": 1249.0473843858051,
+                "new_arrival_barrier": 946.7223512118934,
+                "dispatch_to_completion": 1807.408289176853
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 26,
+              "total_duration_s": 246.02448480326458,
+              "flow_area_components": {
+                "deferred_visible": 378.49920738963795,
+                "new_arrival_barrier": 590.6132186918062,
+                "dispatch_to_completion": 948.5145438261579
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 2
+                }
+              ],
+              "frame_count": 6,
+              "total_duration_s": 48.563328326853075,
+              "flow_area_components": {
+                "deferred_visible": 80.93888054475511,
+                "new_arrival_barrier": 205.24755597373593,
+                "dispatch_to_completion": 97.12665665370615
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 68,
+              "total_duration_s": 643.4486525623845,
+              "flow_area_components": {
+                "deferred_visible": 2460.244848032648,
+                "new_arrival_barrier": 2255.2642628762646,
+                "dispatch_to_completion": 2434.7325239768834
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 2
+                }
+              ],
+              "frame_count": 365,
+              "total_duration_s": 3453.805267430431,
+              "flow_area_components": {
+                "deferred_visible": 28037.328787387447,
+                "new_arrival_barrier": 10183.690113374798,
+                "dispatch_to_completion": 20722.831604582676
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 2
+                }
+              ],
+              "frame_count": 218,
+              "total_duration_s": 3263.9869214692008,
+              "flow_area_components": {
+                "deferred_visible": 26396.37129610184,
+                "new_arrival_barrier": 14790.396737698045,
+                "dispatch_to_completion": 19583.921528815205
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8",
+                  "count": 1
+                }
+              ],
+              "frame_count": 91,
+              "total_duration_s": 1351.2854105806073,
+              "flow_area_components": {
+                "deferred_visible": 8790.779813887028,
+                "new_arrival_barrier": 6520.831323833676,
+                "dispatch_to_completion": 12672.273608132016
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 2
+                }
+              ],
+              "frame_count": 544,
+              "total_duration_s": 3710.339692223553,
+              "flow_area_components": {
+                "deferred_visible": 43221.36512797861,
+                "new_arrival_barrier": 8248.46973210515,
+                "dispatch_to_completion": 22262.03815334096
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8",
+                  "count": 1
+                }
+              ],
+              "frame_count": 128,
+              "total_duration_s": 1916.4693850828335,
+              "flow_area_components": {
+                "deferred_visible": 17173.362380390703,
+                "new_arrival_barrier": 8995.95746863663,
+                "dispatch_to_completion": 20955.081346836872
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8",
+                  "count": 1
+                }
+              ],
+              "frame_count": 83,
+              "total_duration_s": 1232.4910887713231,
+              "flow_area_components": {
+                "deferred_visible": 12636.745982462602,
+                "new_arrival_barrier": 6091.879312960795,
+                "dispatch_to_completion": 12216.08627617108
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 82,
+              "total_duration_s": 1227.7381998186902,
+              "flow_area_components": {
+                "deferred_visible": 4222.2216140106175,
+                "new_arrival_barrier": 5944.754057393498,
+                "dispatch_to_completion": 6010.984724902344
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "gpu_loaded:gpu_b:cnn_after_llm",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 34,
+              "total_duration_s": 391.4956557980384,
+              "flow_area_components": {
+                "deferred_visible": 1968.9928571018995,
+                "new_arrival_barrier": 1448.0991849414195,
+                "dispatch_to_completion": 1711.3235437488145
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "gpu_loaded:gpu_b:cnn_after_llm",
+                  "count": 2
+                }
+              ],
+              "frame_count": 15,
+              "total_duration_s": 172.7186716756052,
+              "flow_area_components": {
+                "deferred_visible": 230.29156223414032,
+                "new_arrival_barrier": 610.1110573039774,
+                "dispatch_to_completion": 658.3681455046215
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "gpu_loaded:gpu_b:cnn_after_llm",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 22,
+              "total_duration_s": 329.393175561112,
+              "flow_area_components": {
+                "deferred_visible": 868.4001901156589,
+                "new_arrival_barrier": 1521.3297423057068,
+                "dispatch_to_completion": 1470.9828333867251
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 1,
+              "total_duration_s": 14.972417070959636,
+              "flow_area_components": {
+                "deferred_visible": 0.0,
+                "new_arrival_barrier": 50.47130055032471,
+                "dispatch_to_completion": 53.01113926735442
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 2
+                }
+              ],
+              "frame_count": 5,
+              "total_duration_s": 37.08724752130365,
+              "flow_area_components": {
+                "deferred_visible": 44.50469702556438,
+                "new_arrival_barrier": 70.2266674068901,
+                "dispatch_to_completion": 74.1744950426073
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "gpu_loaded:gpu_b:cnn_after_llm",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8",
+                  "count": 1
+                }
+              ],
+              "frame_count": 10,
+              "total_duration_s": 148.4929022616052,
+              "flow_area_components": {
+                "deferred_visible": 861.2588331173101,
+                "new_arrival_barrier": 797.8338870937437,
+                "dispatch_to_completion": 1407.399266594382
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": null,
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                }
+              ],
+              "frame_count": 2,
+              "total_duration_s": 5.585650918564239,
+              "flow_area_components": {
+                "deferred_visible": 5.585650918564239,
+                "new_arrival_barrier": 2.3406295049494474,
+                "dispatch_to_completion": 5.585650918564239
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8",
+                  "count": 2
+                }
+              ],
+              "frame_count": 1,
+              "total_duration_s": 14.84929022616052,
+              "flow_area_components": {
+                "deferred_visible": 267.28722407088935,
+                "new_arrival_barrier": 52.719216259855784,
+                "dispatch_to_completion": 237.5886436185683
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                }
+              ],
+              "frame_count": 2,
+              "total_duration_s": 16.187776108951024,
+              "flow_area_components": {
+                "deferred_visible": 0.0,
+                "new_arrival_barrier": 11.424350281862644,
+                "dispatch_to_completion": 31.022675117472485
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 1,
+              "total_duration_s": 9.462480184740949,
+              "flow_area_components": {
+                "deferred_visible": 0.0,
+                "new_arrival_barrier": 43.485965524832864,
+                "dispatch_to_completion": 31.18026601350497
+              }
+            }
+          ],
+          "time_regions": {
+            "arrival_window": {
+              "start_s": 0.0,
+              "end_s": 20000.0,
+              "flow_area_job_seconds": 359732.88036785735,
+              "flow_area_components": {
+                "deferred_visible": 160969.16664644267,
+                "new_arrival_barrier": 70649.24891753744,
+                "dispatch_to_completion": 128114.46480387721
+              },
+              "mean_flow_contribution_s": 28.33211627690457
+            },
+            "drain": {
+              "start_s": 20000.0,
+              "end_s": 20042.454948808136,
+              "flow_area_job_seconds": 496.48521431928384,
+              "flow_area_components": {
+                "deferred_visible": 273.9338716592174,
+                "new_arrival_barrier": 20.65819144186389,
+                "dispatch_to_completion": 201.89315121820255
+              },
+              "mean_flow_contribution_s": 0.039102560787531215
+            }
+          }
+        },
+        "selector_accounting": {
+          "root_attempts": 38764,
+          "rollout_attempts": 44,
+          "cost_candidate_evaluations": 885,
+          "rollout_cost_candidate_evaluations": 22,
+          "completion_offset_reads": 6648,
+          "physical_action_completion_offset_reads": 0,
+          "rollout_completion_offset_reads": 329,
+          "next_queue_coordinate_evaluations": 2655,
+          "terminal_value_coordinate_evaluations": 2818,
+          "rollout_terminal_value_coordinate_evaluations": 163,
+          "rollout_class_evaluations": 262,
+          "rollout_profile_probes": 90,
+          "rollout_setup_requirement_reads": 297,
+          "rollout_population_jobs": 535,
+          "rollout_arrival_event_generations": 309,
+          "rollout_arrival_rate_reads": 33,
+          "rollout_arrival_event_reads": 763,
+          "rollout_tail_segments": 97,
+          "rollout_queue_coordinate_evaluations": 414,
+          "rollout_current_completion_offset_reads": 236,
+          "rollout_random_draws": 342,
+          "rollout_lane_fill_evaluations": 88,
+          "rollout_mixed_priority_coordinate_evaluations": 262,
+          "rollout_mixed_profile_probes": 90,
+          "rollout_temporary_queue_updates": 88,
+          "selector_wall_s": 0.4375649493304081,
+          "selector_mean_wall_ms": 0.19387015920709266,
+          "mean_cost_candidate_evaluations": 0.39211342490031015,
+          "rollout_frames": 11,
+          "rollout_vetoed_frames": 6,
+          "rollout_accepted_frames": 5,
+          "rollout_frame_fraction": 0.004873726185201595,
+          "support_search_exact_frames": 1678,
+          "lower_support_than_search_incumbent_frames": 5,
+          "minimum_seed_support_margin": 0.0,
+          "minimum_support_floor_margin": 0.0,
+          "maximum_relative_support_loss": 0.008875167281167126,
+          "maximum_rollout_cost_excess_over_incumbent": 0.0,
+          "maximum_budget_identity_error": 0,
+          "initial_root_attempts": 38173,
+          "recycled_candidate_attempts": 591,
+          "initial_cost_candidate_evaluations": 885,
+          "recycled_cost_candidate_evaluations": 0,
+          "reclaimed_reserve_frames": 799,
+          "current_search_resumed_frames": 153,
+          "maximum_stage_identity_error": 0,
+          "maximum_path_population_error": 0,
+          "maximum_random_draw_identity_error": 0,
+          "rollout_rng_initializations": 3,
+          "rng_setup_wall_s": 3.9063976146280766e-05,
+          "gate_setup_wall_s": 1.9346014596521854e-05,
+          "gate_setup_requirement_reads": 54,
+          "gate_queue_coordinate_evaluations": 6771,
+          "gate_threshold_comparisons": 2257,
+          "mixed_branch_frames": 810,
+          "v4_branch_frames": 1447,
+          "mixed_branch_duration_s": 7707.88316732323
+        }
+      },
+      {
+        "load": 0.8,
+        "seed": 41,
+        "budget": 26,
+        "policy": "v4_support",
+        "planning_seed": null,
+        "metrics": {
+          "budget": 26,
+          "arrival_horizon_s": 20000.0,
+          "elapsed_including_drain_s": 20042.457722156993,
+          "job_count": 12697,
+          "completed_jobs": 12697,
+          "makespan_s": 20042.457722156993,
+          "mean_flow_s": 28.481605284162928,
+          "p90_flow_s": 50.066513996422145,
+          "time_average_unfinished_jobs": 18.04324336397291,
+          "frame_boundary_mean_backlog": 14.165035587188612,
+          "frame_boundary_peak_backlog": 37,
+          "frame_count": 2248,
+          "loaded_frame_count": 79,
+          "exact_selection_frame_count": 1668,
+          "candidate_attempts": 38476,
+          "mean_candidate_attempts": 17.115658362989326,
+          "bound_option_probes": 224800,
+          "bound_threshold_evaluations": 165116,
+          "local_score_evaluations": 20232,
+          "feasible_candidate_evaluations": 32154,
+          "peak_search_frontier": 9,
+          "maximum_candidate_attempts_per_frame": 26,
+          "maximum_certified_candidate_gap": 1.1717339871607368,
+          "maximum_certified_gap_per_job": 0.08648636261162614,
+          "maximum_full_support_deficit": 5.050746457084516,
+          "maximum_expected_drift_bound_violation": 0.0,
+          "maximum_queue_recursion_violation": 0.0,
+          "selected_option_counts": {
+            "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1": 32,
+            "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3": 1060,
+            "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1": 1021,
+            "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3": 1218,
+            "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1": 72,
+            "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3": 672,
+            "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8": 316,
+            "gpu_loaded:gpu_b:cnn_after_llm": 97
+          },
+          "frame_audit_prefix": [
+            {
+              "start_s": 0.0,
+              "duration_s": 1.0,
+              "queue_before": [
+                0,
+                0,
+                0
+              ],
+              "departures": [
+                0,
+                0,
+                0
+              ],
+              "arrivals_during_frame": [
+                1,
+                0,
+                0
+              ],
+              "queue_after": [
+                1,
+                0,
+                0
+              ],
+              "option_indices": [
+                null,
+                null
+              ],
+              "score": 0.0,
+              "upper_bound": 0.0,
+              "candidate_gap": 0.0,
+              "attempts": 10,
+              "expected_drift": 0.38889631972722166,
+              "expected_drift_bound": 207.973864576347
+            },
+            {
+              "start_s": 1.0,
+              "duration_s": 8.093888054475512,
+              "queue_before": [
+                1,
+                0,
+                0
+              ],
+              "departures": [
+                1,
+                0,
+                0
+              ],
+              "arrivals_during_frame": [
+                0,
+                0,
+                3
+              ],
+              "queue_after": [
+                0,
+                0,
+                3
+              ],
+              "option_indices": [
+                2,
+                null
+              ],
+              "score": 0.12355001616893509,
+              "upper_bound": 0.12355001616893509,
+              "candidate_gap": 0.0,
+              "attempts": 10,
+              "expected_drift": 6.925559233459273,
+              "expected_drift_bound": 367.6895788616429
+            },
+            {
+              "start_s": 9.093888054475512,
+              "duration_s": 9.462480184740949,
+              "queue_before": [
+                0,
+                0,
+                3
+              ],
+              "departures": [
+                0,
+                0,
+                3
+              ],
+              "arrivals_during_frame": [
+                2,
+                4,
+                3
+              ],
+              "queue_after": [
+                2,
+                4,
+                3
+              ],
+              "option_indices": [
+                7,
+                null
+              ],
+              "score": 0.9511248451027948,
+              "upper_bound": 0.9511248451027948,
+              "candidate_gap": 0.0,
+              "attempts": 10,
+              "expected_drift": 5.14600699526903,
+              "expected_drift_bound": 397.68127899596806
+            },
+            {
+              "start_s": 18.55636823921646,
+              "duration_s": 2.7928254592821196,
+              "queue_before": [
+                2,
+                4,
+                3
+              ],
+              "departures": [
+                0,
+                2,
+                0
+              ],
+              "arrivals_during_frame": [
+                0,
+                1,
+                1
+              ],
+              "queue_after": [
+                2,
+                3,
+                4
+              ],
+              "option_indices": [
+                4,
+                4
+              ],
+              "score": 2.864482624007716,
+              "upper_bound": 2.864482624007716,
+              "candidate_gap": 0.0,
+              "attempts": 11,
+              "expected_drift": -0.2262049696431312,
+              "expected_drift_bound": 247.32586449054273
+            },
+            {
+              "start_s": 21.34919369849858,
+              "duration_s": 9.462480184740949,
+              "queue_before": [
+                2,
+                3,
+                4
+              ],
+              "departures": [
+                0,
+                3,
+                3
+              ],
+              "arrivals_during_frame": [
+                0,
+                2,
+                2
+              ],
+              "queue_after": [
+                2,
+                2,
+                3
+              ],
+              "option_indices": [
+                7,
+                5
+              ],
+              "score": 2.2192913052398544,
+              "upper_bound": 2.2192913052398544,
+              "candidate_gap": 0.0,
+              "attempts": 14,
+              "expected_drift": 2.3872555584173334,
+              "expected_drift_bound": 395.19127806728693
+            },
+            {
+              "start_s": 30.81167388323953,
+              "duration_s": 2.7928254592821196,
+              "queue_before": [
+                2,
+                2,
+                3
+              ],
+              "departures": [
+                0,
+                2,
+                0
+              ],
+              "arrivals_during_frame": [
+                0,
+                0,
+                0
+              ],
+              "queue_after": [
+                2,
+                0,
+                3
+              ],
+              "option_indices": [
+                4,
+                4
+              ],
+              "score": 1.432241312003858,
+              "upper_bound": 1.432241312003858,
+              "candidate_gap": 0.0,
+              "attempts": 24,
+              "expected_drift": 2.463470110590617,
+              "expected_drift_bound": 247.57083683928172
+            },
+            {
+              "start_s": 33.60449934252165,
+              "duration_s": 9.462480184740949,
+              "queue_before": [
+                2,
+                0,
+                3
+              ],
+              "departures": [
+                1,
+                0,
+                3
+              ],
+              "arrivals_during_frame": [
+                0,
+                3,
+                3
+              ],
+              "queue_after": [
+                1,
+                3,
+                3
+              ],
+              "option_indices": [
+                2,
+                7
+              ],
+              "score": 1.1624859217923047,
+              "upper_bound": 1.1624859217923047,
+              "candidate_gap": 0.0,
+              "attempts": 19,
+              "expected_drift": 4.657197654988951,
+              "expected_drift_bound": 396.8512786864077
+            },
+            {
+              "start_s": 43.066979527262596,
+              "duration_s": 2.7928254592821196,
+              "queue_before": [
+                1,
+                3,
+                3
+              ],
+              "departures": [
+                0,
+                2,
+                0
+              ],
+              "arrivals_during_frame": [
+                0,
+                0,
+                0
+              ],
+              "queue_after": [
+                1,
+                1,
+                3
+              ],
+              "option_indices": [
+                4,
+                4
+              ],
+              "score": 2.148361968005787,
+              "upper_bound": 2.148361968005787,
+              "candidate_gap": 0.0,
+              "attempts": 10,
+              "expected_drift": 0.820182379454252,
+              "expected_drift_bound": 247.57083683928172
+            }
+          ]
+        },
+        "decomposition": {
+          "status": "PASS",
+          "arrival_horizon_s": 20000.0,
+          "elapsed_including_drain_s": 20042.457722156993,
+          "frame_count": 2248,
+          "job_count": 12697,
+          "completed_jobs": 12697,
+          "flow_area_job_seconds": 361630.942293014,
+          "flow_area_components": {
+            "deferred_visible": 162115.56373793058,
+            "new_arrival_barrier": 71006.00948462542,
+            "dispatch_to_completion": 128509.36907045805
+          },
+          "mean_flow_s": 28.48160528416272,
+          "mean_deferred_visible_wait_s": 12.768021086707929,
+          "mean_arrival_barrier_wait_s": 5.592345395339484,
+          "mean_dispatch_to_completion_s": 10.121238802115307,
+          "reconstructed_completion_flow_area_job_seconds": 361630.94229301694,
+          "flow_identity_error_job_seconds": -2.9103830456733704e-09,
+          "by_class": {
+            "gpu_cnn_torch_resnet50": {
+              "job_count": 2145,
+              "completed_jobs": 2145,
+              "flow_area_job_seconds": 115074.43671529854,
+              "flow_area_components": {
+                "deferred_visible": 71768.34060705287,
+                "new_arrival_barrier": 11850.889281818503,
+                "dispatch_to_completion": 31455.20682642716
+              },
+              "mean_flow_s": 53.64775604442822,
+              "mean_deferred_visible_wait_s": 33.458433849441896,
+              "mean_arrival_barrier_wait_s": 5.524890108073894,
+              "mean_dispatch_to_completion_s": 14.664432086912429,
+              "reconstructed_completion_flow_area_job_seconds": 115074.43671529934,
+              "flow_identity_error_job_seconds": -8.003553375601768e-10
+            },
+            "gpu_heavy_jax_matmul": {
+              "job_count": 4675,
+              "completed_jobs": 4675,
+              "flow_area_job_seconds": 101916.76507730555,
+              "flow_area_components": {
+                "deferred_visible": 47793.18538365491,
+                "new_arrival_barrier": 26350.080569972077,
+                "dispatch_to_completion": 27773.499123678557
+              },
+              "mean_flow_s": 21.8003775566429,
+              "mean_deferred_visible_wait_s": 10.22314125853581,
+              "mean_arrival_barrier_wait_s": 5.636380870582262,
+              "mean_dispatch_to_completion_s": 5.940855427524825,
+              "reconstructed_completion_flow_area_job_seconds": 101916.76507730669,
+              "flow_identity_error_job_seconds": -1.1350493878126144e-09
+            },
+            "gpu_llm_distilgpt2": {
+              "job_count": 5877,
+              "completed_jobs": 5877,
+              "flow_area_job_seconds": 144639.74050041,
+              "flow_area_components": {
+                "deferred_visible": 42554.03774722281,
+                "new_arrival_barrier": 32805.03963283484,
+                "dispatch_to_completion": 69280.66312035234
+              },
+              "mean_flow_s": 24.61115203342011,
+              "mean_deferred_visible_wait_s": 7.240775522753583,
+              "mean_arrival_barrier_wait_s": 5.581936299614573,
+              "mean_dispatch_to_completion_s": 11.788440211051956,
+              "reconstructed_completion_flow_area_job_seconds": 144639.74050041093,
+              "flow_identity_error_job_seconds": -9.313225746154785e-10
+            }
+          },
+          "frame_duration_mean_s": 8.915684040105424,
+          "frame_duration_time_weighted_mean_s": 11.187389900480413,
+          "occupied_lane_seconds": 37852.86007504057,
+          "global_barrier_idle_lane_seconds": 2232.0553692735693,
+          "unassigned_lane_seconds": 42.02194884678238,
+          "completed_lane_barrier_seconds": 2190.033420426787,
+          "total_lane_seconds": 40084.915444313985,
+          "loaded_frame_count": 79,
+          "by_action_multiset": [
+            {
+              "action_multiset": [
+                {
+                  "action_id": null,
+                  "count": 2
+                }
+              ],
+              "frame_count": 1,
+              "total_duration_s": 1.0,
+              "flow_area_components": {
+                "deferred_visible": 0.0,
+                "new_arrival_barrier": 0.014168877961441728,
+                "dispatch_to_completion": 0.0
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": null,
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                }
+              ],
+              "frame_count": 1,
+              "total_duration_s": 8.093888054475512,
+              "flow_area_components": {
+                "deferred_visible": 0.0,
+                "new_arrival_barrier": 11.831305372829625,
+                "dispatch_to_completion": 8.093888054475512
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": null,
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 2,
+              "total_duration_s": 18.924960369481898,
+              "flow_area_components": {
+                "deferred_visible": 0.0,
+                "new_arrival_barrier": 59.04902988421896,
+                "dispatch_to_completion": 56.7748811084457
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 2
+                }
+              ],
+              "frame_count": 509,
+              "total_duration_s": 1421.5481587745892,
+              "flow_area_components": {
+                "deferred_visible": 12341.49570456767,
+                "new_arrival_barrier": 1174.051941253952,
+                "dispatch_to_completion": 2843.0963175491784
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 36,
+              "total_duration_s": 340.64928665067424,
+              "flow_area_components": {
+                "deferred_visible": 1211.197463646841,
+                "new_arrival_barrier": 1107.9255823477533,
+                "dispatch_to_completion": 1758.5594164963975
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 20,
+              "total_duration_s": 189.24960369481894,
+              "flow_area_components": {
+                "deferred_visible": 264.9494451727466,
+                "new_arrival_barrier": 495.9138375992845,
+                "dispatch_to_completion": 729.6265721739676
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 2
+                }
+              ],
+              "frame_count": 4,
+              "total_duration_s": 32.37555221790205,
+              "flow_area_components": {
+                "deferred_visible": 48.56332832685307,
+                "new_arrival_barrier": 119.15936537942895,
+                "dispatch_to_completion": 64.7511044358041
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 62,
+              "total_duration_s": 586.673771453939,
+              "flow_area_components": {
+                "deferred_visible": 2280.4577245225687,
+                "new_arrival_barrier": 1773.8687929939656,
+                "dispatch_to_completion": 2219.903183625982
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 2
+                }
+              ],
+              "frame_count": 368,
+              "total_duration_s": 3482.192707984653,
+              "flow_area_components": {
+                "deferred_visible": 27204.630531130246,
+                "new_arrival_barrier": 10703.643848894482,
+                "dispatch_to_completion": 20893.156247908013
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 2
+                }
+              ],
+              "frame_count": 216,
+              "total_duration_s": 3234.0420873272815,
+              "flow_area_components": {
+                "deferred_visible": 26965.323144798305,
+                "new_arrival_barrier": 15240.529377330256,
+                "dispatch_to_completion": 19404.25252396369
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8",
+                  "count": 1
+                }
+              ],
+              "frame_count": 98,
+              "total_duration_s": 1455.230442163731,
+              "flow_area_components": {
+                "deferred_visible": 9548.093615421214,
+                "new_arrival_barrier": 6559.37211077575,
+                "dispatch_to_completion": 13647.063885680633
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 2
+                }
+              ],
+              "frame_count": 542,
+              "total_duration_s": 3696.698737472731,
+              "flow_area_components": {
+                "deferred_visible": 43357.77467548684,
+                "new_arrival_barrier": 8293.959350332603,
+                "dispatch_to_completion": 22180.19242483603
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8",
+                  "count": 1
+                }
+              ],
+              "frame_count": 77,
+              "total_duration_s": 1143.39534741436,
+              "flow_area_components": {
+                "deferred_visible": 12013.07579296386,
+                "new_arrival_barrier": 5717.125531787347,
+                "dispatch_to_completion": 11332.995701990038
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8",
+                  "count": 1
+                }
+              ],
+              "frame_count": 123,
+              "total_duration_s": 1841.6072997280353,
+              "flow_area_components": {
+                "deferred_visible": 17293.14171695838,
+                "new_arrival_barrier": 8286.279533290057,
+                "dispatch_to_completion": 20136.523481726057
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 97,
+              "total_duration_s": 1452.3244558830847,
+              "flow_area_components": {
+                "deferred_visible": 5255.318391906832,
+                "new_arrival_barrier": 6870.134642245594,
+                "dispatch_to_completion": 7110.5551014088705
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "gpu_loaded:gpu_b:cnn_after_llm",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8",
+                  "count": 1
+                }
+              ],
+              "frame_count": 14,
+              "total_duration_s": 207.89006316624727,
+              "flow_area_components": {
+                "deferred_visible": 1187.9432180928416,
+                "new_arrival_barrier": 1051.7133253175514,
+                "dispatch_to_completion": 1970.3589732321348
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "gpu_loaded:gpu_b:cnn_after_llm",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 18,
+              "total_duration_s": 269.50350727727346,
+              "flow_area_components": {
+                "deferred_visible": 643.8139340512644,
+                "new_arrival_barrier": 1263.1665073021343,
+                "dispatch_to_completion": 1203.5314091345933
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "gpu_loaded:gpu_b:cnn_after_llm",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 29,
+              "total_duration_s": 333.92276523950335,
+              "flow_area_components": {
+                "deferred_visible": 1704.157560532638,
+                "new_arrival_barrier": 1105.7066160522122,
+                "dispatch_to_completion": 1459.65831672693
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "gpu_loaded:gpu_b:cnn_after_llm",
+                  "count": 2
+                }
+              ],
+              "frame_count": 18,
+              "total_duration_s": 207.26240601072624,
+              "flow_area_components": {
+                "deferred_visible": 287.8644527926753,
+                "new_arrival_barrier": 764.0977449724699,
+                "dispatch_to_completion": 790.0417746055457
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8",
+                  "count": 2
+                }
+              ],
+              "frame_count": 2,
+              "total_duration_s": 29.69858045232104,
+              "flow_area_components": {
+                "deferred_visible": 460.3279970109761,
+                "new_arrival_barrier": 148.8800425163663,
+                "dispatch_to_completion": 475.1772872371366
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 2
+                }
+              ],
+              "frame_count": 4,
+              "total_duration_s": 29.669798017042922,
+              "flow_area_components": {
+                "deferred_visible": 29.669798017042922,
+                "new_arrival_barrier": 49.12658396710867,
+                "dispatch_to_completion": 59.339596034085844
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 2,
+              "total_duration_s": 29.944834141919273,
+              "flow_area_components": {
+                "deferred_visible": 14.972417070959636,
+                "new_arrival_barrier": 140.1437204083686,
+                "dispatch_to_completion": 106.02227853470885
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": null,
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                }
+              ],
+              "frame_count": 2,
+              "total_duration_s": 5.585650918564239,
+              "flow_area_components": {
+                "deferred_visible": 2.7928254592821196,
+                "new_arrival_barrier": 1.133608454179921,
+                "dispatch_to_completion": 5.585650918564239
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                }
+              ],
+              "frame_count": 1,
+              "total_duration_s": 8.093888054475512,
+              "flow_area_components": {
+                "deferred_visible": 0.0,
+                "new_arrival_barrier": 5.884503338877039,
+                "dispatch_to_completion": 15.511337558736242
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": null,
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                }
+              ],
+              "frame_count": 1,
+              "total_duration_s": 7.4174495042607305,
+              "flow_area_components": {
+                "deferred_visible": 0.0,
+                "new_arrival_barrier": 19.793034963819082,
+                "dispatch_to_completion": 7.4174495042607305
+              }
+            },
+            {
+              "action_multiset": [
+                {
+                  "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+                  "count": 1
+                },
+                {
+                  "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+                  "count": 1
+                }
+              ],
+              "frame_count": 1,
+              "total_duration_s": 9.462480184740949,
+              "flow_area_components": {
+                "deferred_visible": 0.0,
+                "new_arrival_barrier": 43.505378966830904,
+                "dispatch_to_completion": 31.18026601350497
+              }
+            }
+          ],
+          "time_regions": {
+            "arrival_window": {
+              "start_s": 0.0,
+              "end_s": 20000.0,
+              "flow_area_job_seconds": 361134.3932916713,
+              "flow_area_components": {
+                "deferred_visible": 161841.59658608536,
+                "new_arrival_barrier": 70985.33742643926,
+                "dispatch_to_completion": 128307.45927914671
+              },
+              "mean_flow_contribution_s": 28.442497699588195
+            },
+            "drain": {
+              "start_s": 20000.0,
+              "end_s": 20042.457722156993,
+              "flow_area_job_seconds": 496.54900134271884,
+              "flow_area_components": {
+                "deferred_visible": 273.96715184522327,
+                "new_arrival_barrier": 20.67205818615912,
+                "dispatch_to_completion": 201.90979131133645
+              },
+              "mean_flow_contribution_s": 0.03910758457452303
+            }
+          }
+        },
+        "selector_accounting": {
+          "selector_wall_s": 0.4581190787430387,
+          "selector_mean_wall_ms": 0.20378962577537307,
+          "cost_candidate_evaluations": 0,
+          "completion_offset_reads": 0,
+          "mean_cost_candidate_evaluations": 0.0,
+          "eligible_candidates": 0,
+          "lower_holding_cost_frames": 0,
+          "lower_support_than_search_incumbent_frames": 0,
+          "support_search_exact_frames": null,
+          "minimum_seed_support_margin": null,
+          "maximum_holding_cost_excess_over_support_incumbent": 0.0,
+          "mean_selected_holding_cost_reduction": 0.0,
+          "minimum_support_floor_margin": null,
+          "maximum_relative_support_loss": 0.0,
+          "support_cap_excluded_candidates": 0
+        }
+      }
+    ],
+    "state_roster": "the chronologically first physical gate/v4 action difference on each of all three gated source trajectories; retain a zero-case source if none exists",
+    "physical_action": "departures, duration and sorted per-class completion offsets; lane permutations are equal",
+    "intervention": "replay the identical gated prefix; force v4 versus gate once; then use memoized frozen v4 K26 in both branches until the identical original population drains",
+    "sign": "all effects are gate-first minus v4-first in job-seconds",
+    "decomposition": "full gate-v4 = first action under common v4 + remaining full-gate versus gate-once suffix, for total flow and each flow component",
+    "diagnostic_work": "native source work, deterministic v4 shadow cache misses, action audits, replay frames and common-v4 cache misses are reported separately; shadow and continuation add no random draws",
+    "stopping_rule": "three registered source trajectories once, at most one first divergence and two replay branches per source; no threshold fitting, extra states, extra seeds, repeated planning samples or confirmation data",
+    "interpretation": "local first-action direction and later gated-policy feedback only; correlated planning runs on one arrival tape are not independent replicates"
+  },
+  "runs": [
+    {
+      "load": 0.8,
+      "seed": 41,
+      "planning_seed": 0,
+      "job_count": 12697,
+      "source_frame_count": 2251,
+      "source_reproduced": true,
+      "first_divergence_count": 1,
+      "replay_branch_count": 2,
+      "case": {
+        "frame_index": 270,
+        "start_s": 2253.3554472210612,
+        "queue": [
+          5,
+          5,
+          9
+        ],
+        "weighted_backlog": 107,
+        "v4_action": {
+          "option_indices": [
+            8,
+            5
+          ],
+          "departures": [
+            0,
+            3,
+            8
+          ],
+          "duration_s": 14.84929022616052,
+          "score": 5.85886589021804,
+          "completion_offsets": [
+            [],
+            [
+              6.820477375410869,
+              6.820477375410869,
+              6.820477375410869
+            ],
+            [
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052
+            ]
+          ],
+          "dispatch_to_completion_sum_s": 139.25575393551676,
+          "loaded": false
+        },
+        "gate_action": {
+          "option_indices": [
+            8,
+            3
+          ],
+          "departures": [
+            3,
+            0,
+            8
+          ],
+          "duration_s": 14.972417070959636,
+          "score": 5.810685047556176,
+          "completion_offsets": [
+            [
+              14.972417070959636,
+              14.972417070959636,
+              14.972417070959636
+            ],
+            [],
+            [
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052
+            ]
+          ],
+          "dispatch_to_completion_sum_s": 163.71157302216307,
+          "loaded": false
+        },
+        "rollout_used": true,
+        "rollout_vetoed": false,
+        "rollout_cost_delta_job_s": -249.09222313590635,
+        "phase": "arrival_window",
+        "prefix_accounting_identity": true,
+        "v4_branch_matches_frozen_physical_result": true,
+        "branch_mean_flow_s": {
+          "v4_first_then_v4": 28.481605284162928,
+          "gate_first_then_v4": 28.88870273002215
+        },
+        "first_action_effect": {
+          "predicted_total_delta_job_s": -14.343169422948222,
+          "realized_total_delta_job_s": 5168.916270074539,
+          "mean_flow_delta_s": 0.4070974458592218,
+          "realized_current_delta_job_s": 26.4258486034322,
+          "realized_future_delta_job_s": 5142.490421471107,
+          "cutoff_correction_delta_job_s": 5.684341886080802e-14,
+          "current_arrival_residual_delta_job_s": -0.16938308225724086,
+          "next_queue_residual_delta_job_s": 4.377046809709128,
+          "continuation_residual_delta_job_s": 5179.051775770035,
+          "prediction_residual_delta_job_s": 5183.259439497488,
+          "residual_identity_error_job_s": 0.0,
+          "flow_component_deltas_job_s": {
+            "mean_deferred_visible_wait_s": 6288.157002199185,
+            "mean_arrival_barrier_wait_s": -277.73740425443907,
+            "mean_dispatch_to_completion_s": -841.503327870285
+          },
+          "flow_component_identity_error_job_s": -7.821654435247183e-11,
+          "outcome": "worsened"
+        },
+        "full_gate_minus_v4_effect": {
+          "realized_total_delta_job_s": 926.1564816736528,
+          "mean_flow_delta_s": 0.07294293783363415,
+          "flow_component_deltas_job_s": {
+            "mean_deferred_visible_wait_s": 1093.1460098437278,
+            "mean_arrival_barrier_wait_s": -18.403285301239773,
+            "mean_dispatch_to_completion_s": -148.5862428683052
+          },
+          "outcome": "worsened"
+        },
+        "post_first_gated_suffix_effect": {
+          "realized_total_delta_job_s": -4242.7597884008865,
+          "mean_flow_delta_s": -0.33415450802558766,
+          "flow_component_deltas_job_s": {
+            "mean_deferred_visible_wait_s": -5195.010992355456,
+            "mean_arrival_barrier_wait_s": 259.33411895319927,
+            "mean_dispatch_to_completion_s": 692.9170850019798
+          },
+          "outcome": "improved"
+        },
+        "full_first_suffix_identity_error_job_s": 0.0,
+        "flow_component_identity_errors_job_s": {
+          "mean_deferred_visible_wait_s": -9.094947017729282e-13,
+          "mean_arrival_barrier_wait_s": 5.684341886080802e-14,
+          "mean_dispatch_to_completion_s": 0.0
+        }
+      },
+      "diagnostic_work": {
+        "discovery": {
+          "inactive_prefix_frames": 210,
+          "active_v4_comparisons": 61,
+          "equal_active_comparisons": 60,
+          "action_descriptions": 122,
+          "action_description_completion_offset_reads": 786,
+          "first_divergence_weighted_queue_coordinate_evaluations": 3,
+          "extra_rng_initializations": 0,
+          "extra_rng_state_reads": 0,
+          "extra_rng_state_writes": 0,
+          "extra_random_draws": 0
+        },
+        "discovery_v4_cache_miss_work": {
+          "calls": 58,
+          "support_calls": 58,
+          "lookahead_calls": 0,
+          "candidate_attempts": 874,
+          "option_probes": 5800,
+          "threshold_evaluations": 3385,
+          "local_score_evaluations": 522,
+          "cost_candidate_evaluations": 0,
+          "completion_offset_reads": 0,
+          "next_queue_coordinate_evaluations": 0,
+          "terminal_value_coordinate_evaluations": 0
+        },
+        "continuation_v4_cache_miss_work": {
+          "calls": 1158,
+          "support_calls": 1158,
+          "lookahead_calls": 0,
+          "candidate_attempts": 17062,
+          "option_probes": 115800,
+          "threshold_evaluations": 59001,
+          "local_score_evaluations": 10422,
+          "cost_candidate_evaluations": 0,
+          "completion_offset_reads": 0,
+          "next_queue_coordinate_evaluations": 0,
+          "terminal_value_coordinate_evaluations": 0
+        },
+        "replay_runs": 2,
+        "replay_frames": 4516,
+        "continuation_v4_calls": 3974,
+        "action_audit_evaluations": 2,
+        "action_audit_completion_offset_reads": 44
+      }
+    },
+    {
+      "load": 0.8,
+      "seed": 41,
+      "planning_seed": 1,
+      "job_count": 12697,
+      "source_frame_count": 2260,
+      "source_reproduced": true,
+      "first_divergence_count": 1,
+      "replay_branch_count": 2,
+      "case": {
+        "frame_index": 31,
+        "start_s": 230.79044442448543,
+        "queue": [
+          6,
+          6,
+          10
+        ],
+        "weighted_backlog": 126,
+        "v4_action": {
+          "option_indices": [
+            8,
+            5
+          ],
+          "departures": [
+            0,
+            3,
+            8
+          ],
+          "duration_s": 14.84929022616052,
+          "score": 6.599642037257103,
+          "completion_offsets": [
+            [],
+            [
+              6.820477375410869,
+              6.820477375410869,
+              6.820477375410869
+            ],
+            [
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052
+            ]
+          ],
+          "dispatch_to_completion_sum_s": 139.25575393551676,
+          "loaded": false
+        },
+        "gate_action": {
+          "option_indices": [
+            8,
+            3
+          ],
+          "departures": [
+            3,
+            0,
+            8
+          ],
+          "duration_s": 14.972417070959636,
+          "score": 6.545369363913854,
+          "completion_offsets": [
+            [
+              14.972417070959636,
+              14.972417070959636,
+              14.972417070959636
+            ],
+            [],
+            [
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052
+            ]
+          ],
+          "dispatch_to_completion_sum_s": 163.71157302216307,
+          "loaded": false
+        },
+        "rollout_used": true,
+        "rollout_vetoed": false,
+        "rollout_cost_delta_job_s": -125.61625871366232,
+        "phase": "arrival_window",
+        "prefix_accounting_identity": true,
+        "v4_branch_matches_frozen_physical_result": true,
+        "branch_mean_flow_s": {
+          "v4_first_then_v4": 28.481605284162928,
+          "gate_first_then_v4": 28.82644411345208
+        },
+        "first_action_effect": {
+          "predicted_total_delta_job_s": -25.906194004356166,
+          "realized_total_delta_job_s": 4378.418615484366,
+          "mean_flow_delta_s": 0.3448388292891522,
+          "realized_current_delta_job_s": 26.548975448231317,
+          "realized_future_delta_job_s": 4351.869640036134,
+          "cutoff_correction_delta_job_s": 0.0,
+          "current_arrival_residual_delta_job_s": -0.41563677185547476,
+          "next_queue_residual_delta_job_s": 28.537361468837645,
+          "continuation_residual_delta_job_s": 4376.2030847917395,
+          "prediction_residual_delta_job_s": 4404.324809488722,
+          "residual_identity_error_job_s": -9.094947017729282e-13,
+          "flow_component_deltas_job_s": {
+            "mean_deferred_visible_wait_s": 5368.907708906318,
+            "mean_arrival_barrier_wait_s": -184.82178617075215,
+            "mean_dispatch_to_completion_s": -805.6673072511092
+          },
+          "flow_component_identity_error_job_s": 9.00399754755199e-11,
+          "outcome": "worsened"
+        },
+        "full_gate_minus_v4_effect": {
+          "realized_total_delta_job_s": 2188.213788337366,
+          "mean_flow_delta_s": 0.1723410087687931,
+          "flow_component_deltas_job_s": {
+            "mean_deferred_visible_wait_s": 2526.117359261437,
+            "mean_arrival_barrier_wait_s": 234.47130386425846,
+            "mean_dispatch_to_completion_s": -572.3748747881149
+          },
+          "outcome": "worsened"
+        },
+        "post_first_gated_suffix_effect": {
+          "realized_total_delta_job_s": -2190.204827147,
+          "mean_flow_delta_s": -0.1724978205203591,
+          "flow_component_deltas_job_s": {
+            "mean_deferred_visible_wait_s": -2842.7903496448803,
+            "mean_arrival_barrier_wait_s": 419.2930900350106,
+            "mean_dispatch_to_completion_s": 233.29243246299419
+          },
+          "outcome": "improved"
+        },
+        "full_first_suffix_identity_error_job_s": 4.547473508864641e-13,
+        "flow_component_identity_errors_job_s": {
+          "mean_deferred_visible_wait_s": -4.547473508864641e-13,
+          "mean_arrival_barrier_wait_s": 0.0,
+          "mean_dispatch_to_completion_s": 8.526512829121202e-14
+        }
+      },
+      "diagnostic_work": {
+        "discovery": {
+          "inactive_prefix_frames": 25,
+          "active_v4_comparisons": 7,
+          "equal_active_comparisons": 6,
+          "action_descriptions": 14,
+          "action_description_completion_offset_reads": 70,
+          "first_divergence_weighted_queue_coordinate_evaluations": 3,
+          "extra_rng_initializations": 0,
+          "extra_rng_state_reads": 0,
+          "extra_rng_state_writes": 0,
+          "extra_random_draws": 0
+        },
+        "discovery_v4_cache_miss_work": {
+          "calls": 7,
+          "support_calls": 7,
+          "lookahead_calls": 0,
+          "candidate_attempts": 147,
+          "option_probes": 700,
+          "threshold_evaluations": 762,
+          "local_score_evaluations": 63,
+          "cost_candidate_evaluations": 0,
+          "completion_offset_reads": 0,
+          "next_queue_coordinate_evaluations": 0,
+          "terminal_value_coordinate_evaluations": 0
+        },
+        "continuation_v4_cache_miss_work": {
+          "calls": 1276,
+          "support_calls": 1276,
+          "lookahead_calls": 0,
+          "candidate_attempts": 18607,
+          "option_probes": 127600,
+          "threshold_evaluations": 63533,
+          "local_score_evaluations": 11484,
+          "cost_candidate_evaluations": 0,
+          "completion_offset_reads": 0,
+          "next_queue_coordinate_evaluations": 0,
+          "terminal_value_coordinate_evaluations": 0
+        },
+        "replay_runs": 2,
+        "replay_frames": 4516,
+        "continuation_v4_calls": 4452,
+        "action_audit_evaluations": 2,
+        "action_audit_completion_offset_reads": 44
+      }
+    },
+    {
+      "load": 0.8,
+      "seed": 41,
+      "planning_seed": 2,
+      "job_count": 12697,
+      "source_frame_count": 2257,
+      "source_reproduced": true,
+      "first_divergence_count": 1,
+      "replay_branch_count": 2,
+      "case": {
+        "frame_index": 31,
+        "start_s": 230.79044442448543,
+        "queue": [
+          6,
+          6,
+          10
+        ],
+        "weighted_backlog": 126,
+        "v4_action": {
+          "option_indices": [
+            8,
+            5
+          ],
+          "departures": [
+            0,
+            3,
+            8
+          ],
+          "duration_s": 14.84929022616052,
+          "score": 6.599642037257103,
+          "completion_offsets": [
+            [],
+            [
+              6.820477375410869,
+              6.820477375410869,
+              6.820477375410869
+            ],
+            [
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052
+            ]
+          ],
+          "dispatch_to_completion_sum_s": 139.25575393551676,
+          "loaded": false
+        },
+        "gate_action": {
+          "option_indices": [
+            8,
+            3
+          ],
+          "departures": [
+            3,
+            0,
+            8
+          ],
+          "duration_s": 14.972417070959636,
+          "score": 6.545369363913854,
+          "completion_offsets": [
+            [
+              14.972417070959636,
+              14.972417070959636,
+              14.972417070959636
+            ],
+            [],
+            [
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052,
+              14.84929022616052
+            ]
+          ],
+          "dispatch_to_completion_sum_s": 163.71157302216307,
+          "loaded": false
+        },
+        "rollout_used": true,
+        "rollout_vetoed": false,
+        "rollout_cost_delta_job_s": -69.93701156283373,
+        "phase": "arrival_window",
+        "prefix_accounting_identity": true,
+        "v4_branch_matches_frozen_physical_result": true,
+        "branch_mean_flow_s": {
+          "v4_first_then_v4": 28.481605284162928,
+          "gate_first_then_v4": 28.82644411345208
+        },
+        "first_action_effect": {
+          "predicted_total_delta_job_s": -25.906194004356166,
+          "realized_total_delta_job_s": 4378.418615484366,
+          "mean_flow_delta_s": 0.3448388292891522,
+          "realized_current_delta_job_s": 26.548975448231317,
+          "realized_future_delta_job_s": 4351.869640036134,
+          "cutoff_correction_delta_job_s": 0.0,
+          "current_arrival_residual_delta_job_s": -0.41563677185547476,
+          "next_queue_residual_delta_job_s": 28.537361468837645,
+          "continuation_residual_delta_job_s": 4376.2030847917395,
+          "prediction_residual_delta_job_s": 4404.324809488722,
+          "residual_identity_error_job_s": -9.094947017729282e-13,
+          "flow_component_deltas_job_s": {
+            "mean_deferred_visible_wait_s": 5368.907708906318,
+            "mean_arrival_barrier_wait_s": -184.82178617075215,
+            "mean_dispatch_to_completion_s": -805.6673072511092
+          },
+          "flow_component_identity_error_job_s": 9.00399754755199e-11,
+          "outcome": "worsened"
+        },
+        "full_gate_minus_v4_effect": {
+          "realized_total_delta_job_s": -1401.5767108377852,
+          "mean_flow_delta_s": -0.11038644647064544,
+          "flow_component_deltas_job_s": {
+            "mean_deferred_visible_wait_s": -872.4632198286988,
+            "mean_arrival_barrier_wait_s": -336.1023756461207,
+            "mean_dispatch_to_completion_s": -193.0111153626498
+          },
+          "outcome": "improved"
+        },
+        "post_first_gated_suffix_effect": {
+          "realized_total_delta_job_s": -5779.9953263221505,
+          "mean_flow_delta_s": -0.45522527575979765,
+          "flow_component_deltas_job_s": {
+            "mean_deferred_visible_wait_s": -6241.370928735016,
+            "mean_arrival_barrier_wait_s": -151.28058947536857,
+            "mean_dispatch_to_completion_s": 612.6561918884593
+          },
+          "outcome": "improved"
+        },
+        "full_first_suffix_identity_error_job_s": 0.0,
+        "flow_component_identity_errors_job_s": {
+          "mean_deferred_visible_wait_s": -9.094947017729282e-13,
+          "mean_arrival_barrier_wait_s": 0.0,
+          "mean_dispatch_to_completion_s": 1.1368683772161603e-13
+        }
+      },
+      "diagnostic_work": {
+        "discovery": {
+          "inactive_prefix_frames": 25,
+          "active_v4_comparisons": 7,
+          "equal_active_comparisons": 6,
+          "action_descriptions": 14,
+          "action_description_completion_offset_reads": 70,
+          "first_divergence_weighted_queue_coordinate_evaluations": 3,
+          "extra_rng_initializations": 0,
+          "extra_rng_state_reads": 0,
+          "extra_rng_state_writes": 0,
+          "extra_random_draws": 0
+        },
+        "discovery_v4_cache_miss_work": {
+          "calls": 7,
+          "support_calls": 7,
+          "lookahead_calls": 0,
+          "candidate_attempts": 147,
+          "option_probes": 700,
+          "threshold_evaluations": 762,
+          "local_score_evaluations": 63,
+          "cost_candidate_evaluations": 0,
+          "completion_offset_reads": 0,
+          "next_queue_coordinate_evaluations": 0,
+          "terminal_value_coordinate_evaluations": 0
+        },
+        "continuation_v4_cache_miss_work": {
+          "calls": 1276,
+          "support_calls": 1276,
+          "lookahead_calls": 0,
+          "candidate_attempts": 18607,
+          "option_probes": 127600,
+          "threshold_evaluations": 63533,
+          "local_score_evaluations": 11484,
+          "cost_candidate_evaluations": 0,
+          "completion_offset_reads": 0,
+          "next_queue_coordinate_evaluations": 0,
+          "terminal_value_coordinate_evaluations": 0
+        },
+        "replay_runs": 2,
+        "replay_frames": 4516,
+        "continuation_v4_calls": 4452,
+        "action_audit_evaluations": 2,
+        "action_audit_completion_offset_reads": 44
+      }
+    }
+  ],
+  "summary_by_planning_seed": [
+    {
+      "planning_seed": 0,
+      "frame_index": 270,
+      "start_s": 2253.3554472210612,
+      "queue": [
+        5,
+        5,
+        9
+      ],
+      "weighted_backlog": 107,
+      "first_action_effect": {
+        "predicted_total_delta_job_s": -14.343169422948222,
+        "realized_total_delta_job_s": 5168.916270074539,
+        "mean_flow_delta_s": 0.4070974458592218,
+        "realized_current_delta_job_s": 26.4258486034322,
+        "realized_future_delta_job_s": 5142.490421471107,
+        "cutoff_correction_delta_job_s": 5.684341886080802e-14,
+        "current_arrival_residual_delta_job_s": -0.16938308225724086,
+        "next_queue_residual_delta_job_s": 4.377046809709128,
+        "continuation_residual_delta_job_s": 5179.051775770035,
+        "prediction_residual_delta_job_s": 5183.259439497488,
+        "residual_identity_error_job_s": 0.0,
+        "flow_component_deltas_job_s": {
+          "mean_deferred_visible_wait_s": 6288.157002199185,
+          "mean_arrival_barrier_wait_s": -277.73740425443907,
+          "mean_dispatch_to_completion_s": -841.503327870285
+        },
+        "flow_component_identity_error_job_s": -7.821654435247183e-11,
+        "outcome": "worsened"
+      },
+      "full_gate_minus_v4_effect": {
+        "realized_total_delta_job_s": 926.1564816736528,
+        "mean_flow_delta_s": 0.07294293783363415,
+        "flow_component_deltas_job_s": {
+          "mean_deferred_visible_wait_s": 1093.1460098437278,
+          "mean_arrival_barrier_wait_s": -18.403285301239773,
+          "mean_dispatch_to_completion_s": -148.5862428683052
+        },
+        "outcome": "worsened"
+      },
+      "post_first_gated_suffix_effect": {
+        "realized_total_delta_job_s": -4242.7597884008865,
+        "mean_flow_delta_s": -0.33415450802558766,
+        "flow_component_deltas_job_s": {
+          "mean_deferred_visible_wait_s": -5195.010992355456,
+          "mean_arrival_barrier_wait_s": 259.33411895319927,
+          "mean_dispatch_to_completion_s": 692.9170850019798
+        },
+        "outcome": "improved"
+      }
+    },
+    {
+      "planning_seed": 1,
+      "frame_index": 31,
+      "start_s": 230.79044442448543,
+      "queue": [
+        6,
+        6,
+        10
+      ],
+      "weighted_backlog": 126,
+      "first_action_effect": {
+        "predicted_total_delta_job_s": -25.906194004356166,
+        "realized_total_delta_job_s": 4378.418615484366,
+        "mean_flow_delta_s": 0.3448388292891522,
+        "realized_current_delta_job_s": 26.548975448231317,
+        "realized_future_delta_job_s": 4351.869640036134,
+        "cutoff_correction_delta_job_s": 0.0,
+        "current_arrival_residual_delta_job_s": -0.41563677185547476,
+        "next_queue_residual_delta_job_s": 28.537361468837645,
+        "continuation_residual_delta_job_s": 4376.2030847917395,
+        "prediction_residual_delta_job_s": 4404.324809488722,
+        "residual_identity_error_job_s": -9.094947017729282e-13,
+        "flow_component_deltas_job_s": {
+          "mean_deferred_visible_wait_s": 5368.907708906318,
+          "mean_arrival_barrier_wait_s": -184.82178617075215,
+          "mean_dispatch_to_completion_s": -805.6673072511092
+        },
+        "flow_component_identity_error_job_s": 9.00399754755199e-11,
+        "outcome": "worsened"
+      },
+      "full_gate_minus_v4_effect": {
+        "realized_total_delta_job_s": 2188.213788337366,
+        "mean_flow_delta_s": 0.1723410087687931,
+        "flow_component_deltas_job_s": {
+          "mean_deferred_visible_wait_s": 2526.117359261437,
+          "mean_arrival_barrier_wait_s": 234.47130386425846,
+          "mean_dispatch_to_completion_s": -572.3748747881149
+        },
+        "outcome": "worsened"
+      },
+      "post_first_gated_suffix_effect": {
+        "realized_total_delta_job_s": -2190.204827147,
+        "mean_flow_delta_s": -0.1724978205203591,
+        "flow_component_deltas_job_s": {
+          "mean_deferred_visible_wait_s": -2842.7903496448803,
+          "mean_arrival_barrier_wait_s": 419.2930900350106,
+          "mean_dispatch_to_completion_s": 233.29243246299419
+        },
+        "outcome": "improved"
+      }
+    },
+    {
+      "planning_seed": 2,
+      "frame_index": 31,
+      "start_s": 230.79044442448543,
+      "queue": [
+        6,
+        6,
+        10
+      ],
+      "weighted_backlog": 126,
+      "first_action_effect": {
+        "predicted_total_delta_job_s": -25.906194004356166,
+        "realized_total_delta_job_s": 4378.418615484366,
+        "mean_flow_delta_s": 0.3448388292891522,
+        "realized_current_delta_job_s": 26.548975448231317,
+        "realized_future_delta_job_s": 4351.869640036134,
+        "cutoff_correction_delta_job_s": 0.0,
+        "current_arrival_residual_delta_job_s": -0.41563677185547476,
+        "next_queue_residual_delta_job_s": 28.537361468837645,
+        "continuation_residual_delta_job_s": 4376.2030847917395,
+        "prediction_residual_delta_job_s": 4404.324809488722,
+        "residual_identity_error_job_s": -9.094947017729282e-13,
+        "flow_component_deltas_job_s": {
+          "mean_deferred_visible_wait_s": 5368.907708906318,
+          "mean_arrival_barrier_wait_s": -184.82178617075215,
+          "mean_dispatch_to_completion_s": -805.6673072511092
+        },
+        "flow_component_identity_error_job_s": 9.00399754755199e-11,
+        "outcome": "worsened"
+      },
+      "full_gate_minus_v4_effect": {
+        "realized_total_delta_job_s": -1401.5767108377852,
+        "mean_flow_delta_s": -0.11038644647064544,
+        "flow_component_deltas_job_s": {
+          "mean_deferred_visible_wait_s": -872.4632198286988,
+          "mean_arrival_barrier_wait_s": -336.1023756461207,
+          "mean_dispatch_to_completion_s": -193.0111153626498
+        },
+        "outcome": "improved"
+      },
+      "post_first_gated_suffix_effect": {
+        "realized_total_delta_job_s": -5779.9953263221505,
+        "mean_flow_delta_s": -0.45522527575979765,
+        "flow_component_deltas_job_s": {
+          "mean_deferred_visible_wait_s": -6241.370928735016,
+          "mean_arrival_barrier_wait_s": -151.28058947536857,
+          "mean_dispatch_to_completion_s": 612.6561918884593
+        },
+        "outcome": "improved"
+      }
+    }
+  ],
+  "limitations": [
+    "The first-action intervention is local to one policy-induced state and cannot reconstruct later gate decisions by itself.",
+    "The post-first suffix combines later gate choices with their state feedback; it is not a pure state-feedback effect.",
+    "All planning seeds share one consumed real-arrival tape and are correlated descriptive cases, not independent replicates."
+  ]
+}

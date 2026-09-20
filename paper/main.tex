@@ -77,28 +77,27 @@
 
 \ABSTRACT{%
 Modern compute clusters serve jobs whose rates depend on co-location, host load,
-accelerator memory, and placement, making a full configuration the natural
-scheduling action.  We formulate a configuration-action stochastic processing
-network and prove a robust candidate MaxWeight theorem that preserves the full
-action space in the capacity statement while charging candidate approximation,
-conservative service estimation, bounded penalties, and approximate optimization
-against explicit slack.  Positive residual slack yields finite-horizon
-expected-backlog bounds and a finite-set Foster recurrence certificate under
-bounded conditional second moments.  A finite-feature-cell construction gives a
-cardinality bound and an \(L\rho\) support-loss certificate; diagonal scaling
-handles heterogeneous service units, and a variable-duration frame result covers
-migration and reconfiguration.  Lean formalizes the fixed-family, statewise,
-candidate-cover, scaling, and frame statements.  Scheduleurm instantiates the
-framework with measured lower-service actions and audited oracle gaps.  Across
-\UnifiedOnlineComparisonCount{} online-arrival measured-cache traces, the
-candidate improves geometric-mean makespan by
-\(\UnifiedOnlineLegacyMakespanGeoRatio\times\) and mean flow by
-\(\UnifiedOnlineLegacyMeanFlowGeoRatio\times\) over legacy caps.  It improves
-both aggregate metrics against all \UnifiedSotaPolicyCount{} registered
-policy-semantics baselines, although a baseline strictly Pareto-dominates it in
-\UnifiedSotaDominatesOursCount{} of
-\UnifiedSotaPolicyTraceComparisonCount{} policy-trace comparisons.  Claims are
-restricted to the registered measured population.
+accelerator memory, and placement.  We formulate a configuration-action
+stochastic processing network and specialize approximate MaxWeight drift
+accounting to candidate restriction, conservative service estimates, bounded
+penalties, and optimization error.  Positive residual slack yields
+finite-horizon expected-backlog bounds and a finite-set Foster recurrence
+certificate.  A finite-feature partition supplies a conditional cardinality and
+support-loss bound; diagonal scaling handles heterogeneous service units, and
+a variable-duration result states the corresponding frame conditions.  Lean
+formalizes these implications.  Scheduleurm evaluates the framework using
+measured lower-service actions, exact maximization of a canonical frame score,
+and causal arrival replay.  On \UnifiedOnlineComparisonCount{} online traces
+where all registered policies completed, legacy-to-candidate geometric-mean
+ratios were \UnifiedOnlineLegacyMakespanGeoRatio{} for makespan and
+\UnifiedOnlineLegacyMeanFlowGeoRatio{} for mean flow.  Of
+\UnifiedRegisteredOnlineTraceCount{} registered online traces,
+\UnifiedExcludedIncompleteOnlineTraceCount{} were excluded from these ratios
+because at least one policy left an unfinished tail.  Dedicated-action
+stability certificates and finite-trace performance evidence remain separate
+model instantiations.  The results identify both the utility of explicit loss
+accounting and the modeling obligations required to certify a measured
+scheduler.
 }%
 
 \KEYWORDS{stochastic processing networks; MaxWeight scheduling; heterogeneous clusters; graphics-processing-unit co-location; robust optimization; formal verification; queueing networks}
@@ -186,15 +185,16 @@ Figure~\ref{fig:core-certificate} gives the one-page certificate structure:
 candidate construction, lower-service scoring, slack accounting, and bounded
 claim boundaries are checked as separate objects.
 
-The main theoretical contribution is a robust candidate MaxWeight theorem with
-complete slack accounting.  The theorem states exactly how candidate
+The theoretical result specializes approximate MaxWeight drift accounting to
+measured configuration actions.  The theorem states exactly how candidate
 approximation, conservative service estimation, scheduling penalties, and
 approximate optimization consume capacity slack.  When the remaining margin is
 positive and the stochastic primitives have bounded conditional second moments,
 the resulting policy satisfies finite-horizon expected-backlog bounds and a
 finite-set Foster recurrence certificate.  A finite feature partition provides
-a constructive candidate family whose size is bounded by the number of active
-cells and whose support loss is at most \(L\rho\).  The stability result is
+a candidate family whose size is bounded by the number of active cells and
+whose support loss is at most \(L\rho\), given certified representatives and
+radii.  The stability result is
 stated for both fixed feasible families and state-dependent feasible families,
 the latter being the case relevant to live schedulers whose feasible actions
 depend on available jobs, alive nodes, and measured capacity boundaries.
@@ -321,8 +321,8 @@ constrained queueing systems under capacity-region slack
 \citep{tassiulas1992stability,stolyar2004maxweight,neely2010stochastic}.
 Foster-Lyapunov and fluid-limit arguments also underlie positive recurrence and
 moment control in multiclass queueing networks
-\citep{dai1995stability,meyn2009markov}.  Our proof follows this lineage but
-adds three implementation-facing terms: candidate-set approximation,
+\citep{dai1995stability,meyn2009markov}.  Our proof follows this lineage and separates three implementation-facing
+losses within the approximate-MaxWeight drift argument: candidate-set approximation,
 lower-service estimation, and approximate-oracle loss.  Work on
 state-dependent processor sharing and workload-dependent admission control
 studies service rates that depend on the number or composition of active jobs
@@ -1371,15 +1371,23 @@ counts, arrival times, and measured service cache.  Static arrivals are used for
 the first comparison because all-job completion time is then unambiguous.  The
 online-arrival experiment then runs nominal-load Poisson and bursty traces and
 a four-level load sweep at factors 0.50, 0.70, 0.85, and 0.95, with three random
-seeds for every hardware-local task set.
+seeds for every hardware-local task set.  The load scale is a common dedicated
+service reference.  For \(d\) workload classes and \(R\) shared lanes, let
+\(m_i\) be class \(i\)'s largest measured dedicated lower-service rate per
+lane.  Equal time shares give \(\lambda_i^\star=Rm_i/d\) in native work units
+per unit time; the arrival generator uses job intensity
+\(r\lambda_i^\star/c_i\) at load factor \(r\).  Thus
+\(\sum_i r\lambda_i^\star/(Rm_i)=r\): the workload classes jointly consume
+fraction \(r\) of the dedicated service reference.  Loaded actions may enlarge
+this reference region.
 
 The replay is a joint event simulation, not a sum of independent
 single-workload simulations.  All workload classes assigned to one hardware
 scenario compete for the same physical CPU or GPU lanes.  Before robust
 MaxWeight scoring, each class's residual work and every service coordinate are
 divided by the same fixed positive canonical-work scale \(c_i\).  The resulting
-coordinates are unfinished canonical jobs and canonical jobs per unit time, so
-the queue recursion and the main theorem are applied in those coordinates.
+coordinates are unfinished canonical jobs and canonical jobs per unit time;
+the replay selector uses these common coordinates.
 Changing the numerical task-native unit of one workload, together with its
 \(c_i\), therefore cannot change an action ordering.  This unit conversion is
 separate from the LCB error scales \(s_i\) in
@@ -1395,9 +1403,21 @@ same physical work unit and are compared over the shortest naturally completed
 horizon.  A loaded frame ends when its target completes; resident service is
 truncated at the resident's remaining work, and any unfinished resident returns
 to the queue.  Migration likewise occupies one lane for its measured
-variable-duration frame.  These rules make resource competition, co-location
-direction, phase overhead, and frame duration explicit and connect the replay
-semantics to Proposition~\ref{prop:frame-drift}.
+variable-duration frame.
+
+For selection, a target batch of width \(b(a)\) defines the canonical lower-service
+holding time \(h_a=b(a)c_{i(a)}/\lowermu_{i(a)}(a)\).  With \(n_i(a)\)
+required jobs of class \(i\), the replay score is
+\begin{equation}
+ F_Q(a)=\sum_i Q_i
+ \frac{\min\{n_i(a)c_i,\lowermu_i(a)h_a\}}{c_i h_a}-P(a).
+ \label{eq:replay-frame-proxy}
+\end{equation}
+The selector maximizes this score exactly over the visible feasible candidates.
+Only equal scores are ordered by \(h_a\), profile, penalty, and action identifier.
+Every frame records the selected score, the feasible maximum, and their gap.
+Evaluation subsequently computes natural completion times from individual
+remaining work and phase overheads.
 
 Table~\ref{tab:legacy-results} compares the current candidate policy with the
 legacy Scheduleurm caps on \UnifiedStaticComparisonCount{} closed-batch traces.
@@ -1416,7 +1436,7 @@ Hardware-local task list & Traces & Makespan & Mean flow & p90 flow \\
 \bottomrule
 \end{tabular}
 }{Ratios are legacy divided by candidate, so larger is better for Scheduleurm candidate.
-Each row is derived from the same hash-bound schema-v2 replay as the online,
+Each row is derived from the same causal schema-v3 replay as the online,
 SOTA-style, ablation, migration, and slack summaries.  p90 is the 90th
 percentile of job flow time.}
 \end{table}
@@ -1426,9 +1446,13 @@ declared task lists using measured service rows.
 
 Table~\ref{tab:online-ci} summarizes \UnifiedOnlineComparisonCount{}
 online-arrival comparisons spanning nominal Poisson, nominal bursty, and
-Poisson/bursty load-sweep traces.  The adaptive candidate completed every job in
-every admitted trace.  Relative to legacy caps, its geometric-mean improvement
-was \(\UnifiedOnlineLegacyMakespanGeoRatio\times\) for makespan and
+Poisson/bursty load-sweep traces.  These are the common completed subset of
+\UnifiedRegisteredOnlineTraceCount{} registered online traces:
+\UnifiedExcludedIncompleteOnlineTraceCount{} had an unfinished tail under at
+least one registered policy and are excluded from every finite completion-ratio
+comparison.  The candidate itself left an unfinished tail in
+\UnifiedIncompleteOursRunCount{} registered hardware traces.  Relative to legacy
+caps, the conditional geometric-mean ratios were \(\UnifiedOnlineLegacyMakespanGeoRatio\times\) for makespan and
 \(\UnifiedOnlineLegacyMeanFlowGeoRatio\times\) for mean flow.  The minimum
 scenario-level ratios were \(\UnifiedOnlineLegacyMakespanMinRatio\times\) and
 \(\UnifiedOnlineLegacyMeanFlowMinRatio\times\), respectively.  The largest
@@ -1470,15 +1494,18 @@ Stratum & Comparisons & Makespan geomean & Mean-flow geomean & Makespan min & Me
 \UnifiedOnlineQuadrantRows
 \bottomrule
 \end{tabular}
-}{Ratios are legacy divided by candidate.  The load-sweep family contains both
+}{Ratios are legacy divided by candidate on the common completed cohort.  The load-sweep family contains both
 Poisson and bursty arrivals at the four registered load factors.}
 \end{table}
 
-The ablation experiment isolates support-only and delay-only scoring, bounded
+The ablation experiment changes support-only and delay-only scoring, bounded
 penalties, statewise loaded actions, migration actions, and the profile
 tie-break rule.  Table~\ref{tab:ablation-results} evaluates
 \UnifiedAblationPolicyCount{} pre-registered removals on the same cache and
-traces as the full policy.  The full policy is Pareto-dominated in
+common completed traces as the full policy.  All ablations share its selector
+and job ordering, changing only the named component.  Removing migration leaves
+the complete decision sequence and results unchanged when no migration action
+is available.  The full policy is Pareto-dominated in
 \UnifiedAblationDominatesFullCount{} ablation comparisons; the table reports all
 single-metric changes rather than treating a non-dominance result as evidence
 that every module improves every metric.
@@ -1500,21 +1527,17 @@ ablation strictly Pareto-dominates the full policy.}
 \subsection{Policy-semantics replay baselines}
 \label{subsec:policy-semantics-baselines}
 
-No single external scheduler covers all four Scheduleurm quadrants and the
-mixed portfolio without changing the workload model.  For this reason the
-external-scheduler evidence is organized as a diagnostic layer rather than as
-the central claim of the paper.  We compare against policy-semantics replay
-baselines on the same measured service cache: a throughput-table goodput policy
-representing Gavel, Pollux, and Sia-like schedulers
-\citep{narayanan2020gavel,qiao2021pollux,sia2023}; a finite-batch delay oracle
-representing shortest remaining processing time (SRPT), Gittins, and shortest
-expected remaining processing time (SERPT)-style policies
-\citep{scully2020simple}; and an interference guard representing
-IADeep/Salus/Gandiva-like co-location control
-\citep{xiao2018gandiva,yu2020salus,iadeep2023}.  Because every row is evaluated through
-the same measured lower-service map, these baselines test whether the finite
-candidate family is missing an obvious scheduling semantic; they are not direct
-binary executions of the external systems.
+The main comparison uses simple rules on the same visible state and measured
+action library.  They prioritize target support, lower-service delay,
+interference avoidance, packing, or backlog-dependent resource use.  The
+registered throughput-table and finish-time-fairness identifiers execute the
+same target-support rule and are displayed as duplicates.  The delay rule
+minimizes a lower-service duration proxy; it implements neither a Gittins index
+nor a completion-time oracle.  These rules were motivated by scheduling
+objectives studied in Gavel, Pollux, Sia, and co-location systems
+\citep{narayanan2020gavel,qiao2021pollux,sia2023,xiao2018gandiva,yu2020salus,iadeep2023}.
+Their labels describe the implemented rules rather than attributing the
+external systems' complete algorithms to this replay.
 
 We also register 11 non-adjacent scheduler families as finite actions in the
 Scheduleurm+external action union.  This is the form needed by the
@@ -1554,21 +1577,20 @@ comparisons, a baseline strictly dominates the fixed candidate in
 \UnifiedSotaQOneOneDominanceCount{}.  Among those baseline wins, the largest
 candidate-to-baseline cost ratio is \UnifiedSotaQZeroOneWorstCostRatio{} in q01,
 \UnifiedSotaQOneZeroWorstCostRatio{} in q10, and
-\UnifiedSotaQOneOneWorstCostRatio{} in q11.  Thus the aggregate result favors
-the candidate for all \UnifiedSotaAggregateBothMetricWinCount{} registered
-families, while the trace-level result remains a measured tradeoff rather than
-uniform Pareto superiority.
+\UnifiedSotaQOneOneWorstCostRatio{} in q11.  On the common completed subset, the candidate has lower costs on both
+aggregate metrics against \UnifiedSotaAggregateBothMetricWinCount{} of
+\UnifiedSotaPolicyCount{} registered rules.  The individual trace results
+exhibit tradeoffs.
 
 Figure~\ref{fig:sota-comparison} visualizes the same policy-semantics comparison
 as a four-quadrant cost frontier.  Each panel normalizes a registered
 SOTA-style policy by the fixed Scheduleurm candidate: the horizontal coordinate
 is mean-flow cost divided by Scheduleurm's mean-flow cost and the vertical
 coordinate is makespan cost divided by Scheduleurm's makespan cost.  Each point
-is a geometric mean over the registered hardware-local traces in that quadrant.
+is a geometric mean over the common completed hardware-local traces in that quadrant.
 Thus the Scheduleurm policy is fixed at \((1,1)\); points above or to the right
 are costlier on the corresponding aggregate metric, whereas points below or to
-the left favor the baseline.  The label identifies the nearest aggregate
-SOTA-style family under a minimax cost ratio.  The figure is intentionally
+the left favor the baseline.  The label identifies the nearest aggregate rule under a minimax cost ratio.  The figure is intentionally
 scoped to measured-cache policy-semantics comparison and is not a direct
 external binary benchmark.
 
@@ -1579,7 +1601,9 @@ external binary benchmark.
 the red star is Scheduleurm at \((1,1)\).  Other markers are registered
 SOTA-style policy families evaluated on the same task-native measured service
 cache, with \(x=\) normalized mean-flow cost and \(y=\) normalized makespan
-cost, both expressed as policy cost divided by Scheduleurm cost.  The box in
+cost, both expressed as policy cost divided by Scheduleurm cost.  Panel ranges
+differ; the q00 inset resolves the cluster near \(1,1\) while the main panel
+retains the full range.  The box in
 each panel reports the nearest aggregate SOTA-style family under the maximum of
 the two displayed cost ratios.  Points summarize geometric means and do not
 erase the trace-level baseline wins reported in Table~\ref{tab:sota-matrix}.
@@ -1647,15 +1671,18 @@ finite candidate family used by the theorem-facing replay; they are not used as
 evidence that the production scheduler already defaults to the optional global
 batch policy.
 
-Finite-population drainability is enforced before a batched action is selected.
-The replay checks integer reachability of both the currently ready jobs and the
-entire registered unfinished population under the feasible batch widths.  If
-the ready set cannot be drained but a future registered arrival makes the full
-population drainable, dispatch is deferred to that arrival; otherwise only an
-action that leaves a drainable remainder is admitted.  This statewise rule is
-part of the candidate semantics and is audited in every frame.  It prevents an
-otherwise high-rate co-location profile from stranding a serial tail, without
-using realized completion time during action selection.
+Candidate filtering uses only released jobs that are ready on the selected
+lane.  The integer tail rule admits actions that leave this visible ready set
+drainable using the measured dedicated batch widths.  If that set has no
+admissible action, the policy waits; the simulator advances to the next arrival
+or release event.  The simulator's future event table never enters candidate
+filtering or scoring.  Prefix tests vary the future arrival suffix while holding
+the observed history fixed and compare both candidate sets and selected actions.
+When the finite event source ends with an undrainable remainder, the run records
+its unfinished jobs and leaves all-job completion metrics undefined.  This case
+occurs in the q11 action library, which has measured widths 2 and 5 but no
+singleton action.  The exporter retains these failures and reports finite
+ratios on one common completed cohort for every baseline and ablation.
 
 \subsection{Theorem-condition and live-sanity checks}
 \label{subsec:condition-checks}
@@ -2114,16 +2141,13 @@ estimation, penalty, and oracle losses.  This gives a readable accounting rule:
 a scheduler may use a finite candidate family only when the remaining drift
 margin is still positive.
 
-The finite-cell construction strengthens this accounting from a purely
-assumption-driven statement to a candidate-generation result.  A finite feature
-partition controls candidate cardinality, while representative radius and
-service sensitivity control the induced support loss.  This separates
-computational complexity from statistical calibration: the partition determines
-how many actions the oracle must inspect, whereas perturbation data determine
-how much capacity slack the compression consumes.  The diagonal LCB result
-performs the analogous separation across heterogeneous service units, and the
-finite-horizon corollary converts residual slack into an expected-backlog bound
-rather than only a recurrence statement.
+The finite-cell result gives a conditional compression bound.  Given a finite
+feature partition, feasible representatives, certified radii, and service
+sensitivity, it bounds candidate cardinality and support loss.  The current
+representative builder still scans its input candidates.  Constructing those
+representatives within a budget \(K\), without enumerating the full action
+space, and deriving the resulting \(\epsilon_{\mathrm{cand}}(K)\) from the
+construction remains an algorithmic research question.
 
 The Scheduleurm case study shows how this accounting can be implemented.  The
 scheduler records measured lower-service rows, admissible configuration
@@ -2159,25 +2183,25 @@ Together these checks support the measured Scheduleurm certificate.  They do
 not turn raw telemetry, future unknown arrivals, or every live dispatch into a
 stability-certified arrival stream.
 
-Three technical directions remain open.  The first is broader fabric-cover
-calibration: extending the positive-service certificate beyond the declared
-finite domains requires perturbation evidence for the feature map, projection,
-cover radius, Lipschitz envelope, and statistical failure probability.  The
-second is online learning: the active-bucket sampler and regime detector have
-the conditional guarantees derived in EC.7 and replay checks, but they should
-be validated in live A/B experiments before becoming default scheduling logic.
-The exact Lean statements are listed in EC.8; neither the conventional nor the
-formal implication supplies the missing sampler-specific probability model.
-The third is migration-aware control.  Proposition~\ref{prop:frame-drift} closes the
-mathematical variable-duration boundary: setup time, lost work, and resume risk
-enter a cumulative net-service frame or a unit-matched bounded penalty, and a
-positive minimum duration transfers per-time slack to embedded-chain drift.
-The remaining obligation is operational rather than algebraic.  The current
-controlled migration rows estimate checkpoint, synchronization, staging, and
-resume components, but they have not yet been assembled into a domain-wide
-stochastic frame model with conditional cumulative-service and moment
-certificates.  We therefore do not infer a semi-Markov stability claim from the
-deterministic migration or cross-domain trajectory holdouts.
+\subsection{Limitations}
+The canonical score in \eqref{eq:replay-frame-proxy} uses a lower-service holding
+time, while the evaluated frame ends at natural completion.  Its zero oracle
+gap certifies maximization of that score.  Transferring the frame stability
+result requires a common conditional cumulative-service model, duration model,
+and arrival process for those same actions.  The current dedicated-action
+Bernoulli certificates do not supply that model for loaded replay, tail waiting,
+or migration.  Their four-node simultaneous LCB coverage lower bound remains
+0.6; a global 95\% guarantee requires a different statistical calibration.
+
+Finite completion ratios condition on all policies completing and therefore do
+not establish superiority over the full registered arrival population.  The
+q11 unfinished tails require measured singleton service or a separately declared
+batch-arrival model before full finite-stream completion can be guaranteed.
+The dedicated load reference is a declared service-mixture scale, not a
+certificate of the full state-dependent loaded capacity region.  The present
+three-seed replay and finite-action construction also leave open independent
+confirmation and a computational budget-to-support-loss guarantee.  These are
+substantive extensions beyond the current drift-accounting instantiation.
 
 \section{Conclusion}
 \label{sec:conclusion}
@@ -2201,7 +2225,7 @@ Scheduleurm provides a concrete instantiation of the theorem.  Its measured
 finite slices close the lower-service stability conditions for declared
 workload domains.  On \UnifiedStaticComparisonCount{} closed-batch and
 \UnifiedOnlineComparisonCount{} online replay comparisons, the robust candidate
-improves legacy completion metrics and its trace-level relationship to every
+reports conditional legacy completion ratios and its trace-level relationship to every
 registered policy-semantics baseline is reported on the same measured service
 cache.  Controlled live launches and strict scheduler-history evidence show how
 the theorem-facing objects can be produced by an operational scheduler.  Frozen
@@ -2224,12 +2248,13 @@ and claim stability only when the residual slack remains positive.
 The submission package provides the Scheduleurm source, theorem-facing replay
 modules, measured service-cache summaries, generated experiment reports, and the
 Lean supplement headed by \texttt{ScheduleurmUpload.lean}.  Its reproduction
-entry point rebuilds the paper, reruns the safe replay and certificate checks,
-executes the targeted tests, and refreshes the manifest.  Recorded live-launch
-and external-runtime outputs are packaged with their environment notes; the
-reproduction entry point does not launch remote jobs by default.  Raw operational
-telemetry outside the declared completed-active population is not used as the
-claimed replication population.
+entry point \texttt{make reproduce-or-submission} recomputes the current replay
+from frozen local measurements, exports the common-cohort statistics and
+four-quadrant figure, aggregates the frozen cross-domain ledgers, and compiles
+the main paper and electronic companion.  It performs no remote launches or
+measurement downloads.  Lean compilation and historical evidence checks have
+separate commands documented with the artifact.  Re-aggregating the cross-domain
+ledgers is distinct from rerunning their original solvers.
 
 \fi
 \ifECOnly

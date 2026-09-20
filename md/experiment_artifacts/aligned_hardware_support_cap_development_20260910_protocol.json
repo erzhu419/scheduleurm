@@ -1,0 +1,47 @@
+{
+  "registered_at_utc": "2026-09-09T16:02:25.332911+00:00",
+  "role": "development comparison; no independent confirmation",
+  "base_protocol": {
+    "arrival_horizon_s": 20000.0,
+    "loads": [
+      0.5,
+      0.8,
+      0.95
+    ],
+    "seeds": [
+      41,
+      42,
+      43
+    ],
+    "budgets": [
+      10,
+      14,
+      26,
+      120
+    ],
+    "exact_reference_budget": 120,
+    "arrival_model": "independent Poisson arrivals per second; common tape across budgets",
+    "job_sizes": "fixed task-native canonical units",
+    "dispatch": "global synchronous frames; released jobs only; FIFO within class",
+    "score": "queue weighted actual frame departures divided by actual frame duration",
+    "budget_unit": "candidate construction or feasibility attempt; seeds included",
+    "stopping_rule": "stop arrivals at horizon, then drain the same finite prefix"
+  },
+  "policy_max_relative_support_loss": {
+    "v4_support": null,
+    "holding_cap_zero": 0.0,
+    "holding_cap_1pct": 0.01
+  },
+  "main_policy": "holding_cap_1pct",
+  "main_budget": 26,
+  "eligibility": "S(a) >= max(S_seed, (1-r)*S_inc); S_inc is the same paid pool's best support",
+  "cap_rationale": "1% is a fixed conservative design choice, not a fitted or optimal parameter",
+  "zero_cap_control": "preserves paid incumbent support while allowing holding-cost changes among ties",
+  "objective": "H(Q,a) = sum(Q)-sum(D(a)) + sum(completion_offsets(a))/tau(a) + Lambda*tau(a)/2",
+  "arrival_rate_input": "Lambda=sum(registered class arrival rates); fixed throughout arrival window and drain",
+  "drain_cost_interpretation": "stationary-arrival proxy, not actual conditional arrivals after the cutoff",
+  "candidate_generation": "same budgeted construction, order and max-support pruning as frozen v4",
+  "reference": "frozen v4 K120; both cap policies retain their own selected support gap",
+  "prior_seed_only_comparison": "reuse the previous 36 seed-only runs; do not rerun or overwrite them",
+  "stopping_rule": "run all 108 cases once; no cap relaxation, grid search or budget selection after results"
+}

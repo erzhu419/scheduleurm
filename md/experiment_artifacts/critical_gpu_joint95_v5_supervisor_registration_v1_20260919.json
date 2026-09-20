@@ -1,0 +1,115 @@
+{
+  "campaign_contract": {
+    "calibration_waves": [
+      94,
+      95,
+      96,
+      97,
+      98,
+      99,
+      100,
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110,
+      111,
+      112
+    ],
+    "collection_prefix": "critical_gpu_joint95_v5",
+    "finite_sample_rank": 19,
+    "holdout_wave": 113,
+    "manifest_gate": "critical_gpu_joint95_v5_registration",
+    "manifest_protocol": "critical_gpu_joint95_natural_completion_v5",
+    "node": "gpu_b",
+    "results_directory": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_joint95_v5_results",
+    "v1_joint_scores_eligible": 0,
+    "v1_joint_units_eligible": 0,
+    "v2_joint_scores_eligible": 0,
+    "v2_joint_units_eligible": 0,
+    "v3_joint_scores_eligible": 0,
+    "v3_joint_units_eligible": 0,
+    "v4_joint_scores_eligible": 0,
+    "v4_joint_units_eligible": 0
+  },
+  "control_policy": {
+    "ACTIVE_CONTROLLER": "wait without mutation",
+    "COMPLETE": "terminate successfully",
+    "FAIL_RESULT_STATE": "terminate without release, submission, or retry",
+    "FAIL_STOP": "terminate and release only after fail-stop validation and child quiescence",
+    "HOLDOUT_LOCKED": "if exactly 19 calibrations succeeded and no controller is active, call frozen release_holdout once, then submit_next for wave 113",
+    "READY_CALIBRATION": "if no active joint95 controller, call existing submit_next once",
+    "READY_HOLDOUT": "if no active joint95 controller, call existing submit_next once",
+    "REQUEUED_PREMEASUREMENT_CONTROLLER": "the same controller may re-enter only while no attempt file, row, observation, interval audit, or measurement interval exists",
+    "TERMINAL_CONTROLLER_WITHOUT_SUCCESS": "freeze an unconsumed or partial state as a validated fail-stop, then release the node claim after children are quiescent"
+  },
+  "decision_inputs": [
+    "active joint95 controller presence",
+    "registered collection state only when no joint95 controller is active",
+    "successful calibration count only for the frozen 19-unit release boundary"
+  ],
+  "execution_scope": {
+    "active_controller_checked_before_collection_status": true,
+    "active_controller_signature_prefix": "ScheduleurmBench/critical_gpu_joint95_v5/",
+    "direct_scheduler_subprocess_calls": 0,
+    "dispatcher_release_holdout_only": true,
+    "dispatcher_submit_next_only": true,
+    "measurement_calls": 0,
+    "partial_or_consumed_attempt_retry_authorized": false,
+    "premeasurement_same_controller_reentry_is_not_attempt_retry": true,
+    "retry_authorized": false,
+    "terminal_controller_history_checked_before_every_submission": true
+  },
+  "gate": "critical_gpu_joint95_v5_supervisor",
+  "prohibited": [
+    "direct measurement execution",
+    "submission while any joint95 controller is active",
+    "retry after any failed or invalid attempt",
+    "score-dependent selection outside the registered rank-19 release",
+    "v1/v2/v3/v4 evidence reuse, server pulls, or paper edits"
+  ],
+  "protocol": "critical_gpu_joint95_v5_deterministic_supervisor_v1",
+  "registered": true,
+  "registered_at_utc": "2026-09-19T09:44:35.167128+00:00",
+  "registration_snapshot": {
+    "collection_status_read_while_controller_active": false,
+    "kind": "ZERO_RESULT_START",
+    "next_wave": 94,
+    "results_entry_count": 0,
+    "scores_read_by_supervisor_registration": 0,
+    "successful_calibration_count": 0
+  },
+  "scheduler_placement": {
+    "cpu_cores": 1,
+    "priority": "high",
+    "ram_mb": 512,
+    "release_after": [
+      "COMPLETE",
+      "VALIDATED_FAIL_STOP_WITH_QUIESCENT_CHILDREN"
+    ],
+    "require_node": "local",
+    "reserve_node": "gpu_b",
+    "reserve_signature_prefix": "ScheduleurmBench/critical_gpu_joint95_v5/",
+    "reserve_until_file": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_joint95_v5_results/v5_reservation_release.ready",
+    "signature": "ScheduleurmBench/joint95_v5_supervisor_v1",
+    "signature_is_outside_joint95_controller_prefix": true,
+    "vram_mb": 0
+  },
+  "schema_version": 1,
+  "score_policy": "The supervisor never reads a score for branching. The existing frozen release_holdout API alone computes registered rank 19.",
+  "source_paths": {
+    "manifest": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_joint95_v5_collection_manifest_20260919.json",
+    "node_status": "/home/researcher/.claude/scheduler/node_probe_cache.json",
+    "python_bin": "/usr/bin/python3.10",
+    "queue_archive": "/home/researcher/.claude/scheduler/queue_archive.jsonl",
+    "queue_status": "/home/researcher/.claude/scheduler/queue.json",
+    "results_directory": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_joint95_v5_results",
+    "scheduler": "/home/researcher/mine_code/scheduleurm/skill/scheduler.py"
+  },
+  "status": "REGISTERED_READY_FOR_LOCAL_CONTROL"
+}

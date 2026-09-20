@@ -78,6 +78,9 @@ def task_needs_jax_launch_env(
     task_launch_cpu_mode: Callable[[dict], bool],
 ) -> bool:
     cmd = task.get("cmd") or ""
+    command_lower = cmd.lower()
+    if "sac_ensemble" in command_lower or "-m bus_experiments." in command_lower:
+        return False
     project = str(task.get("project") or "").lower()
     is_gpu = int(task.get("est_vram_mb", default_vram_mb) or 0) > 0 and not task_launch_cpu_mode(task)
     return bool(is_gpu and (

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 
+from skill.scheduler_node import gates as node_gates
 from skill.scheduler_node.gates import (
     BlockedNodesDeps,
     NodeResourceGateDeps,
@@ -268,6 +269,25 @@ def test_python_import_block_does_not_cross_python_entrypoints(tmp_path):
     ) == {"node001"}
 
 
+def test_python_command_identity_is_parsed_once_for_both_gate_fields(monkeypatch):
+    command = "/env/bin/python3 -X dev -m package.runner --seed 7"
+    calls = []
+    real_split = node_gates.shlex.split
+
+    node_gates._python_command_identities.cache_clear()
+
+    def counting_split(value):
+        calls.append(value)
+        return real_split(value)
+
+    monkeypatch.setattr(node_gates.shlex, "split", counting_split)
+
+    assert node_gates.python_runtime_identity(command) == "/env/bin/python3"
+    assert node_gates.python_entrypoint_identity(command) == "module:package.runner"
+    assert node_gates.python_runtime_identity(command) == "/env/bin/python3"
+    assert calls == [command]
+
+
 def test_launch_failed_nodes_expire_after_soft_block_ttl():
     task = {
         "launch_failed_nodes": {
@@ -421,6 +441,34 @@ def test_node_resources_ok_reports_primary_resource_gates():
 
     ok, why = node_resources_ok(
         {"est_vram_mb": 0, "cpu_cores": 4, "ram_mb": 1000},
+        {"name": "node001", "free_cpu": 2, "total_cpu": 8, "free_ram_mb": 10000, "running_count": 0},
+        {},
+        deps=deps,
+    )
+    assert not ok
+    assert why.startswith("cpu: need 4")
+
+    ok, why = node_resources_ok(
+        {
+            "est_vram_mb": 0,
+            "cpu_cores": 1,
+            "ram_mb": 9500,
+            "protect_from_auto_eviction": True,
+        },
+        {"name": "node001", "free_cpu": 8, "total_cpu": 8, "free_ram_mb": 10000, "running_count": 0},
+        {"ram_headroom_mb": 1000},
+        deps=deps,
+    )
+    assert not ok
+    assert why.startswith("ram: need 9500MB")
+
+    ok, why = node_resources_ok(
+        {
+            "est_vram_mb": 0,
+            "cpu_cores": 4,
+            "ram_mb": 1000,
+            "protect_from_auto_eviction": True,
+        },
         {"name": "node001", "free_cpu": 2, "total_cpu": 8, "free_ram_mb": 10000, "running_count": 0},
         {},
         deps=deps,

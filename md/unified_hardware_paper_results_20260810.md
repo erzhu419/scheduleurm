@@ -2,14 +2,17 @@
 
 - Status: `PASS`
 - Hardware scenarios: `16`
-- Hardware traces: `528`
+- Hardware traces: `525`
 - Complete matrix runs: `16920`
-- Legacy/ours makespan geomean: `1.638137`
-- Legacy/ours mean-flow geomean: `2.384272`
+- Registered online traces: `480`
+- Online traces excluded from finite ratios because at least one policy did not complete: `3`
+- Incomplete runs by policy: `{'ablation_delay_only': 3, 'ablation_high_profile_tiebreak': 3, 'ablation_no_bounded_penalty': 3, 'ablation_no_loaded_ledger': 3, 'ablation_no_migration': 3, 'ablation_support_only': 3, 'legacy_fixed_caps': 3, 'scheduleurm_unified_robust_maxweight': 3, 'sota_gavel_finish_time_fairness': 3, 'sota_gavel_pollux_sia_table_goodput': 3, 'sota_iadeep_salus_interference_guard': 3, 'sota_quadrant_composite': 3, 'sota_salus_iadeep_packing_guard': 3, 'sota_sia_pollux_resource_adaptive': 3, 'sota_srpt_gittins_mean_flow_oracle': 3}`
+- Legacy/ours makespan geomean: `1.605662`
+- Legacy/ours mean-flow geomean: `2.337904`
 - SOTA non-dominance on every trace: `false`
-- SOTA policy-trace comparisons: `3696`
-- SOTA strict dominance of ours: `71`
-- Ours strict dominance of SOTA: `2446`
+- SOTA policy-trace comparisons: `3675`
+- SOTA strict dominance of ours: `88`
+- Ours strict dominance of SOTA: `2431`
 - Migration comparisons: `36`
 - Minimum hardware-local eta: `0.050000`
 
@@ -17,24 +20,24 @@
 
 | Policy | Comparisons | Makespan baseline/ours | Mean flow baseline/ours | Baseline dominates count |
 |---|---:|---:|---:|---:|
-| `sota_gavel_finish_time_fairness` | 528 | 1.013288 | 1.030963 | 12 |
-| `sota_gavel_pollux_sia_table_goodput` | 528 | 1.013288 | 1.030963 | 12 |
-| `sota_iadeep_salus_interference_guard` | 528 | 1.019173 | 1.051119 | 6 |
-| `sota_quadrant_composite` | 528 | 1.215221 | 1.241231 | 11 |
-| `sota_salus_iadeep_packing_guard` | 528 | 1.281170 | 1.326607 | 12 |
-| `sota_sia_pollux_resource_adaptive` | 528 | 1.036710 | 1.053084 | 9 |
-| `sota_srpt_gittins_mean_flow_oracle` | 528 | 1.281402 | 1.311431 | 9 |
+| `sota_gavel_finish_time_fairness` | 525 | 1.007814 | 1.028217 | 13 |
+| `sota_gavel_pollux_sia_table_goodput` | 525 | 1.007814 | 1.028217 | 13 |
+| `sota_iadeep_salus_interference_guard` | 525 | 1.010007 | 1.044527 | 6 |
+| `sota_quadrant_composite` | 525 | 1.209911 | 1.239238 | 12 |
+| `sota_salus_iadeep_packing_guard` | 525 | 1.226923 | 1.307439 | 15 |
+| `sota_sia_pollux_resource_adaptive` | 525 | 1.014865 | 1.061179 | 14 |
+| `sota_srpt_gittins_mean_flow_oracle` | 525 | 1.226784 | 1.292510 | 15 |
 
 ## SOTA-style trace-level dominance by quadrant
 
 | Quadrant | Traces | Policy-trace comparisons | Baseline dominates | Ours dominates | Worst ours/baseline cost among baseline wins |
 |---|---:|---:|---:|---:|---:|
 | `q00` | 66 | 462 | 0 | 417 | 1.000000 |
-| `q01` | 132 | 924 | 35 | 755 | 1.059856 |
+| `q01` | 132 | 924 | 52 | 747 | 1.063766 |
 | `q10` | 198 | 1386 | 4 | 934 | 1.077130 |
-| `q11` | 132 | 924 | 32 | 340 | 1.012406 |
+| `q11` | 129 | 903 | 32 | 333 | 1.012406 |
 
-These are paper-facing summaries of the exact schema-v2 measured-cache policy-semantics population. Legacy is fixed-cap semantics on the same cache; external policies are not full-stack binary executions. Performance diagnostics are reported even when superiority is false and are never used as input-gate assumptions.
+These are paper-facing summaries of the causal schema-v3 measured-cache policy-semantics population. Legacy is fixed-cap semantics on the same cache; external policies are not full-stack binary executions. Performance diagnostics are reported even when superiority is false and are never used as input-gate assumptions. Finite completion ratios use only traces on which all registered policies complete; incomplete tails are reported separately and these conditional ratios do not measure overall superiority.
 
 ## Static hardware-local legacy comparison
 
@@ -42,7 +45,7 @@ These are paper-facing summaries of the exact schema-v2 measured-cache policy-se
 |---|---:|---:|---:|---:|
 | `q00:node003_cpu_hpc_192c` | 3 | 4.083979 | 5.994441 | 5.808406 |
 | `q00:node005_cpu_hpc_192c` | 3 | 4.087442 | 6.008666 | 5.792982 |
-| `q01:gpu_2080_8gb_dual_cpu_a` | 3 | 1.527841 | 2.367677 | 1.702092 |
+| `q01:gpu_2080_8gb_dual_cpu_a` | 3 | 1.501980 | 2.364265 | 1.702092 |
 | `q01:gpu_2080ti_11gb_quad_node007` | 3 | 1.153703 | 1.532013 | 1.273425 |
 | `q01:gpu_3080ti_12gb_dual_gpu_a` | 3 | 1.207497 | 1.564309 | 1.312066 |
 | `q01:gpu_3080ti_12gb_dual_gpu_b` | 3 | 1.132329 | 1.499733 | 1.192372 |

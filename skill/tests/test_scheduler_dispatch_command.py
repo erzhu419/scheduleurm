@@ -90,6 +90,10 @@ def _deps(
         stage_launch_candidates_outside_lock=stage_launch,
         sync_completed_results_outside_lock=lambda: maybe_fail("result_sync"),
         running_probe_snapshot_outside_lock=lambda purpose: (calls.append(("running_probe", purpose)) or ({"r": 1}, {"tr"})),
+        terminal_diagnostics_snapshot_outside_lock=lambda results, ids, purpose: (
+            calls.append(("terminal_diagnostics", results, ids, purpose))
+            or {"tr": {"diagnosis": {"is_crash": False}}}
+        ),
         eta_tail_snapshot_outside_lock=lambda purpose: (calls.append(("eta_tail", purpose)) or ({"e": 1}, {"te"})),
         probe_all=lambda: (calls.append(("probe_all",)) or [{"name": "n"}]),
         probe_all_cached=lambda **kwargs: (
@@ -153,11 +157,22 @@ def test_dispatch_command_runs_lock_light_prefetch_then_main_dispatch():
         {"purpose": "dispatch:recover-launching", "lock_timeout": None},
     ) in calls
     assert ("running_probe", "dispatch:running-probe") in calls
+    assert (
+        "terminal_diagnostics",
+        {"r": 1},
+        {"tr"},
+        "dispatch:terminal-diagnostics",
+    ) in calls
     assert ("eta_tail", "dispatch:eta-tail") in calls
     assert ("probe_all",) in calls
     assert ("prefetch_resume", [{"name": "n"}], {"task_ids": None}) in calls
     names = [call[0] for call in calls]
+    assert names.index("terminal_diagnostics") < names.index("lock_enter")
     assert names.index("prefetch_resume") < names.index("stage_launch")
+    update_call = next(call for call in calls if call[0] == "update_running")
+    assert update_call[2]["terminal_diagnostics"] == {
+        "tr": {"diagnosis": {"is_crash": False}}
+    }
     assert any(call[0] == "do_dispatch" and call[3]["defer_launches"] is True for call in calls)
     assert any(call[0] == "notify" and call[1] == "launching_state_recovered" for call in calls)
     assert any(call[0] == "notify" and call[1] == "dispatch_cycle" for call in calls)
@@ -177,6 +192,7 @@ def test_targeted_dispatch_skips_migration_and_result_sync():
     assert not any(call[0] == "stage_migration" for call in calls)
     assert not any(call[0] == "result_sync" for call in calls)
     assert not any(call[0] == "running_probe" for call in calls)
+    assert not any(call[0] == "terminal_diagnostics" for call in calls)
     assert not any(call[0] == "eta_tail" for call in calls)
     assert not any(call[0] == "update_running" for call in calls)
     assert ("probe_all_cached", {"max_age_s": 30}) in calls

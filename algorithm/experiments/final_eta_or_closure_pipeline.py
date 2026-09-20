@@ -32,7 +32,6 @@ from algorithm.experiments.critical_gpu_loaded_action_ledger_merge import (
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ARTIFACT_ROOT = REPO_ROOT / "md" / "experiment_artifacts"
 DEFAULT_OUTPUT = ARTIFACT_ROOT / "final_eta_or_closure_pipeline_20260810.json"
-FIGURE_SCRIPT = REPO_ROOT / "md" / "figures" / "make_scheduleurm_quadrant_sota_grid.py"
 FIGURE_STEM = REPO_ROOT / "md" / "figures" / "scheduleurm_quadrant_sota_grid"
 
 
@@ -191,7 +190,11 @@ def build_stages(*, python: str = sys.executable, include_figure: bool = True) -
             [
                 Stage(
                     "render_quadrant_figure",
-                    (python, str(FIGURE_SCRIPT)),
+                    (
+                        python,
+                        "-m",
+                        "md.figures.make_scheduleurm_quadrant_sota_grid",
+                    ),
                     tuple(
                         Path(f"{FIGURE_STEM}.{suffix}")
                         for suffix in ("svg", "pdf", "png", "tiff")

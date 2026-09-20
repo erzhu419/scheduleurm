@@ -1,0 +1,103 @@
+{
+  "campaign_contract": {
+    "calibration_waves": [
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52
+    ],
+    "collection_prefix": "critical_gpu_joint95_v2",
+    "finite_sample_rank": 19,
+    "holdout_wave": 53,
+    "manifest_gate": "critical_gpu_joint95_v2_registration",
+    "manifest_protocol": "critical_gpu_joint95_natural_completion_v2",
+    "node": "gpu_b",
+    "results_directory": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_joint95_v2_results",
+    "v1_joint_scores_eligible": 0,
+    "v1_joint_units_eligible": 0
+  },
+  "control_policy": {
+    "ACTIVE_CONTROLLER": "wait without mutation",
+    "COMPLETE": "terminate successfully",
+    "FAIL_RESULT_STATE": "terminate without release, submission, or retry",
+    "FAIL_STOP": "terminate without release, submission, or retry",
+    "HOLDOUT_LOCKED": "if exactly 19 calibrations succeeded and no controller is active, call frozen release_holdout once, then submit_next for wave 53",
+    "READY_CALIBRATION": "if no active joint95 controller, call existing submit_next once",
+    "READY_HOLDOUT": "if no active joint95 controller, call existing submit_next once",
+    "TERMINAL_CONTROLLER_WITHOUT_SUCCESS": "terminate when the exact expected-wave controller signature is already terminal but its valid PASS result is absent"
+  },
+  "decision_inputs": [
+    "active joint95 controller presence",
+    "registered collection state only when no joint95 controller is active",
+    "successful calibration count only for the frozen 19-unit release boundary"
+  ],
+  "execution_scope": {
+    "active_controller_checked_before_collection_status": true,
+    "direct_scheduler_subprocess_calls": 0,
+    "dispatcher_release_holdout_only": true,
+    "dispatcher_submit_next_only": true,
+    "measurement_calls": 0,
+    "retry_authorized": false,
+    "terminal_controller_history_checked_before_every_submission": true
+  },
+  "gate": "critical_gpu_joint95_v2_supervisor",
+  "prohibited": [
+    "direct measurement execution",
+    "submission while any joint95 controller is active",
+    "retry after any failed or invalid attempt",
+    "score-dependent selection outside the registered rank-19 release",
+    "v1 evidence reuse, server pulls, or paper edits"
+  ],
+  "protocol": "critical_gpu_joint95_v2_deterministic_supervisor_v2",
+  "registered": true,
+  "registered_at_utc": "2026-09-13T01:49:52.973684+00:00",
+  "registration_snapshot": {
+    "active_controller_id": "t93357",
+    "active_controller_signature": "ScheduleurmBench/critical_gpu_joint95_v2/critical_gpu_joint95_v2_gpu_b_r34",
+    "attempt_path": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_joint95_v2_results/critical_gpu_joint95_v2_gpu_b_r34_attempt01.json",
+    "attempt_status": "WAIT_SCHEDULER_ACK",
+    "attempt_terminal": false,
+    "collection_status_read_while_controller_active": false,
+    "kind": "ACTIVE_WAVE34_ZERO_MEASUREMENT_CONTROL_REPAIR",
+    "measurement_count": 0,
+    "scores_read_by_supervisor_registration": 0,
+    "successful_calibration_count": 0
+  },
+  "scheduler_placement": {
+    "require_node": "local",
+    "signature": "ScheduleurmBench/joint95_v2_supervisor_v2",
+    "signature_is_outside_joint95_controller_prefix": true,
+    "vram_mb": 0
+  },
+  "schema_version": 1,
+  "score_policy": "The supervisor never reads a score for branching. The existing frozen release_holdout API alone computes registered rank 19.",
+  "source_paths": {
+    "manifest": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_joint95_v2_collection_manifest_20260913.json",
+    "node_status": "/home/researcher/.claude/scheduler/node_probe_cache.json",
+    "python_bin": "/usr/bin/python3.10",
+    "queue_status": "/home/researcher/.claude/scheduler/queue.json",
+    "results_directory": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_joint95_v2_results",
+    "scheduler": "/home/researcher/mine_code/scheduleurm/skill/scheduler.py"
+  },
+  "status": "REGISTERED_READY_FOR_LOCAL_CONTROL",
+  "supersedes": {
+    "disposition": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_joint95_v2_supervisor_registration_v1_disposition_20260913.json",
+    "reason": "v1 polled collection_status before checking the active controller",
+    "registration": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_joint95_v2_supervisor_registration_20260913.json"
+  }
+}

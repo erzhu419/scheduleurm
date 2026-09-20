@@ -190,6 +190,9 @@ def build_dispatch_command_deps(namespace: Mapping[str, Any]) -> DispatchCommand
         stage_launch_candidates_outside_lock=_ns(namespace, "_stage_launch_candidates_outside_lock"),
         sync_completed_results_outside_lock=_ns(namespace, "_request_result_sync_background"),
         running_probe_snapshot_outside_lock=_ns(namespace, "_running_probe_snapshot_outside_lock"),
+        terminal_diagnostics_snapshot_outside_lock=_ns(
+            namespace, "_terminal_diagnostics_snapshot_outside_lock"
+        ),
         eta_tail_snapshot_outside_lock=_ns(namespace, "_eta_tail_snapshot_outside_lock"),
         probe_all=_ns(namespace, "probe_all"),
         probe_all_cached=_ns(namespace, "probe_all_cached"),

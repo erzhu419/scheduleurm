@@ -115,11 +115,13 @@ def build_submit_helpers_runtime_exports(namespace: dict[str, Any]) -> dict[str,
         task: dict,
         state: dict,
         run_key=None,
+        identity_index=None,
     ) -> Optional[str]:
         return _ns(namespace, "_same_run_identity_live_artifact_reason_impl")(
             task,
             state,
             run_key,
+            identity_index,
             deps=_ns(namespace, "_task_identity_deps")(),
         )
 

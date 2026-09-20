@@ -187,6 +187,12 @@ def build_control_runtime_exports(namespace: dict[str, Any]) -> dict[str, Any]:
             deps=_ns(namespace, "_control_command_deps")(),
         )
 
+    def cmd_release_node(args):
+        return _ns(namespace, "_cmd_release_node_impl")(
+            args,
+            deps=_ns(namespace, "_control_command_deps")(),
+        )
+
     def _edit_command_deps():
         return _ns(namespace, "_build_edit_command_deps")(namespace)
 
@@ -247,6 +253,7 @@ def build_control_runtime_exports(namespace: dict[str, Any]) -> dict[str, Any]:
         "cmd_record_vram": cmd_record_vram,
         "cmd_tui": cmd_tui,
         "cmd_priority": cmd_priority,
+        "cmd_release_node": cmd_release_node,
         "_edit_command_deps": _edit_command_deps,
         "cmd_edit": cmd_edit,
         "_why_command_deps": _why_command_deps,

@@ -1,0 +1,1016 @@
+{
+  "registered_at_utc": "2026-09-11T00:01:44.636446+00:00",
+  "experiment": "aligned_hardware_fifo_execution_quotient_evidence_reuse_v1",
+  "role": "development evidence-reuse closure for the FIFO-execution quotient screen",
+  "source_fifo_shadow": "aligned_hardware_fifo_execution_quotient_shadow_development_20260911.json",
+  "source_fifo_shadow_protocol": "aligned_hardware_fifo_execution_quotient_shadow_development_20260911_protocol.json",
+  "closed_transition_result": "aligned_hardware_permutation_quotient_transition_development_20260911.json",
+  "closed_transition_protocol": "aligned_hardware_permutation_quotient_transition_development_20260911_protocol.json",
+  "closed_transition_fixed_sources": "aligned_hardware_permutation_quotient_transition_development_20260911_fixed_sources.json",
+  "registered_state_roster": "aligned_hardware_duration_tie_order_shadow_development_20260910_registered_states.json",
+  "budget": 26,
+  "loads": [
+    0.5,
+    0.8,
+    0.95
+  ],
+  "seeds": [
+    41,
+    42,
+    43
+  ],
+  "age_profiles": [
+    "coincident",
+    "unit_fifo"
+  ],
+  "model": {
+    "node": "gpu_b",
+    "scenario_id": "q01:gpu_3080ti_12gb_dual_gpu_b",
+    "lanes": 2,
+    "workloads": [
+      "gpu_cnn_torch_resnet50",
+      "gpu_heavy_jax_matmul",
+      "gpu_llm_distilgpt2"
+    ],
+    "scales": [
+      60.0,
+      40.0,
+      120.0
+    ],
+    "options": [
+      {
+        "action_id": "gpu_loaded:gpu_b:cnn_after_llm",
+        "requirements": [
+          1,
+          0,
+          1
+        ],
+        "duration": 11.514578111707017,
+        "completion_offsets": [
+          [
+            10.431026738447038
+          ],
+          [],
+          [
+            11.514578111707017
+          ]
+        ],
+        "loaded": true,
+        "source_action_ids": [
+          "gpu_loaded:gpu_b:cnn_after_llm",
+          "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1"
+        ],
+        "phases": [
+          [
+            "resident_initialization_s",
+            4.716920265498629
+          ],
+          [
+            "target_overlap_s",
+            5.714106472948409
+          ],
+          [
+            "resident_overlap_rate_native_per_s",
+            120.39972693896493
+          ],
+          [
+            "resident_remaining_native_units",
+            0.0
+          ],
+          [
+            "resident_dedicated_drain_s",
+            0.0
+          ],
+          [
+            "resident_finalization_s",
+            1.0835513732599793
+          ]
+        ]
+      },
+      {
+        "action_id": "gpu_loaded:gpu_b:llm_after_cnn",
+        "requirements": [
+          1,
+          0,
+          1
+        ],
+        "duration": 11.936669718453734,
+        "completion_offsets": [
+          [
+            11.936669718453734
+          ],
+          [],
+          [
+            11.090642004449867
+          ]
+        ],
+        "loaded": true,
+        "source_action_ids": [
+          "gpu_loaded:gpu_b:llm_after_cnn",
+          "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1"
+        ],
+        "phases": [
+          [
+            "resident_initialization_s",
+            4.669018776022396
+          ],
+          [
+            "target_overlap_s",
+            6.421623228427471
+          ],
+          [
+            "resident_overlap_rate_native_per_s",
+            16.652848248271273
+          ],
+          [
+            "resident_remaining_native_units",
+            0.0
+          ],
+          [
+            "resident_dedicated_drain_s",
+            0.0
+          ],
+          [
+            "resident_finalization_s",
+            0.846027714003867
+          ]
+        ]
+      },
+      {
+        "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+        "requirements": [
+          1,
+          0,
+          0
+        ],
+        "duration": 8.093888054475512,
+        "completion_offsets": [
+          [
+            8.093888054475512
+          ],
+          [],
+          []
+        ],
+        "loaded": false,
+        "source_action_ids": [
+          "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1"
+        ],
+        "phases": [
+          [
+            "initialization_s",
+            4.669018776022396
+          ],
+          [
+            "loop_s",
+            2.5788415644492484
+          ],
+          [
+            "finalization_s",
+            0.846027714003867
+          ]
+        ]
+      },
+      {
+        "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+        "requirements": [
+          3,
+          0,
+          0
+        ],
+        "duration": 14.972417070959636,
+        "completion_offsets": [
+          [
+            14.972417070959636,
+            14.972417070959636,
+            14.972417070959636
+          ],
+          [],
+          []
+        ],
+        "loaded": false,
+        "source_action_ids": [
+          "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3"
+        ],
+        "phases": [
+          [
+            "initialization_s",
+            6.583782343158832
+          ],
+          [
+            "loop_s",
+            7.48884139563465
+          ],
+          [
+            "finalization_s",
+            0.8997933321661549
+          ]
+        ]
+      },
+      {
+        "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+        "requirements": [
+          0,
+          1,
+          0
+        ],
+        "duration": 2.7928254592821196,
+        "completion_offsets": [
+          [],
+          [
+            2.7928254592821196
+          ],
+          []
+        ],
+        "loaded": false,
+        "source_action_ids": [
+          "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1"
+        ],
+        "phases": [
+          [
+            "initialization_s",
+            1.2277755779466062
+          ],
+          [
+            "loop_s",
+            1.194901513584997
+          ],
+          [
+            "finalization_s",
+            0.3701483677505166
+          ]
+        ]
+      },
+      {
+        "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+        "requirements": [
+          0,
+          3,
+          0
+        ],
+        "duration": 6.820477375410869,
+        "completion_offsets": [
+          [],
+          [
+            6.820477375410869,
+            6.820477375410869,
+            6.820477375410869
+          ],
+          []
+        ],
+        "loaded": false,
+        "source_action_ids": [
+          "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3"
+        ],
+        "phases": [
+          [
+            "initialization_s",
+            2.741113696925434
+          ],
+          [
+            "loop_s",
+            3.661079762986579
+          ],
+          [
+            "finalization_s",
+            0.41828391549885663
+          ]
+        ]
+      },
+      {
+        "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+        "requirements": [
+          0,
+          0,
+          1
+        ],
+        "duration": 7.4174495042607305,
+        "completion_offsets": [
+          [],
+          [],
+          [
+            7.4174495042607305
+          ]
+        ],
+        "loaded": false,
+        "source_action_ids": [
+          "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1"
+        ],
+        "phases": [
+          [
+            "initialization_s",
+            4.716920265498629
+          ],
+          [
+            "loop_s",
+            1.6169778655021219
+          ],
+          [
+            "finalization_s",
+            1.0835513732599793
+          ]
+        ]
+      },
+      {
+        "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+        "requirements": [
+          0,
+          0,
+          3
+        ],
+        "duration": 9.462480184740949,
+        "completion_offsets": [
+          [],
+          [],
+          [
+            9.462480184740949,
+            9.462480184740949,
+            9.462480184740949
+          ]
+        ],
+        "loaded": false,
+        "source_action_ids": [
+          "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3"
+        ],
+        "phases": [
+          [
+            "initialization_s",
+            5.648919066996314
+          ],
+          [
+            "loop_s",
+            2.6111246433283664
+          ],
+          [
+            "finalization_s",
+            1.202436474416269
+          ]
+        ]
+      },
+      {
+        "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8",
+        "requirements": [
+          0,
+          0,
+          8
+        ],
+        "duration": 14.84929022616052,
+        "completion_offsets": [
+          [],
+          [],
+          [
+            14.84929022616052,
+            14.84929022616052,
+            14.84929022616052,
+            14.84929022616052,
+            14.84929022616052,
+            14.84929022616052,
+            14.84929022616052,
+            14.84929022616052
+          ]
+        ],
+        "loaded": false,
+        "source_action_ids": [
+          "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8"
+        ],
+        "phases": [
+          [
+            "initialization_s",
+            7.840006518249538
+          ],
+          [
+            "loop_s",
+            5.504426018315827
+          ],
+          [
+            "finalization_s",
+            1.5048576895951555
+          ]
+        ]
+      }
+    ],
+    "excluded_actions": [
+      {
+        "action_id": "gpu_loaded:gpu_b:cnn_after_rl",
+        "reason": "resident class has no arrivals in the three-class q01 protocol"
+      }
+    ],
+    "model_scope": "deterministic_cached_phase_complete_job_renewal"
+  },
+  "state_count": 5003,
+  "raw_unchanged_count": 4999,
+  "known_reuse_count": 4,
+  "novel_count": 0,
+  "registered_selector_call_count": 0,
+  "registered_drain_count": 0,
+  "reuse_rule": {
+    "match": "same registered state index and queue, with the same directed baseline and variant raw, physical, and FIFO-execution signatures",
+    "outcome": "reuse the completed coincident and unit-FIFO drains in which only the first action differs and both arms then use v4 K26 until empty",
+    "unchanged": "a raw-unchanged first action has zero local transition effect under the same deterministic continuation"
+  },
+  "known_reuse_roster": [
+    {
+      "pair_id": "quotient_case_582",
+      "state_index": 582,
+      "queue": [
+        4,
+        0,
+        4
+      ],
+      "primary_population_visits": [
+        [
+          0.5,
+          41,
+          4,
+          59.889668283838546
+        ],
+        [
+          0.5,
+          42,
+          2,
+          29.944834141919273
+        ],
+        [
+          0.8,
+          41,
+          3,
+          44.91725121287891
+        ],
+        [
+          0.8,
+          42,
+          3,
+          44.91725121287891
+        ],
+        [
+          0.8,
+          43,
+          3,
+          44.91725121287891
+        ]
+      ],
+      "baseline": {
+        "raw": [
+          3,
+          7
+        ],
+        "physical": {
+          "service": [
+            3,
+            0,
+            3
+          ],
+          "duration": 14.972417070959636,
+          "completion_offset_multisets": [
+            [
+              14.972417070959636,
+              14.972417070959636,
+              14.972417070959636
+            ],
+            [],
+            [
+              9.462480184740949,
+              9.462480184740949,
+              9.462480184740949
+            ]
+          ]
+        },
+        "fifo_execution": {
+          "service": [
+            3,
+            0,
+            3
+          ],
+          "duration": 14.972417070959636,
+          "completion_offset_sequences": [
+            [
+              14.972417070959636,
+              14.972417070959636,
+              14.972417070959636
+            ],
+            [],
+            [
+              9.462480184740949,
+              9.462480184740949,
+              9.462480184740949
+            ]
+          ]
+        }
+      },
+      "variant": {
+        "raw": [
+          0,
+          7
+        ],
+        "physical": {
+          "service": [
+            1,
+            0,
+            4
+          ],
+          "duration": 11.514578111707017,
+          "completion_offset_multisets": [
+            [
+              10.431026738447038
+            ],
+            [],
+            [
+              9.462480184740949,
+              9.462480184740949,
+              9.462480184740949,
+              11.514578111707017
+            ]
+          ]
+        },
+        "fifo_execution": {
+          "service": [
+            1,
+            0,
+            4
+          ],
+          "duration": 11.514578111707017,
+          "completion_offset_sequences": [
+            [
+              10.431026738447038
+            ],
+            [],
+            [
+              11.514578111707017,
+              9.462480184740949,
+              9.462480184740949,
+              9.462480184740949
+            ]
+          ]
+        }
+      },
+      "registered_support_score_delta": 0.13398099727343338
+    },
+    {
+      "pair_id": "quotient_case_621",
+      "state_index": 621,
+      "queue": [
+        4,
+        3,
+        5
+      ],
+      "primary_population_visits": [
+        [
+          0.5,
+          42,
+          1,
+          2.7928254592821196
+        ],
+        [
+          0.5,
+          43,
+          1,
+          2.7928254592821196
+        ],
+        [
+          0.8,
+          41,
+          11,
+          30.72108005210332
+        ],
+        [
+          0.8,
+          42,
+          8,
+          22.34260367425696
+        ],
+        [
+          0.8,
+          43,
+          16,
+          44.68520734851392
+        ]
+      ],
+      "baseline": {
+        "raw": [
+          4,
+          4
+        ],
+        "physical": {
+          "service": [
+            0,
+            2,
+            0
+          ],
+          "duration": 2.7928254592821196,
+          "completion_offset_multisets": [
+            [],
+            [
+              2.7928254592821196,
+              2.7928254592821196
+            ],
+            []
+          ]
+        },
+        "fifo_execution": {
+          "service": [
+            0,
+            2,
+            0
+          ],
+          "duration": 2.7928254592821196,
+          "completion_offset_sequences": [
+            [],
+            [
+              2.7928254592821196,
+              2.7928254592821196
+            ],
+            []
+          ]
+        }
+      },
+      "variant": {
+        "raw": [
+          5,
+          7
+        ],
+        "physical": {
+          "service": [
+            0,
+            3,
+            3
+          ],
+          "duration": 9.462480184740949,
+          "completion_offset_multisets": [
+            [],
+            [
+              6.820477375410869,
+              6.820477375410869,
+              6.820477375410869
+            ],
+            [
+              9.462480184740949,
+              9.462480184740949,
+              9.462480184740949
+            ]
+          ]
+        },
+        "fifo_execution": {
+          "service": [
+            0,
+            3,
+            3
+          ],
+          "duration": 9.462480184740949,
+          "completion_offset_sequences": [
+            [],
+            [
+              6.820477375410869,
+              6.820477375410869,
+              6.820477375410869
+            ],
+            [
+              9.462480184740949,
+              9.462480184740949,
+              9.462480184740949
+            ]
+          ]
+        }
+      },
+      "registered_support_score_delta": 0.38797095226833234
+    },
+    {
+      "pair_id": "quotient_case_752",
+      "state_index": 752,
+      "queue": [
+        5,
+        0,
+        4
+      ],
+      "primary_population_visits": [
+        [
+          0.5,
+          42,
+          1,
+          14.972417070959636
+        ],
+        [
+          0.8,
+          42,
+          2,
+          29.944834141919273
+        ],
+        [
+          0.8,
+          43,
+          1,
+          14.972417070959636
+        ],
+        [
+          0.95,
+          43,
+          1,
+          14.972417070959636
+        ]
+      ],
+      "baseline": {
+        "raw": [
+          3,
+          7
+        ],
+        "physical": {
+          "service": [
+            3,
+            0,
+            3
+          ],
+          "duration": 14.972417070959636,
+          "completion_offset_multisets": [
+            [
+              14.972417070959636,
+              14.972417070959636,
+              14.972417070959636
+            ],
+            [],
+            [
+              9.462480184740949,
+              9.462480184740949,
+              9.462480184740949
+            ]
+          ]
+        },
+        "fifo_execution": {
+          "service": [
+            3,
+            0,
+            3
+          ],
+          "duration": 14.972417070959636,
+          "completion_offset_sequences": [
+            [
+              14.972417070959636,
+              14.972417070959636,
+              14.972417070959636
+            ],
+            [],
+            [
+              9.462480184740949,
+              9.462480184740949,
+              9.462480184740949
+            ]
+          ]
+        }
+      },
+      "variant": {
+        "raw": [
+          0,
+          7
+        ],
+        "physical": {
+          "service": [
+            1,
+            0,
+            4
+          ],
+          "duration": 11.514578111707017,
+          "completion_offset_multisets": [
+            [
+              10.431026738447038
+            ],
+            [],
+            [
+              9.462480184740949,
+              9.462480184740949,
+              9.462480184740949,
+              11.514578111707017
+            ]
+          ]
+        },
+        "fifo_execution": {
+          "service": [
+            1,
+            0,
+            4
+          ],
+          "duration": 11.514578111707017,
+          "completion_offset_sequences": [
+            [
+              10.431026738447038
+            ],
+            [],
+            [
+              11.514578111707017,
+              9.462480184740949,
+              9.462480184740949,
+              9.462480184740949
+            ]
+          ]
+        }
+      },
+      "registered_support_score_delta": 0.02045897718766687
+    },
+    {
+      "pair_id": "quotient_case_753",
+      "state_index": 753,
+      "queue": [
+        5,
+        0,
+        5
+      ],
+      "primary_population_visits": [
+        [
+          0.8,
+          41,
+          2,
+          29.944834141919273
+        ],
+        [
+          0.8,
+          42,
+          1,
+          14.972417070959636
+        ],
+        [
+          0.8,
+          43,
+          1,
+          14.972417070959636
+        ]
+      ],
+      "baseline": {
+        "raw": [
+          3,
+          7
+        ],
+        "physical": {
+          "service": [
+            3,
+            0,
+            3
+          ],
+          "duration": 14.972417070959636,
+          "completion_offset_multisets": [
+            [
+              14.972417070959636,
+              14.972417070959636,
+              14.972417070959636
+            ],
+            [],
+            [
+              9.462480184740949,
+              9.462480184740949,
+              9.462480184740949
+            ]
+          ]
+        },
+        "fifo_execution": {
+          "service": [
+            3,
+            0,
+            3
+          ],
+          "duration": 14.972417070959636,
+          "completion_offset_sequences": [
+            [
+              14.972417070959636,
+              14.972417070959636,
+              14.972417070959636
+            ],
+            [],
+            [
+              9.462480184740949,
+              9.462480184740949,
+              9.462480184740949
+            ]
+          ]
+        }
+      },
+      "variant": {
+        "raw": [
+          0,
+          7
+        ],
+        "physical": {
+          "service": [
+            1,
+            0,
+            4
+          ],
+          "duration": 11.514578111707017,
+          "completion_offset_multisets": [
+            [
+              10.431026738447038
+            ],
+            [],
+            [
+              9.462480184740949,
+              9.462480184740949,
+              9.462480184740949,
+              11.514578111707017
+            ]
+          ]
+        },
+        "fifo_execution": {
+          "service": [
+            1,
+            0,
+            4
+          ],
+          "duration": 11.514578111707017,
+          "completion_offset_sequences": [
+            [
+              10.431026738447038
+            ],
+            [],
+            [
+              11.514578111707017,
+              9.462480184740949,
+              9.462480184740949,
+              9.462480184740949
+            ]
+          ]
+        }
+      },
+      "registered_support_score_delta": 0.16747624659179206
+    }
+  ],
+  "primary_load_seed_weight_roster": [
+    {
+      "load": 0.5,
+      "seed": 41,
+      "source_frame_count": 3396,
+      "source_visited_time_s": 20015.672251307897,
+      "matched_change_frame_count": 4,
+      "raw_unchanged_frame_count": 3392
+    },
+    {
+      "load": 0.5,
+      "seed": 42,
+      "source_frame_count": 3364,
+      "source_visited_time_s": 20005.350829740804,
+      "matched_change_frame_count": 4,
+      "raw_unchanged_frame_count": 3360
+    },
+    {
+      "load": 0.5,
+      "seed": 43,
+      "source_frame_count": 3449,
+      "source_visited_time_s": 20007.956114297893,
+      "matched_change_frame_count": 1,
+      "raw_unchanged_frame_count": 3448
+    },
+    {
+      "load": 0.8,
+      "seed": 41,
+      "source_frame_count": 2248,
+      "source_visited_time_s": 20042.457722156905,
+      "matched_change_frame_count": 16,
+      "raw_unchanged_frame_count": 2232
+    },
+    {
+      "load": 0.8,
+      "seed": 42,
+      "source_frame_count": 2238,
+      "source_visited_time_s": 20032.024151528567,
+      "matched_change_frame_count": 14,
+      "raw_unchanged_frame_count": 2224
+    },
+    {
+      "load": 0.8,
+      "seed": 43,
+      "source_frame_count": 2287,
+      "source_visited_time_s": 20036.556495999845,
+      "matched_change_frame_count": 21,
+      "raw_unchanged_frame_count": 2266
+    },
+    {
+      "load": 0.95,
+      "seed": 41,
+      "source_frame_count": 1867,
+      "source_visited_time_s": 20053.72659382428,
+      "matched_change_frame_count": 0,
+      "raw_unchanged_frame_count": 1867
+    },
+    {
+      "load": 0.95,
+      "seed": 42,
+      "source_frame_count": 1881,
+      "source_visited_time_s": 20083.943587882673,
+      "matched_change_frame_count": 0,
+      "raw_unchanged_frame_count": 1881
+    },
+    {
+      "load": 0.95,
+      "seed": 43,
+      "source_frame_count": 1885,
+      "source_visited_time_s": 20072.911809709945,
+      "matched_change_frame_count": 1,
+      "raw_unchanged_frame_count": 1884
+    }
+  ],
+  "advance_gate": {
+    "all_execution_checks": true,
+    "all_unique_state_mean_flow_deltas_nonpositive": true,
+    "all_state_profile_nearest_rank_p90_deltas_nonpositive": true,
+    "all_9_primary_load_seed_weighted_flow_area_deltas_nonpositive": true,
+    "at_least_one_unique_state_has_strict_mean_flow_improvement": true,
+    "at_least_one_primary_load_seed_cell_has_strict_weighted_flow_area_improvement": true,
+    "logic": "all conditions are conjunctive"
+  },
+  "decision_rule": "invalid evidence gives INVALID_EXECUTION; a positive unique-state mean-flow or primary-cell weighted-flow effect gives KNOWN_LOCAL_FLOW_TRADEOFF_STOP; otherwise a positive state-profile nearest-rank P90 effect gives KNOWN_TAIL_TRADEOFF_STOP; absence of both required strict gains gives NO_LOCAL_FLOW_BENEFIT_STOP; only the full conjunction gives ADVANCE_TO_FULL_DEVELOPMENT_TRAJECTORIES",
+  "prohibited_in_this_stage": "selector calls, authored drains, arrival generation, trajectory simulation, RNG, new states, new age profiles, outcome-tuned filtering, and paper edits",
+  "interpretation": "The reused drains test the frozen one-action intervention followed by common v4 K26 continuation. They do not estimate a full FIFO-selector feedback trajectory."
+}

@@ -1,11 +1,70 @@
 {
-  "aggregation": "geometric_mean_across_registered_scenarios_and_traces",
-  "best_sota_by_quadrant": {
-    "q00": "finish_time_fairness",
-    "q01": "finish_time_fairness",
-    "q10": "finish_time_fairness",
-    "q11": "finish_time_fairness"
+  "aggregation": "geometric_mean_across_common_complete_traces",
+  "aggregation_population": "all_registered_policies_complete_on_same_trace",
+  "axis_ranges": {
+    "q00": {
+      "inset_x": [
+        0.999,
+        1.0082732071370295
+      ],
+      "inset_y": [
+        0.9957838235462071,
+        1.0393509802354006
+      ],
+      "x": [
+        0.6826523212770872,
+        3.96191166808052
+      ],
+      "y": [
+        0.685007801420766,
+        3.9399271867395176
+      ]
+    },
+    "q01": {
+      "x": [
+        0.9584302303131188,
+        1.3879845170775582
+      ],
+      "y": [
+        0.9925208965378608,
+        1.069804965646633
+      ]
+    },
+    "q10": {
+      "x": [
+        0.9904616547411348,
+        1.0890245557494085
+      ],
+      "y": [
+        0.9919724820042116,
+        1.0749235012940246
+      ]
+    },
+    "q11": {
+      "x": [
+        0.999,
+        1.0085963659776567
+      ],
+      "y": [
+        0.9985321159152841,
+        1.0137002514573479
+      ]
+    }
   },
+  "best_sota_by_quadrant": {
+    "q00": "interference_guard",
+    "q01": "quadrant_composite",
+    "q10": "interference_guard",
+    "q11": "throughput_table_goodput"
+  },
+  "excluded_incomplete_trace_count": 3,
+  "excluded_incomplete_trace_count_by_quadrant": {
+    "q00": 0,
+    "q01": 0,
+    "q10": 0,
+    "q11": 3
+  },
+  "included_complete_trace_count": 525,
   "included_hardware_scenario_ids": [
     "q00:node003_cpu_hpc_192c",
     "q00:node005_cpu_hpc_192c",
@@ -26,7 +85,7 @@
   ],
   "included_migration_mode": "without_migration",
   "included_scenario_kind": "hardware_local",
-  "nearest_sota_definition": "minimum maximum aggregate cost ratio; ties broken by sum then policy id",
+  "nearest_sota_definition": "minimum maximum aggregate cost ratio; ties broken by sum, nonduplicate label, then policy id",
   "normalization": "baseline_policy_cost_divided_by_scheduleurm_cost",
   "points": {
     "q00": {
@@ -69,38 +128,38 @@
     "q01": {
       "delay_oracle": {
         "scenario_count": 132,
-        "x": 1.432222344206171,
-        "y": 1.2700687003160966
+        "x": 1.3434587754046121,
+        "y": 1.0623061800253841
       },
       "finish_time_fairness": {
         "scenario_count": 132,
-        "x": 1.1003707079746397,
-        "y": 1.0270430229435739
+        "x": 1.0880327862755093,
+        "y": 1.0049396663236854
       },
       "interference_guard": {
         "scenario_count": 132,
-        "x": 1.1808489569778435,
-        "y": 1.0452046943794546
+        "x": 1.1503961369343083,
+        "y": 1.0079712134819745
       },
       "packing_guard": {
         "scenario_count": 132,
-        "x": 1.4358120576041737,
-        "y": 1.2688041199071312
+        "x": 1.346414747390677,
+        "y": 1.0623258621844938
       },
       "quadrant_composite": {
         "scenario_count": 132,
-        "x": 1.1003707079746397,
-        "y": 1.0270430229435739
+        "x": 1.0880327862755093,
+        "y": 1.0049396663236854
       },
       "resource_adaptive_goodput": {
         "scenario_count": 132,
-        "x": 1.1969170912489193,
-        "y": 1.125105732417914
+        "x": 1.2325099039932526,
+        "y": 1.0329769198213299
       },
       "throughput_table_goodput": {
         "scenario_count": 132,
-        "x": 1.1003707079746397,
-        "y": 1.0270430229435739
+        "x": 1.0880327862755093,
+        "y": 1.0049396663236854
       }
     },
     "q10": {
@@ -142,46 +201,65 @@
     },
     "q11": {
       "delay_oracle": {
-        "scenario_count": 132,
-        "x": 1.0026949927585223,
-        "y": 1.011767582479883
+        "scenario_count": 129,
+        "x": 1.0027751862555672,
+        "y": 1.0117829589360388
       },
       "finish_time_fairness": {
-        "scenario_count": 132,
-        "x": 1.0005601543291016,
-        "y": 1.0063558683497138
+        "scenario_count": 129,
+        "x": 1.0005473572295405,
+        "y": 1.0064114716197854
       },
       "interference_guard": {
-        "scenario_count": 132,
-        "x": 1.0074484962466077,
-        "y": 1.0120437835988432
+        "scenario_count": 129,
+        "x": 1.0075963659776568,
+        "y": 1.0122323673726321
       },
       "packing_guard": {
-        "scenario_count": 132,
-        "x": 1.0074484962466077,
-        "y": 1.0120437835988432
+        "scenario_count": 129,
+        "x": 1.0075963659776568,
+        "y": 1.0122323673726321
       },
       "quadrant_composite": {
-        "scenario_count": 132,
-        "x": 1.0074484962466077,
-        "y": 1.0120437835988432
+        "scenario_count": 129,
+        "x": 1.0075963659776568,
+        "y": 1.0122323673726321
       },
       "resource_adaptive_goodput": {
-        "scenario_count": 132,
-        "x": 1.0013795330503308,
-        "y": 1.0065719968747961
+        "scenario_count": 129,
+        "x": 1.001385788527963,
+        "y": 1.0066326391611724
       },
       "throughput_table_goodput": {
-        "scenario_count": 132,
-        "x": 1.0005601543291016,
-        "y": 1.0063558683497138
+        "scenario_count": 129,
+        "x": 1.0005473572295405,
+        "y": 1.0064114716197854
       }
     }
   },
+  "registered_hardware_scenario_ids": [
+    "q00:node003_cpu_hpc_192c",
+    "q00:node005_cpu_hpc_192c",
+    "q01:gpu_2080_8gb_dual_cpu_a",
+    "q01:gpu_2080ti_11gb_quad_node007",
+    "q01:gpu_3080ti_12gb_dual_gpu_a",
+    "q01:gpu_3080ti_12gb_dual_gpu_b",
+    "q10:node001_cpu_hpc_192c",
+    "q10:node002_cpu_hpc_192c",
+    "q10:node003_cpu_hpc_192c",
+    "q10:node004_cpu_hpc_192c",
+    "q10:node005_cpu_hpc_192c",
+    "q10:node006_cpu_hpc_192c",
+    "q11:gpu_2080_8gb_dual_cpu_a",
+    "q11:gpu_2080ti_11gb_quad_node007",
+    "q11:gpu_3080ti_12gb_dual_gpu_a",
+    "q11:gpu_3080ti_12gb_dual_gpu_b"
+  ],
+  "registered_hardware_trace_count": 528,
   "source_artifact": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/unified_hardware_or_replay_20260809.json",
-  "source_artifact_sha256": "9238ce6b40e236c745a909a7d49fac94711616358ab34eff5874bf66ddcc79e1",
+  "source_artifact_sha256": "7f5c55067e50440392c8cb7fb449dec13c0d67e0b2d1462300fb6fef3583cf56",
   "source_gate": "unified_hardware_or_replay",
   "source_policy_count": 15,
   "source_run_count": 16920,
-  "source_schema_version": 2
+  "source_schema_version": 3
 }

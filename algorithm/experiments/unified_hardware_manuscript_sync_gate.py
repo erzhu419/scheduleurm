@@ -8,6 +8,8 @@ from pathlib import Path
 import tempfile
 from typing import Any, Iterable, Mapping
 
+from algorithm.experiments.unified_hardware_or_replay import _common_complete_runs
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ARTIFACT_ROOT = REPO_ROOT / "md" / "experiment_artifacts"
@@ -91,7 +93,7 @@ def build_manuscript_sync_report(
             manuscript=manuscript,
             replay_sha256=hashlib.sha256(raw["replay"]).hexdigest(),
         )
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError, TypeError, ValueError) as exc:
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
         report.update(
             {
                 "status": "FAIL_INPUT_CONTRACT",
@@ -112,8 +114,9 @@ def build_manuscript_sync_report(
             "sha256": {key: hashlib.sha256(value).hexdigest() for key, value in raw.items()},
             "claim_boundary": (
                 "PASS certifies only that the manuscript text, generated tables, and "
-                "four-quadrant figure are derived from the same passing schema-v2 "
-                "measured-cache replay. It does not convert policy-semantics baselines "
+                "four-quadrant figure are derived from the same passing schema-v3 "
+                "measured-cache replay, with finite figure ratios conditional on "
+                "all registered policies completing the same trace. It does not convert policy-semantics baselines "
                 "into direct external-system executions."
             ),
         }
@@ -136,10 +139,23 @@ def _checks(
         if row.get("scenario_kind") == "hardware_local"
     }
     figure_ids = {str(value) for value in figure.get("included_hardware_scenario_ids") or []}
+    registered_hardware_runs = [
+        row for row in replay.get("runs") or []
+        if row["scenario_id"] in hardware_ids
+        and row["migration_mode"] == "without_migration"
+    ]
+    registered_trace_keys = {
+        (row["scenario_id"], row["trace_id"]) for row in registered_hardware_runs
+    }
+    complete_trace_keys = {
+        (row["scenario_id"], row["trace_id"])
+        for row in _common_complete_runs(registered_hardware_runs)
+    }
+    complete_hardware_ids = {scenario_id for scenario_id, _ in complete_trace_keys}
     return {
-        "replay_schema_v2_pass": bool(
+        "replay_schema_v3_pass": bool(
             replay.get("gate") == "unified_hardware_or_replay"
-            and replay.get("schema_version") == 2
+            and replay.get("schema_version") == 3
             and replay.get("status") == "PASS"
             and replay.get("pass") is True
         ),
@@ -154,12 +170,23 @@ def _checks(
         == replay_sha256,
         "figure_schema_matches": bool(
             figure.get("source_gate") == "unified_hardware_or_replay"
-            and figure.get("source_schema_version") == 2
+            and figure.get("source_schema_version") == 3
             and int(figure.get("source_run_count") or 0) == int(replay.get("run_count") or 0)
             and int(figure.get("source_policy_count") or 0)
             == int(replay.get("policy_count") or 0)
         ),
-        "figure_hardware_population_matches": bool(hardware_ids and figure_ids == hardware_ids),
+        "figure_hardware_population_matches": bool(
+            hardware_ids
+            and set(figure.get("registered_hardware_scenario_ids") or []) == hardware_ids
+            and figure_ids == complete_hardware_ids
+        ),
+        "figure_common_completion_population_matches": bool(
+            figure.get("aggregation_population") == "all_registered_policies_complete_on_same_trace"
+            and figure.get("registered_hardware_trace_count") == len(registered_trace_keys)
+            and figure.get("included_complete_trace_count") == len(complete_trace_keys)
+            and figure.get("excluded_incomplete_trace_count")
+            == len(registered_trace_keys - complete_trace_keys)
+        ),
         "generated_tex_replay_hash_matches": (
             f"% Source replay SHA256: {replay_sha256}" in tex
         ),

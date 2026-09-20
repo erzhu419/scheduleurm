@@ -1,0 +1,75 @@
+{
+  "registered_at_utc": "2026-09-09T17:58:20.994098+00:00",
+  "base_protocol": {
+    "arrival_horizon_s": 20000.0,
+    "loads": [
+      0.5,
+      0.8,
+      0.95
+    ],
+    "seeds": [
+      41,
+      42,
+      43
+    ],
+    "budgets": [
+      10,
+      14,
+      26,
+      120
+    ],
+    "exact_reference_budget": 120,
+    "arrival_model": "independent Poisson arrivals per second; common tape across budgets",
+    "job_sizes": "fixed task-native canonical units",
+    "dispatch": "global synchronous frames; released jobs only; FIFO within class",
+    "score": "queue weighted actual frame departures divided by actual frame duration",
+    "budget_unit": "candidate construction or feasibility attempt; seeds included",
+    "stopping_rule": "stop arrivals at horizon, then drain the same finite prefix"
+  },
+  "role": "development only, original seeds 41/42/43",
+  "policies": [
+    "v4_support",
+    "lookahead_cap_1pct",
+    "allocated_lookahead_cap_1pct",
+    "batch_rollout_cap_1pct"
+  ],
+  "main_policy": "batch_rollout_cap_1pct",
+  "main_budget": 26,
+  "terminal_service_rates": [
+    0.1335789666104868,
+    0.29323460659958855,
+    0.35916419250378795
+  ],
+  "budget_split": {
+    "10": {
+      "current": 10,
+      "reserved_successors": 0
+    },
+    "14": {
+      "current": 10,
+      "reserved_successors": 4
+    },
+    "26": {
+      "current": 22,
+      "reserved_successors": 4
+    },
+    "120": {
+      "current": 116,
+      "reserved_successors": 4
+    }
+  },
+  "allocation": "reserve four attempts if K covers current homogeneous seeds plus four; otherwise current K and return support incumbent",
+  "contenders": "current paid support incumbent and old analytic J minimizer; identical physical actions skip rollout; no unpriced candidates compete",
+  "support_floor": "max(current homogeneous seed support, 0.99*current paid incumbent), not the full-K incumbent",
+  "terminal": "V2(r)=two no-new-arrival executable frame holding areas plus Vfluid(r_after2); r=Q-D",
+  "objective": "Jbatch=A+V2(r)+E[Vfluid(r+Poisson(lambda*tau))]-Vfluid(r)",
+  "successor": "choose nonempty class maximizing q_i/mu_i; choose largest fitting measured pure-class batch; maximal identical lane copies, remaining lanes idle",
+  "ties": "class index; same batch shortest duration then option index; final objective then higher support, shorter duration and lexical indices",
+  "successor_budget": "one directly constructed and verified full frame per step; both contenders receive exactly two steps, including paid idle when empty",
+  "work_accounting": "total attempts=current+successor; catalogue/index probes, class scans, completion reads and fluid value coordinates also reported",
+  "arrival_input": "same registered Poisson rates through window and drain; new-arrival interaction with discrete batches remains in the old fluid correction",
+  "controls": "v4 and analytic lookahead at full K; analytic lookahead at the identical reduced current budget isolates search allocation",
+  "reference": "v4 at K120 is the exact support reference; a rollout selector at K120 need not select the exact-support action",
+  "stopping_rule": "one fixed 144-run development roster; no depth, priority or budget tuning after outcomes",
+  "execution_workers": 3
+}

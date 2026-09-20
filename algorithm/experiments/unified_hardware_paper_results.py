@@ -1,4 +1,4 @@
-"""Export paper-facing summaries from the final schema-v2 replay.
+"""Export paper-facing summaries from the causal schema-v3 replay.
 
 The exporter is deliberately downstream of measurement and replay.  It never
 launches work and never recomputes service.  Its only job is to bind paper
@@ -16,6 +16,8 @@ from pathlib import Path
 import tempfile
 from typing import Any, Iterable, Mapping, Sequence
 
+from algorithm.experiments.unified_hardware_or_replay import _common_complete_runs
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ARTIFACT_ROOT = REPO_ROOT / "md" / "experiment_artifacts"
@@ -27,13 +29,13 @@ DEFAULT_MARKDOWN = REPO_ROOT / "md" / "unified_hardware_paper_results_20260810.m
 DEFAULT_TEX = REPO_ROOT / "paper" / "generated" / "unified_hardware_results.tex"
 
 SOTA_POLICY_LABELS = {
-    "sota_gavel_finish_time_fairness": "Gavel finish-time fairness",
-    "sota_gavel_pollux_sia_table_goodput": "Gavel/Pollux/Sia table goodput",
-    "sota_iadeep_salus_interference_guard": "IADeep/Salus interference guard",
+    "sota_gavel_finish_time_fairness": "Target-support rule (duplicate)",
+    "sota_gavel_pollux_sia_table_goodput": "Target-support rule",
+    "sota_iadeep_salus_interference_guard": "Interference guard",
     "sota_quadrant_composite": "Quadrant composite",
-    "sota_salus_iadeep_packing_guard": "Salus/IADeep packing guard",
-    "sota_sia_pollux_resource_adaptive": "Sia/Pollux resource-adaptive",
-    "sota_srpt_gittins_mean_flow_oracle": "SRPT/Gittins delay oracle",
+    "sota_salus_iadeep_packing_guard": "Packing guard",
+    "sota_sia_pollux_resource_adaptive": "Resource-adaptive rule",
+    "sota_srpt_gittins_mean_flow_oracle": "Lower-service delay rule",
 }
 
 ABLATION_LABELS = {
@@ -98,11 +100,13 @@ def build_unified_hardware_paper_results(
         "loaded_merge_sha256": hashlib.sha256(merge_raw).hexdigest(),
         **summary,
         "claim_boundary": (
-            "These are paper-facing summaries of the exact schema-v2 measured-cache "
+            "These are paper-facing summaries of the causal schema-v3 measured-cache "
             "policy-semantics population. Legacy is fixed-cap semantics on the same "
             "cache; external policies are not full-stack binary executions. Performance "
             "diagnostics are reported even when superiority is false and are never used "
-            "as input-gate assumptions."
+            "as input-gate assumptions. Finite completion ratios use only traces on "
+            "which all registered policies complete; incomplete tails are reported "
+            "separately and these conditional ratios do not measure overall superiority."
         ),
     }
 
@@ -110,11 +114,13 @@ def build_unified_hardware_paper_results(
 def _validate_replay(replay: Mapping[str, Any]) -> None:
     required = {
         "gate": "unified_hardware_or_replay",
-        "schema_version": 2,
+        "schema_version": 3,
         "status": "PASS",
         "pass": True,
         "comparison_kind": "same-cache_policy-semantics",
         "full_stack_external_binary_comparison": False,
+        "decision_information": "released_ready_jobs_only",
+        "comparison_cohort": "all_registered_policies_complete_on_same_trace_and_mode",
     }
     for field, expected in required.items():
         if replay.get(field) != expected:
@@ -172,7 +178,8 @@ def _validate_hash_chain(
 
 def _summarize(replay: Mapping[str, Any], slack: Mapping[str, Any]) -> dict[str, Any]:
     scenarios = list(replay["scenarios"])
-    runs = list(replay["runs"])
+    all_runs = list(replay["runs"])
+    runs = _common_complete_runs(all_runs)
     scenario_metadata = {str(row["scenario_id"]): row for row in scenarios}
     hardware_ids = {
         str(row["scenario_id"])
@@ -210,6 +217,11 @@ def _summarize(replay: Mapping[str, Any], slack: Mapping[str, Any]) -> dict[str,
         if row["scenario_id"] in hardware_ids
         and row["migration_mode"] == "without_migration"
     ]
+    registered_hardware = [
+        row for row in all_runs if row["scenario_id"] in hardware_ids
+        and row["migration_mode"] == "without_migration"
+    ]
+    registered_ours = [row for row in registered_hardware if row["policy_category"] == "ours"]
     return {
         "population": {
             "hardware_scenario_count": len(hardware_ids),
@@ -228,6 +240,19 @@ def _summarize(replay: Mapping[str, Any], slack: Mapping[str, Any]) -> dict[str,
             "policy_count": int(replay["policy_count"]),
             "arrival_families": sorted({str(row["arrival_family"]) for row in hardware_ours}),
             "quadrants": sorted({str(row["quadrant"]) for row in hardware_ours}),
+            "registered_hardware_trace_count": len(registered_ours),
+            "registered_online_trace_count": sum(row["arrival_family"] != "static" for row in registered_ours),
+            "excluded_incomplete_trace_count": len(registered_ours) - len(hardware_ours),
+            "excluded_incomplete_online_trace_count": sum(row["arrival_family"] != "static" for row in registered_ours) - len(hardware_online_ours),
+            "incomplete_runs_by_policy": {
+                policy: sum(row["policy"] == policy and row["completion_status"] != "complete" for row in registered_hardware)
+                for policy in sorted({row["policy"] for row in registered_hardware})
+            },
+            "incomplete_scheduleurm_run_count": sum(row["completion_status"] != "complete" for row in registered_ours),
+            "incomplete_tail_rows": [
+                {key: row[key] for key in ("scenario_id", "trace_id", "policy", "completed_jobs", "unfinished_jobs", "observation_horizon_s")}
+                for row in registered_hardware if row["completion_status"] != "complete"
+            ],
         },
         "legacy": _legacy_summary(legacy_rows),
         "static_legacy": _legacy_summary(
@@ -626,6 +651,9 @@ def tex_macros(report: Mapping[str, Any]) -> str:
         "UnifiedHardwareTraceCount": population["hardware_trace_count"],
         "UnifiedHardwareStaticTraceCount": population["hardware_static_trace_count"],
         "UnifiedHardwareOnlineTraceCount": population["hardware_online_trace_count"],
+        "UnifiedRegisteredOnlineTraceCount": population["registered_online_trace_count"],
+        "UnifiedExcludedIncompleteOnlineTraceCount": population["excluded_incomplete_online_trace_count"],
+        "UnifiedIncompleteOursRunCount": population["incomplete_scheduleurm_run_count"],
         "UnifiedCompleteMatrixRunCount": population["complete_matrix_run_count"],
         "UnifiedPolicyCount": population["policy_count"],
         "UnifiedLegacyMakespanGeoRatio": _fmt(legacy["legacy_to_ours_makespan_geomean_ratio"]),
@@ -745,9 +773,9 @@ def tex_macros(report: Mapping[str, Any]) -> str:
         ),
         "UnifiedSotaNotDominated": "true" if sota["ours_not_dominated_in_every_trace"] else "false",
         "UnifiedSotaConclusion": (
-            "is not Pareto-dominated by any registered SOTA-style policy on any replay trace"
+            "is not Pareto-dominated by any registered SOTA-style policy on any common completed replay trace"
             if sota["ours_not_dominated_in_every_trace"]
-            else "is Pareto-dominated on at least one replay trace"
+            else "is Pareto-dominated on at least one common completed replay trace"
         ),
         "UnifiedAblationPolicyCount": len(ablations),
         "UnifiedAblationDominatesFullCount": sum(
@@ -836,6 +864,9 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         f"- Hardware scenarios: `{population.get('hardware_scenario_count', 0)}`",
         f"- Hardware traces: `{population.get('hardware_trace_count', 0)}`",
         f"- Complete matrix runs: `{population.get('complete_matrix_run_count', 0)}`",
+        f"- Registered online traces: `{population.get('registered_online_trace_count', 0)}`",
+        f"- Online traces excluded from finite ratios because at least one policy did not complete: `{population.get('excluded_incomplete_online_trace_count', 0)}`",
+        f"- Incomplete runs by policy: `{population.get('incomplete_runs_by_policy', {})}`",
         f"- Legacy/ours makespan geomean: `{legacy.get('legacy_to_ours_makespan_geomean_ratio', 0):.6f}`",
         f"- Legacy/ours mean-flow geomean: `{legacy.get('legacy_to_ours_mean_flow_geomean_ratio', 0):.6f}`",
         f"- SOTA non-dominance on every trace: `{str(bool(sota.get('ours_not_dominated_in_every_trace'))).lower()}`",

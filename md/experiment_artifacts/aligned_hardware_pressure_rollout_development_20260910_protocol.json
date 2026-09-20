@@ -1,0 +1,77 @@
+{
+  "registered_at_utc": "2026-09-10T09:10:40.655018+00:00",
+  "base_protocol": {
+    "arrival_horizon_s": 20000.0,
+    "loads": [
+      0.5,
+      0.8,
+      0.95
+    ],
+    "seeds": [
+      41,
+      42,
+      43
+    ],
+    "budgets": [
+      10,
+      14,
+      26,
+      120
+    ],
+    "exact_reference_budget": 120,
+    "arrival_model": "independent Poisson arrivals per second; common tape across budgets",
+    "job_sizes": "fixed task-native canonical units",
+    "dispatch": "global synchronous frames; released jobs only; FIFO within class",
+    "score": "queue weighted actual frame departures divided by actual frame duration",
+    "budget_unit": "candidate construction or feasibility attempt; seeds included",
+    "stopping_rule": "stop arrivals at horizon, then drain the same finite prefix"
+  },
+  "role": "development only; consumed real arrival seeds",
+  "policies": [
+    "v4_support",
+    "lookahead_cap_1pct",
+    "poisson_rollout_cap_1pct",
+    "pressure_rollout_cap_1pct"
+  ],
+  "main_budget": 26,
+  "main_policy": "pressure_rollout_cap_1pct",
+  "planning_seeds": [
+    0,
+    1,
+    2
+  ],
+  "terminal_service_rates": [
+    0.1335789666104868,
+    0.29323460659958855,
+    0.35916419250378795
+  ],
+  "successor_pressure_rates": [
+    0.40073689983146044,
+    0.8797038197987654,
+    1.0774925775113637
+  ],
+  "single_change": "successor class priority q_i/mu_i becomes q_i*nu_i; nu_i=lanes*max(pure batch/effective duration), fixed independently of queue and samples",
+  "successors": "choose nonempty class by priority, tie by coordinate, then unchanged largest fitting pure batch and maximal lane copies; two successors per contender",
+  "unchanged": "raw Poisson current search, support cap, paid pool, recovery, single shared path and horizon, first frame, original-mu fluid tail, final candidate tie break",
+  "sampling": "aligned-planning:{planning_seed}:{coordinate}; caller-owned streams advance only on active calls; trajectories may diverge after changed decisions",
+  "cost": "same root plus four paid successor attempts; static pure-profile rates computed once per active comparison; profile/rate evaluations reported separately; priority-coordinate count is a subtotal of class evaluations",
+  "controls": "v4 36 and analytic 36 plus Poisson 108; reproduce all 180 frozen runs and deterministic counters",
+  "pairing": "same load, real seed, budget, planning seed; mean of per-run ratios across planning seeds within real seed, then across real seeds",
+  "frozen_state_diagnostic": {
+    "source": "aligned_hardware_control_variate_continuation_development_20260910.json",
+    "states": 63,
+    "occurrences": 174,
+    "samples_per_state": 64,
+    "rng": "aligned-cv-continuation:{sample_index}:{coordinate}, same samples as frozen raw margins",
+    "target": "same fixed contender pairs and old single-action effects under common v4 continuation; all states and occurrences, no new replays",
+    "measure": "within-state pressure/raw fixed-margin means, paired changes and MCSE; compare oriented means to frozen actual effects",
+    "cost": "charge every diagnostic search, draw, rate setup and class evaluation separately from the online budget"
+  },
+  "protocol_setup_work": {
+    "requirement_reads": 27,
+    "pressure_profile_reads": 7,
+    "pressure_rate_evaluations": 7
+  },
+  "stopping_rule": "288 full runs once and all 63 frozen states with 64 samples; no coefficients, seed additions, outcome filters or post-result changes",
+  "execution_workers": 3
+}

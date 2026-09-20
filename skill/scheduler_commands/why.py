@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 from dataclasses import dataclass
 from typing import Any, Callable
+from scheduler_node.reservations import blocked_reserved_nodes
 
 
 @dataclass(frozen=True)
@@ -240,8 +241,14 @@ def cmd_why(args, *, deps: WhyCommandDeps) -> None:
     print("  per-node fit analysis (probe_all snapshot):")
     nodes = deps.probe_all()
     deps.apply_cpu_slot_accounting_to_nodes(state, nodes)
+    reserved_nodes = blocked_reserved_nodes(state, task)
     for node in nodes:
-        print(f"    {node['name']:11s}: {explain_node_fit(task, node, deps=deps)}")
+        fit = (
+            "BLOCKED: node reserved for another campaign"
+            if node["name"] in reserved_nodes
+            else explain_node_fit(task, node, deps=deps)
+        )
+        print(f"    {node['name']:11s}: {fit}")
         if deps.claim_enabled_for(node["name"]):
             snap = {
                 "claims": node.get("pending_claims") or [],

@@ -118,6 +118,37 @@ def test_gpu_freeze_line_evicts_newest_no_progress_and_adjusts_vram():
     assert new["last_resource_eviction"]["same_gpu_tasks"][1]["id"] == "new"
 
 
+def test_gpu_freeze_line_prefers_unprotected_and_marks_all_protected_fallback():
+    evictions = []
+    protected = _task("controller", started_at=30.0, loss_protected=True)
+    unprotected = _task("worker", started_at=10.0)
+    state = {"tasks": [unprotected, protected]}
+    nodes = [{
+        "name": "n1",
+        "alive": True,
+        "gpus": [{"idx": 0, "used_mb": 6000, "total_mb": 12000, "util_pct": 20}],
+    }]
+
+    assert enforce_post_dispatch_thresholds(
+        state, nodes, deps=_deps(evictions)
+    ) == ["worker"]
+    assert protected["status"] == "running"
+    payload = unprotected["last_resource_eviction"]
+    assert payload["protected_evict_loss_task_ids"] == ["controller"]
+    assert payload["protection_fallback_used"] is False
+
+    evictions.clear()
+    first = _task("protected-old", started_at=10.0, loss_protected=True)
+    second = _task("protected-new", started_at=30.0, loss_protected=True)
+    state = {"tasks": [first, second]}
+    assert enforce_post_dispatch_thresholds(
+        state, nodes, deps=_deps(evictions)
+    ) == ["protected-new"]
+    fallback = second["last_resource_eviction"]
+    assert fallback["protection_fallback_used"] is True
+    assert "operability fallback" in evictions[0][1]
+
+
 def test_stable_progress_task_protected_on_gpu():
     evictions = []
     stable = _task(
@@ -176,6 +207,31 @@ def test_ram_headroom_picks_ram_pressure_and_protects_ckpt():
     assert payload["protected_ckpt_task_ids"] == ["ckpt"]
 
 
+def test_ram_headroom_marks_all_protected_operability_fallback():
+    evictions = []
+    tasks = [
+        _task("small", gpu_idx=None, ram_pressure_mb=1000, loss_protected=True),
+        _task("large", gpu_idx=None, ram_pressure_mb=8000, loss_protected=True),
+    ]
+    state = {"tasks": tasks}
+    nodes = [{"name": "n1", "alive": True, "gpus": []}]
+    ram = {
+        "below_eviction_headroom": True,
+        "free_mb": 256,
+        "eviction_headroom_mb": 4096,
+        "headroom_mb": 4608,
+        "headroom_grace_mb": 512,
+    }
+
+    assert enforce_post_dispatch_thresholds(
+        state, nodes, deps=_deps(evictions, ram_snapshot=ram)
+    ) == ["large"]
+    payload = tasks[1]["last_resource_eviction"]
+    assert payload["protection_fallback_used"] is True
+    assert payload["protected_evict_loss_task_ids"] == ["small", "large"]
+    assert "operability fallback" in evictions[0][1]
+
+
 def test_local_cpu_budget_not_evict_when_host_cpu_not_high():
     evictions = []
     notifications = []
@@ -226,6 +282,68 @@ def test_local_cpu_budget_evicts_until_under_budget_when_host_cpu_high():
     assert tasks[2]["status"] == "queued"
     assert tasks[0]["status"] == "running"
     assert tasks[1]["status"] == "running"
+
+
+def test_local_cpu_budget_prefers_unprotected_controller_sibling():
+    evictions = []
+    tasks = [
+        _task(
+            "controller",
+            node="local",
+            gpu_idx=None,
+            cpu_cores=2,
+            started_at=3.0,
+            loss_protected=True,
+        ),
+        _task("worker", node="local", gpu_idx=None, cpu_cores=2, started_at=1.0),
+    ]
+    state = {"tasks": tasks}
+    nodes = [{"name": "local", "alive": True, "total_cpu": 2, "gpus": []}]
+
+    assert enforce_post_dispatch_thresholds(
+        state,
+        nodes,
+        deps=_deps(
+            evictions,
+            node_configs={"local": {"cpu_cores": 2}},
+            cpu_high=True,
+        ),
+    ) == ["worker"]
+    assert tasks[0]["status"] == "running"
+    payload = tasks[1]["last_resource_eviction"]
+    assert payload["protected_evict_loss_task_ids"] == ["controller"]
+    assert payload["protection_fallback_used"] is False
+
+    evictions.clear()
+    protected_old = _task(
+        "protected-old",
+        node="local",
+        gpu_idx=None,
+        cpu_cores=2,
+        started_at=1.0,
+        loss_protected=True,
+    )
+    protected_new = _task(
+        "protected-new",
+        node="local",
+        gpu_idx=None,
+        cpu_cores=2,
+        started_at=3.0,
+        loss_protected=True,
+    )
+    state = {"tasks": [protected_old, protected_new]}
+    assert enforce_post_dispatch_thresholds(
+        state,
+        nodes,
+        deps=_deps(
+            evictions,
+            node_configs={"local": {"cpu_cores": 2}},
+            cpu_high=True,
+        ),
+    ) == ["protected-new"]
+    fallback = protected_new["last_resource_eviction"]
+    assert fallback["protection_fallback_used"] is True
+    assert "operability fallback" in evictions[0][1]
 
 
 def test_slurm_and_auto_adopted_are_ineligible_for_gpu_eviction():

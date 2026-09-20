@@ -1,0 +1,32 @@
+{
+  "role": "development mechanism diagnosis; no independent confirmation",
+  "created_at_utc": "2026-09-09T15:36:14.324667+00:00",
+  "seeds": [
+    41,
+    42,
+    43
+  ],
+  "loads": [
+    0.5,
+    0.8,
+    0.95
+  ],
+  "arrival_horizon_s": 20000.0,
+  "small_budget": 26,
+  "exact_budget": 120,
+  "modes": [
+    "exact",
+    "k26",
+    "k26_on_strict_loss",
+    "k26_on_equal_score",
+    "first_difference_once"
+  ],
+  "score_classification_tolerance": 1e-10,
+  "interventions": {
+    "k26_on_strict_loss": "use K26 when its support is below exact; use exact otherwise",
+    "k26_on_equal_score": "use K26 on equal-support decisions; use exact otherwise",
+    "first_difference_once": "replace only the first mean-flow-relevant action difference on the shared exact prefix, then return to exact"
+  },
+  "primary_accounting": "arrival barrier wait + deferred visible queue wait + dispatch-to-completion time, over all jobs including drain",
+  "diagnostic_cost": "both decisions computed offline and cached by queue; intervention modes are not budget-26 schedulers"
+}

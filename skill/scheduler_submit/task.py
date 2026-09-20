@@ -181,6 +181,9 @@ def _build_task_record(
         "ram_mb_explicit": args.ram_mb is not None,
         "cpu_cores_explicit": args.cpu is not None,
         "priority": args.priority,
+        "protect_from_auto_eviction": bool(
+            getattr(args, "protect_from_auto_eviction", False)
+        ),
         "preferred_node": args.preferred_node,
         "require_node": args.require_node,
         "allowed_nodes": allowed_nodes or None,

@@ -106,3 +106,36 @@ def test_same_run_identity_live_artifact_reason_ignores_ancestor_artifacts():
     reason = same_run_identity_live_artifact_reason(child, state, deps=_deps(result={"state": "alive"}))
 
     assert "terminal task sibling" in reason
+
+
+def test_same_run_identity_live_artifact_reason_uses_prebuilt_index():
+    unrelated = _base_task(
+        id="unrelated",
+        status="failed",
+        cmd="python other.py",
+        remote_pids=[10],
+        node="node001",
+    )
+    sibling = _base_task(
+        id="sibling",
+        status="failed",
+        remote_pids=[12],
+        node="node001",
+    )
+    task = _base_task(id="queued", status="queued")
+    key = task_run_identity(task)
+    state = {"tasks": [unrelated, sibling, task]}
+    identity_index = {
+        "tasks_by_id": {item["id"]: item for item in state["tasks"]},
+        "terminal_by_run_key": {key: [sibling]},
+    }
+
+    reason = same_run_identity_live_artifact_reason(
+        task,
+        state,
+        key,
+        identity_index,
+        deps=_deps(result={"state": "alive"}),
+    )
+
+    assert "terminal task sibling" in reason

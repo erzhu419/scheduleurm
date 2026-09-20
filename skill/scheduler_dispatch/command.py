@@ -18,6 +18,7 @@ class DispatchCommandDeps:
     stage_launch_candidates_outside_lock: Callable[..., Any]
     sync_completed_results_outside_lock: Callable[[], Any]
     running_probe_snapshot_outside_lock: Callable[[str], tuple[dict, set]]
+    terminal_diagnostics_snapshot_outside_lock: Callable[[Any, Any, str], dict]
     eta_tail_snapshot_outside_lock: Callable[[str], tuple[dict, set]]
     probe_all: Callable[[], list]
     update_running_tasks: Callable[..., Any]
@@ -179,10 +180,16 @@ def run_dispatch_command(args, *, deps: DispatchCommandDeps) -> None:
         # needs current node capacity plus the requested queued records, not a
         # full running-task maintenance sweep over unrelated logs.
         running_probe_results, running_probe_ids = {}, set()
+        terminal_diagnostics = {}
         eta_tail_outputs, eta_tail_ids = {}, set()
     else:
         running_probe_results, running_probe_ids = deps.running_probe_snapshot_outside_lock(
             "dispatch:running-probe"
+        )
+        terminal_diagnostics = deps.terminal_diagnostics_snapshot_outside_lock(
+            running_probe_results,
+            running_probe_ids,
+            "dispatch:terminal-diagnostics",
         )
         eta_tail_outputs, eta_tail_ids = deps.eta_tail_snapshot_outside_lock("dispatch:eta-tail")
     if targeted_dispatch and deps.probe_all_cached is not None:
@@ -213,6 +220,7 @@ def run_dispatch_command(args, *, deps: DispatchCommandDeps) -> None:
                 probed_task_ids=running_probe_ids,
                 eta_tail_outputs=eta_tail_outputs,
                 eta_probed_task_ids=eta_tail_ids,
+                terminal_diagnostics=terminal_diagnostics,
             )
         deps.seed_pending_eta_from_history(state)
         deps.remember_running_resource_snapshots(state, nodes)

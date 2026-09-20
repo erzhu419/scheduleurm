@@ -1,0 +1,109 @@
+{
+  "diagnostic": "batch_rollout_previous_low_load_counterexample",
+  "source": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/aligned_hardware_lookahead_continuation_development_20260910.json",
+  "role": "post-run descriptive recheck; no parameter changes and no new arrival tape or continuation replay",
+  "cases": [
+    {
+      "load": 0.5,
+      "seed": 42,
+      "frame_index": 543,
+      "queue": [
+        1,
+        4,
+        8
+      ],
+      "previous_effect": {
+        "predicted_total_delta_job_s": -39.16775467948153,
+        "realized_total_delta_job_s": 784.7800297060568,
+        "mean_flow_delta_s": 0.09774318466883258,
+        "realized_current_delta_job_s": -70.3613188461909,
+        "realized_future_delta_job_s": 855.1413485522477,
+        "cutoff_correction_delta_job_s": 7.105427357601002e-15,
+        "current_arrival_residual_delta_job_s": 1.3142528568446608,
+        "next_queue_residual_delta_job_s": -36.87586100768256,
+        "continuation_residual_delta_job_s": 859.5093925363763,
+        "prediction_residual_delta_job_s": 823.9477843855383,
+        "residual_identity_error_job_s": 1.1368683772161603e-13,
+        "flow_component_deltas_job_s": {
+          "mean_deferred_visible_wait_s": 791.5020475564276,
+          "mean_arrival_barrier_wait_s": 339.335370858928,
+          "mean_dispatch_to_completion_s": -346.0573887091632
+        },
+        "flow_component_identity_error_job_s": 1.3562839740188792e-10,
+        "outcome": "worsened"
+      },
+      "previous_v4_indices": [
+        8,
+        5
+      ],
+      "previous_lookahead_indices": [
+        7,
+        7
+      ],
+      "selection": {
+        "option_indices": [
+          7,
+          7
+        ],
+        "service": [
+          0,
+          0,
+          6
+        ],
+        "duration": 9.462480184740949,
+        "score": 5.072665840548239,
+        "upper_bound": 5.118089743178978,
+        "gap": 0.04542390263073948,
+        "epsilon": 0.003494146356210729,
+        "attempts": 21,
+        "seed_attempts": 10,
+        "feasible_candidate_count": 17,
+        "local_score_evaluations": 18,
+        "bound_option_probes": 100,
+        "bound_threshold_evaluations": 66,
+        "frontier_peak": 3,
+        "exact": false,
+        "seed_support": 5.072665840548239,
+        "support_floor": 5.072665840548239,
+        "relative_support_loss": 0.008875167281167195,
+        "support_cap_excluded_candidate_count": 0,
+        "eligible_candidate_count": 2,
+        "support_incumbent_score": 5.118089743178978,
+        "support_search_exact": true,
+        "current_holding_area": 140.6060660852612,
+        "expected_next_queue": [
+          1.631994162324952,
+          5.387363327214457,
+          3.699292027317788
+        ],
+        "expected_terminal_area": 85.60595023115704,
+        "lookahead_cost": 226.21201631641824,
+        "support_incumbent_lookahead_cost": 265.3797709958998,
+        "cost_candidate_evaluations": 2,
+        "completion_offset_reads": 23,
+        "next_queue_coordinate_evaluations": 6,
+        "terminal_value_coordinate_evaluations": 18,
+        "root_budget": 22,
+        "root_attempts": 17,
+        "rollout_attempts": 4,
+        "rollout_used": true,
+        "rollout_vetoed": false,
+        "analytic_challenger_score": 5.072665840548239,
+        "root_lookahead_cost": 226.21201631641824,
+        "selected_rollout_cost": 277.01101573666574,
+        "incumbent_rollout_cost": 278.9121489525403,
+        "analytic_challenger_rollout_cost": 277.01101573666574,
+        "rollout_class_evaluations": 9,
+        "rollout_profile_probes": 7,
+        "rollout_setup_requirement_reads": 27,
+        "rollout_completion_offset_reads": 6,
+        "rollout_terminal_value_coordinate_evaluations": 12,
+        "rollout_cost_candidate_evaluations": 2,
+        "physical_action_completion_offset_reads": 0
+      },
+      "retains_previous_lookahead_action": true
+    }
+  ],
+  "diagnostic_candidate_attempts": 21,
+  "interpretation": "Previous realized effects refer to the fixed common-v4 continuation study, not a fresh run of the new full policy."
+}

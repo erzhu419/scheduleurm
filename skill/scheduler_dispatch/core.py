@@ -19,6 +19,7 @@ class DispatchQueuePlan:
     queued: list
     global_batch_plan: dict
     global_batch_event: dict | None
+    identity_index: dict
 
 
 def build_dispatch_queue_plan(
@@ -31,13 +32,23 @@ def build_dispatch_queue_plan(
     algorithm_global_batch_plan: Callable[[list, list], tuple[dict, dict | None]],
 ) -> DispatchQueuePlan:
     """Build the ordered dispatch queue plus identity/global-batch guards."""
-    running_keys = {
-        key
-        for t in state["tasks"]
-        if t.get("status") in ("running", "launching")
-        for key in [task_run_identity(t)]
-        if key
-    }
+    running_keys = set()
+    tasks_by_id = {}
+    terminal_by_run_key = {}
+    for task in state["tasks"]:
+        task_id = task.get("id")
+        if task_id:
+            tasks_by_id[task_id] = task
+        status = task.get("status")
+        if status == "queued":
+            continue
+        run_key = task_run_identity(task)
+        if not run_key:
+            continue
+        if status in ("running", "launching"):
+            running_keys.add(run_key)
+        else:
+            terminal_by_run_key.setdefault(run_key, []).append(task)
     queued = sorted(
         [t for t in state["tasks"] if t["status"] == "queued"],
         key=lambda t: (priority_order.get(t["priority"], 1), t["submitted_at"]),
@@ -50,6 +61,10 @@ def build_dispatch_queue_plan(
         queued=queued,
         global_batch_plan=global_batch_plan,
         global_batch_event=global_batch_event,
+        identity_index={
+            "tasks_by_id": tasks_by_id,
+            "terminal_by_run_key": terminal_by_run_key,
+        },
     )
 
 

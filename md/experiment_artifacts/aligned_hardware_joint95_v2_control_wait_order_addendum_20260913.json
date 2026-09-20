@@ -1,0 +1,27 @@
+{
+  "created_at_utc": "2026-09-13T01:49:52.610302+00:00",
+  "gate": "aligned_hardware_joint95_v2_control_wait_order_addendum",
+  "incident_tasks": {
+    "active_wave34_controller": "t93357",
+    "cancelled_unstarted_postcampaign": "t93356",
+    "failed_supervisor": "t93355"
+  },
+  "preserved": {
+    "campaign_manifest_unchanged": true,
+    "dispatcher_unchanged": true,
+    "downstream_protocols_unchanged": true,
+    "measurement_contract_unchanged": true,
+    "paper_edited": false,
+    "rank19_rule_unchanged": true,
+    "running_wave34_result_unchanged": true,
+    "scheduler_mutations_performed_by_repair": 0,
+    "statistical_contract_unchanged": true
+  },
+  "repair": "both control loops check active joint95 controllers before calling collection_status and wait without mutation while a controller is active",
+  "schema_version": 1,
+  "scope": [
+    "critical_gpu_joint95_v2_supervisor",
+    "aligned_hardware_joint95_v2_postcampaign_runner"
+  ],
+  "status": "CONTROL_PLANE_REPAIR_ONLY"
+}

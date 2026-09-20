@@ -295,7 +295,17 @@ def stage_input_paths_for_launch(
                 f"{deps.launch_max_cwd_size_mb}MB"
             )
         if deps.node_is_windows(target_node):
-            return False, "launch input staging to Windows is not supported"
+            ok, msg = deps.stage_local_dir_to_windows(
+                source_text,
+                target_node,
+                source_text,
+                extra_excludes=[".git", "__pycache__", "*.pyc"],
+                use_default_excludes=False,
+                timeout_s=600,
+            )
+            if not ok:
+                return False, msg
+            continue
         remote_path = deps.remote_path_for_node(target_node, source_text)
         _mkdir_remote(target_node, remote_path, deps)
         relay_node = deps.relay_node_for_node(target_node)
@@ -342,6 +352,7 @@ def stage_local_dir_to_windows(
     target_dir: str,
     *,
     extra_excludes: list | None = None,
+    use_default_excludes: bool = True,
     timeout_s: int = 600,
     deps: WindowsTarStagingDeps,
 ) -> tuple[bool, str]:
@@ -350,6 +361,7 @@ def stage_local_dir_to_windows(
         target_node,
         target_dir,
         extra_excludes=extra_excludes,
+        use_default_excludes=use_default_excludes,
         timeout_s=timeout_s,
         deps=deps,
     )

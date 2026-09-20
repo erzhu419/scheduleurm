@@ -6,6 +6,11 @@ from dataclasses import dataclass
 import os
 import time as _time
 from typing import Any, Callable, Optional
+from scheduler_node.reservations import (
+    active_reservations,
+    blocked_reserved_nodes,
+    prune_released_reservations,
+)
 
 
 GLOBAL_BATCH_EXECUTION_CONTRACT = "enforced_exact_placement_v1"
@@ -191,6 +196,20 @@ def do_dispatch(
     events = []
     prio = {"high": 0, "normal": 1, "low": 2}
     target_ids = {str(x) for x in (target_task_ids or set()) if str(x)}
+    prune_released_reservations(state)
+    reserved_names = {
+        node
+        for reservation in active_reservations(state)
+        for node in reservation.get("nodes") or []
+    }
+    unreserved_nodes = [node for node in nodes if node.get("name") not in reserved_names]
+    # Migration must not stage to a reserved node; preemption needs the node
+    # present with its reservation flag so it cannot evict campaign work there.
+    preemption_nodes = [
+        {**node, "measurement_reservation_active": True}
+        if node.get("name") in reserved_names else node
+        for node in nodes
+    ]
     repaired = deps.reconcile_requeue_lineage_invariants(state)
     if repaired:
         events.append({
@@ -199,7 +218,7 @@ def do_dispatch(
             "reason": "queued requeue parents were made terminal before dispatch",
         })
 
-    migrated = [] if target_ids else deps.consider_migration(state, nodes)
+    migrated = [] if target_ids else deps.consider_migration(state, unreserved_nodes)
     if migrated:
         by_id = {t["id"]: t for t in state.get("tasks", [])}
         for tid in migrated:
@@ -213,7 +232,7 @@ def do_dispatch(
                 "reason": cand.get("last_block_reason", ""),
             })
 
-    preempted = [] if target_ids else deps.preempt_for_high_priority(state, nodes)
+    preempted = [] if target_ids else deps.preempt_for_high_priority(state, preemption_nodes)
     events.extend(deps.prepare_dispatch_node_accounting(
         state,
         nodes,
@@ -234,6 +253,7 @@ def do_dispatch(
         algorithm_global_batch_plan=deps.algorithm_global_batch_plan,
     )
     running_keys = queue_plan.running_keys
+    identity_index = queue_plan.identity_index
     queued_all = queue_plan.queued
     queued = select_dispatch_cycle_tasks(queued_all, max_queued)
     global_batch_plan = queue_plan.global_batch_plan
@@ -271,6 +291,8 @@ def do_dispatch(
         deps.debit_node_resources_for_launch(nodes, placement_task)
 
     def _pick_placement_with_global_batch_hint(task: dict, search_nodes: list, extra_allowed_nodes=None):
+        blocked_nodes = blocked_reserved_nodes(state, task)
+        search_nodes = [node for node in search_nodes if node.get("name") not in blocked_nodes]
         hint = _global_batch_hint_for(task)
         if global_batch_enforced:
             if not hint or not hint.get("node"):
@@ -338,6 +360,7 @@ def do_dispatch(
             task,
             state=state,
             running_keys=running_keys,
+            identity_index=identity_index,
             deps=deps.dispatch_task_gate_deps(),
         )
         events.extend(gate_result.events)
@@ -359,11 +382,25 @@ def do_dispatch(
         resume_locations = resume_result.resume_locations
         resume_nodes = resume_result.resume_nodes
         extra_allowed_nodes = resume_result.extra_allowed_nodes
+        reserved_block = blocked_reserved_nodes(state, task)
+        if placement is not None and placement[0] in reserved_block:
+            task["last_block_reason"] = f"node {placement[0]} reserved for another campaign"
+            events.append({
+                "type": "blocked",
+                "task_id": task["id"],
+                "reason": task["last_block_reason"],
+            })
+            continue
         if placement is None:
-            task["last_block_reason"] = deps.build_no_fit_reason(
+            reason = deps.build_no_fit_reason(
                 task,
                 nodes,
                 extra_allowed_nodes=extra_allowed_nodes,
+            )
+            required = str(task.get("require_node") or "")
+            task["last_block_reason"] = (
+                f"node {required} reserved for another campaign"
+                if required in reserved_block else reason
             )
             events.append({"type": "no_fit", "task_id": task["id"], "task": task})
             continue

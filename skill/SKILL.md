@@ -179,6 +179,10 @@ Background watcher (`scheduler.service` systemd user unit) runs `dispatch` every
 
 ## What the scheduler enforces (you don't need to re-check these)
 
+- **Campaign node reservation**: `submit ... --reserve-node gpu_b --reserve-signature-prefix 'ScheduleurmBench/critical_gpu_joint95_v4/' --reserve-until-file /absolute/local/completion.ready` reserves the node in the same queue transaction as the controller task. Only matching task signatures can dispatch there; other queued or later-submitted tasks wait or use another node. The reservation persists if the controller crashes/retries and releases when the local marker is nonempty. For manual cleanup after all campaign tasks stop, run `release-node --owner-task tNNNNN`. This controls scheduler placements; independently launched processes still require the experiment's host preflight.
+
+- **Loss-sensitive control tasks**: add `--protect-from-auto-eviction` when submitting a controller whose interruption would invalidate an in-flight measurement. Automatic CPU/RAM/GPU eviction and high-priority preemption choose an unprotected eligible sibling first. The flag does not change placement or capacity checks. If every eligible victim is protected, the scheduler may still evict one to recover capacity and records `protection_fallback_used=true`; the flag also does not block manual cancellation or process failure. Do not add it to ordinary workers or long-lived supervisors.
+
 - **VRAM 1/3+grace packing rule**: GPU already past the 1/3+grace freeze line will not accept more tasks (RL plateau heuristic). Single big task on an empty card is the exception.
 - **Explicit peak reservation**: a submitted `--vram` value remains reserved for the task's full lifetime. TUI task rows still show live allocator use, but dispatch uses the reserved peak so a low-memory startup phase cannot admit a second task that later OOMs.
 - **Optional GPU compute-saturation guard (util ≥ 85%)**: strict nodes may block packing when an occupied GPU is compute-saturated. Local/gpu_a/gpu_b/cpu_a set `gpu_util_saturation_pct=None`, so RL packing is governed by VRAM/CPU/RAM rather than util.

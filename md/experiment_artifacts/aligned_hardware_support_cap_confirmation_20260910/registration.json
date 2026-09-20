@@ -1,0 +1,651 @@
+{
+  "registration": "fixed_1pct_support_cap_independent_seed_confirmation",
+  "registered_at_utc": "2026-09-09T16:12:02.978555+00:00",
+  "previously_used_seeds": [
+    41,
+    42,
+    43,
+    1041,
+    1042,
+    1043,
+    1044,
+    1045,
+    1046,
+    1047,
+    1048,
+    1049,
+    1050
+  ],
+  "protocol": {
+    "arrival_horizon_s": 20000.0,
+    "loads": [
+      0.5,
+      0.8,
+      0.95
+    ],
+    "seeds": [
+      2041,
+      2042,
+      2043,
+      2044,
+      2045,
+      2046,
+      2047,
+      2048,
+      2049,
+      2050,
+      2051,
+      2052,
+      2053,
+      2054,
+      2055,
+      2056,
+      2057,
+      2058,
+      2059,
+      2060
+    ],
+    "budgets": [
+      10,
+      14,
+      26,
+      120
+    ],
+    "exact_reference_budget": 120,
+    "arrival_model": "independent Poisson arrivals per second; common tape across budgets",
+    "job_sizes": "fixed task-native canonical units",
+    "dispatch": "global synchronous frames; released jobs only; FIFO within class",
+    "score": "queue weighted actual frame departures divided by actual frame duration",
+    "budget_unit": "candidate construction or feasibility attempt; seeds included",
+    "stopping_rule": "stop arrivals at horizon, then drain the same finite prefix"
+  },
+  "model": {
+    "node": "gpu_b",
+    "scenario_id": "q01:gpu_3080ti_12gb_dual_gpu_b",
+    "lanes": 2,
+    "workloads": [
+      "gpu_cnn_torch_resnet50",
+      "gpu_heavy_jax_matmul",
+      "gpu_llm_distilgpt2"
+    ],
+    "scales": [
+      60.0,
+      40.0,
+      120.0
+    ],
+    "options": [
+      {
+        "action_id": "gpu_loaded:gpu_b:cnn_after_llm",
+        "requirements": [
+          1,
+          0,
+          1
+        ],
+        "duration": 11.514578111707017,
+        "completion_offsets": [
+          [
+            10.431026738447038
+          ],
+          [],
+          [
+            11.514578111707017
+          ]
+        ],
+        "loaded": true,
+        "source_action_ids": [
+          "gpu_loaded:gpu_b:cnn_after_llm",
+          "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1"
+        ],
+        "phases": [
+          [
+            "resident_initialization_s",
+            4.716920265498629
+          ],
+          [
+            "target_overlap_s",
+            5.714106472948409
+          ],
+          [
+            "resident_overlap_rate_native_per_s",
+            120.39972693896493
+          ],
+          [
+            "resident_remaining_native_units",
+            0.0
+          ],
+          [
+            "resident_dedicated_drain_s",
+            0.0
+          ],
+          [
+            "resident_finalization_s",
+            1.0835513732599793
+          ]
+        ]
+      },
+      {
+        "action_id": "gpu_loaded:gpu_b:llm_after_cnn",
+        "requirements": [
+          1,
+          0,
+          1
+        ],
+        "duration": 11.936669718453734,
+        "completion_offsets": [
+          [
+            11.936669718453734
+          ],
+          [],
+          [
+            11.090642004449867
+          ]
+        ],
+        "loaded": true,
+        "source_action_ids": [
+          "gpu_loaded:gpu_b:llm_after_cnn",
+          "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1"
+        ],
+        "phases": [
+          [
+            "resident_initialization_s",
+            4.669018776022396
+          ],
+          [
+            "target_overlap_s",
+            6.421623228427471
+          ],
+          [
+            "resident_overlap_rate_native_per_s",
+            16.652848248271273
+          ],
+          [
+            "resident_remaining_native_units",
+            0.0
+          ],
+          [
+            "resident_dedicated_drain_s",
+            0.0
+          ],
+          [
+            "resident_finalization_s",
+            0.846027714003867
+          ]
+        ]
+      },
+      {
+        "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+        "requirements": [
+          1,
+          0,
+          0
+        ],
+        "duration": 8.093888054475512,
+        "completion_offsets": [
+          [
+            8.093888054475512
+          ],
+          [],
+          []
+        ],
+        "loaded": false,
+        "source_action_ids": [
+          "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1"
+        ],
+        "phases": [
+          [
+            "initialization_s",
+            4.669018776022396
+          ],
+          [
+            "loop_s",
+            2.5788415644492484
+          ],
+          [
+            "finalization_s",
+            0.846027714003867
+          ]
+        ]
+      },
+      {
+        "action_id": "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+        "requirements": [
+          3,
+          0,
+          0
+        ],
+        "duration": 14.972417070959636,
+        "completion_offsets": [
+          [
+            14.972417070959636,
+            14.972417070959636,
+            14.972417070959636
+          ],
+          [],
+          []
+        ],
+        "loaded": false,
+        "source_action_ids": [
+          "profile:gpu_cnn_torch_resnet50:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3"
+        ],
+        "phases": [
+          [
+            "initialization_s",
+            6.583782343158832
+          ],
+          [
+            "loop_s",
+            7.48884139563465
+          ],
+          [
+            "finalization_s",
+            0.8997933321661549
+          ]
+        ]
+      },
+      {
+        "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+        "requirements": [
+          0,
+          1,
+          0
+        ],
+        "duration": 2.7928254592821196,
+        "completion_offsets": [
+          [],
+          [
+            2.7928254592821196
+          ],
+          []
+        ],
+        "loaded": false,
+        "source_action_ids": [
+          "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1"
+        ],
+        "phases": [
+          [
+            "initialization_s",
+            1.2277755779466062
+          ],
+          [
+            "loop_s",
+            1.194901513584997
+          ],
+          [
+            "finalization_s",
+            0.3701483677505166
+          ]
+        ]
+      },
+      {
+        "action_id": "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+        "requirements": [
+          0,
+          3,
+          0
+        ],
+        "duration": 6.820477375410869,
+        "completion_offsets": [
+          [],
+          [
+            6.820477375410869,
+            6.820477375410869,
+            6.820477375410869
+          ],
+          []
+        ],
+        "loaded": false,
+        "source_action_ids": [
+          "profile:gpu_heavy_jax_matmul:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3"
+        ],
+        "phases": [
+          [
+            "initialization_s",
+            2.741113696925434
+          ],
+          [
+            "loop_s",
+            3.661079762986579
+          ],
+          [
+            "finalization_s",
+            0.41828391549885663
+          ]
+        ]
+      },
+      {
+        "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1",
+        "requirements": [
+          0,
+          0,
+          1
+        ],
+        "duration": 7.4174495042607305,
+        "completion_offsets": [
+          [],
+          [],
+          [
+            7.4174495042607305
+          ]
+        ],
+        "loaded": false,
+        "source_action_ids": [
+          "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p1"
+        ],
+        "phases": [
+          [
+            "initialization_s",
+            4.716920265498629
+          ],
+          [
+            "loop_s",
+            1.6169778655021219
+          ],
+          [
+            "finalization_s",
+            1.0835513732599793
+          ]
+        ]
+      },
+      {
+        "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3",
+        "requirements": [
+          0,
+          0,
+          3
+        ],
+        "duration": 9.462480184740949,
+        "completion_offsets": [
+          [],
+          [],
+          [
+            9.462480184740949,
+            9.462480184740949,
+            9.462480184740949
+          ]
+        ],
+        "loaded": false,
+        "source_action_ids": [
+          "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p3"
+        ],
+        "phases": [
+          [
+            "initialization_s",
+            5.648919066996314
+          ],
+          [
+            "loop_s",
+            2.6111246433283664
+          ],
+          [
+            "finalization_s",
+            1.202436474416269
+          ]
+        ]
+      },
+      {
+        "action_id": "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8",
+        "requirements": [
+          0,
+          0,
+          8
+        ],
+        "duration": 14.84929022616052,
+        "completion_offsets": [
+          [],
+          [],
+          [
+            14.84929022616052,
+            14.84929022616052,
+            14.84929022616052,
+            14.84929022616052,
+            14.84929022616052,
+            14.84929022616052,
+            14.84929022616052,
+            14.84929022616052
+          ]
+        ],
+        "loaded": false,
+        "source_action_ids": [
+          "profile:gpu_llm_distilgpt2:gpu_3080ti_12gb_dual_gpu_b:empty:none:w1:p8"
+        ],
+        "phases": [
+          [
+            "initialization_s",
+            7.840006518249538
+          ],
+          [
+            "loop_s",
+            5.504426018315827
+          ],
+          [
+            "finalization_s",
+            1.5048576895951555
+          ]
+        ]
+      }
+    ],
+    "excluded_actions": [
+      {
+        "action_id": "gpu_loaded:gpu_b:cnn_after_rl",
+        "reason": "resident class has no arrivals in the three-class q01 protocol"
+      }
+    ],
+    "model_scope": "deterministic_cached_phase_complete_job_renewal"
+  },
+  "certificates": [
+    {
+      "model_scope": "deterministic_cached_phase_complete_job_renewal",
+      "arrival_model": "independent Poisson job arrivals in physical time",
+      "arrival_rates": [
+        0.0667894833052434,
+        0.14661730329979422,
+        0.17958209625189392
+      ],
+      "arrival_direction": [
+        0.13357896661048682,
+        0.2932346065995885,
+        0.3591641925037879
+      ],
+      "load_factor": 0.5,
+      "full_boundary_scale": 0.9999999999999998,
+      "boundary_time_weights": [
+        0.0,
+        0.0,
+        0.0,
+        0.33333333333333326,
+        0.0,
+        0.3333333333333334,
+        0.0,
+        0.0,
+        0.33333333333333337
+      ],
+      "slack_time_weights": [
+        0.0,
+        0.0,
+        0.0,
+        0.44027161662742476,
+        0.0,
+        0.29130361487373174,
+        0.0,
+        0.0,
+        0.2684247684988435
+      ],
+      "support_slack_delta": 0.10964359942581603,
+      "projection_support_loss_rate": 0.0,
+      "effective_slack_eta": 0.10964359942581603,
+      "capacity_projection_passed": true,
+      "projection_check_count": 63,
+      "projection_failures": [],
+      "availability_loss_C": 22.564592260821584,
+      "second_moment_B": 173.46624577169922,
+      "tau_min": 1.0,
+      "tau_max": 14.972417070959636,
+      "max_departures": [
+        6,
+        6,
+        16
+      ],
+      "drift_constant": 511.312732136868,
+      "negative_drift_backlog_threshold": 4663.407027993623,
+      "conditional_model_drift_certified": true,
+      "physical_service_confidence_increased": false,
+      "queue_update": "Q_next = Q - physical_job_departures + Poisson(lambda * tau)",
+      "drift_bound": "E[Delta V | Q] <= B + tau_max*C - tau_min*effective_slack*sum(Q)",
+      "capacity_basis": "lanes times convex hull of all admitted lane requirements/max(1,duration)",
+      "capacity_global_combinations_enumerated": 0
+    },
+    {
+      "model_scope": "deterministic_cached_phase_complete_job_renewal",
+      "arrival_model": "independent Poisson job arrivals in physical time",
+      "arrival_rates": [
+        0.10686317328838943,
+        0.23458768527967075,
+        0.2873313540030302
+      ],
+      "arrival_direction": [
+        0.13357896661048682,
+        0.2932346065995885,
+        0.3591641925037879
+      ],
+      "load_factor": 0.8,
+      "full_boundary_scale": 0.9999999999999998,
+      "boundary_time_weights": [
+        0.0,
+        0.0,
+        0.0,
+        0.33333333333333326,
+        0.0,
+        0.3333333333333334,
+        0.0,
+        0.0,
+        0.33333333333333337
+      ],
+      "slack_time_weights": [
+        0.0,
+        0.0,
+        0.0,
+        0.3761086466509701,
+        0.0,
+        0.3165214459494926,
+        0.0,
+        0.0,
+        0.3073699073995373
+      ],
+      "support_slack_delta": 0.043857439770326384,
+      "projection_support_loss_rate": 0.0,
+      "effective_slack_eta": 0.043857439770326384,
+      "capacity_projection_passed": true,
+      "projection_check_count": 63,
+      "projection_failures": [],
+      "availability_loss_C": 22.564592260821584,
+      "second_moment_B": 185.4092723155254,
+      "tau_min": 1.0,
+      "tau_max": 14.972417070959636,
+      "max_departures": [
+        6,
+        6,
+        16
+      ],
+      "drift_constant": 523.2557586806943,
+      "negative_drift_backlog_threshold": 11930.832292557241,
+      "conditional_model_drift_certified": true,
+      "physical_service_confidence_increased": false,
+      "queue_update": "Q_next = Q - physical_job_departures + Poisson(lambda * tau)",
+      "drift_bound": "E[Delta V | Q] <= B + tau_max*C - tau_min*effective_slack*sum(Q)",
+      "capacity_basis": "lanes times convex hull of all admitted lane requirements/max(1,duration)",
+      "capacity_global_combinations_enumerated": 0
+    },
+    {
+      "model_scope": "deterministic_cached_phase_complete_job_renewal",
+      "arrival_model": "independent Poisson job arrivals in physical time",
+      "arrival_rates": [
+        0.12690001827996245,
+        0.27857287626960897,
+        0.3412059828785984
+      ],
+      "arrival_direction": [
+        0.13357896661048682,
+        0.2932346065995885,
+        0.3591641925037879
+      ],
+      "load_factor": 0.95,
+      "full_boundary_scale": 0.9999999999999998,
+      "boundary_time_weights": [
+        0.0,
+        0.0,
+        0.0,
+        0.33333333333333326,
+        0.0,
+        0.3333333333333334,
+        0.0,
+        0.0,
+        0.33333333333333337
+      ],
+      "slack_time_weights": [
+        0.0,
+        0.0,
+        0.0,
+        0.3440271616627425,
+        0.0,
+        0.3291303614873732,
+        0.0,
+        0.0,
+        0.3268424768498843
+      ],
+      "support_slack_delta": 0.01096435994258163,
+      "projection_support_loss_rate": 0.0,
+      "effective_slack_eta": 0.01096435994258163,
+      "capacity_projection_passed": true,
+      "projection_check_count": 63,
+      "projection_failures": [],
+      "availability_loss_C": 22.564592260821584,
+      "second_moment_B": 193.14233282891536,
+      "tau_min": 1.0,
+      "tau_max": 14.972417070959636,
+      "max_departures": [
+        6,
+        6,
+        16
+      ],
+      "drift_constant": 530.9888191940842,
+      "negative_drift_backlog_threshold": 48428.61981682255,
+      "conditional_model_drift_certified": true,
+      "physical_service_confidence_increased": false,
+      "queue_update": "Q_next = Q - physical_job_departures + Poisson(lambda * tau)",
+      "drift_bound": "E[Delta V | Q] <= B + tau_max*C - tau_min*effective_slack*sum(Q)",
+      "capacity_basis": "lanes times convex hull of all admitted lane requirements/max(1,duration)",
+      "capacity_global_combinations_enumerated": 0
+    }
+  ],
+  "policy_max_relative_support_loss": {
+    "v4_support": null,
+    "holding_cap_zero": 0.0,
+    "holding_cap_1pct": 0.01
+  },
+  "main_policy": "holding_cap_1pct",
+  "main_budget": 26,
+  "primary_loads": [
+    0.8,
+    0.95
+  ],
+  "family_alpha": 0.05,
+  "family_size": 2,
+  "primary_claim": "At each registered primary load, 1% cap K26 improves mean flow relative to v4 K26.",
+  "estimator": "arithmetic mean of seed-paired mean-flow ratios; seed is the independent unit",
+  "inference": "two Bonferroni-adjusted two-sided 97.5% Student t intervals; each upper endpoint must be below 1",
+  "descriptive_controls": "load 0.50, the zero-cap rule, all other budgets, p90, flow components and timings",
+  "frozen_selection_protocol": {
+    "eligibility": "S(a) >= max(S_seed, (1-r)*S_inc); S_inc is the same paid pool's best support",
+    "cap_rationale": "1% is a fixed conservative design choice, not a fitted or optimal parameter",
+    "objective": "H(Q,a) = sum(Q)-sum(D(a)) + sum(completion_offsets(a))/tau(a) + Lambda*tau(a)/2",
+    "arrival_rate_input": "Lambda=sum(registered class arrival rates); fixed throughout arrival window and drain",
+    "drain_cost_interpretation": "stationary-arrival proxy, not actual conditional arrivals after the cutoff",
+    "candidate_generation": "same budgeted construction, order and max-support pruning as frozen v4"
+  },
+  "sample_size_rationale": "fixed 20 new seeds; interval precision is measured, with no guaranteed power for the small development effects",
+  "stopping_rule": "run all 720 cases once; keep every registered seed; no cap changes, seed additions or outcome-dependent stopping",
+  "execution_workers": 3,
+  "execution_pass": "all jobs, budgets, support caps, queue recurrences, drift bounds and K120 support searches pass",
+  "confirmation_pass": "both primary intervals are entirely below 1; separate from execution PASS",
+  "scope": "independent arrivals at the two registered load points within the deterministic cached frame model"
+}

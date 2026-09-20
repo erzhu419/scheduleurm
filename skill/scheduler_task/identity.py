@@ -172,6 +172,7 @@ def same_run_identity_live_artifact_reason(
     task: dict,
     state: dict,
     run_key=None,
+    identity_index: dict | None = None,
     *,
     deps: TaskIdentityDeps,
 ) -> Optional[str]:
@@ -179,8 +180,12 @@ def same_run_identity_live_artifact_reason(
     if not key:
         return None
     target_id = task.get("id")
-    tasks = state.get("tasks", [])
-    by_id = {t.get("id"): t for t in tasks if t.get("id")}
+    if identity_index is None:
+        tasks = state.get("tasks", [])
+        by_id = {t.get("id"): t for t in tasks if t.get("id")}
+    else:
+        by_id = identity_index.get("tasks_by_id") or {}
+        tasks = (identity_index.get("terminal_by_run_key") or {}).get(key, [])
     ancestor_ids = set()
     cur = task
     seen = set()
@@ -199,7 +204,7 @@ def same_run_identity_live_artifact_reason(
             # its parent. Old launch handles retained on the terminal lineage
             # are audit data, not a reason to block that lineage's next retry.
             continue
-        if task_run_identity(other) != key:
+        if identity_index is None and task_run_identity(other) != key:
             continue
         if other.get("status") in ("queued", "running", "launching"):
             continue

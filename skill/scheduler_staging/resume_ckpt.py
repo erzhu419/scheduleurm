@@ -108,6 +108,7 @@ def _verify_target_ckpt(
     task: dict,
     target_node: str,
     target_ckpt_dir: str,
+    source_ckpt_dir: str,
     source_loc: dict,
     *,
     context: str,
@@ -116,7 +117,21 @@ def _verify_target_ckpt(
     resume_path = source_loc.get("path")
     try:
         if resume_path:
-            target_resume = deps.remote_path_for_node(target_node, resume_path)
+            source_root = os.path.normpath(source_ckpt_dir)
+            source_resume = os.path.normpath(str(resume_path))
+            try:
+                inside_source = os.path.commonpath(
+                    [source_root, source_resume]) == source_root
+            except ValueError:
+                inside_source = False
+            if inside_source:
+                target_resume = os.path.join(
+                    target_ckpt_dir,
+                    os.path.relpath(source_resume, source_root),
+                )
+            else:
+                target_resume = deps.remote_path_for_node(
+                    target_node, resume_path)
             rc, _, _ = deps.run_on(
                 target_node,
                 f"test -e {shlex.quote(target_resume)}",
@@ -275,6 +290,7 @@ def _stage_via_relay(
         {},
         target_node,
         target_ckpt_dir,
+        source_ckpt_dir,
         source_loc,
         context="relay rsync",
         deps=deps,
@@ -320,6 +336,7 @@ def _stage_direct(
         {},
         target_node,
         target_ckpt_dir,
+        source_ckpt_dir,
         source_loc,
         context="rsync",
         deps=deps,
@@ -402,6 +419,7 @@ def _stage_remote_to_remote_via_local(
         {},
         target_node,
         target_ckpt_dir,
+        source_ckpt_dir,
         source_loc,
         context="remote relay rsync",
         deps=deps,

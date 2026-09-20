@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "artifact_type": "registered_experiment_disposition",
+  "experiment": "aligned_hardware_joint95_baseline_confirmation_v1",
+  "status": "SUPERSEDED_BEFORE_EXECUTION",
+  "execution_authorized": false,
+  "terminal_result_observed": false,
+  "old_registration": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/aligned_hardware_joint95_baseline_confirmation_20260913_protocol.json",
+  "old_fixed_sources": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/aligned_hardware_joint95_baseline_confirmation_20260913_fixed_sources.json",
+  "old_result": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/aligned_hardware_joint95_baseline_confirmation_20260913.json",
+  "reason": "The independently implemented exact-MaxWeight canonical tie MILP can be falsely reported infeasible by HiGHS presolve when its fixed primary-objective row is linearly dependent on the queue constraints. This occurs on a supported nine-action state (R8, Q=(90,31,57)), so v1 must not be executed.",
+  "repair": "Version 2 disables presolve only for the fixed-primary-objective tie solve; the primary duration-threshold MILPs retain presolve.",
+  "successor_experiment": "aligned_hardware_joint95_baseline_confirmation_v2",
+  "successor_registration": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/aligned_hardware_joint95_baseline_confirmation_v2_20260913_protocol.json",
+  "paper_edited": false
+}

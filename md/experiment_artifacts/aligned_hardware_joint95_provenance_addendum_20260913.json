@@ -1,0 +1,80 @@
+{
+  "allowed_claim": "The joint score and rank were prospectively frozen; capacity closure is a mid-campaign frozen secondary analysis, and the static screen is prospective only for its fresh roster execution.",
+  "campaign_snapshot_at_audit": {
+    "active_first_attempt_waves": [
+      21
+    ],
+    "failed_attempts_observed": 0,
+    "first_attempt_pass_waves": [
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+    ]
+  },
+  "capacity_closure_registration": {
+    "already_started_waves": [
+      17
+    ],
+    "artifact": "aligned_hardware_joint95_capacity_closure_20260913_protocol.json",
+    "classification": "mid_campaign_frozen_secondary_analysis",
+    "completed_waves_before_registration": [
+      14,
+      15,
+      16
+    ],
+    "joint_results_directory_read_by_registration": false,
+    "registered_at_utc": "2026-09-12T23:52:28.878630+00:00"
+  },
+  "created_at_utc": "2026-09-13T00:24:13.585882+00:00",
+  "disallowed_claim": "The complete capacity and static-selector analysis was preregistered before joint95 data collection.",
+  "frozen_artifacts_modified": false,
+  "gate": "aligned_hardware_joint95_provenance_audit",
+  "preexisting_components": {
+    "selector_budget_source": "aligned_hardware_count_space_bnb_trajectory_transition_20260913_protocol.json",
+    "serial_envelope_source": "aligned_hardware_lcb_frame_envelope_shadow_development_20260912_protocol.json"
+  },
+  "retry_boundary": {
+    "first_attempt_only_so_far": true,
+    "measurement_dependent_failed_attempts_may_not_be_silently_discarded": true,
+    "required_action": "Stop the formal closure or explicitly limit its population if a later timeout, OOM, capacity failure, or other measurement-dependent failed visit is excluded."
+  },
+  "schema_version": 1,
+  "static_screen_registration": {
+    "artifact": "aligned_hardware_joint95_static_selector_screen_20260913_protocol.json",
+    "capacity_result_read": false,
+    "classification": "prospective_for_fresh_roster_execution_only",
+    "completed_waves_before_registration": [
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "fresh_roster_outcomes_observed": false,
+    "joint_results_directory_read_by_registration": false,
+    "registered_at_utc": "2026-09-13T00:08:17.428908+00:00",
+    "selector_executed": false
+  },
+  "statistical_contract": {
+    "covers": [
+      "nine upper-time functionals",
+      "visit-wise maximum score",
+      "19 calibration visits",
+      "rank 19",
+      "one explicitly released holdout"
+    ],
+    "design_file": "critical_gpu_joint95_collection_protocol_design_20260912.json",
+    "design_file_mtime_utc": "2026-09-12T22:55:15.294950+00:00",
+    "manifest_file": "critical_gpu_joint95_collection_manifest_20260913.json",
+    "manifest_file_mtime_utc": "2026-09-12T22:59:13.634276+00:00",
+    "prospectively_frozen_before_wave14": true,
+    "validity_statement": "The joint score, split, rank, and one-sided margin rule were fixed before wave 14.",
+    "wave14_started_at_unix_s": 1789255237.3895807
+  },
+  "status": "PROVENANCE_QUALIFIED"
+}

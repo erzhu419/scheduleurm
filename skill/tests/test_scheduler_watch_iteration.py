@@ -533,9 +533,13 @@ def test_watch_publishes_in_cycle_progress_without_advancing_heartbeat():
     phases = [state["phase"] for state in progress_states]
     assert phases[0] == "preflight"
     assert "running_task_probe" in phases
+    assert "state:load_state" in phases
+    assert "state:phase_inside" in phases
     assert "launching" in phases
     assert phases[-1] == "sleeping"
     assert all(state.get("last_heartbeat_ts") == 77 for state in progress_states)
+    execute_call = next(call for call in calls if call[0] == "execute_deferred")
+    assert callable(execute_call[2]["progress_fn"])
 
 
 def test_watch_main_total_slow_phase_is_reported():

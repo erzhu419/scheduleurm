@@ -1,0 +1,66 @@
+{
+  "registered_at_utc": "2026-09-10T10:34:09.104818+00:00",
+  "base_protocol": {
+    "arrival_horizon_s": 20000.0,
+    "loads": [
+      0.5,
+      0.8,
+      0.95
+    ],
+    "seeds": [
+      41,
+      42,
+      43
+    ],
+    "budgets": [
+      10,
+      14,
+      26,
+      120
+    ],
+    "exact_reference_budget": 120,
+    "arrival_model": "independent Poisson arrivals per second; common tape across budgets",
+    "job_sizes": "fixed task-native canonical units",
+    "dispatch": "global synchronous frames; released jobs only; FIFO within class",
+    "score": "queue weighted actual frame departures divided by actual frame duration",
+    "budget_unit": "candidate construction or feasibility attempt; seeds included",
+    "stopping_rule": "stop arrivals at horizon, then drain the same finite prefix"
+  },
+  "role": "development only; consumed real arrival seeds",
+  "policies": [
+    "v4_support",
+    "lookahead_cap_1pct",
+    "poisson_rollout_cap_1pct",
+    "mixed_successor_rollout_cap_1pct"
+  ],
+  "main_budget": 26,
+  "main_policy": "mixed_successor_rollout_cap_1pct",
+  "planning_seeds": [
+    0,
+    1,
+    2
+  ],
+  "terminal_service_rates": [
+    0.1335789666104868,
+    0.29323460659958855,
+    0.35916419250378795
+  ],
+  "single_change": "each successor fills lanes sequentially; at each lane choose nonempty temporary queue maximizing q_i/mu_i, take its largest fitting pure profile, then decrement temporary queue",
+  "successor_frame": "ordered selected profile indices; class service is accumulated; duration is max of idle and selected effective durations; unused lanes remain idle",
+  "unchanged": "raw Poisson current search, paid pool, support cap, recovery, shared path and horizon, first frame, q_i/mu_i priority, original-mu fluid tail and final candidate tie break",
+  "budget": "one fully constructed feasible successor frame is one attempt; two successors per contender remain four paid attempts, so root+successors <= K",
+  "extra_work": "lane positions visited (including the first empty position, then stop), each nonempty priority coordinate, profile probes and assigned-profile temporary queue updates are reported; priority/profile/update fields are subtotals of existing native counters",
+  "controls": "v4 36, analytic 36 and raw Poisson 108; reproduce all 180 runs and deterministic counters",
+  "pairing": "same load, real seed, K and planning seed; average run ratios within real seed, then across real seeds",
+  "frozen_state_diagnostic": {
+    "source": "aligned_hardware_control_variate_continuation_development_20260910.json",
+    "states": 63,
+    "occurrences": 174,
+    "samples_per_state": 64,
+    "rng": "aligned-cv-continuation:{sample_index}:{coordinate}, matching frozen raw margins",
+    "target": "same fixed contenders and retained CV-first-minus-raw-first common-v4 effects; no new real trajectory replay",
+    "measure": "paired mixed-minus-raw fixed-contender margins and oriented target residuals; structural checks only"
+  },
+  "stopping_rule": "288 full runs once and all 63 frozen states x64 samples; no coefficients, seed additions, state filtering or post-result changes",
+  "execution_workers": 3
+}

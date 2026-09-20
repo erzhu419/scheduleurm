@@ -19,14 +19,22 @@ def build_launch_staging_runtime_exports(namespace: dict[str, Any]) -> dict[str,
     def _launch_staging_plan_deps():
         return _ns(namespace, "_build_launch_staging_plan_deps")(namespace)
 
-    def _tar_exclude_args(extra_excludes: Optional[list] = None) -> list:
-        return _ns(namespace, "_tar_exclude_args_impl")(extra_excludes)
+    def _tar_exclude_args(
+        extra_excludes: Optional[list] = None,
+        *,
+        use_default_excludes: bool = True,
+    ) -> list:
+        return _ns(namespace, "_tar_exclude_args_impl")(
+            extra_excludes,
+            use_default_excludes=use_default_excludes,
+        )
 
     def _stage_local_dir_to_windows(
         local_dir: str,
         target_node: str,
         target_dir: str,
         extra_excludes: Optional[list] = None,
+        use_default_excludes: bool = True,
         timeout_s: int = 600,
     ) -> tuple:
         subprocess_mod = _ns(namespace, "subprocess")
@@ -35,6 +43,7 @@ def build_launch_staging_runtime_exports(namespace: dict[str, Any]) -> dict[str,
             target_node,
             target_dir,
             extra_excludes=extra_excludes,
+            use_default_excludes=use_default_excludes,
             timeout_s=timeout_s,
             deps=_ns(namespace, "_WindowsTarStagingDeps")(
                 node_is_windows=_ns(namespace, "_node_is_windows"),

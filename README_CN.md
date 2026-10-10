@@ -50,6 +50,25 @@ GPU 在 dispatch 时通过 `nvidia-smi --query-gpu=memory.used,memory.total,util
 
 依赖：Python 3.10+，每个 GPU 节点上有 `nvidia-smi`，远程节点免密 SSH，可选 `systemd --user` 跑 watcher 守护。
 
+### Package / Release
+
+不需要 clone 仓库，直接安装版本化 wheel：
+
+```bash
+python3 -m venv ~/.venvs/scheduleurm
+~/.venvs/scheduleurm/bin/python -m pip install \
+  'scheduleurm[mcp,tui] @ https://github.com/erzhu419/scheduleurm/releases/download/v0.1.0/scheduleurm-0.1.0-py3-none-any.whl'
+~/.venvs/scheduleurm/bin/scheduleurm --help
+```
+
+按上文配置节点，再用安装后的 `scheduleurm watch --interval 60` 自动派发。
+`scheduleurm-mcp` 是本地 stdio MCP 入口。pip 安装不会启动服务、改动已有队列
+或私人配置，也不会自动注册 Claude skill。
+下载见 [Releases](https://github.com/erzhu419/scheduleurm/releases)，说明见
+[package guide](packaging/README.md)。
+
+### 仓库 / Claude Skill
+
 ```bash
 git clone https://github.com/erzhu419/scheduleurm.git
 cd scheduleurm

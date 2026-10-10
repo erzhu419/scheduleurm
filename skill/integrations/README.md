@@ -6,6 +6,12 @@ launching a local stdio MCP process.
 
 ## Install
 
+The [versioned package](../../packaging/README.md) provides `scheduleurm-mcp`
+when installed with the `mcp` extra. Set the MCP client's command to the absolute
+path of that executable, without arguments. Package installation does not start
+a watcher; run the installed `scheduleurm watch --interval 60` for automatic
+dispatch.
+
 From the cloned repository on Linux or WSL:
 
 ```bash

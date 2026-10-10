@@ -56,6 +56,24 @@ Configure your cluster in `~/.claude/scheduler/nodes.json`, outside the reposito
 
 Requires: Python 3.10+, `nvidia-smi` on each GPU node, passwordless SSH for remotes, optional `systemd --user` for the watcher daemon.
 
+### Package / Release
+
+Install the versioned wheel without cloning the repository:
+
+```bash
+python3 -m venv ~/.venvs/scheduleurm
+~/.venvs/scheduleurm/bin/python -m pip install \
+  'scheduleurm[mcp,tui] @ https://github.com/erzhu419/scheduleurm/releases/download/v0.1.0/scheduleurm-0.1.0-py3-none-any.whl'
+~/.venvs/scheduleurm/bin/scheduleurm --help
+```
+
+Configure your nodes as above, then run `scheduleurm watch --interval 60` using
+the installed executable. `scheduleurm-mcp` is the local stdio MCP entry point.
+The package does not start services or change private configuration. See the
+[package guide](packaging/README.md) and [Releases](https://github.com/erzhu419/scheduleurm/releases).
+
+### Repository / Claude Skill
+
 ```bash
 git clone https://github.com/erzhu419/scheduleurm.git
 cd scheduleurm

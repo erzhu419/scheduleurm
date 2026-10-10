@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scheduleurm"
+version = "0.1.0"
+description = "CPU, RAM and GPU job scheduling across heterogeneous Linux nodes"
+readme = "packaging/README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{name = "erzhu419"}]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: POSIX :: Linux",
+  "Topic :: System :: Distributed Computing",
+]
+
+[project.optional-dependencies]
+mcp = ["mcp>=1.27.1,<2"]
+tui = ["textual>=8,<9"]
+
+[project.scripts]
+scheduleurm = "scheduleurm.cli:main"
+scheduleurm-mcp = "scheduleurm.cli:mcp_main"
+
+[project.urls]
+Homepage = "https://github.com/erzhu419/scheduleurm"
+Documentation = "https://github.com/erzhu419/scheduleurm/blob/master/docs/CONFIGURATION.md"
+Releases = "https://github.com/erzhu419/scheduleurm/releases"
+Issues = "https://github.com/erzhu419/scheduleurm/issues"
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.package-data]
+"scheduleurm.skill" = ["SKILL.md"]
+"scheduleurm.skill.integrations" = ["README.md", "requirements.txt"]
+"scheduleurm.md.experiment_artifacts" = [
+  "default_service_cache.json",
+  "corner_case_service_cache_20260613.json",
+  "service_cache_v2_live_merged_pre_native_20260727.json",
+]

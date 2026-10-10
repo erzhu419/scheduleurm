@@ -1,0 +1,7 @@
+include LICENSE pyproject.toml setup.py README.md
+recursive-include packaging *.py *.md
+include scripts/release_smoke.py
+include docs/CONFIGURATION.md docs/nodes.example.json
+prune skill/tests
+prune skill/cf_h2o
+global-exclude __pycache__ *.pyc *.pyo *.log *.local.json

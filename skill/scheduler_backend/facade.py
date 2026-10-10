@@ -83,7 +83,7 @@ def build_windows_backend_runtime_deps(namespace: Mapping[str, Any]) -> WindowsB
         launcher_text=_ns(namespace, "_WINDOWS_LAUNCHER"),
         detacher_text=_ns(namespace, "_WINDOWS_DETACHER"),
         ssh_base_args=_ns(namespace, "_ssh_base_args"),
-        run_subprocess=subprocess_mod.run,
+        run_subprocess=_ns(namespace, "_run_control_subprocess"),
         node_cpu_fallback_block_reason=_ns(namespace, "_node_cpu_fallback_block_reason"),
         windows_env_spec_error=_ns(namespace, "_windows_env_spec_error"),
         windows_path_for_node=_ns(namespace, "_windows_path_for_node"),

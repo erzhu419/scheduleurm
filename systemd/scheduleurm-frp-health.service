@@ -1,0 +1,10 @@
+[Unit]
+Description=FRP public SSH health and incident capture
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /usr/local/lib/scheduleurm/frp_health.py
+TimeoutStartSec=180
+UMask=0077
+Nice=10

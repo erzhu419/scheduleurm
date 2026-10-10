@@ -99,6 +99,7 @@ def test_retry_clone_clears_runtime_artifacts_and_becomes_scheduler_owned():
         exit_status_path="/tmp/old.status",
         exit_status_token="old-token",
         remote_pid_start_ticks={"111": 999},
+        exit_code=1,
         backend_finished_at=1.9,
         requeued_as="old-child",
         migrated_from="n0",
@@ -139,6 +140,7 @@ def test_retry_clone_clears_runtime_artifacts_and_becomes_scheduler_owned():
     assert "exit_status_path" not in clone
     assert "exit_status_token" not in clone
     assert "remote_pid_start_ticks" not in clone
+    assert "exit_code" not in clone
     assert "backend_finished_at" not in clone
     assert clone["_diagnosis"] is None
     assert "requeued_as" not in clone
@@ -164,6 +166,49 @@ def test_retry_clone_restores_explicit_declared_cpu_contract():
     assert clone["cpu_cores"] == 12
     assert clone["cpu_declared_cores"] == 12
     assert clone["cpu_cores_explicit"] is True
+
+
+def test_completed_retry_syncs_new_completion_after_parent_partial_sync(tmp_path):
+    from skill.scheduler_result_sync import sync_completed_results_outside_lock
+    from skill.tests.test_scheduler_result_sync import _deps as sync_deps
+
+    result = tmp_path / "results"
+    completion = result / "completion.json"
+    parent = _task(
+        node="remote",
+        result_dir="/remote/results",
+        local_result_dir=str(result),
+        result_synced_at=20.0,
+        result_sync_error="old transfer failure",
+        result_sync_attempts=3,
+        result_syncing_at=500.0,
+        result_syncing_pid=99,
+    )
+    consumer = _task(
+        "eval", status="queued", signature="proj/eval/s1", cmd="python eval.py",
+        wait_for_files=[str(completion)],
+    )
+    state = {"tasks": [parent, consumer], "next_id": 7}
+    requeue_after_crash(parent, state, deps=_deps())
+    clone = state["tasks"][-1]
+    clone.update(status="done", node="remote", started_at=100.0, finished_at=200.0)
+
+    def sync(candidate):
+        assert candidate["id"] == clone["id"]
+        assert candidate["result_dir"] == parent["result_dir"]
+        assert candidate["local_result_dir"] == str(result)
+        result.mkdir()
+        completion.write_text('{"training_days": 500}\n')
+        return True, "ok"
+
+    sync_completed_results_outside_lock(deps=sync_deps(state=state, sync_results=[sync], now=300.0))
+
+    assert completion.is_file()
+    assert clone["result_synced_at"] == 300.0
+    assert clone["result_sync_attempts"] == 0
+    assert clone["result_sync_error"] is None
+    assert "result_syncing_pid" not in clone
+    assert parent["result_synced_at"] == 20.0
 
 
 def test_active_duplicate_identity_returns_existing_task_without_appending():

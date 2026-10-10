@@ -7,8 +7,14 @@ import signal
 import subprocess
 import time
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import nullcontext
 from dataclasses import dataclass
 from typing import Any, Callable, Optional
+
+try:
+    from scheduler_transport.budget import TransportBusy, control_transport
+except ModuleNotFoundError:
+    from ..scheduler_transport.budget import TransportBusy, control_transport
 
 try:
     from .subprocess import (
@@ -55,6 +61,8 @@ class RemoteExecDeps:
     sigkill: int = signal.SIGKILL
     sigterm: int = signal.SIGTERM
     route_probe_max_workers: int = 2
+    transport_guard: Callable = lambda _args: nullcontext()
+    transport_load: Callable[[str], int] = lambda _route: 0
 
 
 def route_list(value: Any) -> list[str]:
@@ -115,7 +123,9 @@ def ssh_base_args_with_proxy(
         raise RuntimeError(retired_reason)
     info = deps.node_configs[node]
     host = info["host"]
-    disable_mux = bool(deps.ssh_disable_mux or proxy_jump or info.get("disable_control_master"))
+    is_jump = any(node in configured_proxy_jumps(config)
+                  for config in deps.node_configs.values())
+    disable_mux = bool(deps.ssh_disable_mux or info.get("disable_control_master"))
     connect_timeout = max(1, int(deps.ssh_login_preflight_timeout_s or 5))
     args = [
         "ssh",
@@ -130,6 +140,15 @@ def ssh_base_args_with_proxy(
             "-o", "ControlPath=none",
             "-o", "ControlPersist=no",
         ])
+    else:
+        via = str(proxy_jump or "direct")
+        control_path = (f"~/.ssh/scheduleurm-jump-{node}" if is_jump else
+                        f"~/.ssh/scheduleurm-%r@%h-%p-{via}")
+        args.extend([
+            "-o", "ControlMaster=auto",
+            "-o", f"ControlPath={control_path}",
+            "-o", "ControlPersist=60",
+        ])
     if info.get("ssh_identity"):
         args.extend(["-i", deps.expanduser(str(info["ssh_identity"]))])
     if info.get("ssh_port"):
@@ -138,7 +157,10 @@ def ssh_base_args_with_proxy(
         proxy_cmd = (
             f"ssh -o ConnectTimeout={connect_timeout} -o ServerAliveInterval=5 "
             "-o ServerAliveCountMax=3 -o BatchMode=yes "
-            "-o ControlMaster=no -o ControlPath=none -o ControlPersist=no "
+            + ("-o ControlMaster=no -o ControlPath=none -o ControlPersist=no "
+               if disable_mux else
+               f"-o ControlMaster=auto -o ControlPath=~/.ssh/scheduleurm-jump-{proxy_jump} -o ControlPersist=60 ")
+            +
             f"-W %h:%p {shlex.quote(str(proxy_jump))}"
         )
         args.extend(["-o", f"ProxyCommand={proxy_cmd}"])
@@ -147,7 +169,13 @@ def ssh_base_args_with_proxy(
         if opt:
             args.extend(["-o", opt])
     user = info.get("ssh_user")
-    target = f"{user}@{host}" if user and "@" not in str(host) else str(host)
+    if is_jump:
+        # Direct GPU work and its proxy channels must share the same admission key.
+        if str(host) != node:
+            args.extend(["-o", f"Hostname={host}"])
+        target = f"{user}@{node}" if user else node
+    else:
+        target = f"{user}@{host}" if user and "@" not in str(host) else str(host)
     args.append(target)
     return args
 
@@ -179,6 +207,7 @@ def remote_bash_command_for_node(
     return f"bash -c {shlex.quote(wrapped)}"
 
 
+@control_transport()
 def probe_ssh_proxy_jump(
     node: str,
     proxy_jump: str,
@@ -199,10 +228,13 @@ def probe_ssh_proxy_jump(
             deps=deps,
         )
         return proc.returncode == 0
+    except TransportBusy:
+        raise
     except Exception:
         return False
 
 
+@control_transport()
 def probe_outer_ssh_route(
     node: str,
     *,
@@ -226,6 +258,7 @@ def probe_outer_ssh_route(
     jumps = configured_proxy_jumps(info)
     timeout_s = int(timeout or deps.ssh_login_preflight_timeout_s)
     errors = []
+    waiting = None
     routes: list[Optional[str]] = list(jumps) or [None]
     for jump in routes:
         route_label = jump or "direct"
@@ -248,10 +281,14 @@ def probe_outer_ssh_route(
                 return True, ""
             err = (proc.stderr or "").strip() or f"rc={proc.returncode}"
             errors.append(f"{route_label}: {err[:120]}")
+        except TransportBusy as exc:
+            waiting = exc
         except subprocess.TimeoutExpired:
             errors.append(f"{route_label}: outer ssh route timed out after {timeout_s}s")
         except Exception as exc:
             errors.append(f"{route_label}: {str(exc)[:120]}")
+    if waiting is not None:
+        raise waiting
     reason = "; ".join(errors)[:240] or "outer ssh route failed"
     hard_failure = any("timed out" in str(err).lower() for err in errors)
     if not hard_failure:
@@ -336,25 +373,36 @@ def select_proxy_jump(node: str, *, deps: RemoteExecDeps) -> Optional[str]:
         return None
     if len(jumps) == 1:
         return jumps[0]
+    loads = {jump: deps.transport_load(jump) for jump in jumps}
     now = deps.now()
     cached = deps.ssh_proxy_jump_cache.get(node)
     if cached:
         jump, ts = cached
-        if jump in jumps and now - float(ts or 0) <= deps.ssh_route_cache_ttl_s:
+        if (jump in jumps and loads[jump] == min(loads.values())
+                and now - float(ts or 0) <= deps.ssh_route_cache_ttl_s):
             return jump
     route_key = outer_ssh_route_key(node, deps=deps)
     route_cached = deps.ssh_route_jump_cache.get(route_key) if route_key else None
     if route_cached:
         jump, ts = route_cached
-        if jump in jumps and now - float(ts or 0) <= deps.ssh_route_cache_ttl_s:
+        if (jump in jumps and loads[jump] == min(loads.values())
+                and now - float(ts or 0) <= deps.ssh_route_cache_ttl_s):
             deps.ssh_proxy_jump_cache[node] = (jump, now)
             return jump
-    for jump in jumps:
-        if probe_ssh_proxy_jump(node, jump, deps=deps):
+    waiting = None
+    for jump in sorted(jumps, key=lambda jump: loads[jump]):
+        try:
+            healthy = probe_ssh_proxy_jump(node, jump, deps=deps)
+        except TransportBusy as exc:
+            waiting = exc
+            continue
+        if healthy:
             deps.ssh_proxy_jump_cache[node] = (jump, now)
             if route_key:
                 deps.ssh_route_jump_cache[route_key] = (jump, now)
             return jump
+    if waiting is not None:
+        raise waiting
     deps.ssh_proxy_jump_cache.pop(node, None)
     if route_key:
         deps.ssh_route_jump_cache.pop(route_key, None)
@@ -493,6 +541,10 @@ def run_on(
                     text=True,
                     deps=deps,
                 )
+            except TransportBusy:
+                if idx + 1 < len(variants):
+                    continue
+                raise
             except subprocess.TimeoutExpired:
                 deps.ssh_proxy_jump_cache.pop(node, None)
                 if idx + 1 < len(variants):

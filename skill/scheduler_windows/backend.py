@@ -6,6 +6,11 @@ from dataclasses import dataclass
 from typing import Any, Callable, Optional
 
 try:
+    from scheduler_node.inventory import WINDOWS_TASK_DISPATCH_BLOCK_REASON
+except ModuleNotFoundError:
+    from ..scheduler_node.inventory import WINDOWS_TASK_DISPATCH_BLOCK_REASON
+
+try:
     from .batch_probe import WindowsBatchProbeDeps, windows_backend_batch_probe
     from .launch import WindowsLaunchDeps, windows_backend_launch
 except ModuleNotFoundError:  # pragma: no cover - package import fallback
@@ -220,7 +225,7 @@ Write-Output 'READY'
         )
 
     def launch(self, task: dict, node_state: Optional[dict] = None) -> tuple[bool, str]:
-        return windows_backend_launch(task, node_state=node_state, deps=self._launch_deps())
+        return False, WINDOWS_TASK_DISPATCH_BLOCK_REASON
 
     def kill(self, task: dict, timeout: int = 15) -> tuple[bool, str]:
         node = task.get("node")

@@ -101,6 +101,18 @@ def _deps(
     )
 
 
+def test_transport_wait_keeps_done_and_does_not_exhaust_result_retries():
+    task = _task("t1", result_sync_attempts=2)
+    state = {"tasks": [task]}
+    calls = []
+    sync_completed_results_outside_lock(deps=_deps(
+        state=state, calls=calls, sync_results=[(False, "rsync exception: TRANSPORT_WAIT: gpu2")]))
+    assert task["status"] == "done"
+    assert task["result_sync_attempts"] == 2
+    assert "result_syncing_pid" not in task
+    assert any(call[0:2] == ("notify", "result_sync_waiting") for call in calls)
+
+
 def test_success_claims_syncs_and_commits_result_synced_at():
     calls = []
     state = {"tasks": [_task("t1")]}
@@ -228,6 +240,45 @@ def test_dependency_fan_in_uses_bounded_burst_without_draining_backlog():
         "producer-2",
         "producer-3",
     ]
+
+
+def test_dependency_index_matches_nested_result_dirs_not_sibling_prefixes():
+    calls = []
+    state = {"tasks": [
+        _task("sibling", local_result_dir="/local/archive-extra"),
+        _task("producer", local_result_dirs=["/local/unused", "/local/archive/"]),
+        _task("consumer", status="queued", wait_for_files=["/local/archive/sub/manifest.json"]),
+    ]}
+    sync_completed_results_outside_lock(deps=_deps(state=state, calls=calls))
+    assert [call[1]["id"] for call in calls if call[0] == "sync_one"] == ["producer"]
+
+
+def test_large_dependency_backlog_builds_one_index(monkeypatch):
+    from skill.scheduler_result_sync import state as sync_state
+
+    calls = []
+    indexed = []
+    build_index = sync_state._dependency_result_paths
+
+    def record_index(tasks):
+        paths = build_index(tasks)
+        indexed.append(paths)
+        return paths
+
+    monkeypatch.setattr(sync_state, "_dependency_result_paths", record_index)
+    tasks = [_task(f"synced-{i}", result_synced_at=123) for i in range(2500)]
+    tasks.extend(_task(f"waiter-{i}", status="queued", wait_for_files=[
+        "/local/archive/sub/manifest.json",
+    ]) for i in range(6000))
+    tasks.extend([
+        _task("old-result"),
+        _task("producer", local_result_dir="/local/archive"),
+    ])
+    sync_completed_results_outside_lock(deps=_deps(state={"tasks": tasks}, calls=calls))
+    assert len(indexed) == 1
+    assert "/local/archive" in indexed[0]
+    assert len(indexed[0]) == 5
+    assert [call[1]["id"] for call in calls if call[0] == "sync_one"] == ["producer"]
 
 
 def test_fresh_claim_is_skipped_but_stale_claim_is_reclaimed():

@@ -266,6 +266,7 @@ def build_why_command_deps(namespace: Mapping[str, Any]) -> WhyCommandDeps:
         node_is_windows=_ns(namespace, "_node_is_windows"),
         node_cpu_fallback_block_reason=_ns(namespace, "_node_cpu_fallback_block_reason"),
         gpu_fits=_ns(namespace, "_gpu_fits"),
+        gpu_task_cap_for_task=_ns(namespace, "_gpu_task_cap_for_task"),
         algorithm_gpu_fit_block_reason=_ns(namespace, "_algorithm_gpu_fit_block_reason"),
         hard_rule_bypassed=_ns(namespace, "_hard_rule_bypassed"),
         gpu_freeze_line_mb=_ns(namespace, "_gpu_freeze_line_mb"),
@@ -276,6 +277,7 @@ def build_why_command_deps(namespace: Mapping[str, Any]) -> WhyCommandDeps:
         load_state=_ns(namespace, "load_state"),
         load_history=_ns(namespace, "load_history"),
         probe_all=_ns(namespace, "probe_all"),
+        counts_against_node_concurrency=_ns(namespace, "_counts_against_node_concurrency"),
         apply_cpu_slot_accounting_to_nodes=_ns(
             namespace,
             "_apply_cpu_slot_accounting_to_nodes",

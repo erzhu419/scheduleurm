@@ -114,6 +114,18 @@ def test_dispatch_task_gates_blocks_first_ordered_policy_reason():
             "task_id": "t5",
             "task": task,
             "reason": "wait for file",
+            "reason_changed": True,
         }
     ]
     assert task["last_block_reason"] == "wait for file"
+
+
+def test_unchanged_gate_keeps_blocked_event_without_duplicate_notification():
+    task = {"id": "t1", "status": "queued"}
+    deps = _deps(queued_wait_for_file_block_reason=lambda task: "wait for file")
+    first = apply_dispatch_task_gates(task, state={"tasks": [task]}, running_keys=set(), deps=deps)
+    second = apply_dispatch_task_gates(task, state={"tasks": [task]}, running_keys=set(), deps=deps)
+    assert first.events[0]["reason_changed"] is True
+    assert second.skip_task is True
+    assert second.events[0]["reason_changed"] is False
+    assert second.events[0]["reason"] == task["last_block_reason"]

@@ -1,8 +1,14 @@
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import replace
 from types import SimpleNamespace
 
+import pytest
+
+from skill.scheduler_dispatch.launch_execution import (
+    DispatchLaunchExecutionDeps, apply_dispatch_launch_execution,
+)
 from skill.scheduler_dispatch_loop import (
     DispatchLoopDeps,
     do_dispatch,
@@ -182,7 +188,7 @@ def _deps(
         task_run_identity=lambda task: task.get("identity"),
         algorithm_global_batch_plan=lambda queued, nodes: ({}, None),
         apply_dispatch_task_gates=apply_gate,
-        dispatch_task_gate_deps=lambda: object(),
+        dispatch_task_gate_deps=lambda: SimpleNamespace(queued_wait_for_file_block_reason=lambda task: ""),
         resolve_resume_aware_placement=resolve_resume,
         dispatch_resume_placement_deps=lambda: object(),
         build_no_fit_reason=lambda task, nodes, extra_allowed_nodes=None: (
@@ -567,10 +573,12 @@ def test_dispatch_deduplicates_shared_launch_input_state_checks():
         _task(
             "t1",
             wait_for_files=["/work/shared/input.json"],
+            stage_input_paths=["/work/shared"],
         ),
         _task(
             "t2",
             wait_for_files=["/work/shared/input.json"],
+            stage_input_paths=["/work/shared"],
         ),
     ]
 
@@ -587,6 +595,58 @@ def test_dispatch_deduplicates_shared_launch_input_state_checks():
 
     assert input_checks == [("t1", "n1")]
     assert [task["status"] for task in tasks] == ["running", "running"]
+
+
+def test_wait_file_gate_launches_without_staging_or_stale_input_pin():
+    calls = []
+    task = _task(
+        "t1",
+        wait_for_files=["/work/gates/first.json"],
+        stage_input_target="n2",
+        skip_launch_staging=True,
+    )
+    state = {"tasks": [task]}
+    nodes = [{"name": "n1"}, {"name": "n2"}]
+
+    def unexpected_input_stage(task, target):
+        raise AssertionError("a local prerequisite is not a launch input")
+
+    do_dispatch(
+        state, nodes,
+        deps=_deps(calls, gate_skips={"t1"}, input_stage_state=unexpected_input_stage),
+    )
+    assert task["status"] == "queued"
+    assert not any(call[0] == "launch" for call in calls)
+
+    do_dispatch(
+        state, nodes, deps=_deps(calls, input_stage_state=unexpected_input_stage),
+    )
+    assert task["status"] == "running"
+    assert "stage_input_target" not in task
+    pick = next(call for call in calls if call[0] == "pick")
+    assert pick[2] is None
+    assert not any(call[0] == "input_stage_gate" for call in calls)
+
+
+def test_explicit_inputs_still_block_launch_when_source_staging_is_skipped():
+    calls = []
+    task = _task(
+        "t1",
+        wait_for_files=["/work/gates/first.json"],
+        stage_input_paths=["/work/bundle"],
+        skip_launch_staging=True,
+    )
+    do_dispatch(
+        {"tasks": [task]}, [{"name": "n1"}],
+        deps=_deps(
+            calls,
+            input_stage_state=lambda task, target: "needs_stage",
+            input_stage_blocked=True,
+        ),
+    )
+    assert task["status"] == "queued"
+    assert ("input_stage_gate", "t1", "n1", "needs_stage") in calls
+    assert not any(call[0] == "launch" for call in calls)
 
 
 def test_do_dispatch_max_queued_caps_work_without_changing_reported_queue_count():
@@ -617,6 +677,37 @@ def test_bounded_dispatch_rotates_past_recently_attempted_queue_head():
     selected = select_dispatch_cycle_tasks(tasks, 2)
 
     assert [task["id"] for task in selected] == ["t3", "t4"]
+
+
+def test_bounded_dispatch_ready_dependencies_do_not_wait_for_thousands_of_blocked_tasks():
+    waiting = [_task(f"waiting-{i}", wait_for_files=["/missing/gate.json"])
+               for i in range(6000)]
+    ready = [_task("ready-cpu", last_dispatch_attempt_at=100),
+             _task("ready-gpu", est_vram_mb=4096, last_dispatch_attempt_at=100)]
+    selected = select_dispatch_cycle_tasks(
+        waiting + ready, 1024,
+        wait_for_file_block_reason=lambda task: "waiting" if task.get("wait_for_files") else "",
+    )
+    assert len(selected) == 1024
+    assert [task["id"] for task in selected[:2]] == ["ready-cpu", "ready-gpu"]
+
+
+def test_bounded_dispatch_rechecks_files_instead_of_trusting_old_block_reason(tmp_path):
+    gate = tmp_path / "gate.json"
+    newly_ready = _task(
+        "newly-ready", wait_for_files=[str(gate)],
+        last_block_reason="waiting for prerequisite file(s)", last_dispatch_attempt_at=100,
+    )
+    waiting = [_task(f"waiting-{i}", wait_for_files=["/missing/gate.json"])
+               for i in range(1500)]
+    gate.write_text("{}")
+    selected = select_dispatch_cycle_tasks(
+        waiting + [newly_ready], 1,
+        wait_for_file_block_reason=lambda task: (
+            "" if task["wait_for_files"] == [str(gate)] and gate.stat().st_size > 0 else "waiting"
+        ),
+    )
+    assert selected == [newly_ready]
 
 
 def test_bounded_dispatch_interleaves_gpu_and_cpu_resource_lanes():
@@ -675,6 +766,83 @@ def test_input_staging_defer_reserves_selected_resources_for_this_pass():
     assert task["status"] == "queued"
     assert task["node"] is None
     assert ("debit", "t1", "n2", 1) in calls
+
+
+@pytest.mark.parametrize("gpu", [False, True])
+@pytest.mark.parametrize("inputs_ready", [False, True])
+def test_full_batch_balances_launch_leases_and_staging_reservations(
+    sch, monkeypatch, gpu, inputs_ready,
+):
+    node_names = [f"batch-{i}" for i in range(6)]
+    nodes = [{
+        "name": name, "alive": True, "total_cpu": 96, "free_cpu": 96,
+        "observed_free_cpu": 96, "cpu_hard_free": 96,
+        "cpu_slot_accounting": True, "cpu_slot_reserved": 0,
+        "free_ram_mb": 180000, "total_ram_mb": 192000,
+        "running_count": 0,
+        "gpus": ([{"idx": 0, "used_mb": 0, "free_mb": 12000,
+                   "total_mb": 12288, "util_pct": 0,
+                   "running_task_count": 0}] if gpu else []),
+    } for name in node_names]
+    nodes[0].update(free_cpu=0, observed_free_cpu=0, cpu_hard_free=0,
+                    cpu_slot_reserved=96)
+    configs = {name: {
+        "host": name, "cpu_cores": 96,
+        "max_vram_per_task": None if gpu else 0,
+        "ignore_cpu_for_gpu_tasks": False, "max_tasks_per_gpu": 12,
+        "allow_gpu_over_one_third": True,
+    } for name in node_names}
+    monkeypatch.setattr(sch, "NODES", configs)
+    monkeypatch.setattr(sch, "_candidate_runtime_seconds",
+                        lambda task, node, gpu: 100 if node == node_names[1] else 0)
+    tasks = [_task(f"wave-{i}", cpu_cores=4, ram_mb=512,
+                   est_vram_mb=32 if gpu else 0,
+                   stage_input_paths=["/inputs"],
+                   stage_input_target=node_names[1]) for i in range(40)]
+    calls = []
+    launch_deps = DispatchLaunchExecutionDeps(
+        resource_snapshot_for_placement=lambda *args: {},
+        new_launch_token=lambda: "batch-token",
+        debit_node_resources_for_launch=sch._debit_node_resources_for_launch,
+        task_run_identity=lambda task: task["identity"],
+        save_state=lambda state: calls.append(("save_state",)),
+        launch=lambda *args: pytest.fail("batch planning must not launch under the lock"),
+        apply_launch_result_to_task=lambda *args: False,
+        notify=lambda *args, **kwargs: None,
+    )
+
+    def resolve(task, *, nodes, pick_placement, **kwargs):
+        return SimpleNamespace(
+            skip_task=False, placement=pick_placement(task, nodes),
+            resume_locations=[], resume_nodes=[], extra_allowed_nodes=[],
+        )
+
+    deps = replace(
+        _deps(calls, node_configs=configs,
+              input_stage_state=lambda task, target: "ready" if inputs_ready else "needs_stage",
+              input_stage_blocked=not inputs_ready),
+        pick_placement=sch.pick_placement,
+        resolve_resume_aware_placement=resolve,
+        debit_node_resources_for_launch=sch._debit_node_resources_for_launch,
+        apply_dispatch_launch_execution=apply_dispatch_launch_execution,
+        dispatch_launch_execution_deps=lambda: launch_deps,
+    )
+
+    events, qcount = do_dispatch({"tasks": tasks}, nodes, defer_launches=True, deps=deps)
+
+    assert qcount == 40
+    assert [n["cpu_slot_reserved"] for n in nodes[1:]] == [32] * 5
+    assert not any(call[0] == "save_state" for call in calls)
+    if inputs_ready:
+        assert all(t["status"] == "launching" for t in tasks)
+        assert Counter(t["node"] for t in tasks) == {n: 8 for n in node_names[1:]}
+        assert sum(e["type"] == "launch_intent" for e in events) == 40
+    else:
+        assert all(t["status"] == "queued" for t in tasks)
+        assert Counter(call[2] for call in calls if call[0] == "input_stage_gate") == {
+            n: 8 for n in node_names[1:]
+        }
+        assert sum(e["type"] == "launch_input_stage_deferred" for e in events) == 40
 
 
 def test_dispatch_records_attempt_metadata_even_when_gate_blocks_task():

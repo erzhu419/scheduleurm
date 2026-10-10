@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+try:
+    from scheduler_transport.budget import control_transport
+except ModuleNotFoundError:
+    from ..scheduler_transport.budget import control_transport
+
 from typing import Callable, Optional
 
 
@@ -87,6 +92,7 @@ def claim_resource_record_for_task(
     }
 
 
+@control_transport()
 def release_task_claims_and_intents(
     task: dict,
     *,

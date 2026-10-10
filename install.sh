@@ -386,6 +386,11 @@ else
     copy_source_tree "$ALGORITHM_SRC" "$COPY_STAGE_ROOT/algorithm"
     copy_source_tree "$SIMULATION_SRC" "$COPY_STAGE_ROOT/simulation"
     mkdir -p "$COPY_STAGE_ROOT/md/experiment_artifacts"
+    for cache_name in default_service_cache.json corner_case_service_cache_20260613.json service_cache_v2_live_merged_pre_native_20260727.json; do
+        if [[ -f "$REPO_DIR/md/experiment_artifacts/$cache_name" ]]; then
+            cp -- "$REPO_DIR/md/experiment_artifacts/$cache_name" "$COPY_STAGE_ROOT/md/experiment_artifacts/$cache_name"
+        fi
+    done
     for index in "${!CACHE_ARTIFACTS[@]}"; do
         cp -- \
             "${CACHE_ARTIFACTS[$index]}" \
@@ -447,7 +452,7 @@ for artifact in artifact_root.iterdir():
 print(
     "    staged scheduler runtime loads OK "
     f"({len(scheduler.NODES)} nodes, "
-    f"{artifact_count} selected cache artifacts, "
+    f"{artifact_count} cache artifacts, "
     f"{policy.name} policy)"
 )
 ' "$COPY_STAGE_ROOT"
@@ -530,14 +535,9 @@ echo
 echo "==> done"
 echo
 echo "Next steps:"
-if [[ "$LINK_MODE" -eq 1 ]]; then
-    echo "  1. Edit cluster's NODES dict in $SKILL_SRC/scheduler.py (top of file)"
-    echo "     Edits go live immediately — no need to re-run install.sh."
-    echo "     Run 'systemctl --user restart scheduler' to pick up scheduler.py changes in the watcher."
-else
-    echo "  1. Edit cluster's NODES dict in $SKILL_DST/scheduler.py (top of file)"
-    echo "     OR re-run ./install.sh after editing $SKILL_SRC/scheduler.py to push edits."
-fi
+echo "  1. Configure nodes in $HOME/.claude/scheduler/nodes.json (outside the repository)."
+echo "     See $REPO_DIR/docs/nodes.example.json; set your physical CPU budgets and paths."
+echo "     Restart the watcher after changing nodes. No file enables only the local machine."
 echo "  2. Confirm SSH passwordless to remote nodes (ssh -o BatchMode=yes <node> true)"
 echo "  3. Try:    python3 $SKILL_DST/scheduler.py status"
 echo "  4. Submit: python3 $SKILL_DST/scheduler.py submit --help"

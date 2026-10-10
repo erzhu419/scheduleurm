@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import argparse
 
+import pytest
+
 from skill import scheduler_submit_policy as policy
 
 
@@ -166,6 +168,14 @@ def test_cpu_training_guard_requires_scheduler_level_intent():
     )
 
 
+def test_cpu_sampler_does_not_change_gpu_learner_intent():
+    for flag in ("--sampling-device cpu", "--sampling-device=cpu", "--replay-device cpu"):
+        command = f"JAX_PLATFORMS=cuda,cpu python -m run_mechanism_gap_v34 train {flag}"
+        assert policy.cpu_training_policy_reason(command, "train reference", False, 1500) is None
+        assert "would reserve a GPU" in policy.cpu_training_policy_reason(
+            command + " --device cpu", "train reference", False, 1500)
+
+
 def test_training_description_detection_does_not_match_constrained_algorithm_names():
     description = (
         "SC-OLH structural backend "
@@ -180,3 +190,38 @@ def test_training_description_detection_does_not_match_constrained_algorithm_nam
         0,
     ) is None
     assert policy.task_looks_like_training("python worker.py", "CPU training seed=0") is True
+
+
+@pytest.mark.parametrize("branch", ["sac0", "sac025"])
+@pytest.mark.parametrize("seed", [75101, 75102, 75103])
+def test_cfcmt_actor_evaluation_is_not_cpu_training(branch, seed):
+    cmd = (
+        "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python "
+        "-u /home/hpcuser/scheduleurm_work/CFCMT/experiments/"
+        f"bus_cross_city_native_v1/iql_actor_continuation.py evaluate --branch {branch} --seed {seed}"
+    )
+    description = f"Fixed actor-only comparison {branch} {seed}; three prospective demand cases"
+
+    assert policy.task_looks_like_training(cmd, description) is False
+    assert policy.cpu_training_policy_reason(cmd, description, False, 0) is None
+
+
+@pytest.mark.parametrize("description", [
+    "baseline: SAC evaluation", "IQL policy comparison", "AWAC analysis",
+    "TD3 evaluation", "RLPD summary", "WSRL evaluation", "BC on held-out cases",
+])
+def test_algorithm_description_alone_does_not_imply_training(description):
+    assert policy.task_looks_like_training("python worker.py", description) is False
+
+
+@pytest.mark.parametrize("cmd", [
+    "python iql_actor_continuation.py train --branch td0 --seed 75101",
+    "/env/bin/python3 -u iql_actor_continuation.py train --branch td025 --seed 75101",
+    "JAX_PLATFORMS=cuda python -u -m run_mechanism_gap_v34 train --sampling-device cpu",
+    "python -m jax_experiments.analysis.run_resac_torch_alignment_v41 train --arm fork",
+])
+def test_explicit_training_subcommand_keeps_cpu_intent_guard(cmd):
+    assert policy.task_looks_like_training(cmd, "SAC experiment") is True
+    assert policy.cpu_training_policy_reason(cmd, "SAC experiment", False, 0)
+    assert policy.cpu_training_policy_reason(cmd, "SAC experiment", True, 0) is None
+    assert policy.cpu_training_policy_reason(cmd, "SAC experiment", False, 1500) is None

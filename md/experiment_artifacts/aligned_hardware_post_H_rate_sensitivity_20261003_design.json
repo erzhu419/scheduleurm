@@ -1,0 +1,62 @@
+{
+  "status": "DESIGN_ONLY_NOT_IMPLEMENTED",
+  "created_at_utc": "2026-10-03T05:01:57.901638+00:00",
+  "source_native_terminal_epoch": "2026-10-03T04:18:21.983431+00:00",
+  "source_H_epoch": "2026-10-03T03:05:46.132942+00:00",
+  "diagnosis": "seed43 full waiting gap +41.60767450168457 dominates full cost gap +39.69574730874075; count standardization remains native; future competition intensity is a testable parameter.",
+  "single_intervention": "Only post-H external arrival rates: frozen anchor MLE versus known experimental generating rates. Keep every original synthetic H state and scored roster.",
+  "states": [
+    {
+      "seed": 41,
+      "frame_index": 11,
+      "anchor_estimated_rates": [
+        0.12426466818675909,
+        0.2899508924357712,
+        0.3727940045602773
+      ],
+      "diagnostic_generating_rates": [
+        0.12690001827996245,
+        0.27857287626960897,
+        0.3412059828785984
+      ]
+    },
+    {
+      "seed": 42,
+      "frame_index": 39,
+      "anchor_estimated_rates": [
+        0.15094812316872172,
+        0.2354790721432059,
+        0.36227549560493216
+      ],
+      "diagnostic_generating_rates": [
+        0.12690001827996245,
+        0.27857287626960897,
+        0.3412059828785984
+      ]
+    },
+    {
+      "seed": 43,
+      "frame_index": 29,
+      "anchor_estimated_rates": [
+        0.12866151200239234,
+        0.2001401297814992,
+        0.2573230240047847
+      ],
+      "diagnostic_generating_rates": [
+        0.12690001827996245,
+        0.27857287626960897,
+        0.3412059828785984
+      ]
+    }
+  ],
+  "planning_samples": 8,
+  "planning_event_cap": 128,
+  "root_sample_units": 48,
+  "terminal_controller": "Original complete native finite controller; restore same three semantic states from original H caches.",
+  "randomness": "Regenerate the original anchor-MLE stream through H exactly. For each positive-rate class, rescale its pending exponential residual by old_rate/new_rate at H, preserving its random quantile, then continue the existing RNG with new rates. Shared parent/native stream prefixes remain identical. No new H events, reseeding or discarded units.",
+  "cost_population": "Unchanged cached H roster only; new post-H births compete but remain unscored.",
+  "internal_estimator": "Native controller retains ordinary online counts/time estimates; do not inject the generating rate into policy state.",
+  "comparison": "Pair against completed native-terminal costs; report all three means, per-path votes, leave-one-out ranges, source/class/waiting decomposition, caps and actual charged proposal work.",
+  "limitations": "Known generating rates are an oracle sensitivity diagnostic, not a deployable algorithm. Selected realized H labels are conditional and do not establish expected-cost truth or full-policy gain. This cannot explain pre-H realization/timing differences by itself.",
+  "full24_decision": "PERSISTENT_CURRENT_POLICY_DEVELOPMENT_HOLD"
+}

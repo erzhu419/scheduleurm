@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 
@@ -11,6 +12,10 @@ NODE_NAME_ALIASES = {
     # but the live scheduler has exactly one visible/dispatchable node007.
     "node007-direct": "node007",
 }
+
+WINDOWS_TASK_DISPATCH_BLOCK_REASON = (
+    "windows-node-disabled: task dispatch to Windows nodes is prohibited"
+)
 
 GPU_A_RE_SAC_JAX_ENV = "/home/researcher/.venvs/resac-jax-gpu1-0438"
 GPU_A_RE_SAC_JAX_SITE = f"{GPU_A_RE_SAC_JAX_ENV}/lib/python3.11/site-packages"
@@ -32,6 +37,7 @@ GPU_A_RE_SAC_JAX_PATH = (
     "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 )
 NODE007_RESAC_JAX_ENV = "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310"
+NODE007_RESAC_JAX_0438_ENV = "/home/hpcuser/scheduleurm_work/conda_envs/bapr-v39-gpu-0438"
 NODE007_SCOMP_ENV = "/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310"
 OFFLINE_SUMO_ENV = "/home/researcher/.conda/envs/offline-sumo"
 OFFLINE_SUMO_PYTHON = f"{OFFLINE_SUMO_ENV}/bin/python"
@@ -82,301 +88,34 @@ GPU_A_CAPACITY_POLICY = {
 }
 
 
-NODES = {
-    "local": {
-        "host": None,
-        "cpu_cores": 16,
-        "reserved_cpu_cores": int(os.environ.get("SCHEDULEURM_LOCAL_RESERVED_CPU_CORES", "0")),
-        "ram_mb": 56 * 1024,
-        "ram_headroom_mb": 2048,
-        "ram_headroom_frac": 0.20,
-        "max_vram_per_task": None,
-        "max_concurrent_running": 10,
-        "max_tasks_per_gpu": 4,
-        "gpu_util_saturation_pct": None,
-        "capabilities": ["cpu", "cuda", "torch_cuda", "jax_cuda"],
-        "blocked_gpu_projects": ["BAPR"],
-        "cmd_rewrites": BUS_TORCH_CMD_REWRITES,
-    },
-    "gpu_a": {
-        **GPU_A_CAPACITY_POLICY,
-        "host": "gpu_a",
-        "cpu_cores": 12,
-        "ram_mb": 0,
-        "ram_headroom_frac": 0.10,
-        "launch_stage_include_paths": BAPR_JAX_LAUNCH_INCLUDE_PATHS,
-        "launch_stage_fingerprint_exclude_paths": LAUNCH_STAGE_FINGERPRINT_EXCLUDE_PATHS,
-        "cmd_rewrites": BUS_TORCH_CMD_REWRITES + [
-            ("/home/researcher/.conda/envs/resac-jax/bin/python",
-             f"{GPU_A_RE_SAC_JAX_ENV}/bin/python"),
-        ],
-        "launch_extra_env": {
-            "PATH": GPU_A_RE_SAC_JAX_PATH,
-            "LD_LIBRARY_PATH": GPU_A_RE_SAC_JAX_NVIDIA_LIBS,
-            "XLA_PYTHON_CLIENT_MEM_FRACTION": "0.20",
-        },
-    },
-    "gpu_b": {
-        **GPU_A_CAPACITY_POLICY,
-        "host": "gpu_b",
-        "cpu_cores": 12,
-        "ram_mb": 0,
-        "ram_headroom_frac": 0.10,
-        "launch_stage_include_paths": BAPR_JAX_LAUNCH_INCLUDE_PATHS,
-        "launch_stage_fingerprint_exclude_paths": LAUNCH_STAGE_FINGERPRINT_EXCLUDE_PATHS,
-        "cmd_rewrites": BUS_TORCH_CMD_REWRITES + [
-            ("/home/researcher/.conda/envs/resac-jax/bin/python",
-             f"{GPU_A_RE_SAC_JAX_ENV}/bin/python"),
-        ],
-        "launch_extra_env": {
-            "PATH": GPU_A_RE_SAC_JAX_PATH,
-            "LD_LIBRARY_PATH": GPU_A_RE_SAC_JAX_NVIDIA_LIBS,
-            "XLA_PYTHON_CLIENT_MEM_FRACTION": "0.20",
-        },
-    },
-    "cpu_a": {
-        "host": "cpu_a",
-        "cpu_cores": 8,
-        "ram_mb": 0,
-        "ram_headroom_frac": 0.10,
-        "max_vram_per_task": None,
-        "max_concurrent_running": None,
-        "max_tasks_per_gpu": 3,
-        "enable_claims": True,
-        "gpu_util_saturation_pct": None,
-        "capabilities": ["cpu", "cuda", "torch_cuda", "jax_cuda"],
-        "launch_stage_include_paths": BAPR_JAX_LAUNCH_INCLUDE_PATHS,
-        "launch_stage_fingerprint_exclude_paths": LAUNCH_STAGE_FINGERPRINT_EXCLUDE_PATHS,
-        "cmd_rewrites": BUS_TORCH_CMD_REWRITES + [
-            ("/home/researcher/.conda/envs/resac-jax/bin/python",
-             f"{GPU_A_RE_SAC_JAX_ENV}/bin/python"),
-        ],
-        "launch_extra_env": {
-            "PATH": GPU_A_RE_SAC_JAX_PATH,
-            "LD_LIBRARY_PATH": GPU_A_RE_SAC_JAX_NVIDIA_LIBS,
-            "XLA_PYTHON_CLIENT_MEM_FRACTION": "0.20",
-        },
-    },
-    "login_hpc": {
-        "host": "192.0.2.10",
-        "ssh_user": "hpcuser",
-        "ssh_proxy_jump": "gpu_a",
-        "ssh_proxy_jumps": ["gpu_a", "gpu_b"],
-        "cpu_cores": 64,
-        "ram_mb": 0,
-        "ram_headroom_frac": 0.10,
-        "max_vram_per_task": None,
-        "max_concurrent_running": 0,
-        "monitor_only": True,
-        "skip_launch_staging": True,
-        "disable_auto_adopt": True,
-        "only_when_targeted": True,
-        "stage_only_when_targeted": True,
-        "relay_node": None,
-        "relay_nodes": [],
-        "relay_root": "/tmp/scheduleurm-hpc-relay/login_hpc",
-        "remote_workspace_root": "/home/hpcuser/scheduleurm_work",
-        "remote_path_prefixes": [
-            str(Path.home() / "mine_code"),
-            "/home/researcher/mine_code",
-        ],
-        "capabilities": ["cpu", "cuda", "torch_cuda", "jax_cuda"],
-    },
-    "node007": {
-        "host": "192.0.2.10",
-        "ssh_user": "hpcuser",
-        "ssh_proxy_jump": "gpu_a",
-        "ssh_proxy_jumps": ["gpu_a", "gpu_b"],
-        "sudo_ssh_host": "node007",
-        "sudo_ssh_run_as": "hpcuser",
-        "cpu_cores": 64,
-        "ram_mb": 0,
-        "ram_headroom_frac": 0.10,
-        "max_vram_per_task": None,
-        "max_concurrent_running": 24,
-        "max_tasks_per_gpu": 4,
-        "small_vram_task_threshold_mb": 1536,
-        "small_vram_max_concurrent_running": 24,
-        "small_vram_max_tasks_per_gpu": 6,
-        "allow_gpu_over_one_third": True,
-        "gpu_util_saturation_pct": None,
-        "ignore_cpu_for_gpu_tasks": True,
-        "cpu_slot_accounting": True,
-        "min_free_user_threads_for_gpu_task": 256,
-        "max_user_thread_fraction_for_gpu_task": 0.92,
-        "probe_attempts": 8,
-        "enable_claims": False,
-        "skip_launch_staging": False,
-        "only_when_targeted": False,
-        "stage_only_when_targeted": False,
-        "relay_node": None,
-        "relay_nodes": [],
-        "relay_root": "/tmp/scheduleurm-hpc-relay/node007",
-        "remote_workspace_root": "/home/hpcuser/scheduleurm_work",
-        "remote_path_prefixes": [
-            str(Path.home() / "mine_code"),
-            "/home/researcher/mine_code",
-        ],
-        # The shared node007 workspace is reachable through the head-node
-        # proxy. Prefer generic rsync so projects other than the legacy BAPR
-        # tree can stage their complete source directory as well.
-        "launch_staging_method": "rsync",
-        "launch_stage_include_paths": BAPR_JAX_LAUNCH_INCLUDE_PATHS,
-        "launch_stage_fingerprint_exclude_paths": LAUNCH_STAGE_FINGERPRINT_EXCLUDE_PATHS,
-        "cmd_rewrites": BUS_TORCH_CMD_REWRITES + [
-            (f"{OFFLINE_SUMO_PYTHON} -u -m bus_experiments",
-             f"{NODE007_RESAC_JAX_ENV}/bin/python -u -m bus_experiments"),
-            (f"{OFFLINE_SUMO_PYTHON} -m bus_experiments",
-             f"{NODE007_RESAC_JAX_ENV}/bin/python -m bus_experiments"),
-            ("/home/researcher/miniconda3/envs/csbapr/bin/python",
-             "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python"),
-            ("/home/researcher/.venvs/scheduleurm-torch-bench/bin/python",
-             f"{NODE007_SCOMP_ENV}/bin/python"),
-            ("/home/researcher/.conda/envs/resac-jax/bin/python",
-             f"{NODE007_RESAC_JAX_ENV}/bin/python"),
-        ],
-        "launch_extra_env": {
-            "PATH": (
-                f"/cm/local/apps/cuda-driver/libs/535.261.03/bin:"
-                f"{NODE007_RESAC_JAX_ENV}/bin:/usr/local/bin:/usr/bin:/bin"
-            ),
-            "LD_LIBRARY_PATH": "/cm/local/apps/cuda-driver/libs/535.261.03/lib64",
-            "BAPR_PYTHON": f"{NODE007_RESAC_JAX_ENV}/bin/python",
-            "XLA_PYTHON_CLIENT_MEM_FRACTION": "0.20",
-        },
-        "resume_scan_python": f"{NODE007_RESAC_JAX_ENV}/bin/python",
-        "nvidia_smi_path": "/cm/local/apps/cuda-driver/libs/535.261.03/bin/nvidia-smi",
-        "capabilities": ["cpu", "cuda", "torch_cuda", "jax_cuda"],
-    },
-    "windows_a": {
-        "host": "forwarder.example.org",
-        "ssh_user": "researcher",
-        "ssh_port": 22945,
-        "ssh_identity": str(Path.home() / ".ssh" / "id_ed25519"),
-        "os": "windows",
-        "cpu_cores": 128,
-        "ram_mb": 512 * 1024,
-        "ram_headroom_frac": 0.10,
-        "max_vram_per_task": 0,
-        "windows_python": r"F:\v\Scripts\python.exe",
-        "windows_workspace_root": r"F:\researcher_smoke",
-        "windows_scheduleurm_dir": r"F:\researcher_smoke\.scheduleurm",
-        "windows_auto_pin": True,
-        "windows_skip_ht_pair": True,
-        "capabilities": ["cpu", "jax_cpu"],
-        "cpu_labor_node": True,
-    },
-    "windows_b": {
-        "host": "forwarder.example.org",
-        "ssh_user": "researcher",
-        "ssh_port": 23565,
-        "ssh_identity": str(Path.home() / ".ssh" / "id_ed25519"),
-        "os": "windows",
-        "cpu_cores": 128,
-        "ram_mb": 512 * 1024,
-        "ram_headroom_frac": 0.10,
-        "max_vram_per_task": 0,
-        "windows_python": r"F:\v\Scripts\python.exe",
-        "windows_workspace_root": r"F:\researcher_smoke",
-        "windows_scheduleurm_dir": r"F:\researcher_smoke\.scheduleurm",
-        "windows_auto_pin": True,
-        "windows_skip_ht_pair": False,
-        "capabilities": ["cpu", "jax_cpu"],
-        "cpu_labor_node": True,
-    },
-}
-
-for _hpc_cpu_idx in range(1, 7):
-    _hpc_cpu_node = f"node{_hpc_cpu_idx:03d}"
-    NODES[_hpc_cpu_node] = {
-        "host": "192.0.2.10",
-        "ssh_user": "hpcuser",
-        "ssh_proxy_jump": "gpu_a",
-        "ssh_proxy_jumps": ["gpu_a", "gpu_b"],
-        "sudo_ssh_host": _hpc_cpu_node,
-        "sudo_ssh_run_as": "hpcuser",
-        "cpu_cores": 192,
-        # Keep only a small OS/service margin. Placement uses live CPU
-        # headroom, so queued CPU work may fill the remaining 172 cores.
-        "reserved_cpu_cores": max(
-            0, int(os.environ.get("SCHEDULEURM_HPC_RESERVED_CPU_CORES", "20"))
-        ),
-        "ram_mb": 0,
-        "ram_headroom_frac": 0.10,
-        "max_vram_per_task": 0,
-        "max_concurrent_running": None,
-        "cpu_slot_accounting": True,
-        # XLA's CPU backend creates a large per-process thread pool. Six such
-        # jobs fit below the HPC account's 4096-thread limit; a seventh does
-        # not reliably compile.
-        "min_free_user_threads_for_jax_cpu_task": 1024,
-        "jax_cpu_launch_user_thread_reserve": 512,
-        "live_cpu_backfill": os.environ.get(
-            "SCHEDULEURM_HPC_LIVE_CPU_BACKFILL", "1"
-        ).lower() not in ("0", "false", "no", "off"),
-        # Mature jobs may backfill genuinely idle cores. Fresh launches retain
-        # their declared reservation during the startup grace period, and the
-        # dispatch wave debits each launch immediately from the probe snapshot.
-        "live_cpu_backfill_max_task_cores": max(
-            1, int(os.environ.get("SCHEDULEURM_HPC_LIVE_CPU_BACKFILL_MAX_TASK_CORES", "64"))
-        ),
-        # Bursty CPU SAAS jobs are admitted from live headroom in staggered
-        # waves. This is only the final overcommit fuse; live free CPU and the
-        # startup reservation normally stop dispatch first.
-        "persistent_cpu_live_backfill_max_declared_cores": max(
-            0,
-            int(
-                os.environ.get(
-                    "SCHEDULEURM_HPC_PERSISTENT_CPU_MAX_DECLARED_CORES",
-                    "276",
-                )
-            ),
-        ),
-        "live_cpu_backfill_startup_grace_s": max(
-            0, int(os.environ.get("SCHEDULEURM_HPC_LIVE_CPU_BACKFILL_STARTUP_GRACE_S", "90"))
-        ),
-        "live_cpu_backfill_single_thread_startup_grace_s": max(
-            0, int(os.environ.get("SCHEDULEURM_HPC_SINGLE_THREAD_STARTUP_GRACE_S", "10"))
-        ),
-        "skip_launch_staging": False,
-        # These nodes use the same path convention but not one mounted
-        # workspace.  Each node must receive its own staging success marker.
-        "only_when_targeted": True,
-        "stage_only_when_targeted": True,
-        "relay_node": None,
-        "relay_nodes": [],
-        "relay_root": f"/tmp/scheduleurm-hpc-relay/{_hpc_cpu_node}",
-        "remote_workspace_root": "/home/hpcuser/scheduleurm_work",
-        # The six compute nodes are reached through the same login account and
-        # see the same NFS-backed home workspace. Serialize/alias launch
-        # staging so concurrent rsyncs cannot update one source tree at once.
-        "shared_workspace_group": "login_hpc-home",
-        "disable_auto_adopt": True,
-        "auto_adopt_owners": ["hpcuser", "root"],
-        "remote_path_prefixes": [
-            str(Path.home() / "mine_code"),
-            "/home/researcher/mine_code",
-        ],
-        # Keep the shared HPC workspace in sync with the actual BAPR/JAX
-        # source set.  Without this, a staged CPU task can keep executing an
-        # old analysis module after the control workspace has been fixed.
-        "launch_stage_include_paths": BAPR_JAX_LAUNCH_INCLUDE_PATHS,
-        "launch_stage_fingerprint_exclude_paths": LAUNCH_STAGE_FINGERPRINT_EXCLUDE_PATHS,
-        "cmd_rewrites": BUS_TORCH_CMD_REWRITES + [
-            ("/home/researcher/.conda/envs/resac-jax/bin/python",
-             f"{NODE007_RESAC_JAX_ENV}/bin/python"),
-        ],
-        "launch_extra_env": {
-            "PATH": (
-                f"{NODE007_RESAC_JAX_ENV}/bin:"
-                "/usr/local/bin:/usr/bin:/bin"
-            ),
-            "LD_LIBRARY_PATH": "/cm/local/apps/cuda-driver/libs/535.261.03/lib64",
-            "BAPR_PYTHON": f"{NODE007_RESAC_JAX_ENV}/bin/python",
-        },
-        "resume_scan_python": f"{NODE007_RESAC_JAX_ENV}/bin/python",
-        "capabilities": ["cpu", "jax_cpu"],
+def load_nodes(*, environ=None, home=None) -> dict:
+    """Read operator-owned configuration without shipping a private cluster."""
+    env = os.environ if environ is None else environ
+    home_path = Path.home() if home is None else Path(home)
+    explicit = env.get("SCHEDULEURM_NODES_FILE")
+    path = Path(explicit).expanduser() if explicit else home_path / ".claude" / "scheduler" / "nodes.json"
+    if explicit or path.exists():
+        nodes = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(nodes, dict) or not nodes or any(
+            not name or not isinstance(config, dict) for name, config in nodes.items()
+        ):
+            raise ValueError(f"{path}: expected a non-empty object mapping node names to configurations")
+        return nodes
+    return {
+        "local": {
+            "host": None,
+            "cpu_cores": 1,
+            "reserved_cpu_cores": 0,
+            "ram_mb": 0,
+            "ram_headroom_frac": 0.1,
+            "max_concurrent_running": 1,
+            "max_tasks_per_gpu": 1,
+            "capabilities": ["cpu", "cuda", "torch_cuda", "jax_cuda"],
+        }
     }
+
+
+NODES = load_nodes()
 
 TASK_NODE_FIELDS = {
     "node", "last_node", "assigned_node", "required_node", "require_node",

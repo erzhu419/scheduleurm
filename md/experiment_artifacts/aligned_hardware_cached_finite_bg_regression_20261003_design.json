@@ -1,0 +1,61 @@
+{
+  "registered_at_utc": "2026-10-03T11:35:46.335571+00:00",
+  "finite_result": "aligned_hardware_parallel_root_sharded_20261001.json",
+  "finite_scientific_epoch": "2026-10-01T03:00:01.222638+00:00",
+  "finite_distribution_epoch": "2026-10-01T14:21:50.919419+00:00",
+  "BG_source": "aligned_hardware_background_competition_continuous_development_20260930_trajectories.json.gz",
+  "BG_epoch": "2026-09-30T05:45:18.017710+00:00",
+  "tapes": [
+    "cpu_a:R2:load0.8:seed41",
+    "cpu_a:R2:load0.8:seed42",
+    "cpu_a:R2:load0.8:seed43",
+    "cpu_a:R2:load0.95:seed41",
+    "cpu_a:R2:load0.95:seed42",
+    "cpu_a:R2:load0.95:seed43",
+    "node007:R4:load0.8:seed41",
+    "node007:R4:load0.8:seed42",
+    "node007:R4:load0.8:seed43",
+    "node007:R4:load0.95:seed41",
+    "node007:R4:load0.95:seed42",
+    "node007:R4:load0.95:seed43",
+    "gpu_a:R2:load0.8:seed41",
+    "gpu_a:R2:load0.8:seed42",
+    "gpu_a:R2:load0.8:seed43",
+    "gpu_a:R2:load0.95:seed41",
+    "gpu_a:R2:load0.95:seed42",
+    "gpu_a:R2:load0.95:seed43",
+    "gpu_b:R2:load0.8:seed41",
+    "gpu_b:R2:load0.8:seed42",
+    "gpu_b:R2:load0.8:seed43",
+    "gpu_b:R2:load0.95:seed41",
+    "gpu_b:R2:load0.95:seed42",
+    "gpu_b:R2:load0.95:seed43"
+  ],
+  "cohort": [
+    300,
+    900
+  ],
+  "cutoffs": [
+    900,
+    1200
+  ],
+  "analysis": "For every original tape and class, decompose restricted flow into waiting and service, reproduce common-completion P90 and unfinished metrics, split900 tail into queued/inflight, and describe own-state finite overrides and the first physical BG/finite action divergence.",
+  "aggregation": "Per-trajectory means weighted equally. Class additive contributions weighted by their cohort counts within each trajectory. Three shared actual arrival seeds. P90 components are not added.",
+  "action_scope": "Only the first natural BG/finite action divergence has a shared physical state. Later policy trajectories and finite own-state BG incumbent are descriptive; their total differences are not single-action causal labels.",
+  "next_free_lane_feature": "Visible FIFO head next admission opportunity after each root, given all lane reservations; descriptive only, never a newly adopted oldest-head guard.",
+  "excluded_candidate": {
+    "name": "oldest FIFO head opportunity guard",
+    "source": "aligned_hardware_class_protected_original_root_screen_20261001.json",
+    "source_scope": "old once-BG candidate320 conditional states, not current finite24",
+    "matched_states": 88,
+    "retracted_beneficial": 50,
+    "retracted_harmful": 18,
+    "nearzero": 20,
+    "mean_conditional_effect_over320_s": 0.08633879441839885,
+    "decision": "not proposed as a policy"
+  },
+  "new_simulations": 0,
+  "new_planner_calls": 0,
+  "confirmation_seeds_accessed": false,
+  "production_algorithm_changed": false
+}

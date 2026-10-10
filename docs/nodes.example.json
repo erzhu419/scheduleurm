@@ -1,0 +1,23 @@
+{
+  "local": {
+    "host": null,
+    "cpu_cores": 8,
+    "reserved_cpu_cores": 1,
+    "ram_mb": 0,
+    "ram_headroom_frac": 0.1,
+    "max_tasks_per_gpu": 2,
+    "capabilities": ["cpu", "cuda", "torch_cuda", "jax_cuda"]
+  },
+  "compute-a": {
+    "host": "compute-a",
+    "cpu_cores": 32,
+    "reserved_cpu_cores": 1,
+    "ram_mb": 0,
+    "ram_headroom_frac": 0.1,
+    "max_tasks_per_gpu": 2,
+    "enable_claims": true,
+    "remote_workspace_root": "/srv/scheduleurm/work",
+    "remote_path_prefixes": ["/ABS/PATH/TO/PROJECTS"],
+    "capabilities": ["cpu", "cuda", "torch_cuda", "jax_cuda"]
+  }
+}

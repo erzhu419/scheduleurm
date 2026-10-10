@@ -1,0 +1,3470 @@
+{
+  "decision": "CADENCE_DIAGNOSIS_COMPLETE",
+  "execution_checks_passed": true,
+  "execution_failures": [],
+  "prior_decision": "CERTIFICATE_ROUTED_CONFIRMATION_TIMING_HOLD",
+  "prior_hold_retained": true,
+  "executed_selector_calls": 19140,
+  "call_counts": {
+    "warmup": 96,
+    "timed": 19044
+  },
+  "selector_calls_by_implementation": {
+    "candidate": 6404,
+    "probe": 6368,
+    "long": 6368
+  },
+  "executed_reference_calls": 0,
+  "executed_oracle_calls": 0,
+  "borrowed_reference_count": 1058,
+  "work": {
+    "candidate": {
+      "calls": 6404,
+      "statuses": {
+        "LP_INITIAL_COMPLETE": 6296,
+        "LP_RESUME_COMPLETE": 42,
+        "INTEGER_PROBE_COMPLETE": 66
+      },
+      "resumed_calls": 42,
+      "search_work": {
+        "lp_calls": 94354,
+        "lp_matrix_coefficients": 5230928,
+        "candidate_evaluations": 100758,
+        "duration_root_count": 49664,
+        "dual_column_checks": 506956,
+        "branch_splits": 30256,
+        "bound_pruned_regions": 77652,
+        "safe_fallback_lp_calls": 0,
+        "residual_fill_option_probes": 506956
+      },
+      "initial_lp_calls_embedded": 92896,
+      "additional_lp_calls": 1458,
+      "preprocessing": {
+        "original_option_count": 56068,
+        "requirement_group_count": 49664,
+        "duration_threshold_count": 49664,
+        "reduction_option_probes": 56068,
+        "reduction_requirement_coordinate_reads": 168204,
+        "reduction_duration_comparisons": 62472,
+        "grouping_option_probes": 56068,
+        "representative_option_probes": 224296,
+        "proxy_option_count": 218000,
+        "lift_option_probes": 225784
+      },
+      "capacity_propagation": {
+        "region_visits": 110176,
+        "requirement_coordinate_reads": 3594744,
+        "tightened_bounds": 146936,
+        "removed_count_values": 1570962
+      },
+      "score_proof": {
+        "attempted_count": 0,
+        "completed_count": 0,
+        "exhausted_count": 0,
+        "work": {
+          "states_visited": 0,
+          "memo_hits": 0,
+          "count_branches": 0,
+          "bound_prunes": 0,
+          "duration_prunes": 0,
+          "gcd_prunes": 0,
+          "failed_states_cached": 0,
+          "thresholds_checked": 0,
+          "suffix_coordinate_reads": 0,
+          "resource_coordinate_reads": 0
+        }
+      },
+      "completion": {
+        "attempted_count": 72,
+        "completed_count": 66,
+        "exhausted_count": 6,
+        "work": {
+          "states_visited": 148608,
+          "memo_hits": 19464,
+          "count_branches": 168006,
+          "bound_prunes": 137316,
+          "gcd_prunes": 132,
+          "duration_prunes": 3654,
+          "failed_states_cached": 147942,
+          "thresholds_checked": 588,
+          "noninteger_thresholds": 516,
+          "suffix_coordinate_reads": 3528,
+          "resource_coordinate_reads": 2355336
+        }
+      },
+      "shared_integer_states": 148608,
+      "max_shared_integer_states": 8192
+    },
+    "probe": {
+      "calls": 6368,
+      "statuses": {
+        "LP_INITIAL_COMPLETE": 6260,
+        "LP_RESUME_COMPLETE": 42,
+        "INTEGER_PROBE_COMPLETE": 66
+      },
+      "resumed_calls": 42,
+      "search_work": {
+        "lp_calls": 93688,
+        "lp_matrix_coefficients": 5199752,
+        "candidate_evaluations": 100056,
+        "duration_root_count": 49376,
+        "dual_column_checks": 503680,
+        "branch_splits": 29968,
+        "bound_pruned_regions": 77076,
+        "safe_fallback_lp_calls": 0,
+        "residual_fill_option_probes": 503680
+      },
+      "initial_lp_calls_embedded": 92230,
+      "additional_lp_calls": 1458,
+      "preprocessing": {
+        "original_option_count": 55744,
+        "requirement_group_count": 49376,
+        "duration_threshold_count": 49376,
+        "reduction_option_probes": 55744,
+        "reduction_requirement_coordinate_reads": 167232,
+        "reduction_duration_comparisons": 62112,
+        "grouping_option_probes": 55744,
+        "representative_option_probes": 222964,
+        "proxy_option_count": 216704,
+        "lift_option_probes": 224362
+      },
+      "capacity_propagation": {
+        "region_visits": 109312,
+        "requirement_coordinate_reads": 3569256,
+        "tightened_bounds": 146018,
+        "removed_count_values": 1552080
+      },
+      "score_proof": {
+        "attempted_count": 36,
+        "completed_count": 0,
+        "exhausted_count": 36,
+        "work": {
+          "states_visited": 294912,
+          "memo_hits": 94152,
+          "count_branches": 388812,
+          "bound_prunes": 278580,
+          "duration_prunes": 0,
+          "gcd_prunes": 0,
+          "failed_states_cached": 294714,
+          "thresholds_checked": 288,
+          "suffix_coordinate_reads": 6048,
+          "resource_coordinate_reads": 5014836
+        }
+      },
+      "completion": {
+        "attempted_count": 72,
+        "completed_count": 66,
+        "exhausted_count": 6,
+        "work": {
+          "states_visited": 148608,
+          "memo_hits": 19464,
+          "count_branches": 168006,
+          "bound_prunes": 137316,
+          "gcd_prunes": 132,
+          "duration_prunes": 3654,
+          "failed_states_cached": 147942,
+          "thresholds_checked": 588,
+          "noninteger_thresholds": 516,
+          "suffix_coordinate_reads": 3528,
+          "resource_coordinate_reads": 2355336
+        }
+      },
+      "shared_integer_states": 443520,
+      "max_shared_integer_states": 8192
+    },
+    "long": {
+      "calls": 6368,
+      "search_work": {
+        "lp_calls": 103936,
+        "lp_matrix_coefficients": 6150410,
+        "candidate_evaluations": 110304,
+        "duration_root_count": 49376,
+        "dual_column_checks": 583834,
+        "branch_splits": 37690,
+        "bound_pruned_regions": 85272,
+        "safe_fallback_lp_calls": 0,
+        "residual_fill_option_probes": 583834
+      },
+      "preprocessing": {
+        "original_option_count": 55744,
+        "requirement_group_count": 49376,
+        "duration_threshold_count": 49376,
+        "reduction_option_probes": 55744,
+        "reduction_requirement_coordinate_reads": 167232,
+        "reduction_duration_comparisons": 62112,
+        "grouping_option_probes": 55744,
+        "representative_option_probes": 222964,
+        "proxy_option_count": 216704,
+        "lift_option_probes": 284794
+      },
+      "capacity_propagation": {
+        "region_visits": 124756,
+        "requirement_coordinate_reads": 4293360,
+        "tightened_bounds": 155642,
+        "removed_count_values": 1587030
+      },
+      "score_proof": {
+        "attempted_count": 0,
+        "completed_count": 0,
+        "exhausted_count": 0,
+        "work": {
+          "states_visited": 0,
+          "memo_hits": 0,
+          "count_branches": 0,
+          "bound_prunes": 0,
+          "duration_prunes": 0,
+          "gcd_prunes": 0,
+          "failed_states_cached": 0,
+          "thresholds_checked": 0,
+          "suffix_coordinate_reads": 0,
+          "resource_coordinate_reads": 0
+        }
+      },
+      "completion": {
+        "attempted_count": 0,
+        "completed_count": 0,
+        "exhausted_count": 0,
+        "work": {
+          "states_visited": 0,
+          "memo_hits": 0,
+          "count_branches": 0,
+          "bound_prunes": 0,
+          "gcd_prunes": 0,
+          "duration_prunes": 0,
+          "failed_states_cached": 0,
+          "thresholds_checked": 0,
+          "noninteger_thresholds": 0,
+          "suffix_coordinate_reads": 0,
+          "resource_coordinate_reads": 0
+        }
+      },
+      "shared_integer_states": 0,
+      "max_shared_integer_states": 0
+    }
+  },
+  "elapsed_s": 438.44838514903677,
+  "targets": [
+    {
+      "node": "node007",
+      "lanes": 64,
+      "state_id": "ordinary_tail_regression:88:19:118",
+      "queue": [
+        88,
+        19,
+        118
+      ],
+      "arms": {
+        "candidate": {
+          "wall_ms": 24.3375515,
+          "cpu_ms": 24.057307,
+          "wall_ns": [
+            24378733,
+            24116655,
+            24229779,
+            24296370,
+            24575221,
+            24501582
+          ],
+          "cpu_ns": [
+            24091767,
+            23873143,
+            23969316,
+            24022847,
+            24251861,
+            24215212
+          ]
+        },
+        "probe": {
+          "wall_ms": 24.4138425,
+          "cpu_ms": 24.05878,
+          "wall_ns": [
+            24826460,
+            24489924,
+            24087285,
+            24337955,
+            24301066,
+            24489730
+          ],
+          "cpu_ns": [
+            24534948,
+            24061550,
+            23840021,
+            24056010,
+            24008309,
+            24202799
+          ]
+        },
+        "long": {
+          "wall_ms": 24.401259,
+          "cpu_ms": 24.127696,
+          "wall_ns": [
+            24509697,
+            24212825,
+            24292821,
+            24893067,
+            24245130,
+            24631391
+          ],
+          "cpu_ns": [
+            24221244,
+            23968624,
+            24034148,
+            24351973,
+            23960579,
+            24344206
+          ]
+        }
+      },
+      "candidate_over_control_wall_ratio": {
+        "probe": 0.9968750924808334,
+        "long": 0.9973891715997113
+      },
+      "candidate_over_control_cpu_ratio": {
+        "probe": 0.9999387749503508,
+        "long": 0.9970826472614708
+      },
+      "apparent_slowdown_over_5pct": {
+        "probe": false,
+        "long": false
+      },
+      "any_apparent_slowdown_over_5pct": false,
+      "symmetric_wall_max_min_ratio": 1.003134703176694,
+      "block_start_ns": [
+        1905150384,
+        5234058270,
+        6963701700,
+        8281978521,
+        13067774634,
+        14734637669
+      ],
+      "consecutive_block_gaps_s": [
+        3.328907886,
+        1.72964343,
+        1.318276821,
+        4.785796113,
+        1.666863035
+      ]
+    },
+    {
+      "node": "node007",
+      "lanes": 64,
+      "state_id": "ordinary_tail_regression:184:78:235",
+      "queue": [
+        184,
+        78,
+        235
+      ],
+      "arms": {
+        "candidate": {
+          "wall_ms": 16.7178255,
+          "cpu_ms": 16.536244,
+          "wall_ns": [
+            16640755,
+            16644375,
+            16687485,
+            16781968,
+            16748166,
+            16847567
+          ],
+          "cpu_ns": [
+            16447521,
+            16467268,
+            16518505,
+            16600010,
+            16553983,
+            16650997
+          ]
+        },
+        "probe": {
+          "wall_ms": 16.7135445,
+          "cpu_ms": 16.525173,
+          "wall_ns": [
+            16957543,
+            16403411,
+            16516396,
+            16653819,
+            16773270,
+            16833403
+          ],
+          "cpu_ns": [
+            16760866,
+            16238685,
+            16350326,
+            16473330,
+            16577016,
+            16636780
+          ]
+        },
+        "long": {
+          "wall_ms": 16.7078955,
+          "cpu_ms": 16.526351,
+          "wall_ns": [
+            16825254,
+            16703892,
+            16625310,
+            16724599,
+            16691550,
+            16711899
+          ],
+          "cpu_ns": [
+            16630619,
+            16536260,
+            16457340,
+            16543262,
+            16496224,
+            16516442
+          ]
+        }
+      },
+      "candidate_over_control_wall_ratio": {
+        "probe": 1.0002561395639327,
+        "long": 1.0005943297885722
+      },
+      "candidate_over_control_cpu_ratio": {
+        "probe": 1.0006699476005485,
+        "long": 1.0005986197437051
+      },
+      "apparent_slowdown_over_5pct": {
+        "probe": false,
+        "long": false
+      },
+      "any_apparent_slowdown_over_5pct": false,
+      "symmetric_wall_max_min_ratio": 1.0005943297885722,
+      "block_start_ns": [
+        661028812,
+        4897333747,
+        5721165876,
+        9706490870,
+        13201327974,
+        15420993645
+      ],
+      "consecutive_block_gaps_s": [
+        4.236304935,
+        0.823832129,
+        3.985324994,
+        3.494837104,
+        2.219665671
+      ]
+    }
+  ],
+  "runtime": [
+    {
+      "node": "cpu_a",
+      "lanes": 8,
+      "runtime_start": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 1,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_before_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 1,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_after_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_end": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      }
+    },
+    {
+      "node": "cpu_a",
+      "lanes": 16,
+      "runtime_start": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_before_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_after_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_end": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      }
+    },
+    {
+      "node": "cpu_a",
+      "lanes": 32,
+      "runtime_start": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_before_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_after_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_end": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      }
+    },
+    {
+      "node": "cpu_a",
+      "lanes": 64,
+      "runtime_start": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_before_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_after_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_end": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      }
+    },
+    {
+      "node": "node007",
+      "lanes": 8,
+      "runtime_start": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_before_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_after_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_end": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      }
+    },
+    {
+      "node": "node007",
+      "lanes": 16,
+      "runtime_start": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_before_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_after_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_end": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      }
+    },
+    {
+      "node": "node007",
+      "lanes": 32,
+      "runtime_start": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_before_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_after_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_end": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      }
+    },
+    {
+      "node": "node007",
+      "lanes": 64,
+      "runtime_start": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_before_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_after_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_end": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      }
+    },
+    {
+      "node": "gpu_a",
+      "lanes": 8,
+      "runtime_start": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_before_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_after_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_end": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      }
+    },
+    {
+      "node": "gpu_a",
+      "lanes": 16,
+      "runtime_start": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_before_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_after_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_end": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      }
+    },
+    {
+      "node": "gpu_a",
+      "lanes": 32,
+      "runtime_start": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_before_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_after_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_end": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      }
+    },
+    {
+      "node": "gpu_a",
+      "lanes": 64,
+      "runtime_start": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_before_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_after_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_end": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      }
+    },
+    {
+      "node": "gpu_b",
+      "lanes": 8,
+      "runtime_start": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_before_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_after_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_end": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      }
+    },
+    {
+      "node": "gpu_b",
+      "lanes": 16,
+      "runtime_start": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_before_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_after_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_end": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      }
+    },
+    {
+      "node": "gpu_b",
+      "lanes": 32,
+      "runtime_start": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_before_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_after_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_end": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      }
+    },
+    {
+      "node": "gpu_b",
+      "lanes": 64,
+      "runtime_start": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_before_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_after_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_end": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      }
+    }
+  ],
+  "limitations": "One dependent six-repeat window at each of two previously inspected states, on one host and cached catalogues. Replaying timing workload omits original screens and references and cannot reproduce original host history or exact delays. Equality checks and saved block metadata add small between-block work. A threshold crossing demonstrates a possible same-implementation discrepancy under this replay; its absence does not establish universal five-percent resolution or a false-positive rate. No independent speedup, physical scaling or flow-time claim.",
+  "aa_readout": {
+    "target_states": 2,
+    "states_with_apparent_slowdown": 0,
+    "states_with_symmetric_spread_over_5pct": 0,
+    "max_candidate_over_control_wall_ratio": 1.0005943297885722,
+    "max_symmetric_wall_max_min_ratio": 1.003134703176694,
+    "interpretation": "Fixed candidate role versus probe/long uses the prior >5% direction. Symmetric spread is separate. Two selected states in one replay do not estimate an independent error rate or universal timing resolution. Background calls establish workload accounting, not performance improvement. Prior HOLD is retained."
+  },
+  "protocol_path": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/aligned_hardware_certificate_routed_cadence_diagnosis_20260928_protocol.json"
+}

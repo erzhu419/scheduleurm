@@ -6,6 +6,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable
 
+try:
+    from scheduler_transport.budget import bulk_transport
+except ModuleNotFoundError:
+    from ..scheduler_transport.budget import bulk_transport
+
 
 @dataclass(frozen=True)
 class WindowsTarStagingDeps:
@@ -41,6 +46,7 @@ def tar_exclude_args(
     return [f"--exclude={pattern}" for pattern in patterns]
 
 
+@bulk_transport()
 def stage_local_dir_to_windows(
     local_dir: str,
     target_node: str,

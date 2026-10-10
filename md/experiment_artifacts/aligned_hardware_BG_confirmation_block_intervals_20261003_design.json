@@ -1,0 +1,14 @@
+{
+  "analysis": "cached_BG_confirmation_paired_seed_block_intervals",
+  "source_result": "md/experiment_artifacts/aligned_hardware_background_competition_continuous_confirmation_20260930.json",
+  "source_protocol": "md/experiment_artifacts/aligned_hardware_background_competition_continuous_confirmation_20260930_protocol.json",
+  "source_registered_at_utc": "2026-09-30T05:57:23.785226+00:00",
+  "labels": ["maxweight", "arrival_rollout"],
+  "cutoffs": ["arrival_horizon", "observation_end"],
+  "bootstrap_replicates": 20000,
+  "bootstrap_seed": 20261003,
+  "resampling": "Sample twelve actual-arrival seed blocks with replacement, preserving all eight catalogue/load cells and both policies in each block.",
+  "aggregation": "Equal-tape restricted mean and pair-common-completed-ID P90; ratio of aggregate means. Unfinished jobs use total count difference only.",
+  "interval": "Pointwise percentile 95%, linear interpolation at 0.025 and 0.975; no multiplicity adjustment or replacement of original gates.",
+  "scope": "Post-confirmation descriptive uncertainty on all existing confirmation tapes, conditional on fixed planning streams; no new trajectories or independent confirmation. No outcome-based omission of cells or seeds."
+}

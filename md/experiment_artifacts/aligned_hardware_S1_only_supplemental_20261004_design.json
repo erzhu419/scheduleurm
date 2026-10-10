@@ -1,0 +1,54 @@
+{
+  "experiment": "aligned_hardware_S1_only_supplemental_20261004",
+  "source_execution_epochs": {
+    "BG": "2026-09-30T05:57:23.785226+00:00",
+    "no_background": "2026-10-03T15:00:27.702863+00:00",
+    "S1_development": "2026-10-03T15:55:49.218032+00:00"
+  },
+  "population": {
+    "catalogue_lanes": [["cpu_a", 2], ["node007", 4], ["gpu_a", 2], ["gpu_b", 2]],
+    "loads": [0.8, 0.95],
+    "arrival_seeds": [100001, 100002, 100003, 100004, 100005, 100006, 100007, 100008, 100009, 100010, 100011, 100012],
+    "tapes": 96,
+    "birth_cohort": [300, 900],
+    "cohort_checkpoint": 900,
+    "environment_arrival_end": 1200,
+    "observation_end": 1200,
+    "roster": "Every original BG confirmation tape in registered order; retain all seeds, catalogue/load cells and workload classes."
+  },
+  "intervention": "Use the unchanged development ContinuousArrivalS1OnlyLaneRollout. Against no-background S1/S2 remove only S2<=MW candidate filtering; minimize exact sample-summed S1, retain MW ties and require strict S1 improvement. No parameter tuning or new continuation policy.",
+  "matched_budget": {
+    "planning_samples": 8,
+    "planning_event_cap": 128,
+    "planning_window": "tau_max without stop-time input",
+    "planning_seed_rule": "arrival-plan-v1:{node}:{load}:online",
+    "rate_estimator": "Causally released cumulative births / now; zero exposure gives zero rates",
+    "continuation": "Same FIFO, full loaded-job completion offsets/reservations, MW continuation, queue envelope and whole-decision overflow fallback",
+    "S2_diagnostic": "Compute and charge the same exact S1/S2 scorer; S2 never filters or ranks roots; chosen S2>MW diagnostic uses Fraction comparison",
+    "clock": "Original physical service clock, one-second idle polling; computing delays excluded and work separately charged"
+  },
+  "execution": {
+    "expected_new_trajectories": 96,
+    "reused_BG_MW_no_background_trajectory_arms": 288,
+    "new_bg_mw_or_no_background_simulations": 0,
+    "new_shadow_references": 0,
+    "placement": "96 independent CPU1/BLAS1 units on available node001-node006; first registered unit checks integration, remaining95 run in one wave without duplicating unit0",
+    "sources": "Retain literal source dependencies of original BG, completed controls and S1 development; freeze the supplemental runner/statistical adapter at registration",
+    "data_motion": "Full fixtures and new trajectories stay on server; pull only receipts, logs and compact aggregate summary"
+  },
+  "outcomes": {
+    "primary_comparison": "S1-only minus cached no-background S1/S2; negative means removing S2 improves the metric",
+    "primary_metrics": ["1200-second cohort restricted mean flow", "1200-second equal-tape common-completed-ID P90"],
+    "secondary": ["900/1200 queued/inflight/unfinished counts", "All8 catalogue/load groups", "All12 seed blocks", "All24 workload-class groups", "BG/MW descriptive comparisons", "Actual option/rollout/sample/scoring work and chosen S2>MW diagnostics"],
+    "common_population": "Compute completed-ID intersection separately for S1/no-background, S1/BG and S1/MW at each cutoff; never transfer P90 snapshots between contrasts",
+    "MW_reference_screen": "Retain original1% mean gain, load nonregression,5% per-group P90/unfinished tolerance and pooled-tail nonincrease as descriptive original-protocol screen; no new adoption gate"
+  },
+  "bootstrap": {
+    "replicates": 20000,
+    "seed": 20261003,
+    "unit": "12 whole actual-arrival seed blocks, all8 cells and both paired policies retained together",
+    "interval": "Pointwise percentile95%, candidate-minus-comparator and ratio-of-equal-tape-means; unfinished total-count differences only"
+  },
+  "statistics": "Supplemental opponent comparison designed after observing original BG confirmation, completed strong controls and24 S1 development outcomes. Resample12 whole actual-arrival seed blocks conditional on fixed planning streams. No independent new BG confirmation, no96-independent-tape inference, no multiplicity-adjusted claim, no new PASS/adoption gate.",
+  "interpretation": "Preserve all positive and negative outcomes and original BG adoption. If S1 dominates, narrow S2 contribution; if S2 helps only certain cells, report concentration and tradeoffs. Do not change thresholds, drop the development regression cell, revive finite/current-policy continuation or edit the paper."
+}

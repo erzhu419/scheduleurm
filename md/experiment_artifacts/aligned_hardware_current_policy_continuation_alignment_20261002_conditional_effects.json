@@ -1,0 +1,52 @@
+{
+  "source_records": "aligned_hardware_current_policy_continuation_alignment_20261002_records_summary.json",
+  "interpretation": "Equal-weight averages of separate cached old-current conditional anchor effects; not a closed-loop performance gain or sum of dependent interventions.",
+  "all_fixed_pairs": {
+    "states": 22,
+    "baseline_selected_mean_minus_BG_s": -0.05229356413605531,
+    "matched_pair_selected_mean_minus_BG_s": -0.0904699977519802,
+    "matched_minus_baseline_mean_s": -0.03817643361592489
+  },
+  "native_AB_only": {
+    "states": 20,
+    "baseline_selected_mean_minus_BG_s": 0.008466302807330805,
+    "matched_native_selected_mean_minus_BG_s": -0.005451371511208692,
+    "matched_minus_baseline_mean_s": -0.013917674318539497
+  },
+  "seeds": {
+    "41": {
+      "states": 8,
+      "baseline_selected_mean_minus_BG_s": -0.026012784718912663,
+      "matched_pair_selected_mean_minus_BG_s": -0.1652717811966129,
+      "matched_minus_baseline_mean_s": -0.13925899647770024
+    },
+    "42": {
+      "states": 6,
+      "baseline_selected_mean_minus_BG_s": -0.17437604971016954,
+      "matched_pair_selected_mean_minus_BG_s": 0.20596284997160788,
+      "matched_minus_baseline_mean_s": 0.3803388996817774
+    },
+    "43": {
+      "states": 8,
+      "baseline_selected_mean_minus_BG_s": 0.012987520627387728,
+      "matched_pair_selected_mean_minus_BG_s": -0.23799285010003857,
+      "matched_minus_baseline_mean_s": -0.2509803707274263
+    }
+  },
+  "native_unlabeled": [
+    {
+      "tape_id": "gpu_a:R2:load0.95:seed43",
+      "frame_index": 76,
+      "new_native_option_index": 5,
+      "baseline_group": "kept_beneficial_A",
+      "fixed_pair_preference": "A"
+    },
+    {
+      "tape_id": "gpu_b:R2:load0.95:seed42",
+      "frame_index": 125,
+      "new_native_option_index": 5,
+      "baseline_group": "kept_harmful_A",
+      "fixed_pair_preference": "BG"
+    }
+  ]
+}

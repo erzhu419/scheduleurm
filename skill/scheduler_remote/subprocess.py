@@ -3,6 +3,11 @@ from __future__ import annotations
 import subprocess
 from typing import Any, Optional
 
+try:
+    from scheduler_transport.budget import transport_child_env
+except ModuleNotFoundError:
+    from ..scheduler_transport.budget import transport_child_env
+
 
 _KILL_DRAIN_TIMEOUT_S = 2.0
 
@@ -85,7 +90,7 @@ def cleanup_proxy_jump_children(args: list, *, deps: Any) -> None:
             pass
 
 
-def run_ssh_subprocess(
+def _run_admitted_subprocess(
     args: list,
     *,
     timeout,
@@ -95,12 +100,16 @@ def run_ssh_subprocess(
     stdout=None,
     stderr=None,
     text=None,
+    **popen_kwargs,
 ):
     deps.raise_if_watcher_shutdown()
     if capture_output:
         stdout = deps.pipe
         stderr = deps.pipe
-    stdin = deps.pipe if input is not None else None
+    stdin = popen_kwargs.pop("stdin", deps.pipe if input is not None else None)
+    child_env = transport_child_env(popen_kwargs.get("env"))
+    if child_env is not None:
+        popen_kwargs["env"] = child_env
     proc = deps.subprocess_popen(
         args,
         stdin=stdin,
@@ -108,6 +117,7 @@ def run_ssh_subprocess(
         stderr=stderr,
         text=text,
         start_new_session=True,
+        **popen_kwargs,
     )
     pgid = deps.register_control_subprocess(proc)
     try:
@@ -136,3 +146,8 @@ def run_ssh_subprocess(
     cleanup_proxy_jump_children(args, deps=deps)
     deps.raise_if_watcher_shutdown()
     return subprocess.CompletedProcess(args, proc.returncode, out, err)
+
+
+def run_ssh_subprocess(args: list, *, timeout, deps: Any, **kwargs):
+    with deps.transport_guard(args):
+        return _run_admitted_subprocess(args, timeout=timeout, deps=deps, **kwargs)

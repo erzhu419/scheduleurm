@@ -1,0 +1,3512 @@
+{
+  "decision": "PERSISTENT_CURRENT_POLICY_DEVELOPMENT_HOLD",
+  "execution_checks_passed": true,
+  "performance_gain_established": false,
+  "registered_at_utc": "2026-10-01T22:05:01.809298+00:00",
+  "completed_shards": 24,
+  "newly_executed_candidate_trajectories": 24,
+  "cached_reference_trajectories": 72,
+  "prior_full24_decision": "TWO_STEP_CURRENT_POLICY_BG_INCUMBENT_DEVELOPMENT_HOLD",
+  "comparisons": {
+    "MW": {
+      "experiment": "persistent_old_current_full24_development_v1",
+      "registered_at_utc": "2026-10-01T22:05:01.809298+00:00",
+      "decision": "ARRIVAL_AWARE_LANE_ROLLOUT_PERFORMANCE_HOLD",
+      "execution_checks_passed": true,
+      "operational_integrity_passed": true,
+      "baseline_reproduction_passed": true,
+      "rollout_checks_passed": true,
+      "performance_gain_established": false,
+      "flow_gain_threshold_passed": true,
+      "load_mean_nonregression_passed": true,
+      "group_secondary_passed": false,
+      "pooled_unfinished_checks": {
+        "arrival_horizon": true,
+        "observation_end": true
+      },
+      "pooled_T_flow_ratio": 0.9099861389448363,
+      "pooled_T_flow_improvement": 0.09001386105516374,
+      "tapes": 24,
+      "trajectories": 48,
+      "independent_seed_replicates": 3,
+      "statistical_scope": "Development screen on three shared seeds; catalogue/load cells are paired within each seed, not independent replicates. Seed aggregates are descriptive, with no 24-pair significance test.",
+      "pooled": {
+        "arrival_horizon": {
+          "maxweight": {
+            "restricted_mean_flow_s": 31.98673187980014,
+            "common_mean_flow_s": 32.23244409615541,
+            "common_p90_flow_s": 62.062930261751674,
+            "unfinished_jobs": 457,
+            "common_jobs": 6790
+          },
+          "arrival_rollout": {
+            "restricted_mean_flow_s": 29.187960553314973,
+            "common_mean_flow_s": 29.371069515728426,
+            "common_p90_flow_s": 53.28184707354083,
+            "unfinished_jobs": 417,
+            "common_jobs": 6790
+          }
+        },
+        "observation_end": {
+          "maxweight": {
+            "restricted_mean_flow_s": 33.80509323092727,
+            "common_mean_flow_s": 33.80509323092727,
+            "common_p90_flow_s": 67.34868993268078,
+            "unfinished_jobs": 0,
+            "common_jobs": 7283
+          },
+          "arrival_rollout": {
+            "restricted_mean_flow_s": 30.762166265881728,
+            "common_mean_flow_s": 30.762166265881728,
+            "common_p90_flow_s": 57.28025197793031,
+            "unfinished_jobs": 0,
+            "common_jobs": 7283
+          }
+        }
+      },
+      "groups": [
+        {
+          "node": "gpu_a",
+          "lanes": 2,
+          "load": 0.8,
+          "cutoff": "arrival_horizon",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 31.70211343265693,
+              "common_mean_flow_s": 32.099869873641076,
+              "common_p90_flow_s": 60.8693444342303,
+              "unfinished_jobs": 35,
+              "common_jobs": 827
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 26.81184399157259,
+              "common_mean_flow_s": 27.06073063625277,
+              "common_p90_flow_s": 45.69848840369013,
+              "unfinished_jobs": 39,
+              "common_jobs": 827
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -4.890269441084339,
+              "common_mean_flow_s": -5.039139237388305,
+              "common_p90_flow_s": -15.170856030540172,
+              "unfinished_jobs": 4
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.8457431094784116,
+              "common_mean_flow_s": 0.8430168328649141,
+              "common_p90_flow_s": 0.7507636040514224,
+              "unfinished_jobs": 1.1142857142857143
+            },
+            "regressed_metrics": [
+              "unfinished_jobs"
+            ],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": false
+            },
+            "secondary_passed": false
+          }
+        },
+        {
+          "node": "gpu_a",
+          "lanes": 2,
+          "load": 0.8,
+          "cutoff": "observation_end",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 32.41062963550635,
+              "common_mean_flow_s": 32.41062963550637,
+              "common_p90_flow_s": 62.70509882923939,
+              "unfinished_jobs": 0,
+              "common_jobs": 873
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 27.590951210824617,
+              "common_mean_flow_s": 27.59095121082462,
+              "common_p90_flow_s": 46.58061890243175,
+              "unfinished_jobs": 0,
+              "common_jobs": 873
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -4.819678424681737,
+              "common_mean_flow_s": -4.819678424681747,
+              "common_p90_flow_s": -16.124479926807638,
+              "unfinished_jobs": 0
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.8512932800477994,
+              "common_mean_flow_s": 0.8512932800477991,
+              "common_p90_flow_s": 0.7428521726643258,
+              "unfinished_jobs": 1.0
+            },
+            "regressed_metrics": [],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "gpu_a",
+          "lanes": 2,
+          "load": 0.95,
+          "cutoff": "arrival_horizon",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 42.87812767773296,
+              "common_mean_flow_s": 43.66079571761585,
+              "common_p90_flow_s": 90.77068751314508,
+              "unfinished_jobs": 84,
+              "common_jobs": 958
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 37.30787214843448,
+              "common_mean_flow_s": 37.90767734715317,
+              "common_p90_flow_s": 74.54982227779226,
+              "unfinished_jobs": 68,
+              "common_jobs": 958
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -5.570255529298485,
+              "common_mean_flow_s": -5.75311837046268,
+              "common_p90_flow_s": -16.220865235352818,
+              "unfinished_jobs": -16
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.8700909803906579,
+              "common_mean_flow_s": 0.8682314814491238,
+              "common_p90_flow_s": 0.8212984204509438,
+              "unfinished_jobs": 0.8095238095238095
+            },
+            "regressed_metrics": [],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "gpu_a",
+          "lanes": 2,
+          "load": 0.95,
+          "cutoff": "observation_end",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 45.74822441473007,
+              "common_mean_flow_s": 45.74822441473005,
+              "common_p90_flow_s": 97.63498378791252,
+              "unfinished_jobs": 0,
+              "common_jobs": 1046
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 39.422561499974364,
+              "common_mean_flow_s": 39.42256149997435,
+              "common_p90_flow_s": 77.07961846976094,
+              "unfinished_jobs": 0,
+              "common_jobs": 1046
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -6.3256629147557035,
+              "common_mean_flow_s": -6.3256629147557035,
+              "common_p90_flow_s": -20.555365318151573,
+              "unfinished_jobs": 0
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.8617287775496931,
+              "common_mean_flow_s": 0.861728777549693,
+              "common_p90_flow_s": 0.789467212256593,
+              "unfinished_jobs": 1.0
+            },
+            "regressed_metrics": [],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "gpu_b",
+          "lanes": 2,
+          "load": 0.8,
+          "cutoff": "arrival_horizon",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 22.18017399911099,
+              "common_mean_flow_s": 22.33000230757829,
+              "common_p90_flow_s": 37.59200240447626,
+              "unfinished_jobs": 46,
+              "common_jobs": 1099
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 18.795836474013743,
+              "common_mean_flow_s": 18.8458619128795,
+              "common_p90_flow_s": 32.37154073622524,
+              "unfinished_jobs": 43,
+              "common_jobs": 1099
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -3.384337525097248,
+              "common_mean_flow_s": -3.484140394698791,
+              "common_p90_flow_s": -5.220461668251019,
+              "unfinished_jobs": -3
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.847416096680175,
+              "common_mean_flow_s": 0.8439704417981025,
+              "common_p90_flow_s": 0.8611283960859346,
+              "unfinished_jobs": 0.9347826086956522
+            },
+            "regressed_metrics": [],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "gpu_b",
+          "lanes": 2,
+          "load": 0.8,
+          "cutoff": "observation_end",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 22.80789193464198,
+              "common_mean_flow_s": 22.80789193464198,
+              "common_p90_flow_s": 40.16052789447323,
+              "unfinished_jobs": 0,
+              "common_jobs": 1154
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 19.297682149859206,
+              "common_mean_flow_s": 19.297682149859213,
+              "common_p90_flow_s": 33.363771060266124,
+              "unfinished_jobs": 0,
+              "common_jobs": 1154
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -3.5102097847827736,
+              "common_mean_flow_s": -3.5102097847827665,
+              "common_p90_flow_s": -6.796756834207109,
+              "unfinished_jobs": 0
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.8460967021923118,
+              "common_mean_flow_s": 0.8460967021923121,
+              "common_p90_flow_s": 0.8307602715764486,
+              "unfinished_jobs": 1.0
+            },
+            "regressed_metrics": [],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "gpu_b",
+          "lanes": 2,
+          "load": 0.95,
+          "cutoff": "arrival_horizon",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 35.9560453698132,
+              "common_mean_flow_s": 36.09632574826001,
+              "common_p90_flow_s": 73.6282103636373,
+              "unfinished_jobs": 99,
+              "common_jobs": 1266
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 32.16522314004339,
+              "common_mean_flow_s": 32.14272890040988,
+              "common_p90_flow_s": 61.463419574608324,
+              "unfinished_jobs": 87,
+              "common_jobs": 1266
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -3.790822229769809,
+              "common_mean_flow_s": -3.953596847850129,
+              "common_p90_flow_s": -12.16479078902897,
+              "unfinished_jobs": -12
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.8945706572905712,
+              "common_mean_flow_s": 0.8904709339276531,
+              "common_p90_flow_s": 0.8347808437968393,
+              "unfinished_jobs": 0.8787878787878788
+            },
+            "regressed_metrics": [],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "gpu_b",
+          "lanes": 2,
+          "load": 0.95,
+          "cutoff": "observation_end",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 38.475491889368584,
+              "common_mean_flow_s": 38.47549188936859,
+              "common_p90_flow_s": 86.30214766298195,
+              "unfinished_jobs": 0,
+              "common_jobs": 1369
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 34.37468997762468,
+              "common_mean_flow_s": 34.37468997762468,
+              "common_p90_flow_s": 74.71359161154629,
+              "unfinished_jobs": 0,
+              "common_jobs": 1369
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -4.1008019117439005,
+              "common_mean_flow_s": -4.100801911743908,
+              "common_p90_flow_s": -11.58855605143566,
+              "unfinished_jobs": 0
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.8934178171513638,
+              "common_mean_flow_s": 0.8934178171513637,
+              "common_p90_flow_s": 0.8657211162729105,
+              "unfinished_jobs": 1.0
+            },
+            "regressed_metrics": [],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "cpu_a",
+          "lanes": 2,
+          "load": 0.8,
+          "cutoff": "arrival_horizon",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 18.033536643675905,
+              "common_mean_flow_s": 18.070149444160997,
+              "common_p90_flow_s": 28.234483287730928,
+              "unfinished_jobs": 13,
+              "common_jobs": 438
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 17.329206308936925,
+              "common_mean_flow_s": 17.475284010213002,
+              "common_p90_flow_s": 26.08149074702557,
+              "unfinished_jobs": 11,
+              "common_jobs": 438
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -0.7043303347389802,
+              "common_mean_flow_s": -0.5948654339479944,
+              "common_p90_flow_s": -2.152992540705359,
+              "unfinished_jobs": -2
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.9609433053174304,
+              "common_mean_flow_s": 0.9670802150371693,
+              "common_p90_flow_s": 0.9237459910718138,
+              "unfinished_jobs": 0.8461538461538461
+            },
+            "regressed_metrics": [],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "cpu_a",
+          "lanes": 2,
+          "load": 0.8,
+          "cutoff": "observation_end",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 18.349396772208685,
+              "common_mean_flow_s": 18.34939677220869,
+              "common_p90_flow_s": 29.06176310440763,
+              "unfinished_jobs": 0,
+              "common_jobs": 452
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 17.526134042279338,
+              "common_mean_flow_s": 17.526134042279338,
+              "common_p90_flow_s": 26.28844737158102,
+              "unfinished_jobs": 0,
+              "common_jobs": 452
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -0.8232627299293469,
+              "common_mean_flow_s": -0.8232627299293505,
+              "common_p90_flow_s": -2.7733157328266067,
+              "unfinished_jobs": 0
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.9551340711550677,
+              "common_mean_flow_s": 0.9551340711550674,
+              "common_p90_flow_s": 0.9045716626736251,
+              "unfinished_jobs": 1.0
+            },
+            "regressed_metrics": [],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "cpu_a",
+          "lanes": 2,
+          "load": 0.95,
+          "cutoff": "arrival_horizon",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 32.67409033134487,
+              "common_mean_flow_s": 31.891380040913944,
+              "common_p90_flow_s": 63.36888284672025,
+              "unfinished_jobs": 34,
+              "common_jobs": 505
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 30.952423000276386,
+              "common_mean_flow_s": 30.187610569482004,
+              "common_p90_flow_s": 52.17629665984378,
+              "unfinished_jobs": 27,
+              "common_jobs": 505
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -1.7216673310684847,
+              "common_mean_flow_s": -1.70376947143194,
+              "common_p90_flow_s": -11.192586186876468,
+              "unfinished_jobs": -7
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.9473078725801019,
+              "common_mean_flow_s": 0.9465758625294313,
+              "common_p90_flow_s": 0.8233740964954417,
+              "unfinished_jobs": 0.7941176470588235
+            },
+            "regressed_metrics": [],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "cpu_a",
+          "lanes": 2,
+          "load": 0.95,
+          "cutoff": "observation_end",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 34.99581371439378,
+              "common_mean_flow_s": 34.99581371439379,
+              "common_p90_flow_s": 71.71315299281378,
+              "unfinished_jobs": 0,
+              "common_jobs": 539
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 32.80873426473273,
+              "common_mean_flow_s": 32.80873426473274,
+              "common_p90_flow_s": 57.866613509792465,
+              "unfinished_jobs": 0,
+              "common_jobs": 539
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -2.1870794496610557,
+              "common_mean_flow_s": -2.1870794496610486,
+              "common_p90_flow_s": -13.84653948302131,
+              "unfinished_jobs": 0
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.9375045407570703,
+              "common_mean_flow_s": 0.9375045407570706,
+              "common_p90_flow_s": 0.8069177144615459,
+              "unfinished_jobs": 1.0
+            },
+            "regressed_metrics": [],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "node007",
+          "lanes": 4,
+          "load": 0.8,
+          "cutoff": "arrival_horizon",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 26.719904123916955,
+              "common_mean_flow_s": 27.235518668242488,
+              "common_p90_flow_s": 42.41185782077374,
+              "unfinished_jobs": 46,
+              "common_jobs": 791
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 24.816766653273962,
+              "common_mean_flow_s": 25.245788556971867,
+              "common_p90_flow_s": 37.7894145775282,
+              "unfinished_jobs": 46,
+              "common_jobs": 791
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -1.9031374706429922,
+              "common_mean_flow_s": -1.989730111270621,
+              "common_p90_flow_s": -4.622443243245542,
+              "unfinished_jobs": 0
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.9287745396908256,
+              "common_mean_flow_s": 0.9269435572163084,
+              "common_p90_flow_s": 0.8910105927738581,
+              "unfinished_jobs": 1.0
+            },
+            "regressed_metrics": [],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "node007",
+          "lanes": 4,
+          "load": 0.8,
+          "cutoff": "observation_end",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 27.656227987235027,
+              "common_mean_flow_s": 27.65622798723503,
+              "common_p90_flow_s": 42.206828711982865,
+              "unfinished_jobs": 0,
+              "common_jobs": 841
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 25.615008280287082,
+              "common_mean_flow_s": 25.615008280287082,
+              "common_p90_flow_s": 38.221871975859344,
+              "unfinished_jobs": 0,
+              "common_jobs": 841
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -2.0412197069479454,
+              "common_mean_flow_s": -2.041219706947949,
+              "common_p90_flow_s": -3.9849567361235216,
+              "unfinished_jobs": 0
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.9261931269915012,
+              "common_mean_flow_s": 0.9261931269915011,
+              "common_p90_flow_s": 0.9055850236150966,
+              "unfinished_jobs": 1.0
+            },
+            "regressed_metrics": [],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "node007",
+          "lanes": 4,
+          "load": 0.95,
+          "cutoff": "arrival_horizon",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 45.749863460149314,
+              "common_mean_flow_s": 46.47551096883064,
+              "common_p90_flow_s": 99.62797342329955,
+              "unfinished_jobs": 100,
+              "common_jobs": 906
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 45.324512709968324,
+              "common_mean_flow_s": 46.102874192465215,
+              "common_p90_flow_s": 96.12430361161317,
+              "unfinished_jobs": 96,
+              "common_jobs": 906
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -0.4253507501809892,
+              "common_mean_flow_s": -0.37263677636542525,
+              "common_p90_flow_s": -3.503669811686379,
+              "unfinished_jobs": -4
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.9907026880954193,
+              "common_mean_flow_s": 0.991982083282197,
+              "common_p90_flow_s": 0.9648324693226472,
+              "unfinished_jobs": 0.96
+            },
+            "regressed_metrics": [],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "node007",
+          "lanes": 4,
+          "load": 0.95,
+          "cutoff": "observation_end",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 49.99706949933364,
+              "common_mean_flow_s": 49.99706949933364,
+              "common_p90_flow_s": 109.0050164776349,
+              "unfinished_jobs": 0,
+              "common_jobs": 1009
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 49.4615687014718,
+              "common_mean_flow_s": 49.461568701471805,
+              "common_p90_flow_s": 104.12748292220454,
+              "unfinished_jobs": 0,
+              "common_jobs": 1009
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -0.5355007978618431,
+              "common_mean_flow_s": -0.535500797861836,
+              "common_p90_flow_s": -4.877533555430361,
+              "unfinished_jobs": 0
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.9892893562917927,
+              "common_mean_flow_s": 0.9892893562917928,
+              "common_p90_flow_s": 0.9552540450610261,
+              "unfinished_jobs": 1.0
+            },
+            "regressed_metrics": [],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        }
+      ],
+      "loads": [
+        {
+          "load": 0.8,
+          "tapes": 12,
+          "snapshots": {
+            "arrival_horizon": {
+              "maxweight": {
+                "restricted_mean_flow_s": 24.658932049840196,
+                "common_mean_flow_s": 24.933885073405712,
+                "common_p90_flow_s": 42.276921986802805,
+                "unfinished_jobs": 140,
+                "common_jobs": 3155
+              },
+              "arrival_rollout": {
+                "restricted_mean_flow_s": 21.938413356949305,
+                "common_mean_flow_s": 22.156916279079283,
+                "common_p90_flow_s": 35.485233616117284,
+                "unfinished_jobs": 139,
+                "common_jobs": 3155
+              }
+            },
+            "observation_end": {
+              "maxweight": {
+                "restricted_mean_flow_s": 25.30603658239801,
+                "common_mean_flow_s": 25.30603658239802,
+                "common_p90_flow_s": 43.53355463502578,
+                "unfinished_jobs": 0,
+                "common_jobs": 3320
+              },
+              "arrival_rollout": {
+                "restricted_mean_flow_s": 22.507443920812563,
+                "common_mean_flow_s": 22.507443920812563,
+                "common_p90_flow_s": 36.11367732753456,
+                "unfinished_jobs": 0,
+                "common_jobs": 3320
+              }
+            }
+          },
+          "comparisons": {
+            "arrival_horizon": {
+              "deltas": {
+                "restricted_mean_flow_s": -2.7205186928908915,
+                "common_mean_flow_s": -2.7769687943264287,
+                "common_p90_flow_s": -6.79168837068552,
+                "unfinished_jobs": -1
+              },
+              "ratios": {
+                "restricted_mean_flow_s": 0.889674107240645,
+                "common_mean_flow_s": 0.8886267107532182,
+                "common_p90_flow_s": 0.8393523451682311,
+                "unfinished_jobs": 0.9928571428571429
+              },
+              "regressed_metrics": []
+            },
+            "observation_end": {
+              "deltas": {
+                "restricted_mean_flow_s": -2.798592661585449,
+                "common_mean_flow_s": -2.798592661585456,
+                "common_p90_flow_s": -7.41987730749122,
+                "unfinished_jobs": 0
+              },
+              "ratios": {
+                "restricted_mean_flow_s": 0.8894100760317382,
+                "common_mean_flow_s": 0.8894100760317379,
+                "common_p90_flow_s": 0.8295595806568616,
+                "unfinished_jobs": 1.0
+              },
+              "regressed_metrics": []
+            }
+          },
+          "mean_nonregression_passed": true
+        },
+        {
+          "load": 0.95,
+          "tapes": 12,
+          "snapshots": {
+            "arrival_horizon": {
+              "maxweight": {
+                "restricted_mean_flow_s": 39.31453170976008,
+                "common_mean_flow_s": 39.53100311890511,
+                "common_p90_flow_s": 81.84893853670054,
+                "unfinished_jobs": 317,
+                "common_jobs": 3635
+              },
+              "arrival_rollout": {
+                "restricted_mean_flow_s": 36.43750774968064,
+                "common_mean_flow_s": 36.58522275237757,
+                "common_p90_flow_s": 71.07846053096438,
+                "unfinished_jobs": 278,
+                "common_jobs": 3635
+              }
+            },
+            "observation_end": {
+              "maxweight": {
+                "restricted_mean_flow_s": 42.30414987945652,
+                "common_mean_flow_s": 42.30414987945652,
+                "common_p90_flow_s": 91.16382523033579,
+                "unfinished_jobs": 0,
+                "common_jobs": 3963
+              },
+              "arrival_rollout": {
+                "restricted_mean_flow_s": 39.01688861095089,
+                "common_mean_flow_s": 39.01688861095089,
+                "common_p90_flow_s": 78.44682662832606,
+                "unfinished_jobs": 0,
+                "common_jobs": 3963
+              }
+            }
+          },
+          "comparisons": {
+            "arrival_horizon": {
+              "deltas": {
+                "restricted_mean_flow_s": -2.877023960079441,
+                "common_mean_flow_s": -2.9457803665275435,
+                "common_p90_flow_s": -10.770478005736166,
+                "unfinished_jobs": -39
+              },
+              "ratios": {
+                "restricted_mean_flow_s": 0.9268203426326148,
+                "common_mean_flow_s": 0.9254817704051945,
+                "common_p90_flow_s": 0.8684102909788286,
+                "unfinished_jobs": 0.8769716088328076
+              },
+              "regressed_metrics": []
+            },
+            "observation_end": {
+              "deltas": {
+                "restricted_mean_flow_s": -3.287261268505624,
+                "common_mean_flow_s": -3.287261268505624,
+                "common_p90_flow_s": -12.716998602009724,
+                "unfinished_jobs": 0
+              },
+              "ratios": {
+                "restricted_mean_flow_s": 0.9222945910064969,
+                "common_mean_flow_s": 0.9222945910064969,
+                "common_p90_flow_s": 0.8605038942817639,
+                "unfinished_jobs": 1.0
+              },
+              "regressed_metrics": []
+            }
+          },
+          "mean_nonregression_passed": true
+        }
+      ],
+      "seed_aggregates": [
+        {
+          "seed": 41,
+          "paired_cells": 8,
+          "snapshots": {
+            "arrival_horizon": {
+              "maxweight": {
+                "restricted_mean_flow_s": 27.922808664439792,
+                "common_mean_flow_s": 28.358051592348524,
+                "common_p90_flow_s": 53.63388772812716,
+                "unfinished_jobs": 119,
+                "common_jobs": 2221
+              },
+              "arrival_rollout": {
+                "restricted_mean_flow_s": 25.329699689433014,
+                "common_mean_flow_s": 25.722902341752555,
+                "common_p90_flow_s": 43.29883256385067,
+                "unfinished_jobs": 103,
+                "common_jobs": 2221
+              }
+            },
+            "observation_end": {
+              "maxweight": {
+                "restricted_mean_flow_s": 28.90229428693308,
+                "common_mean_flow_s": 28.902294286933078,
+                "common_p90_flow_s": 56.67101036318257,
+                "unfinished_jobs": 0,
+                "common_jobs": 2353
+              },
+              "arrival_rollout": {
+                "restricted_mean_flow_s": 26.054372168505306,
+                "common_mean_flow_s": 26.054372168505306,
+                "common_p90_flow_s": 44.34127377103007,
+                "unfinished_jobs": 0,
+                "common_jobs": 2353
+              }
+            }
+          },
+          "comparisons": {
+            "arrival_horizon": {
+              "deltas": {
+                "restricted_mean_flow_s": -2.5931089750067784,
+                "common_mean_flow_s": -2.635149250595969,
+                "common_p90_flow_s": -10.335055164276497,
+                "unfinished_jobs": -16
+              },
+              "ratios": {
+                "restricted_mean_flow_s": 0.9071329461814079,
+                "common_mean_flow_s": 0.9070758002532524,
+                "common_p90_flow_s": 0.8073036357784578,
+                "unfinished_jobs": 0.865546218487395
+              },
+              "regressed_metrics": []
+            },
+            "observation_end": {
+              "deltas": {
+                "restricted_mean_flow_s": -2.8479221184277748,
+                "common_mean_flow_s": -2.847922118427771,
+                "common_p90_flow_s": -12.3297365921525,
+                "unfinished_jobs": 0
+              },
+              "ratios": {
+                "restricted_mean_flow_s": 0.9014638045632475,
+                "common_mean_flow_s": 0.9014638045632476,
+                "common_p90_flow_s": 0.7824330903377936,
+                "unfinished_jobs": 1.0
+              },
+              "regressed_metrics": []
+            }
+          }
+        },
+        {
+          "seed": 42,
+          "paired_cells": 8,
+          "snapshots": {
+            "arrival_horizon": {
+              "maxweight": {
+                "restricted_mean_flow_s": 36.57137452985096,
+                "common_mean_flow_s": 36.888674726691335,
+                "common_p90_flow_s": 72.65372578223524,
+                "unfinished_jobs": 148,
+                "common_jobs": 2298
+              },
+              "arrival_rollout": {
+                "restricted_mean_flow_s": 33.332813935462056,
+                "common_mean_flow_s": 33.580122168195444,
+                "common_p90_flow_s": 64.5677190095266,
+                "unfinished_jobs": 134,
+                "common_jobs": 2298
+              }
+            },
+            "observation_end": {
+              "maxweight": {
+                "restricted_mean_flow_s": 38.27751290770877,
+                "common_mean_flow_s": 38.277512907708775,
+                "common_p90_flow_s": 75.47306234354129,
+                "unfinished_jobs": 0,
+                "common_jobs": 2454
+              },
+              "arrival_rollout": {
+                "restricted_mean_flow_s": 34.940717192322204,
+                "common_mean_flow_s": 34.94071719232221,
+                "common_p90_flow_s": 68.37759747716194,
+                "unfinished_jobs": 0,
+                "common_jobs": 2454
+              }
+            }
+          },
+          "comparisons": {
+            "arrival_horizon": {
+              "deltas": {
+                "restricted_mean_flow_s": -3.2385605943889004,
+                "common_mean_flow_s": -3.30855255849589,
+                "common_p90_flow_s": -8.086006772708643,
+                "unfinished_jobs": -14
+              },
+              "ratios": {
+                "restricted_mean_flow_s": 0.9114454778902153,
+                "common_mean_flow_s": 0.9103098015038762,
+                "common_p90_flow_s": 0.8887048573813708,
+                "unfinished_jobs": 0.9054054054054054
+              },
+              "regressed_metrics": []
+            },
+            "observation_end": {
+              "deltas": {
+                "restricted_mean_flow_s": -3.3367957153865646,
+                "common_mean_flow_s": -3.3367957153865646,
+                "common_p90_flow_s": -7.095464866379345,
+                "unfinished_jobs": 0
+              },
+              "ratios": {
+                "restricted_mean_flow_s": 0.9128262140899295,
+                "common_mean_flow_s": 0.9128262140899295,
+                "common_p90_flow_s": 0.9059867899081406,
+                "unfinished_jobs": 1.0
+              },
+              "regressed_metrics": []
+            }
+          }
+        },
+        {
+          "seed": 43,
+          "paired_cells": 8,
+          "snapshots": {
+            "arrival_horizon": {
+              "maxweight": {
+                "restricted_mean_flow_s": 31.466012445109676,
+                "common_mean_flow_s": 31.45060596942638,
+                "common_p90_flow_s": 59.90117727489262,
+                "unfinished_jobs": 190,
+                "common_jobs": 2271
+              },
+              "arrival_rollout": {
+                "restricted_mean_flow_s": 28.901368035049853,
+                "common_mean_flow_s": 28.810184037237285,
+                "common_p90_flow_s": 51.978989647245236,
+                "unfinished_jobs": 180,
+                "common_jobs": 2271
+              }
+            },
+            "observation_end": {
+              "maxweight": {
+                "restricted_mean_flow_s": 34.235472498139956,
+                "common_mean_flow_s": 34.235472498139956,
+                "common_p90_flow_s": 69.90199709131849,
+                "unfinished_jobs": 0,
+                "common_jobs": 2476
+              },
+              "arrival_rollout": {
+                "restricted_mean_flow_s": 31.29140943681767,
+                "common_mean_flow_s": 31.291409436817666,
+                "common_p90_flow_s": 59.12188468559892,
+                "unfinished_jobs": 0,
+                "common_jobs": 2476
+              }
+            }
+          },
+          "comparisons": {
+            "arrival_horizon": {
+              "deltas": {
+                "restricted_mean_flow_s": -2.564644410059824,
+                "common_mean_flow_s": -2.6404219321890956,
+                "common_p90_flow_s": -7.922187627647382,
+                "unfinished_jobs": -10
+              },
+              "ratios": {
+                "restricted_mean_flow_s": 0.9184947754491081,
+                "common_mean_flow_s": 0.9160454353484988,
+                "common_p90_flow_s": 0.8677457107179771,
+                "unfinished_jobs": 0.9473684210526315
+              },
+              "regressed_metrics": []
+            },
+            "observation_end": {
+              "deltas": {
+                "restricted_mean_flow_s": -2.944063061322286,
+                "common_mean_flow_s": -2.9440630613222893,
+                "common_p90_flow_s": -10.78011240571957,
+                "unfinished_jobs": 0
+              },
+              "ratios": {
+                "restricted_mean_flow_s": 0.9140054789230019,
+                "common_mean_flow_s": 0.9140054789230018,
+                "common_p90_flow_s": 0.8457824832724499,
+                "unfinished_jobs": 1.0
+              },
+              "regressed_metrics": []
+            }
+          }
+        }
+      ],
+      "failed_secondary_groups": [
+        {
+          "node": "gpu_a",
+          "lanes": 2,
+          "load": 0.8,
+          "cutoff": "arrival_horizon",
+          "failed_metrics": [
+            "unfinished_jobs"
+          ]
+        }
+      ],
+      "limitations": "Fixed-rate Poisson, deterministic cached independent lanes; no drift, actual P90 bound or physical execution claim. Computation excluded from service clock. Per-class and per-seed regressions retained.",
+      "policy_roles": {
+        "maxweight": "cached_MW",
+        "arrival_rollout": "persistent_current_candidate"
+      },
+      "baseline_rerun": false,
+      "baseline_check_scope": "Reuse registered execution-valid complete reference.",
+      "performance_gate_applied": true
+    },
+    "BG": {
+      "experiment": "persistent_old_current_full24_development_v1",
+      "registered_at_utc": "2026-10-01T22:05:01.809298+00:00",
+      "decision": "ARRIVAL_AWARE_LANE_ROLLOUT_PERFORMANCE_HOLD",
+      "execution_checks_passed": true,
+      "operational_integrity_passed": true,
+      "baseline_reproduction_passed": true,
+      "rollout_checks_passed": true,
+      "performance_gain_established": false,
+      "flow_gain_threshold_passed": true,
+      "load_mean_nonregression_passed": true,
+      "group_secondary_passed": false,
+      "pooled_unfinished_checks": {
+        "arrival_horizon": true,
+        "observation_end": true
+      },
+      "pooled_T_flow_ratio": 0.987187129349696,
+      "pooled_T_flow_improvement": 0.012812870650304009,
+      "tapes": 24,
+      "trajectories": 48,
+      "independent_seed_replicates": 3,
+      "statistical_scope": "Development screen on three shared seeds; catalogue/load cells are paired within each seed, not independent replicates. Seed aggregates are descriptive, with no 24-pair significance test.",
+      "pooled": {
+        "arrival_horizon": {
+          "maxweight": {
+            "restricted_mean_flow_s": 29.631486175222665,
+            "common_mean_flow_s": 29.902245671875583,
+            "common_p90_flow_s": 55.398193407552235,
+            "unfinished_jobs": 427,
+            "common_jobs": 6812
+          },
+          "arrival_rollout": {
+            "restricted_mean_flow_s": 29.187960553314973,
+            "common_mean_flow_s": 29.449879044003374,
+            "common_p90_flow_s": 53.47247088336309,
+            "unfinished_jobs": 417,
+            "common_jobs": 6812
+          }
+        },
+        "observation_end": {
+          "maxweight": {
+            "restricted_mean_flow_s": 31.161433684965214,
+            "common_mean_flow_s": 31.161433684965218,
+            "common_p90_flow_s": 58.274082928466896,
+            "unfinished_jobs": 0,
+            "common_jobs": 7283
+          },
+          "arrival_rollout": {
+            "restricted_mean_flow_s": 30.762166265881728,
+            "common_mean_flow_s": 30.762166265881728,
+            "common_p90_flow_s": 57.28025197793031,
+            "unfinished_jobs": 0,
+            "common_jobs": 7283
+          }
+        }
+      },
+      "groups": [
+        {
+          "node": "gpu_a",
+          "lanes": 2,
+          "load": 0.8,
+          "cutoff": "arrival_horizon",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 27.931404775792103,
+              "common_mean_flow_s": 28.358002321192522,
+              "common_p90_flow_s": 51.074904269120495,
+              "unfinished_jobs": 35,
+              "common_jobs": 830
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 26.81184399157259,
+              "common_mean_flow_s": 27.126514742788242,
+              "common_p90_flow_s": 45.80327254488916,
+              "unfinished_jobs": 39,
+              "common_jobs": 830
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -1.1195607842195123,
+              "common_mean_flow_s": -1.2314875784042805,
+              "common_p90_flow_s": -5.271631724231334,
+              "unfinished_jobs": 4
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.9599174909673779,
+              "common_mean_flow_s": 0.9565735426474676,
+              "common_p90_flow_s": 0.896786263240859,
+              "unfinished_jobs": 1.1142857142857143
+            },
+            "regressed_metrics": [
+              "unfinished_jobs"
+            ],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": false
+            },
+            "secondary_passed": false
+          }
+        },
+        {
+          "node": "gpu_a",
+          "lanes": 2,
+          "load": 0.8,
+          "cutoff": "observation_end",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 28.563954498530354,
+              "common_mean_flow_s": 28.563954498530347,
+              "common_p90_flow_s": 50.760695907861184,
+              "unfinished_jobs": 0,
+              "common_jobs": 873
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 27.590951210824617,
+              "common_mean_flow_s": 27.59095121082462,
+              "common_p90_flow_s": 46.58061890243175,
+              "unfinished_jobs": 0,
+              "common_jobs": 873
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -0.9730032877057369,
+              "common_mean_flow_s": -0.9730032877057262,
+              "common_p90_flow_s": -4.180077005429432,
+              "unfinished_jobs": 0
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.9659359740348348,
+              "common_mean_flow_s": 0.9659359740348351,
+              "common_p90_flow_s": 0.9176513061795499,
+              "unfinished_jobs": 1.0
+            },
+            "regressed_metrics": [],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "gpu_a",
+          "lanes": 2,
+          "load": 0.95,
+          "cutoff": "arrival_horizon",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 38.59137001690198,
+              "common_mean_flow_s": 39.462880643091175,
+              "common_p90_flow_s": 76.23446672481309,
+              "unfinished_jobs": 68,
+              "common_jobs": 971
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 37.30787214843448,
+              "common_mean_flow_s": 38.1104888778943,
+              "common_p90_flow_s": 74.72210721852016,
+              "unfinished_jobs": 68,
+              "common_jobs": 971
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -1.2834978684675065,
+              "common_mean_flow_s": -1.3523917651968773,
+              "common_p90_flow_s": -1.512359506292924,
+              "unfinished_jobs": 0
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.9667413240860491,
+              "common_mean_flow_s": 0.9657300292538669,
+              "common_p90_flow_s": 0.9801617356129458,
+              "unfinished_jobs": 1.0
+            },
+            "regressed_metrics": [],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "gpu_a",
+          "lanes": 2,
+          "load": 0.95,
+          "cutoff": "observation_end",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 40.53838384731826,
+              "common_mean_flow_s": 40.53838384731827,
+              "common_p90_flow_s": 75.62182811947307,
+              "unfinished_jobs": 0,
+              "common_jobs": 1046
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 39.422561499974364,
+              "common_mean_flow_s": 39.42256149997435,
+              "common_p90_flow_s": 77.07961846976094,
+              "unfinished_jobs": 0,
+              "common_jobs": 1046
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -1.1158223473438937,
+              "common_mean_flow_s": -1.1158223473439222,
+              "common_p90_flow_s": 1.4577903502878797,
+              "unfinished_jobs": 0
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.9724749178076149,
+              "common_mean_flow_s": 0.9724749178076142,
+              "common_p90_flow_s": 1.019277375151322,
+              "unfinished_jobs": 1.0
+            },
+            "regressed_metrics": [
+              "common_p90_flow_s"
+            ],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "gpu_b",
+          "lanes": 2,
+          "load": 0.8,
+          "cutoff": "arrival_horizon",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 19.34355812479577,
+              "common_mean_flow_s": 19.412971114398935,
+              "common_p90_flow_s": 35.050089383474685,
+              "unfinished_jobs": 43,
+              "common_jobs": 1103
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 18.795836474013743,
+              "common_mean_flow_s": 18.871405493874846,
+              "common_p90_flow_s": 32.56011225084853,
+              "unfinished_jobs": 43,
+              "common_jobs": 1103
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -0.5477216507820266,
+              "common_mean_flow_s": -0.5415656205240893,
+              "common_p90_flow_s": -2.4899771326261515,
+              "unfinished_jobs": 0
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.9716845449400582,
+              "common_mean_flow_s": 0.9721028987612101,
+              "common_p90_flow_s": 0.9289594641148015,
+              "unfinished_jobs": 1.0
+            },
+            "regressed_metrics": [],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "gpu_b",
+          "lanes": 2,
+          "load": 0.8,
+          "cutoff": "observation_end",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 19.876950361156993,
+              "common_mean_flow_s": 19.876950361157007,
+              "common_p90_flow_s": 36.603362962477775,
+              "unfinished_jobs": 0,
+              "common_jobs": 1154
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 19.297682149859206,
+              "common_mean_flow_s": 19.297682149859213,
+              "common_p90_flow_s": 33.363771060266124,
+              "unfinished_jobs": 0,
+              "common_jobs": 1154
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -0.5792682112977872,
+              "common_mean_flow_s": -0.5792682112977943,
+              "common_p90_flow_s": -3.23959190221165,
+              "unfinished_jobs": 0
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.9708572894346118,
+              "common_mean_flow_s": 0.9708572894346115,
+              "common_p90_flow_s": 0.9114946922900892,
+              "unfinished_jobs": 1.0
+            },
+            "regressed_metrics": [],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "gpu_b",
+          "lanes": 2,
+          "load": 0.95,
+          "cutoff": "arrival_horizon",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 31.753922056170204,
+              "common_mean_flow_s": 31.85609279494665,
+              "common_p90_flow_s": 60.84884320272776,
+              "unfinished_jobs": 91,
+              "common_jobs": 1269
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 32.16522314004339,
+              "common_mean_flow_s": 32.22724429660579,
+              "common_p90_flow_s": 61.64612515610007,
+              "unfinished_jobs": 87,
+              "common_jobs": 1269
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": 0.41130108387318387,
+              "common_mean_flow_s": 0.37115150165913846,
+              "common_p90_flow_s": 0.7972819533723126,
+              "unfinished_jobs": -4
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 1.0129527648000656,
+              "common_mean_flow_s": 1.0116508795993342,
+              "common_p90_flow_s": 1.0131026641002203,
+              "unfinished_jobs": 0.9560439560439561
+            },
+            "regressed_metrics": [
+              "restricted_mean_flow_s",
+              "common_mean_flow_s",
+              "common_p90_flow_s"
+            ],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "gpu_b",
+          "lanes": 2,
+          "load": 0.95,
+          "cutoff": "observation_end",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 33.92859768606493,
+              "common_mean_flow_s": 33.92859768606494,
+              "common_p90_flow_s": 71.46647909752397,
+              "unfinished_jobs": 0,
+              "common_jobs": 1369
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 34.37468997762468,
+              "common_mean_flow_s": 34.37468997762468,
+              "common_p90_flow_s": 74.71359161154629,
+              "unfinished_jobs": 0,
+              "common_jobs": 1369
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": 0.4460922915597507,
+              "common_mean_flow_s": 0.4460922915597436,
+              "common_p90_flow_s": 3.2471125140223194,
+              "unfinished_jobs": 0
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 1.0131479731548991,
+              "common_mean_flow_s": 1.013147973154899,
+              "common_p90_flow_s": 1.0454354622618427,
+              "unfinished_jobs": 1.0
+            },
+            "regressed_metrics": [
+              "restricted_mean_flow_s",
+              "common_mean_flow_s",
+              "common_p90_flow_s"
+            ],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "cpu_a",
+          "lanes": 2,
+          "load": 0.8,
+          "cutoff": "arrival_horizon",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 17.79732287458131,
+              "common_mean_flow_s": 17.959639586362414,
+              "common_p90_flow_s": 26.807510303922246,
+              "unfinished_jobs": 12,
+              "common_jobs": 438
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 17.329206308936925,
+              "common_mean_flow_s": 17.516666422404782,
+              "common_p90_flow_s": 26.086966522934596,
+              "unfinished_jobs": 11,
+              "common_jobs": 438
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -0.46811656564438664,
+              "common_mean_flow_s": -0.44297316395763175,
+              "common_p90_flow_s": -0.7205437809876507,
+              "unfinished_jobs": -1
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.9736973606118612,
+              "common_mean_flow_s": 0.9753350749703239,
+              "common_p90_flow_s": 0.9731215703055338,
+              "unfinished_jobs": 0.9166666666666666
+            },
+            "regressed_metrics": [],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "cpu_a",
+          "lanes": 2,
+          "load": 0.8,
+          "cutoff": "observation_end",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 17.954648302625625,
+              "common_mean_flow_s": 17.954648302625625,
+              "common_p90_flow_s": 26.771176816326253,
+              "unfinished_jobs": 0,
+              "common_jobs": 452
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 17.526134042279338,
+              "common_mean_flow_s": 17.526134042279338,
+              "common_p90_flow_s": 26.28844737158102,
+              "unfinished_jobs": 0,
+              "common_jobs": 452
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -0.4285142603462866,
+              "common_mean_flow_s": -0.4285142603462866,
+              "common_p90_flow_s": -0.4827294447452317,
+              "unfinished_jobs": 0
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.9761335196811612,
+              "common_mean_flow_s": 0.9761335196811612,
+              "common_p90_flow_s": 0.9819683143532622,
+              "unfinished_jobs": 1.0
+            },
+            "regressed_metrics": [],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "cpu_a",
+          "lanes": 2,
+          "load": 0.95,
+          "cutoff": "arrival_horizon",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 30.642989785340983,
+              "common_mean_flow_s": 29.972858546058962,
+              "common_p90_flow_s": 52.71749650814858,
+              "unfinished_jobs": 29,
+              "common_jobs": 507
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 30.952423000276386,
+              "common_mean_flow_s": 30.269209830691725,
+              "common_p90_flow_s": 53.060253729708776,
+              "unfinished_jobs": 27,
+              "common_jobs": 507
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": 0.3094332149354031,
+              "common_mean_flow_s": 0.29635128463276317,
+              "common_p90_flow_s": 0.3427572215601984,
+              "unfinished_jobs": -2
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 1.0100980099234125,
+              "common_mean_flow_s": 1.0098873213636719,
+              "common_p90_flow_s": 1.0065017734957733,
+              "unfinished_jobs": 0.9310344827586207
+            },
+            "regressed_metrics": [
+              "restricted_mean_flow_s",
+              "common_mean_flow_s",
+              "common_p90_flow_s"
+            ],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "cpu_a",
+          "lanes": 2,
+          "load": 0.95,
+          "cutoff": "observation_end",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 32.351714825131516,
+              "common_mean_flow_s": 32.35171482513153,
+              "common_p90_flow_s": 56.00227001294777,
+              "unfinished_jobs": 0,
+              "common_jobs": 539
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 32.80873426473273,
+              "common_mean_flow_s": 32.80873426473274,
+              "common_p90_flow_s": 57.866613509792465,
+              "unfinished_jobs": 0,
+              "common_jobs": 539
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": 0.4570194396012113,
+              "common_mean_flow_s": 0.4570194396012113,
+              "common_p90_flow_s": 1.8643434968446968,
+              "unfinished_jobs": 0
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 1.0141265908800046,
+              "common_mean_flow_s": 1.0141265908800046,
+              "common_p90_flow_s": 1.0332904986961002,
+              "unfinished_jobs": 1.0
+            },
+            "regressed_metrics": [
+              "restricted_mean_flow_s",
+              "common_mean_flow_s",
+              "common_p90_flow_s"
+            ],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "node007",
+          "lanes": 4,
+          "load": 0.8,
+          "cutoff": "arrival_horizon",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 25.074065836715842,
+              "common_mean_flow_s": 25.63336242297007,
+              "common_p90_flow_s": 37.64628538122616,
+              "unfinished_jobs": 44,
+              "common_jobs": 794
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 24.816766653273962,
+              "common_mean_flow_s": 25.358838270821963,
+              "common_p90_flow_s": 37.80841574754821,
+              "unfinished_jobs": 46,
+              "common_jobs": 794
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -0.2572991834418801,
+              "common_mean_flow_s": -0.274524152148107,
+              "common_p90_flow_s": 0.16213036632205302,
+              "unfinished_jobs": 2
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.9897384339214298,
+              "common_mean_flow_s": 0.9892903573234658,
+              "common_p90_flow_s": 1.004306676334205,
+              "unfinished_jobs": 1.0454545454545454
+            },
+            "regressed_metrics": [
+              "common_p90_flow_s",
+              "unfinished_jobs"
+            ],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "node007",
+          "lanes": 4,
+          "load": 0.8,
+          "cutoff": "observation_end",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 25.92961962135591,
+              "common_mean_flow_s": 25.929619621355908,
+              "common_p90_flow_s": 37.99366271998064,
+              "unfinished_jobs": 0,
+              "common_jobs": 841
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 25.615008280287082,
+              "common_mean_flow_s": 25.615008280287082,
+              "common_p90_flow_s": 38.221871975859344,
+              "unfinished_jobs": 0,
+              "common_jobs": 841
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -0.3146113410688294,
+              "common_mean_flow_s": -0.3146113410688258,
+              "common_p90_flow_s": 0.22820925587870278,
+              "unfinished_jobs": 0
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.9878667197720975,
+              "common_mean_flow_s": 0.9878667197720977,
+              "common_p90_flow_s": 1.0060065084422274,
+              "unfinished_jobs": 1.0
+            },
+            "regressed_metrics": [
+              "common_p90_flow_s"
+            ],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "node007",
+          "lanes": 4,
+          "load": 0.95,
+          "cutoff": "arrival_horizon",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 45.91725593148313,
+              "common_mean_flow_s": 46.562157945983934,
+              "common_p90_flow_s": 102.80595148698491,
+              "unfinished_jobs": 105,
+              "common_jobs": 900
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 45.324512709968324,
+              "common_mean_flow_s": 46.118664416945336,
+              "common_p90_flow_s": 96.09251389635519,
+              "unfinished_jobs": 96,
+              "common_jobs": 900
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -0.5927432215148087,
+              "common_mean_flow_s": -0.44349352903859796,
+              "common_p90_flow_s": -6.713437590629724,
+              "unfinished_jobs": -9
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.9870910573924694,
+              "common_mean_flow_s": 0.990475236788787,
+              "common_p90_flow_s": 0.9346979674471508,
+              "unfinished_jobs": 0.9142857142857143
+            },
+            "regressed_metrics": [],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "node007",
+          "lanes": 4,
+          "load": 0.95,
+          "cutoff": "observation_end",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 50.147600337538115,
+              "common_mean_flow_s": 50.1476003375381,
+              "common_p90_flow_s": 110.97318779114453,
+              "unfinished_jobs": 0,
+              "common_jobs": 1009
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 49.4615687014718,
+              "common_mean_flow_s": 49.461568701471805,
+              "common_p90_flow_s": 104.12748292220454,
+              "unfinished_jobs": 0,
+              "common_jobs": 1009
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -0.6860316360663177,
+              "common_mean_flow_s": -0.6860316360662964,
+              "common_p90_flow_s": -6.84570486893999,
+              "unfinished_jobs": 0
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.986319751464702,
+              "common_mean_flow_s": 0.9863197514647024,
+              "common_p90_flow_s": 0.9383120823579129,
+              "unfinished_jobs": 1.0
+            },
+            "regressed_metrics": [],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        }
+      ],
+      "loads": [
+        {
+          "load": 0.8,
+          "tapes": 12,
+          "snapshots": {
+            "arrival_horizon": {
+              "maxweight": {
+                "restricted_mean_flow_s": 22.536587902971256,
+                "common_mean_flow_s": 22.840993861230984,
+                "common_p90_flow_s": 37.6446973344359,
+                "unfinished_jobs": 134,
+                "common_jobs": 3165
+              },
+              "arrival_rollout": {
+                "restricted_mean_flow_s": 21.938413356949305,
+                "common_mean_flow_s": 22.21835623247246,
+                "common_p90_flow_s": 35.56469176655512,
+                "unfinished_jobs": 139,
+                "common_jobs": 3165
+              }
+            },
+            "observation_end": {
+              "maxweight": {
+                "restricted_mean_flow_s": 23.081293195917223,
+                "common_mean_flow_s": 23.081293195917223,
+                "common_p90_flow_s": 38.03222460166146,
+                "unfinished_jobs": 0,
+                "common_jobs": 3320
+              },
+              "arrival_rollout": {
+                "restricted_mean_flow_s": 22.507443920812563,
+                "common_mean_flow_s": 22.507443920812563,
+                "common_p90_flow_s": 36.11367732753456,
+                "unfinished_jobs": 0,
+                "common_jobs": 3320
+              }
+            }
+          },
+          "comparisons": {
+            "arrival_horizon": {
+              "deltas": {
+                "restricted_mean_flow_s": -0.5981745460219514,
+                "common_mean_flow_s": -0.6226376287585254,
+                "common_p90_flow_s": -2.080005567880775,
+                "unfinished_jobs": 5
+              },
+              "ratios": {
+                "restricted_mean_flow_s": 0.9734576259459806,
+                "common_mean_flow_s": 0.9727403442888115,
+                "common_p90_flow_s": 0.9447463862067482,
+                "unfinished_jobs": 1.037313432835821
+              },
+              "regressed_metrics": [
+                "unfinished_jobs"
+              ]
+            },
+            "observation_end": {
+              "deltas": {
+                "restricted_mean_flow_s": -0.57384927510466,
+                "common_mean_flow_s": -0.57384927510466,
+                "common_p90_flow_s": -1.918547274126901,
+                "unfinished_jobs": 0
+              },
+              "ratios": {
+                "restricted_mean_flow_s": 0.9751379062588154,
+                "common_mean_flow_s": 0.9751379062588154,
+                "common_p90_flow_s": 0.949554692258441,
+                "unfinished_jobs": 1.0
+              },
+              "regressed_metrics": []
+            }
+          },
+          "mean_nonregression_passed": true
+        },
+        {
+          "load": 0.95,
+          "tapes": 12,
+          "snapshots": {
+            "arrival_horizon": {
+              "maxweight": {
+                "restricted_mean_flow_s": 36.726384447474075,
+                "common_mean_flow_s": 36.96349748252018,
+                "common_p90_flow_s": 73.15168948066858,
+                "unfinished_jobs": 293,
+                "common_jobs": 3647
+              },
+              "arrival_rollout": {
+                "restricted_mean_flow_s": 36.43750774968064,
+                "common_mean_flow_s": 36.68140185553429,
+                "common_p90_flow_s": 71.38025000017105,
+                "unfinished_jobs": 278,
+                "common_jobs": 3647
+              }
+            },
+            "observation_end": {
+              "maxweight": {
+                "restricted_mean_flow_s": 39.24157417401321,
+                "common_mean_flow_s": 39.24157417401321,
+                "common_p90_flow_s": 78.51594125527232,
+                "unfinished_jobs": 0,
+                "common_jobs": 3963
+              },
+              "arrival_rollout": {
+                "restricted_mean_flow_s": 39.01688861095089,
+                "common_mean_flow_s": 39.01688861095089,
+                "common_p90_flow_s": 78.44682662832606,
+                "unfinished_jobs": 0,
+                "common_jobs": 3963
+              }
+            }
+          },
+          "comparisons": {
+            "arrival_horizon": {
+              "deltas": {
+                "restricted_mean_flow_s": -0.28887669779343383,
+                "common_mean_flow_s": -0.2820956269858925,
+                "common_p90_flow_s": -1.7714394804975342,
+                "unfinished_jobs": -15
+              },
+              "ratios": {
+                "restricted_mean_flow_s": 0.9921343551199115,
+                "common_mean_flow_s": 0.9923682647422828,
+                "common_p90_flow_s": 0.9757840250433907,
+                "unfinished_jobs": 0.9488054607508533
+              },
+              "regressed_metrics": []
+            },
+            "observation_end": {
+              "deltas": {
+                "restricted_mean_flow_s": -0.2246855630623159,
+                "common_mean_flow_s": -0.2246855630623159,
+                "common_p90_flow_s": -0.06911462694625925,
+                "unfinished_jobs": 0
+              },
+              "ratios": {
+                "restricted_mean_flow_s": 0.994274297915115,
+                "common_mean_flow_s": 0.994274297915115,
+                "common_p90_flow_s": 0.9991197376501982,
+                "unfinished_jobs": 1.0
+              },
+              "regressed_metrics": []
+            }
+          },
+          "mean_nonregression_passed": true
+        }
+      ],
+      "seed_aggregates": [
+        {
+          "seed": 41,
+          "paired_cells": 8,
+          "snapshots": {
+            "arrival_horizon": {
+              "maxweight": {
+                "restricted_mean_flow_s": 25.374872386017856,
+                "common_mean_flow_s": 25.83031659590238,
+                "common_p90_flow_s": 45.23779837847544,
+                "unfinished_jobs": 105,
+                "common_jobs": 2233
+              },
+              "arrival_rollout": {
+                "restricted_mean_flow_s": 25.329699689433014,
+                "common_mean_flow_s": 25.779299123796044,
+                "common_p90_flow_s": 43.44022042288593,
+                "unfinished_jobs": 103,
+                "common_jobs": 2233
+              }
+            },
+            "observation_end": {
+              "maxweight": {
+                "restricted_mean_flow_s": 26.05885966699379,
+                "common_mean_flow_s": 26.058859666993797,
+                "common_p90_flow_s": 45.76105109658758,
+                "unfinished_jobs": 0,
+                "common_jobs": 2353
+              },
+              "arrival_rollout": {
+                "restricted_mean_flow_s": 26.054372168505306,
+                "common_mean_flow_s": 26.054372168505306,
+                "common_p90_flow_s": 44.34127377103007,
+                "unfinished_jobs": 0,
+                "common_jobs": 2353
+              }
+            }
+          },
+          "comparisons": {
+            "arrival_horizon": {
+              "deltas": {
+                "restricted_mean_flow_s": -0.04517269658484224,
+                "common_mean_flow_s": -0.05101747210633789,
+                "common_p90_flow_s": -1.7975779555895102,
+                "unfinished_jobs": -2
+              },
+              "ratios": {
+                "restricted_mean_flow_s": 0.9982197862555662,
+                "common_mean_flow_s": 0.9980248994658304,
+                "common_p90_flow_s": 0.9602638054895967,
+                "unfinished_jobs": 0.9809523809523809
+              },
+              "regressed_metrics": []
+            },
+            "observation_end": {
+              "deltas": {
+                "restricted_mean_flow_s": -0.00448749848848351,
+                "common_mean_flow_s": -0.0044874984884906155,
+                "common_p90_flow_s": -1.4197773255575115,
+                "unfinished_jobs": 0
+              },
+              "ratios": {
+                "restricted_mean_flow_s": 0.999827793750539,
+                "common_mean_flow_s": 0.9998277937505388,
+                "common_p90_flow_s": 0.9689741102633155,
+                "unfinished_jobs": 1.0
+              },
+              "regressed_metrics": []
+            }
+          }
+        },
+        {
+          "seed": 42,
+          "paired_cells": 8,
+          "snapshots": {
+            "arrival_horizon": {
+              "maxweight": {
+                "restricted_mean_flow_s": 33.844575078420554,
+                "common_mean_flow_s": 34.173609618295224,
+                "common_p90_flow_s": 65.78617777967845,
+                "unfinished_jobs": 132,
+                "common_jobs": 2310
+              },
+              "arrival_rollout": {
+                "restricted_mean_flow_s": 33.332813935462056,
+                "common_mean_flow_s": 33.66715209926308,
+                "common_p90_flow_s": 64.58404397744462,
+                "unfinished_jobs": 134,
+                "common_jobs": 2310
+              }
+            },
+            "observation_end": {
+              "maxweight": {
+                "restricted_mean_flow_s": 35.318438927894015,
+                "common_mean_flow_s": 35.318438927894015,
+                "common_p90_flow_s": 67.52186739273347,
+                "unfinished_jobs": 0,
+                "common_jobs": 2454
+              },
+              "arrival_rollout": {
+                "restricted_mean_flow_s": 34.940717192322204,
+                "common_mean_flow_s": 34.94071719232221,
+                "common_p90_flow_s": 68.37759747716194,
+                "unfinished_jobs": 0,
+                "common_jobs": 2454
+              }
+            }
+          },
+          "comparisons": {
+            "arrival_horizon": {
+              "deltas": {
+                "restricted_mean_flow_s": -0.5117611429584983,
+                "common_mean_flow_s": -0.5064575190321463,
+                "common_p90_flow_s": -1.2021338022338313,
+                "unfinished_jobs": 2
+              },
+              "ratios": {
+                "restricted_mean_flow_s": 0.9848790790910299,
+                "common_mean_flow_s": 0.9851798646766009,
+                "common_p90_flow_s": 0.9817266507523839,
+                "unfinished_jobs": 1.0151515151515151
+              },
+              "regressed_metrics": [
+                "unfinished_jobs"
+              ]
+            },
+            "observation_end": {
+              "deltas": {
+                "restricted_mean_flow_s": -0.37772173557181077,
+                "common_mean_flow_s": -0.37772173557180366,
+                "common_p90_flow_s": 0.8557300844284725,
+                "unfinished_jobs": 0
+              },
+              "ratios": {
+                "restricted_mean_flow_s": 0.9893052539399331,
+                "common_mean_flow_s": 0.9893052539399332,
+                "common_p90_flow_s": 1.0126733770476342,
+                "unfinished_jobs": 1.0
+              },
+              "regressed_metrics": [
+                "common_p90_flow_s"
+              ]
+            }
+          }
+        },
+        {
+          "seed": 43,
+          "paired_cells": 8,
+          "snapshots": {
+            "arrival_horizon": {
+              "maxweight": {
+                "restricted_mean_flow_s": 29.675011061229586,
+                "common_mean_flow_s": 29.70281080142914,
+                "common_p90_flow_s": 55.17060406450282,
+                "unfinished_jobs": 190,
+                "common_jobs": 2269
+              },
+              "arrival_rollout": {
+                "restricted_mean_flow_s": 28.901368035049853,
+                "common_mean_flow_s": 28.903185908950995,
+                "common_p90_flow_s": 52.3931482497587,
+                "unfinished_jobs": 180,
+                "common_jobs": 2269
+              }
+            },
+            "observation_end": {
+              "maxweight": {
+                "restricted_mean_flow_s": 32.107002460007834,
+                "common_mean_flow_s": 32.10700246000784,
+                "common_p90_flow_s": 61.53933029607965,
+                "unfinished_jobs": 0,
+                "common_jobs": 2476
+              },
+              "arrival_rollout": {
+                "restricted_mean_flow_s": 31.29140943681767,
+                "common_mean_flow_s": 31.291409436817666,
+                "common_p90_flow_s": 59.12188468559892,
+                "unfinished_jobs": 0,
+                "common_jobs": 2476
+              }
+            }
+          },
+          "comparisons": {
+            "arrival_horizon": {
+              "deltas": {
+                "restricted_mean_flow_s": -0.7736430261797338,
+                "common_mean_flow_s": -0.7996248924781462,
+                "common_p90_flow_s": -2.7774558147441155,
+                "unfinished_jobs": -10
+              },
+              "ratios": {
+                "restricted_mean_flow_s": 0.9739294780856712,
+                "common_mean_flow_s": 0.9730791507300827,
+                "common_p90_flow_s": 0.9496569620391169,
+                "unfinished_jobs": 0.9473684210526315
+              },
+              "regressed_metrics": []
+            },
+            "observation_end": {
+              "deltas": {
+                "restricted_mean_flow_s": -0.8155930231901642,
+                "common_mean_flow_s": -0.8155930231901749,
+                "common_p90_flow_s": -2.4174456104807263,
+                "unfinished_jobs": 0
+              },
+              "ratios": {
+                "restricted_mean_flow_s": 0.9745976590556512,
+                "common_mean_flow_s": 0.9745976590556509,
+                "common_p90_flow_s": 0.9607170633991328,
+                "unfinished_jobs": 1.0
+              },
+              "regressed_metrics": []
+            }
+          }
+        }
+      ],
+      "failed_secondary_groups": [
+        {
+          "node": "gpu_a",
+          "lanes": 2,
+          "load": 0.8,
+          "cutoff": "arrival_horizon",
+          "failed_metrics": [
+            "unfinished_jobs"
+          ]
+        }
+      ],
+      "limitations": "Fixed-rate Poisson, deterministic cached independent lanes; no drift, actual P90 bound or physical execution claim. Computation excluded from service clock. Per-class and per-seed regressions retained.",
+      "policy_roles": {
+        "maxweight": "cached_BG",
+        "arrival_rollout": "persistent_current_candidate"
+      },
+      "baseline_rerun": false,
+      "baseline_check_scope": "Reuse registered execution-valid complete reference.",
+      "performance_gate_applied": true
+    },
+    "finite_current": {
+      "experiment": "persistent_old_current_full24_development_v1",
+      "registered_at_utc": "2026-10-01T22:05:01.809298+00:00",
+      "decision": "ARRIVAL_AWARE_LANE_ROLLOUT_PERFORMANCE_HOLD",
+      "execution_checks_passed": true,
+      "operational_integrity_passed": true,
+      "baseline_reproduction_passed": true,
+      "rollout_checks_passed": true,
+      "performance_gain_established": false,
+      "flow_gain_threshold_passed": false,
+      "load_mean_nonregression_passed": false,
+      "group_secondary_passed": false,
+      "pooled_unfinished_checks": {
+        "arrival_horizon": true,
+        "observation_end": true
+      },
+      "pooled_T_flow_ratio": 1.009065559274252,
+      "pooled_T_flow_improvement": -0.0090655592742519,
+      "tapes": 24,
+      "trajectories": 48,
+      "independent_seed_replicates": 3,
+      "statistical_scope": "Development screen on three shared seeds; catalogue/load cells are paired within each seed, not independent replicates. Seed aggregates are descriptive, with no 24-pair significance test.",
+      "pooled": {
+        "arrival_horizon": {
+          "maxweight": {
+            "restricted_mean_flow_s": 28.977884271873698,
+            "common_mean_flow_s": 29.22779133323549,
+            "common_p90_flow_s": 54.01732132948411,
+            "unfinished_jobs": 417,
+            "common_jobs": 6814
+          },
+          "arrival_rollout": {
+            "restricted_mean_flow_s": 29.187960553314973,
+            "common_mean_flow_s": 29.46702731226912,
+            "common_p90_flow_s": 53.43707419055451,
+            "unfinished_jobs": 417,
+            "common_jobs": 6814
+          }
+        },
+        "observation_end": {
+          "maxweight": {
+            "restricted_mean_flow_s": 30.485795479935653,
+            "common_mean_flow_s": 30.48579547993566,
+            "common_p90_flow_s": 55.9850004461554,
+            "unfinished_jobs": 0,
+            "common_jobs": 7283
+          },
+          "arrival_rollout": {
+            "restricted_mean_flow_s": 30.762166265881728,
+            "common_mean_flow_s": 30.762166265881728,
+            "common_p90_flow_s": 57.28025197793031,
+            "unfinished_jobs": 0,
+            "common_jobs": 7283
+          }
+        }
+      },
+      "groups": [
+        {
+          "node": "gpu_a",
+          "lanes": 2,
+          "load": 0.8,
+          "cutoff": "arrival_horizon",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 26.844347673109954,
+              "common_mean_flow_s": 27.17440060161334,
+              "common_p90_flow_s": 47.6713712013439,
+              "unfinished_jobs": 40,
+              "common_jobs": 824
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 26.81184399157259,
+              "common_mean_flow_s": 27.185767714383452,
+              "common_p90_flow_s": 45.87168100962392,
+              "unfinished_jobs": 39,
+              "common_jobs": 824
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -0.032503681537363605,
+              "common_mean_flow_s": 0.011367112770113152,
+              "common_p90_flow_s": -1.7996901917199821,
+              "unfinished_jobs": -1
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.998789179683814,
+              "common_mean_flow_s": 1.000418302244703,
+              "common_p90_flow_s": 0.9622479877048461,
+              "unfinished_jobs": 0.975
+            },
+            "regressed_metrics": [
+              "common_mean_flow_s"
+            ],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "gpu_a",
+          "lanes": 2,
+          "load": 0.8,
+          "cutoff": "observation_end",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 27.57268169752378,
+              "common_mean_flow_s": 27.572681697523777,
+              "common_p90_flow_s": 48.11189958941691,
+              "unfinished_jobs": 0,
+              "common_jobs": 873
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 27.590951210824617,
+              "common_mean_flow_s": 27.59095121082462,
+              "common_p90_flow_s": 46.58061890243175,
+              "unfinished_jobs": 0,
+              "common_jobs": 873
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": 0.018269513300836593,
+              "common_mean_flow_s": 0.0182695133008437,
+              "common_p90_flow_s": -1.5312806869851556,
+              "unfinished_jobs": 0
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 1.0006625947197032,
+              "common_mean_flow_s": 1.0006625947197034,
+              "common_p90_flow_s": 0.9681725165696432,
+              "unfinished_jobs": 1.0
+            },
+            "regressed_metrics": [
+              "restricted_mean_flow_s",
+              "common_mean_flow_s"
+            ],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "gpu_a",
+          "lanes": 2,
+          "load": 0.95,
+          "cutoff": "arrival_horizon",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 37.55637917114191,
+              "common_mean_flow_s": 38.332634148318064,
+              "common_p90_flow_s": 76.11173299750449,
+              "unfinished_jobs": 75,
+              "common_jobs": 968
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 37.30787214843448,
+              "common_mean_flow_s": 38.09872179029274,
+              "common_p90_flow_s": 74.59284157084875,
+              "unfinished_jobs": 68,
+              "common_jobs": 968
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -0.24850702270743597,
+              "common_mean_flow_s": -0.2339123580253215,
+              "common_p90_flow_s": -1.5188914266557418,
+              "unfinished_jobs": -7
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.9933830942121709,
+              "common_mean_flow_s": 0.9938978271850492,
+              "common_p90_flow_s": 0.9800439253340146,
+              "unfinished_jobs": 0.9066666666666666
+            },
+            "regressed_metrics": [],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "gpu_a",
+          "lanes": 2,
+          "load": 0.95,
+          "cutoff": "observation_end",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 39.712093617514554,
+              "common_mean_flow_s": 39.712093617514554,
+              "common_p90_flow_s": 74.29781069160225,
+              "unfinished_jobs": 0,
+              "common_jobs": 1046
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 39.422561499974364,
+              "common_mean_flow_s": 39.42256149997435,
+              "common_p90_flow_s": 77.07961846976094,
+              "unfinished_jobs": 0,
+              "common_jobs": 1046
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -0.28953211754019037,
+              "common_mean_flow_s": -0.2895321175402046,
+              "common_p90_flow_s": 2.7818077781586936,
+              "unfinished_jobs": 0
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.9927092205128037,
+              "common_mean_flow_s": 0.9927092205128034,
+              "common_p90_flow_s": 1.037441315595496,
+              "unfinished_jobs": 1.0
+            },
+            "regressed_metrics": [
+              "common_p90_flow_s"
+            ],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "gpu_b",
+          "lanes": 2,
+          "load": 0.8,
+          "cutoff": "arrival_horizon",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 18.489996895908785,
+              "common_mean_flow_s": 18.686551570280262,
+              "common_p90_flow_s": 32.08628182193474,
+              "unfinished_jobs": 33,
+              "common_jobs": 1108
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 18.795836474013743,
+              "common_mean_flow_s": 18.98248438854793,
+              "common_p90_flow_s": 32.52546614202603,
+              "unfinished_jobs": 43,
+              "common_jobs": 1108
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": 0.3058395781049583,
+              "common_mean_flow_s": 0.29593281826766926,
+              "common_p90_flow_s": 0.43918432009129305,
+              "unfinished_jobs": 10
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 1.0165408128420308,
+              "common_mean_flow_s": 1.015836673618172,
+              "common_p90_flow_s": 1.0136876040212006,
+              "unfinished_jobs": 1.303030303030303
+            },
+            "regressed_metrics": [
+              "restricted_mean_flow_s",
+              "common_mean_flow_s",
+              "common_p90_flow_s",
+              "unfinished_jobs"
+            ],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": false
+            },
+            "secondary_passed": false
+          }
+        },
+        {
+          "node": "gpu_b",
+          "lanes": 2,
+          "load": 0.8,
+          "cutoff": "observation_end",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 18.870469804684024,
+              "common_mean_flow_s": 18.870469804684028,
+              "common_p90_flow_s": 32.10201730451267,
+              "unfinished_jobs": 0,
+              "common_jobs": 1154
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 19.297682149859206,
+              "common_mean_flow_s": 19.297682149859213,
+              "common_p90_flow_s": 33.363771060266124,
+              "unfinished_jobs": 0,
+              "common_jobs": 1154
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": 0.4272123451751817,
+              "common_mean_flow_s": 0.42721234517518525,
+              "common_p90_flow_s": 1.2617537557534533,
+              "unfinished_jobs": 0
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 1.022639200274131,
+              "common_mean_flow_s": 1.0226392002741311,
+              "common_p90_flow_s": 1.039304500517358,
+              "unfinished_jobs": 1.0
+            },
+            "regressed_metrics": [
+              "restricted_mean_flow_s",
+              "common_mean_flow_s",
+              "common_p90_flow_s"
+            ],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "gpu_b",
+          "lanes": 2,
+          "load": 0.95,
+          "cutoff": "arrival_horizon",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 30.441759466379654,
+              "common_mean_flow_s": 30.467983151134074,
+              "common_p90_flow_s": 56.58561935339309,
+              "unfinished_jobs": 81,
+              "common_jobs": 1275
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 32.16522314004339,
+              "common_mean_flow_s": 32.243142098600835,
+              "common_p90_flow_s": 61.50544094357556,
+              "unfinished_jobs": 87,
+              "common_jobs": 1275
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": 1.7234636736637334,
+              "common_mean_flow_s": 1.7751589474667604,
+              "common_p90_flow_s": 4.919821590182465,
+              "unfinished_jobs": 6
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 1.0566151137081006,
+              "common_mean_flow_s": 1.0582630933810493,
+              "common_p90_flow_s": 1.0869447334216984,
+              "unfinished_jobs": 1.0740740740740742
+            },
+            "regressed_metrics": [
+              "restricted_mean_flow_s",
+              "common_mean_flow_s",
+              "common_p90_flow_s",
+              "unfinished_jobs"
+            ],
+            "checks": {
+              "common_p90_flow_s": false,
+              "unfinished_jobs": false
+            },
+            "secondary_passed": false
+          }
+        },
+        {
+          "node": "gpu_b",
+          "lanes": 2,
+          "load": 0.95,
+          "cutoff": "observation_end",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 32.33770019548658,
+              "common_mean_flow_s": 32.337700195486576,
+              "common_p90_flow_s": 61.356283518969995,
+              "unfinished_jobs": 0,
+              "common_jobs": 1369
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 34.37468997762468,
+              "common_mean_flow_s": 34.37468997762468,
+              "common_p90_flow_s": 74.71359161154629,
+              "unfinished_jobs": 0,
+              "common_jobs": 1369
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": 2.0369897821381002,
+              "common_mean_flow_s": 2.0369897821381073,
+              "common_p90_flow_s": 13.357308092576297,
+              "unfinished_jobs": 0
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 1.0629911765470077,
+              "common_mean_flow_s": 1.062991176547008,
+              "common_p90_flow_s": 1.2177007362000098,
+              "unfinished_jobs": 1.0
+            },
+            "regressed_metrics": [
+              "restricted_mean_flow_s",
+              "common_mean_flow_s",
+              "common_p90_flow_s"
+            ],
+            "checks": {
+              "common_p90_flow_s": false,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": false
+          }
+        },
+        {
+          "node": "cpu_a",
+          "lanes": 2,
+          "load": 0.8,
+          "cutoff": "arrival_horizon",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 17.476951403560697,
+              "common_mean_flow_s": 17.635287882437726,
+              "common_p90_flow_s": 27.56832059342784,
+              "unfinished_jobs": 11,
+              "common_jobs": 440
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 17.329206308936925,
+              "common_mean_flow_s": 17.488278727442122,
+              "common_p90_flow_s": 26.07630230021854,
+              "unfinished_jobs": 11,
+              "common_jobs": 440
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -0.1477450946237724,
+              "common_mean_flow_s": -0.14700915499560452,
+              "common_p90_flow_s": -1.4920182932092985,
+              "unfinished_jobs": 0
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.9915462890974411,
+              "common_mean_flow_s": 0.9916639208854648,
+              "common_p90_flow_s": 0.9458792461385919,
+              "unfinished_jobs": 1.0
+            },
+            "regressed_metrics": [],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "cpu_a",
+          "lanes": 2,
+          "load": 0.8,
+          "cutoff": "observation_end",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 17.69490786912932,
+              "common_mean_flow_s": 17.694907869129324,
+              "common_p90_flow_s": 27.740195604967766,
+              "unfinished_jobs": 0,
+              "common_jobs": 452
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 17.526134042279338,
+              "common_mean_flow_s": 17.526134042279338,
+              "common_p90_flow_s": 26.28844737158102,
+              "unfinished_jobs": 0,
+              "common_jobs": 452
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -0.1687738268499821,
+              "common_mean_flow_s": -0.16877382684998565,
+              "common_p90_flow_s": -1.4517482333867449,
+              "unfinished_jobs": 0
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.9904620115516721,
+              "common_mean_flow_s": 0.9904620115516719,
+              "common_p90_flow_s": 0.947666258231908,
+              "unfinished_jobs": 1.0
+            },
+            "regressed_metrics": [],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "cpu_a",
+          "lanes": 2,
+          "load": 0.95,
+          "cutoff": "arrival_horizon",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 30.79224545230985,
+              "common_mean_flow_s": 30.10028189960203,
+              "common_p90_flow_s": 56.0320108463121,
+              "unfinished_jobs": 31,
+              "common_jobs": 507
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 30.952423000276386,
+              "common_mean_flow_s": 30.267836453573114,
+              "common_p90_flow_s": 53.060253729708776,
+              "unfinished_jobs": 27,
+              "common_jobs": 507
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": 0.16017754796653705,
+              "common_mean_flow_s": 0.1675545539710832,
+              "common_p90_flow_s": -2.971757116603321,
+              "unfinished_jobs": -4
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 1.0052018794217075,
+              "common_mean_flow_s": 1.0055665443443338,
+              "common_p90_flow_s": 0.9469632256326758,
+              "unfinished_jobs": 0.8709677419354839
+            },
+            "regressed_metrics": [
+              "restricted_mean_flow_s",
+              "common_mean_flow_s"
+            ],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "cpu_a",
+          "lanes": 2,
+          "load": 0.95,
+          "cutoff": "observation_end",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 32.682319690832,
+              "common_mean_flow_s": 32.68231969083201,
+              "common_p90_flow_s": 59.602714165574255,
+              "unfinished_jobs": 0,
+              "common_jobs": 539
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 32.80873426473273,
+              "common_mean_flow_s": 32.80873426473274,
+              "common_p90_flow_s": 57.866613509792465,
+              "unfinished_jobs": 0,
+              "common_jobs": 539
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": 0.12641457390072475,
+              "common_mean_flow_s": 0.12641457390073185,
+              "common_p90_flow_s": -1.7361006557817902,
+              "unfinished_jobs": 0
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 1.003867980458443,
+              "common_mean_flow_s": 1.0038679804584432,
+              "common_p90_flow_s": 0.9708721208406892,
+              "unfinished_jobs": 1.0
+            },
+            "regressed_metrics": [
+              "restricted_mean_flow_s",
+              "common_mean_flow_s"
+            ],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "node007",
+          "lanes": 4,
+          "load": 0.8,
+          "cutoff": "arrival_horizon",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 24.945351863152187,
+              "common_mean_flow_s": 25.384646641656655,
+              "common_p90_flow_s": 39.129178836047316,
+              "unfinished_jobs": 43,
+              "common_jobs": 794
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 24.816766653273962,
+              "common_mean_flow_s": 25.22524741325199,
+              "common_p90_flow_s": 37.76583102746323,
+              "unfinished_jobs": 46,
+              "common_jobs": 794
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -0.1285852098782243,
+              "common_mean_flow_s": -0.15939922840466636,
+              "common_p90_flow_s": -1.3633478085840878,
+              "unfinished_jobs": 3
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.9948453238670021,
+              "common_mean_flow_s": 0.9937206441887952,
+              "common_p90_flow_s": 0.9651577710256439,
+              "unfinished_jobs": 1.069767441860465
+            },
+            "regressed_metrics": [
+              "unfinished_jobs"
+            ],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": false
+            },
+            "secondary_passed": false
+          }
+        },
+        {
+          "node": "node007",
+          "lanes": 4,
+          "load": 0.8,
+          "cutoff": "observation_end",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 25.751865765167835,
+              "common_mean_flow_s": 25.75186576516784,
+              "common_p90_flow_s": 39.27105854892041,
+              "unfinished_jobs": 0,
+              "common_jobs": 841
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 25.615008280287082,
+              "common_mean_flow_s": 25.615008280287082,
+              "common_p90_flow_s": 38.221871975859344,
+              "unfinished_jobs": 0,
+              "common_jobs": 841
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": -0.13685748488075333,
+              "common_mean_flow_s": -0.13685748488075689,
+              "common_p90_flow_s": -1.049186573061064,
+              "unfinished_jobs": 0
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 0.9946855312881497,
+              "common_mean_flow_s": 0.9946855312881495,
+              "common_p90_flow_s": 0.9732834659459438,
+              "unfinished_jobs": 1.0
+            },
+            "regressed_metrics": [],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "node007",
+          "lanes": 4,
+          "load": 0.95,
+          "cutoff": "arrival_horizon",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 45.276042249426546,
+              "common_mean_flow_s": 46.04054477084176,
+              "common_p90_flow_s": 96.95405498590942,
+              "unfinished_jobs": 103,
+              "common_jobs": 898
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 45.324512709968324,
+              "common_mean_flow_s": 46.24473991206078,
+              "common_p90_flow_s": 96.0987768009713,
+              "unfinished_jobs": 96,
+              "common_jobs": 898
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": 0.04847046054177895,
+              "common_mean_flow_s": 0.20419514121901727,
+              "common_p90_flow_s": -0.855278184938129,
+              "unfinished_jobs": -7
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 1.0010705542740408,
+              "common_mean_flow_s": 1.0044351156624094,
+              "common_p90_flow_s": 0.9911785207430217,
+              "unfinished_jobs": 0.9320388349514563
+            },
+            "regressed_metrics": [
+              "restricted_mean_flow_s",
+              "common_mean_flow_s"
+            ],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        },
+        {
+          "node": "node007",
+          "lanes": 4,
+          "load": 0.95,
+          "cutoff": "observation_end",
+          "paired_seeds": 3,
+          "policies": {
+            "maxweight": {
+              "restricted_mean_flow_s": 49.26432519914714,
+              "common_mean_flow_s": 49.26432519914716,
+              "common_p90_flow_s": 105.39802414527891,
+              "unfinished_jobs": 0,
+              "common_jobs": 1009
+            },
+            "arrival_rollout": {
+              "restricted_mean_flow_s": 49.4615687014718,
+              "common_mean_flow_s": 49.461568701471805,
+              "common_p90_flow_s": 104.12748292220454,
+              "unfinished_jobs": 0,
+              "common_jobs": 1009
+            }
+          },
+          "comparison": {
+            "deltas": {
+              "restricted_mean_flow_s": 0.19724350232466037,
+              "common_mean_flow_s": 0.19724350232464616,
+              "common_p90_flow_s": -1.2705412230743747,
+              "unfinished_jobs": 0
+            },
+            "ratios": {
+              "restricted_mean_flow_s": 1.0040037796423136,
+              "common_mean_flow_s": 1.0040037796423134,
+              "common_p90_flow_s": 0.9879453032124864,
+              "unfinished_jobs": 1.0
+            },
+            "regressed_metrics": [
+              "restricted_mean_flow_s",
+              "common_mean_flow_s"
+            ],
+            "checks": {
+              "common_p90_flow_s": true,
+              "unfinished_jobs": true
+            },
+            "secondary_passed": true
+          }
+        }
+      ],
+      "loads": [
+        {
+          "load": 0.8,
+          "tapes": 12,
+          "snapshots": {
+            "arrival_horizon": {
+              "maxweight": {
+                "restricted_mean_flow_s": 21.939161958932907,
+                "common_mean_flow_s": 22.220221673996996,
+                "common_p90_flow_s": 36.61378811318845,
+                "unfinished_jobs": 127,
+                "common_jobs": 3166
+              },
+              "arrival_rollout": {
+                "restricted_mean_flow_s": 21.938413356949305,
+                "common_mean_flow_s": 22.220444560906373,
+                "common_p90_flow_s": 35.559820119832935,
+                "unfinished_jobs": 139,
+                "common_jobs": 3166
+              }
+            },
+            "observation_end": {
+              "maxweight": {
+                "restricted_mean_flow_s": 22.47248128412624,
+                "common_mean_flow_s": 22.472481284126243,
+                "common_p90_flow_s": 36.80629276195444,
+                "unfinished_jobs": 0,
+                "common_jobs": 3320
+              },
+              "arrival_rollout": {
+                "restricted_mean_flow_s": 22.507443920812563,
+                "common_mean_flow_s": 22.507443920812563,
+                "common_p90_flow_s": 36.11367732753456,
+                "unfinished_jobs": 0,
+                "common_jobs": 3320
+              }
+            }
+          },
+          "comparisons": {
+            "arrival_horizon": {
+              "deltas": {
+                "restricted_mean_flow_s": -0.0007486019836022706,
+                "common_mean_flow_s": 0.00022288690937699585,
+                "common_p90_flow_s": -1.0539679933555135,
+                "unfinished_jobs": 12
+              },
+              "ratios": {
+                "restricted_mean_flow_s": 0.9999658782780763,
+                "common_mean_flow_s": 1.0000100308139426,
+                "common_p90_flow_s": 0.9712139047154241,
+                "unfinished_jobs": 1.094488188976378
+              },
+              "regressed_metrics": [
+                "common_mean_flow_s",
+                "unfinished_jobs"
+              ]
+            },
+            "observation_end": {
+              "deltas": {
+                "restricted_mean_flow_s": 0.03496263668632338,
+                "common_mean_flow_s": 0.034962636686319826,
+                "common_p90_flow_s": -0.6926154344198778,
+                "unfinished_jobs": 0
+              },
+              "ratios": {
+                "restricted_mean_flow_s": 1.0015557977886056,
+                "common_mean_flow_s": 1.0015557977886054,
+                "common_p90_flow_s": 0.9811821462460405,
+                "unfinished_jobs": 1.0
+              },
+              "regressed_metrics": [
+                "restricted_mean_flow_s",
+                "common_mean_flow_s"
+              ]
+            }
+          },
+          "mean_nonregression_passed": false
+        },
+        {
+          "load": 0.95,
+          "tapes": 12,
+          "snapshots": {
+            "arrival_horizon": {
+              "maxweight": {
+                "restricted_mean_flow_s": 36.01660658481449,
+                "common_mean_flow_s": 36.235360992473986,
+                "common_p90_flow_s": 71.42085454577978,
+                "unfinished_jobs": 290,
+                "common_jobs": 3648
+              },
+              "arrival_rollout": {
+                "restricted_mean_flow_s": 36.43750774968064,
+                "common_mean_flow_s": 36.71361006363187,
+                "common_p90_flow_s": 71.31432826127609,
+                "unfinished_jobs": 278,
+                "common_jobs": 3648
+              }
+            },
+            "observation_end": {
+              "maxweight": {
+                "restricted_mean_flow_s": 38.49910967574507,
+                "common_mean_flow_s": 38.499109675745075,
+                "common_p90_flow_s": 75.16370813035635,
+                "unfinished_jobs": 0,
+                "common_jobs": 3963
+              },
+              "arrival_rollout": {
+                "restricted_mean_flow_s": 39.01688861095089,
+                "common_mean_flow_s": 39.01688861095089,
+                "common_p90_flow_s": 78.44682662832606,
+                "unfinished_jobs": 0,
+                "common_jobs": 3963
+              }
+            }
+          },
+          "comparisons": {
+            "arrival_horizon": {
+              "deltas": {
+                "restricted_mean_flow_s": 0.4209011648661516,
+                "common_mean_flow_s": 0.47824907115788307,
+                "common_p90_flow_s": -0.10652628450368695,
+                "unfinished_jobs": -12
+              },
+              "ratios": {
+                "restricted_mean_flow_s": 1.0116863081999405,
+                "common_mean_flow_s": 1.0131984077999723,
+                "common_p90_flow_s": 0.9985084708775726,
+                "unfinished_jobs": 0.9586206896551724
+              },
+              "regressed_metrics": [
+                "restricted_mean_flow_s",
+                "common_mean_flow_s"
+              ]
+            },
+            "observation_end": {
+              "deltas": {
+                "restricted_mean_flow_s": 0.5177789352058255,
+                "common_mean_flow_s": 0.5177789352058184,
+                "common_p90_flow_s": 3.28311849796971,
+                "unfinished_jobs": 0
+              },
+              "ratios": {
+                "restricted_mean_flow_s": 1.0134491145267195,
+                "common_mean_flow_s": 1.0134491145267193,
+                "common_p90_flow_s": 1.043679570628365,
+                "unfinished_jobs": 1.0
+              },
+              "regressed_metrics": [
+                "restricted_mean_flow_s",
+                "common_mean_flow_s",
+                "common_p90_flow_s"
+              ]
+            }
+          },
+          "mean_nonregression_passed": false
+        }
+      ],
+      "seed_aggregates": [
+        {
+          "seed": 41,
+          "paired_cells": 8,
+          "snapshots": {
+            "arrival_horizon": {
+              "maxweight": {
+                "restricted_mean_flow_s": 24.98500639929768,
+                "common_mean_flow_s": 25.419103175401975,
+                "common_p90_flow_s": 45.571921625687395,
+                "unfinished_jobs": 113,
+                "common_jobs": 2229
+              },
+              "arrival_rollout": {
+                "restricted_mean_flow_s": 25.329699689433014,
+                "common_mean_flow_s": 25.790458990193336,
+                "common_p90_flow_s": 43.336250704201944,
+                "unfinished_jobs": 103,
+                "common_jobs": 2229
+              }
+            },
+            "observation_end": {
+              "maxweight": {
+                "restricted_mean_flow_s": 25.706348350950577,
+                "common_mean_flow_s": 25.706348350950577,
+                "common_p90_flow_s": 44.72035936693943,
+                "unfinished_jobs": 0,
+                "common_jobs": 2353
+              },
+              "arrival_rollout": {
+                "restricted_mean_flow_s": 26.054372168505306,
+                "common_mean_flow_s": 26.054372168505306,
+                "common_p90_flow_s": 44.34127377103007,
+                "unfinished_jobs": 0,
+                "common_jobs": 2353
+              }
+            }
+          },
+          "comparisons": {
+            "arrival_horizon": {
+              "deltas": {
+                "restricted_mean_flow_s": 0.3446932901353321,
+                "common_mean_flow_s": 0.3713558147913609,
+                "common_p90_flow_s": -2.2356709214854504,
+                "unfinished_jobs": -10
+              },
+              "ratios": {
+                "restricted_mean_flow_s": 1.0137960056774298,
+                "common_mean_flow_s": 1.0146093200939803,
+                "common_p90_flow_s": 0.9509419212152495,
+                "unfinished_jobs": 0.911504424778761
+              },
+              "regressed_metrics": [
+                "restricted_mean_flow_s",
+                "common_mean_flow_s"
+              ]
+            },
+            "observation_end": {
+              "deltas": {
+                "restricted_mean_flow_s": 0.3480238175547292,
+                "common_mean_flow_s": 0.3480238175547292,
+                "common_p90_flow_s": -0.3790855959093591,
+                "unfinished_jobs": 0
+              },
+              "ratios": {
+                "restricted_mean_flow_s": 1.0135384385523531,
+                "common_mean_flow_s": 1.0135384385523531,
+                "common_p90_flow_s": 0.9915231988008216,
+                "unfinished_jobs": 1.0
+              },
+              "regressed_metrics": [
+                "restricted_mean_flow_s",
+                "common_mean_flow_s"
+              ]
+            }
+          }
+        },
+        {
+          "seed": 42,
+          "paired_cells": 8,
+          "snapshots": {
+            "arrival_horizon": {
+              "maxweight": {
+                "restricted_mean_flow_s": 32.92399004576655,
+                "common_mean_flow_s": 33.15384469879923,
+                "common_p90_flow_s": 62.58359848619031,
+                "unfinished_jobs": 129,
+                "common_jobs": 2311
+              },
+              "arrival_rollout": {
+                "restricted_mean_flow_s": 33.332813935462056,
+                "common_mean_flow_s": 33.58388203628554,
+                "common_p90_flow_s": 64.4919271892811,
+                "unfinished_jobs": 134,
+                "common_jobs": 2311
+              }
+            },
+            "observation_end": {
+              "maxweight": {
+                "restricted_mean_flow_s": 34.40105197679802,
+                "common_mean_flow_s": 34.40105197679803,
+                "common_p90_flow_s": 66.13110698008057,
+                "unfinished_jobs": 0,
+                "common_jobs": 2454
+              },
+              "arrival_rollout": {
+                "restricted_mean_flow_s": 34.940717192322204,
+                "common_mean_flow_s": 34.94071719232221,
+                "common_p90_flow_s": 68.37759747716194,
+                "unfinished_jobs": 0,
+                "common_jobs": 2454
+              }
+            }
+          },
+          "comparisons": {
+            "arrival_horizon": {
+              "deltas": {
+                "restricted_mean_flow_s": 0.40882388969550476,
+                "common_mean_flow_s": 0.43003733748630424,
+                "common_p90_flow_s": 1.9083287030907883,
+                "unfinished_jobs": 5
+              },
+              "ratios": {
+                "restricted_mean_flow_s": 1.0124172036599213,
+                "common_mean_flow_s": 1.0129709643449551,
+                "common_p90_flow_s": 1.0304924732557825,
+                "unfinished_jobs": 1.0387596899224807
+              },
+              "regressed_metrics": [
+                "restricted_mean_flow_s",
+                "common_mean_flow_s",
+                "common_p90_flow_s",
+                "unfinished_jobs"
+              ]
+            },
+            "observation_end": {
+              "deltas": {
+                "restricted_mean_flow_s": 0.539665215524181,
+                "common_mean_flow_s": 0.539665215524181,
+                "common_p90_flow_s": 2.2464904970813677,
+                "unfinished_jobs": 0
+              },
+              "ratios": {
+                "restricted_mean_flow_s": 1.0156874625778352,
+                "common_mean_flow_s": 1.0156874625778352,
+                "common_p90_flow_s": 1.0339702539344764,
+                "unfinished_jobs": 1.0
+              },
+              "regressed_metrics": [
+                "restricted_mean_flow_s",
+                "common_mean_flow_s",
+                "common_p90_flow_s"
+              ]
+            }
+          }
+        },
+        {
+          "seed": 43,
+          "paired_cells": 8,
+          "snapshots": {
+            "arrival_horizon": {
+              "maxweight": {
+                "restricted_mean_flow_s": 29.024656370556862,
+                "common_mean_flow_s": 29.110426125505263,
+                "common_p90_flow_s": 53.89644387657463,
+                "unfinished_jobs": 175,
+                "common_jobs": 2274
+              },
+              "arrival_rollout": {
+                "restricted_mean_flow_s": 28.901368035049853,
+                "common_mean_flow_s": 29.026740910328492,
+                "common_p90_flow_s": 52.48304467818049,
+                "unfinished_jobs": 180,
+                "common_jobs": 2274
+              }
+            },
+            "observation_end": {
+              "maxweight": {
+                "restricted_mean_flow_s": 31.349986112058367,
+                "common_mean_flow_s": 31.34998611205837,
+                "common_p90_flow_s": 57.10353499144618,
+                "unfinished_jobs": 0,
+                "common_jobs": 2476
+              },
+              "arrival_rollout": {
+                "restricted_mean_flow_s": 31.29140943681767,
+                "common_mean_flow_s": 31.291409436817666,
+                "common_p90_flow_s": 59.12188468559892,
+                "unfinished_jobs": 0,
+                "common_jobs": 2476
+              }
+            }
+          },
+          "comparisons": {
+            "arrival_horizon": {
+              "deltas": {
+                "restricted_mean_flow_s": -0.12328833550700935,
+                "common_mean_flow_s": -0.08368521517677152,
+                "common_p90_flow_s": -1.4133991983941385,
+                "unfinished_jobs": 5
+              },
+              "ratios": {
+                "restricted_mean_flow_s": 0.9957522895729414,
+                "common_mean_flow_s": 0.9971252493929159,
+                "common_p90_flow_s": 0.9737756501777578,
+                "unfinished_jobs": 1.0285714285714285
+              },
+              "regressed_metrics": [
+                "unfinished_jobs"
+              ]
+            },
+            "observation_end": {
+              "deltas": {
+                "restricted_mean_flow_s": -0.05857667524069754,
+                "common_mean_flow_s": -0.058576675240704645,
+                "common_p90_flow_s": 2.0183496941527395,
+                "unfinished_jobs": 0
+              },
+              "ratios": {
+                "restricted_mean_flow_s": 0.9981315246829354,
+                "common_mean_flow_s": 0.9981315246829352,
+                "common_p90_flow_s": 1.0353454421771802,
+                "unfinished_jobs": 1.0
+              },
+              "regressed_metrics": [
+                "common_p90_flow_s"
+              ]
+            }
+          }
+        }
+      ],
+      "failed_secondary_groups": [
+        {
+          "node": "gpu_b",
+          "lanes": 2,
+          "load": 0.8,
+          "cutoff": "arrival_horizon",
+          "failed_metrics": [
+            "unfinished_jobs"
+          ]
+        },
+        {
+          "node": "gpu_b",
+          "lanes": 2,
+          "load": 0.95,
+          "cutoff": "arrival_horizon",
+          "failed_metrics": [
+            "common_p90_flow_s",
+            "unfinished_jobs"
+          ]
+        },
+        {
+          "node": "gpu_b",
+          "lanes": 2,
+          "load": 0.95,
+          "cutoff": "observation_end",
+          "failed_metrics": [
+            "common_p90_flow_s"
+          ]
+        },
+        {
+          "node": "node007",
+          "lanes": 4,
+          "load": 0.8,
+          "cutoff": "arrival_horizon",
+          "failed_metrics": [
+            "unfinished_jobs"
+          ]
+        }
+      ],
+      "limitations": "Fixed-rate Poisson, deterministic cached independent lanes; no drift, actual P90 bound or physical execution claim. Computation excluded from service clock. Per-class and per-seed regressions retained.",
+      "policy_roles": {
+        "maxweight": "cached_finite_current",
+        "arrival_rollout": "persistent_current_candidate"
+      },
+      "baseline_rerun": false,
+      "baseline_check_scope": "Reuse registered execution-valid complete reference.",
+      "performance_gate_applied": false
+    }
+  },
+  "finite_current_pooled_mean_improved": false,
+  "interpretation": "Complete closed loops on the same24 development tapes, with three shared seeds. Original MW/BG joint gate decides performance; finite-current increment is reported separately. No fresh confirmation or independent24-replicate claim."
+}

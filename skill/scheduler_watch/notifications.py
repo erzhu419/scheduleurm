@@ -51,7 +51,7 @@ def notify_dispatch_events(
             notify_fn("task_launched", compact_task_payload_fn(ev["task"]))
         elif event_type in ("pre_launch_snapshot", "post_launch_snapshot"):
             notify_fn(event_type, ev.get("snapshot") or {}, feishu_enabled=False)
-        elif event_type == "blocked":
+        elif event_type == "blocked" and ev.get("reason_changed", True):
             notify_fn("task_blocked", {"task_id": ev["task_id"], "reason": ev["reason"]})
         elif event_type == "launch_failed_retry":
             notify_fn("task_launch_retry", {

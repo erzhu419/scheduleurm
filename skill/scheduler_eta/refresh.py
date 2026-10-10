@@ -6,6 +6,8 @@ import re
 from dataclasses import dataclass
 from typing import Any, Callable, Optional
 
+from .state import RUNTIME_PROJECTION_FIELDS
+
 
 @dataclass(frozen=True)
 class EtaRefreshDeps:
@@ -158,8 +160,14 @@ def _apply_log_eta(
     if bapr_projection:
         projection = bapr_projection
         task["eta_seconds"] = int(bapr_projection.get("eta_s") or 0)
+    if projection is None and "SCHEDULEURM_PROGRESS " in tail_text:
+        for field in RUNTIME_PROJECTION_FIELDS:
+            task.pop(field, None)
+        task.pop("last_progress_line", None)
     deps.apply_runtime_projection(task, projection)
     if projection:
+        if projection.get("progress_line"):
+            task["last_progress_line"] = projection["progress_line"]
         source = projection.get("source") or "progress"
         task["eta_source"] = source
         task["eta_confidence"] = deps.eta_confidence_for_source(source)
@@ -208,6 +216,8 @@ def _apply_log_eta(
                 f"model={projection.get('eta_model')}; "
                 f"robust_alternate={int(projection.get('robust_eta_s') or 0)}s"
             )
+        elif projection.get("progress_line"):
+            task["eta_detail"] = f"parsed {source}; {projection['progress_line']}"
         else:
             task["eta_detail"] = f"parsed {source} from scheduler log tail"
     elif task.get("eta_seconds") or (fallback_overrun and fallback_eta > 0):
@@ -221,6 +231,8 @@ def _apply_log_eta(
             no_log_path=False,
         )
     else:
+        task.pop("eta_source", None)
+        task.pop("eta_confidence", None)
         task["eta_detail"] = "no parseable progress marker and no runtime history fallback"
 
 
@@ -260,5 +272,8 @@ def refresh_eta_from_logs(
         for task, _log_path in entries:
             if probed_task_ids is not None and str(task.get("id") or "") not in probed_task_ids:
                 continue
-            tail_text = log_by_tid.get(task["id"], "")
+            if task["id"] not in log_by_tid:
+                _apply_probe_failure_fallback(task, runtime_history, closest_index, deps)
+                continue
+            tail_text = log_by_tid[task["id"]]
             _apply_log_eta(task, tail_text, eta_tracker, runtime_history, closest_index, deps)

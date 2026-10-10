@@ -10,7 +10,7 @@ def test_submit_cpu_batch_uses_one_bulk_state_transaction(monkeypatch, capsys, s
     args = argparse.Namespace(
         items=4,
         item_multiplier=1,
-        nodes="windows_a,windows_b",
+        nodes="node001,node002",
         use_total_cores=True,
         json=False,
         dry_run=False,
@@ -63,7 +63,7 @@ def test_submit_cpu_batch_uses_one_bulk_state_transaction(monkeypatch, capsys, s
     assert submit_lock_count == 1
     assert "via one state-lock transaction" in out
     assert [t["id"] for t in state["tasks"]] == ["t0001", "t0002"]
-    assert [t["preferred_node"] for t in state["tasks"]] == ["windows_a", "windows_b"]
+    assert [t["preferred_node"] for t in state["tasks"]] == ["node001", "node002"]
     assert [t["cpu_parallel_start"] for t in state["tasks"]] == [0, 2]
     assert [t["cpu_parallel_end"] for t in state["tasks"]] == [2, 4]
 
@@ -72,7 +72,7 @@ def test_submit_cpu_batch_rejects_shared_result_destination_before_partial_submi
     args = argparse.Namespace(
         items=4,
         item_multiplier=1,
-        nodes="windows_a,windows_b",
+        nodes="node001,node002",
         use_total_cores=True,
         json=False,
         dry_run=False,

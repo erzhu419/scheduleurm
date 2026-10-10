@@ -1,0 +1,51 @@
+{
+  "target_tasks": [
+    {
+      "id": "t129048",
+      "parent_id": null,
+      "status": "cancelled",
+      "exit_code": null,
+      "retry_count": 0,
+      "signature": "ScheduleurmFifoWaitingPenalty/20261003/canary"
+    },
+    {
+      "id": "t129059",
+      "parent_id": null,
+      "status": "failed",
+      "exit_code": 1,
+      "retry_count": 0,
+      "signature": "ScheduleurmFifoWaitingPenalty/20261003/canary-r1"
+    },
+    {
+      "id": "t129060",
+      "parent_id": "t129059",
+      "status": "failed",
+      "exit_code": 1,
+      "retry_count": 1,
+      "signature": "ScheduleurmFifoWaitingPenalty/20261003/canary-r1"
+    },
+    {
+      "id": "t129062",
+      "parent_id": "t129060",
+      "status": "failed",
+      "exit_code": 1,
+      "retry_count": 2,
+      "signature": "ScheduleurmFifoWaitingPenalty/20261003/canary-r1"
+    },
+    {
+      "id": "t129063",
+      "parent_id": "t129062",
+      "status": "failed",
+      "exit_code": 1,
+      "retry_count": 3,
+      "signature": "ScheduleurmFifoWaitingPenalty/20261003/canary-r1"
+    }
+  ],
+  "active_old_canary_retries": [],
+  "resolved_escalations": {
+    "t129063": "resolved"
+  },
+  "new_tasks_submitted": 0,
+  "other_projects_modified": false,
+  "old_failure_evidence_retained": true
+}

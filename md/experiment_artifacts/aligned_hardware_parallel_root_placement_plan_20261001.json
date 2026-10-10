@@ -1,0 +1,91 @@
+{
+  "prepared_at_utc": "2026-10-01T13:58:55.455615+00:00",
+  "executed": false,
+  "parallel_workers": 22,
+  "cpu_per_parent": 23,
+  "ram_mb_per_parent": 6144,
+  "planning_samples": 8,
+  "contiguous_sample_chunk_size": 2,
+  "catalogue_max_microshards": {
+    "cpu_a": 32,
+    "node007": 36,
+    "gpu_a": 36,
+    "gpu_b": 36
+  },
+  "four_anchor_preferred_nodes": [
+    "node001",
+    "node004",
+    "node005",
+    "node006"
+  ],
+  "anchor_total_cpu": 92,
+  "anchor_total_ram_mb": 24576,
+  "available_physical_cores_total": 576,
+  "capacity_sample_at_utc": "2026-10-01T13:54:31.766991+00:00",
+  "node_placement": {
+    "node001": {
+      "physical_cores": 96,
+      "sample_idle_physical_equivalent_lower_bound": 91.39950308164921,
+      "recommended_full_parents": 3,
+      "declared_campaign_cpu": 69,
+      "declared_ram_mb": 18432
+    },
+    "node002": {
+      "physical_cores": 96,
+      "sample_idle_physical_equivalent_lower_bound": 68.33559152592679,
+      "recommended_full_parents": 3,
+      "declared_campaign_cpu": 69,
+      "declared_ram_mb": 18432
+    },
+    "node003": {
+      "physical_cores": 96,
+      "sample_idle_physical_equivalent_lower_bound": 44.70524338851046,
+      "recommended_full_parents": 1,
+      "declared_campaign_cpu": 23,
+      "declared_ram_mb": 6144
+    },
+    "node004": {
+      "physical_cores": 96,
+      "sample_idle_physical_equivalent_lower_bound": 91.38812271791944,
+      "recommended_full_parents": 3,
+      "declared_campaign_cpu": 69,
+      "declared_ram_mb": 18432
+    },
+    "node005": {
+      "physical_cores": 96,
+      "sample_idle_physical_equivalent_lower_bound": 91.37203410654573,
+      "recommended_full_parents": 3,
+      "declared_campaign_cpu": 69,
+      "declared_ram_mb": 18432
+    },
+    "node006": {
+      "physical_cores": 96,
+      "sample_idle_physical_equivalent_lower_bound": 93.23681143885034,
+      "recommended_full_parents": 3,
+      "declared_campaign_cpu": 69,
+      "declared_ram_mb": 18432
+    }
+  },
+  "full_parent_concurrency": 16,
+  "full_parent_declared_cpu": 368,
+  "pending_tapes_at_handoff": [
+    3,
+    6,
+    7,
+    8,
+    9,
+    11,
+    12,
+    13,
+    14,
+    15,
+    17,
+    18,
+    19,
+    20,
+    21,
+    23
+  ],
+  "remaining_parent": "All sixteen fit the agreed physical allocation after the current fast parents stop; node002 uses69 declared CPU plus its other live load, node003 uses23.",
+  "future_roster": "Register benchmark first; after exact/timing PASS, re-query completed original/fast rows and register the remaining tape assignments before replacing unfinished workers."
+}

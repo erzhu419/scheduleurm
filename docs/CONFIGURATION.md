@@ -1,134 +1,83 @@
 # Configuration
 
-All scheduler-wide knobs live at the top of `skill/scheduler.py`. Re-run `install.sh` after editing — the script copies your edits into `~/.claude/skills/scheduler/` and restarts the systemd unit.
+## Nodes
 
-## NODES — your cluster
+The node inventory is loaded from `~/.claude/scheduler/nodes.json`. Set
+`SCHEDULEURM_NODES_FILE` to use another absolute path. An explicitly selected
+missing or invalid file is an error; it never silently falls back to another cluster.
+The JSON object replaces the entire inventory, so omit `local` to prohibit local
+dispatch. Without a nodes file, only the local machine is enabled, with a one-core
+budget and live RAM/GPU probing.
 
-```python
-NODES = {
-    "local":     {"host": None,       "cpu_cores": 16, "ram_mb": 56*1024,  "ram_headroom_mb": 2048, "ram_headroom_frac": 0.20, "max_vram_per_task": None, "max_concurrent_running": 10, "gpu_util_saturation_pct": None},
-    "remote-A":  {"host": "remote-A", "cpu_cores": 12, "ram_mb": 200*1024, "ram_headroom_frac": 0.10, "max_vram_per_task": None, "max_concurrent_running": None},
-}
+Start from [nodes.example.json](nodes.example.json), replace the paths and SSH
+aliases, and set each node's physical CPU budget before enabling the watcher:
+
+```bash
+mkdir -p ~/.claude/scheduler
+cp docs/nodes.example.json ~/.claude/scheduler/nodes.json
+chmod 600 ~/.claude/scheduler/nodes.json
 ```
 
-| Field | Meaning | Tuning notes |
-|---|---|---|
-| `host` | `None` for local; SSH alias from `~/.ssh/config` for remote | Must be passwordless: `ssh -o BatchMode=yes <host> true` exits 0 |
-| `cpu_cores` | Schedulable CPU budget | Use physical cores, not hyperthreads, unless intentionally oversubscribing |
-| `ram_mb` | Schedulable RAM in MB | Don't include OS headroom here — that's `ram_headroom_mb` / `ram_headroom_frac`'s job |
-| `ram_headroom_mb` | Fixed RAM MB to keep unallocated | Wins over `ram_headroom_frac`. Current local WSL setting: `2048` |
-| `ram_headroom_frac` | Fraction of RAM to keep unallocated | Used when `ram_headroom_mb` is unset. Bare-metal Linux / remotes: `0.10` |
-| `max_vram_per_task` | Cap individual task VRAM | `None` auto-derives from probed `nvidia-smi total_mb`. Set a number to cap (WSL local 4060: 4096 lets two tasks share an 8GB card) |
-| `max_concurrent_running` | Hard cap on tracked running tasks | Defense-in-depth above CPU/RAM bookkeeping. WSL local: 8-10. Remote with 200GB RAM: `None` |
-| `gpu_util_saturation_pct` | Integer percent or `None` | Per-node override for the GPU util placement gate. `None` ignores util for packing and relies on VRAM/1⁄3/RAM/CPU checks |
-| `enable_claims` | `False` by default | Recommended for default-local shared nodes; adds cross-scheduler local resource claims and FIFO-with-backfill launch admission |
-| `claim_ttl_s` | `3600` default | Lifetime of an active resource claim before GC may remove it if its PID is also dead |
-| `claim_intent_ttl_s` | `180` default | Lifetime of a queued FIFO intent ticket. Keep above watcher interval; lower means faster recovery from dead schedulers |
-| `claim_fifo_strict_after_s` | `1800` default | Aging guard for shared intents. After this wait, younger work that would consume the older task's future slot is blocked; disjoint backfill remains allowed |
-| `claim_live_check` | `True` default | While holding the remote claims lock, treat live non-scheduleurm CPU/RAM/GPU usage as synthetic external claims. Set `False` if `nvidia-smi`/`/proc` is slow or misleading |
-| `claim_live_check_timeout_s` | `3` default | Per-claim timeout for the remote live `nvidia-smi` check |
+Remote hosts use your existing `~/.ssh/config`. Keep login names, identities,
+jump-host addresses and ports there, not in the repository. Check each alias with
+`ssh -o BatchMode=yes compute-a true`. No scheduler-specific password or API key
+is required.
 
-## Resource defaults (per task, when no history exists)
+| Field | Meaning |
+|---|---|
+| `host` | SSH alias, or `null` for local execution |
+| `cpu_cores` | Physical CPU budget, before subtracting reserved cores |
+| `reserved_cpu_cores` | Cores left for the OS and other work |
+| `ram_mb` | RAM capacity in MB; `0` uses the live probe |
+| `ram_headroom_mb` / `ram_headroom_frac` | Fixed or fractional RAM headroom |
+| `capabilities` | Only advertise installed runtimes: e.g. `cpu`, `cuda`, `torch_cuda`, `jax_cuda` |
+| `max_vram_per_task` | Optional per-task VRAM cap |
+| `max_tasks_per_gpu` | Concurrent tasks admitted on each GPU |
+| `max_concurrent_running` | Optional per-node task cap |
+| `enable_claims` | Cross-scheduler resource claims on shared nodes |
+| `remote_workspace_root` | Remote staging destination |
+| `remote_path_prefixes` | Absolute local project roots mapped into that destination |
+| `ssh_proxy_jump` / `ssh_proxy_jumps` | Optional jump aliases; SSH config can also supply these |
+| `monitor_only` | Probe a login node without dispatching tasks there |
 
-```python
-DEFAULT_VRAM_MB = 512    # was 4096 → 1024 → 512; optimistic-low by design
-DEFAULT_RAM_MB  = 4096
-DEFAULT_CPU_CORES = 1
-```
+Restart `systemctl --user restart scheduler` after changing nodes. When using a
+custom file, also supply `SCHEDULEURM_NODES_FILE` to the watcher service and MCP
+client; using the default location avoids per-process environment configuration.
 
-The default VRAM is deliberately **low**. If a task actually needs more, the post-dispatch eviction mechanism kills the youngest task on that GPU and re-queues it with the observed peak folded into history. Better to find out by trying than to lock a small task out of the 1/3 packing rule for hours.
+## Runtime Settings
 
-## Packing rules
+Scheduler-wide defaults are in `skill/scheduler_config.py`; supported
+`SCHEDULEURM_*` environment settings are read there. The source is modular:
+the CLI and MCP both load the same modules and algorithm layer.
 
-```python
-VRAM_MARGIN_MB = 500              # headroom on a GPU after placing a task
-ONE_THIRD_PACK_RULE = True        # don't add to a GPU already past 1/3+grace
-ONE_THIRD_PACK_GRACE_MB = 512     # 1/3 is heuristic; allow small overages
-GPU_UTIL_SATURATION_PCT = 85      # if an occupied GPU is past this util%, don't pack more
-```
+`./install.sh` defaults to symlinking the repository. `./install.sh --copy`
+installs a snapshot of the skill, algorithms and simulation helpers.
+`--no-systemd` installs without starting the watcher. Neither mode overwrites
+your nodes file or task state.
 
-The 1/3+grace rule is specific to RL workloads where peak VRAM is hit at random plateaus during training, not at startup. Pure supervised training — set `ONE_THIRD_PACK_RULE = False` and the placer fills based on margin only.
+Training admission, dependency files, resume flags, priorities and resource
+hints are task submission parameters. See the CLI `--help` and
+[CLI examples](../README.md#directly-from-the-cli). Measured RAM/VRAM history belongs to the user
+state directory and is not distributed as cluster configuration.
 
-## History accumulation
+## State And Publication
 
-```python
-HISTORY_MAX_ENTRIES   = 500   # cap on total signatures tracked (LRU eviction by last_seen)
-HISTORY_SAMPLES_PER_SIG = 10  # rolling window per signature
-HISTORY_PERCENTILE    = 80    # p80 of last 10 samples → estimate
-```
+Queue, resource/runtime history, logs, launch records and transport budgets live
+under `~/.claude/scheduler/`. Do not edit task state while the watcher runs;
+use `submit`, `cancel-batch`, `doctor` and the inspection commands.
 
-p80 was chosen empirically: lower (e.g. p50) under-allocates and triggers eviction churn; higher (p95) reproduces the "single outlier pins everything" bug p80 was meant to fix.
+The public repository includes code, tests, research source and compact evidence,
+with anonymized host labels and paths. Raw per-task transport logs, queue snapshots,
+large generated replay outputs and private operational configuration are excluded.
+Those research outputs can be regenerated with the experiment scripts, but live
+hardware experiments require your own configured nodes and environments.
 
-## Failure handling
+## Known Issues
 
-```python
-MAX_AUTO_RETRY      = 3   # auto-requeue cap after crash
-MAX_LAUNCH_RETRY    = 3   # cap on launch failures (cwd missing, ssh timeout, etc.)
-LAUNCHING_RESET_S   = 60  # WAL launch marker age before reverting to queued
-```
-
-Failure categories that **never** auto-retry (escalate to heal session instead): `ENV_MISSING`, `PYTHON_IMPORT`, `OOM`, `DISK_FULL`. These are not transient — retrying just burns more compute. Other categories (`APP_BUG`, `UNKNOWN`) retry up to `MAX_AUTO_RETRY`.
-
-## Environment variables
-
-| Var | Effect | Default |
-|---|---|---|
-| `CLAUDE_BIN` | Path to `claude` CLI for the heal-session spawn path | `/home/researcher/.nvm/.../bin/claude` (you'll want to override) |
-| `SCHEDULEURM_SKILL_DIR` | Where `install.sh` puts the skill | `~/.claude/skills/scheduler` |
-The heal-session spawn requires Claude Code installed and `/scheduler-heal` skill registered. If you're not using Claude Code at all, the heal path is a no-op (failures escalate to log-only).
-
-## Optional: per-cluster nodes file
-
-If you don't want to edit `scheduler.py` directly (e.g. shared deployment), you can switch `NODES` to load from `~/.claude/scheduler/nodes.json` by adding at the top of `scheduler.py`:
-
-```python
-import json
-_NODES_FILE = STATE_DIR / "nodes.json"
-if _NODES_FILE.exists():
-    NODES = json.loads(_NODES_FILE.read_text())
-```
-
-Sample `nodes.json`:
-```json
-{
-  "local":    {"host": null,       "cpu_cores": 16, "ram_mb": 57344, "ram_headroom_mb": 2048, "ram_headroom_frac": 0.20, "max_vram_per_task": null, "max_concurrent_running": 10, "gpu_util_saturation_pct": null},
-  "remote-A": {"host": "remote-A", "cpu_cores": 12, "ram_mb": 204800, "ram_headroom_frac": 0.10, "max_vram_per_task": null, "max_concurrent_running": null}
-}
-```
-
-This isn't wired in by default to keep the single-file deployment story clean — but it's two lines if you want it.
-
-## State files (read-only context — don't hand-edit while watcher runs)
-
-```
-~/.claude/scheduler/
-├── queue.json              # all tasks (queued + launching + running + recent terminal)
-├── vram_history.json       # per-signature p80 samples
-├── runtime_history.json    # exact cmd/cwd/env runtime samples for ETA
-├── escalations.jsonl       # heal session inbox (append-only)
-├── queue_archive.jsonl     # terminal tasks > 7 days old
-├── .lock                   # fcntl exclusive lock; held during all state mutations
-├── .heal_fire.lock         # debounce marker for heal session spawning
-└── logs/
-    ├── watcher.log         # JSONL events; rotated at 5MB, kept 3 generations
-    └── heal_fires.log      # heal session spawn audit trail
-```
-
-If you must edit `queue.json` (e.g. to fix an inflated estimate without re-running), do it under the lock:
-
-```python
-import fcntl, json, tempfile, os
-LOCK = os.path.expanduser("~/.claude/scheduler/.lock")
-QFILE = os.path.expanduser("~/.claude/scheduler/queue.json")
-with open(LOCK, "a+") as lf:
-    fcntl.flock(lf, fcntl.LOCK_EX)
-    q = json.load(open(QFILE))
-    # ... mutate q ...
-    fd, tmp = tempfile.mkstemp(prefix="queue.", dir=os.path.dirname(QFILE))
-    with os.fdopen(fd, "w") as f:
-        json.dump(q, f, indent=2); f.flush(); os.fsync(f.fileno())
-    os.replace(tmp, QFILE)
-    fcntl.flock(lf, fcntl.LOCK_UN)
-```
-
-The lock pattern is non-negotiable — half-written `queue.json` files are recoverable from `queue.json.corrupt-<ts>` backups, but it's still ugly.
+Archived hardware experiment registrations retain their original provenance
+digests. Anonymizing source paths changes the corresponding source bytes, and
+some raw outputs are intentionally not distributed. Tests that require those
+frozen live-hardware bundles are not a clean-install test suite. Register new
+hardware measurements for your own cluster rather than reusing those launch
+authorizations. Core scheduler tests are `skill/tests/test_scheduler_*.py`;
+the public node configuration tests are `skill/tests/test_public_node_config.py`.

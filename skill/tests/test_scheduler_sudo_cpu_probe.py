@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
+from dataclasses import replace
 
+import pytest
+
+from skill.scheduler_node import inventory as scheduler_nodes
 from skill.scheduler_probe import sudo_cpu as sudo_probe
 
 
@@ -24,6 +28,21 @@ def test_parse_cpu_only_sudo_probe_uses_declared_caps_and_thread_limits():
     assert got["cgroup_pids_current"] == 50
     assert got["free_cgroup_pids"] == 250
     assert got["probe_source"] == "sudo_batch"
+
+
+@pytest.mark.parametrize("loadavg,free_cpu", [(0, 96), (20, 76), (120, 0)])
+def test_hpc_batch_probe_budgets_physical_cores_not_smt_threads(loadavg, free_cpu):
+    body = (
+        f"90000\n128000\n__SEP__\n192\n__SEP__\n{loadavg}\n"
+        "__SEP__\n100 4096 50 1000\n"
+    )
+    for idx in range(1, 7):
+        got = sudo_probe.parse_cpu_only_sudo_probe(
+            f"node{idx:03d}", body, node_configs=scheduler_nodes.NODES,
+        )
+        assert got["cores"] == 192
+        assert got["total_cpu"] == 96
+        assert got["free_cpu"] == free_cpu
 
 
 def _deps(stdout, *, probe_jump=True):
@@ -72,3 +91,16 @@ def test_probe_sudo_cpu_nodes_batch_marks_down_when_no_proxy_jump():
 
     assert got["node001"]["alive"] is False
     assert "no working sudo-hop jump" in got["node001"]["error"]
+
+
+def test_batch_route_capacity_wait_is_not_node_down():
+    from scheduler_transport.budget import TransportBusy
+
+    def waiting(*args, **kwargs):
+        raise TransportBusy(["gpu2"])
+
+    deps = replace(_deps(""), probe_ssh_proxy_jump=waiting)
+    got = sudo_probe.probe_sudo_cpu_nodes_batch(["node001"], deps=deps)
+    assert got["node001"]["alive"] is None
+    assert got["node001"]["transport_waiting"] is True
+    assert deps.outer_route_cache == {}

@@ -28,6 +28,7 @@ SUCCESS_PATTERNS = [
     "Model saved",
     "Saved final",
     "Eval complete",
+    "Component calibration completed successfully",
     "Saved: ",
     "Saving final",
     "[Done]",

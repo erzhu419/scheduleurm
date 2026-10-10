@@ -1,0 +1,44 @@
+{
+  "captured_at_utc": "2026-10-01T13:39:16.624321+00:00",
+  "scheduler_record_location": "queue",
+  "task": {
+    "id": "t118711",
+    "status": "running",
+    "node": "node005",
+    "signature": "ScheduleurmBench/exact_reuse_handoff_20261001/merge_wait",
+    "preferred_node": "node005",
+    "allowed_nodes": [
+      "node001",
+      "node002",
+      "node003",
+      "node004",
+      "node005",
+      "node006"
+    ],
+    "cmd": "/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/bin/python -u /home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/handoff_merge_wait.py",
+    "cwd": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001",
+    "log_path": "/tmp/sched_t118711.log",
+    "remote_pids": [
+      9761
+    ],
+    "cpu_cores": 1,
+    "ram_mb": 256,
+    "started_at": 1790861901.5684316,
+    "finished_at": null,
+    "exit_code": null
+  },
+  "requested_resources": {
+    "cpu": 1,
+    "ram_mb": 256,
+    "vram": 0
+  },
+  "server_merge_output": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/md/experiment_artifacts/aligned_hardware_exact_reuse_handoff_20261001.json",
+  "fixed_manifest_selected": {
+    "original": 7,
+    "optimized": 17
+  },
+  "pending_at_registration": 16,
+  "automatic_result_pull": false,
+  "startup_log_exit_code": 0,
+  "startup_log_tail": "handoff missing 16 shards [3, 6, 7, 8, 9, 11, 12, 13, 14, 15, 17, 18, 19, 20, 21, 23]"
+}

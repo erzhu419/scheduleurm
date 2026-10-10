@@ -52,7 +52,7 @@ def build_launch_staging_runtime_exports(namespace: dict[str, Any]) -> dict[str,
                 ssh_base_args=_ns(namespace, "_ssh_base_args"),
                 run_windows_ps=_ns(namespace, "_run_windows_ps"),
                 popen=subprocess_mod.Popen,
-                run_subprocess=subprocess_mod.run,
+                run_subprocess=_ns(namespace, "_run_control_subprocess"),
             ),
         )
 
@@ -77,7 +77,7 @@ def build_launch_staging_runtime_exports(namespace: dict[str, Any]) -> dict[str,
                 mark_stage_success=_ns(namespace, "_mark_launch_stage_success"),
                 getpid=os_mod.getpid,
                 now=time_mod.time,
-                run_subprocess=subprocess_mod.run,
+                run_subprocess=_ns(namespace, "_run_control_subprocess"),
                 tmp_dir="/tmp",
             ),
         )

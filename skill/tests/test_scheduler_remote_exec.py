@@ -16,6 +16,7 @@ from skill.scheduler_remote_exec import (
     run_on,
     run_windows_ps,
     ssh_base_args_with_proxy,
+    select_proxy_jump,
 )
 from skill.scheduler_remote.subprocess import run_ssh_subprocess
 
@@ -108,6 +109,82 @@ def test_ssh_base_args_with_proxy_builds_unattended_transport():
     assert any(str(arg).startswith("ProxyCommand=ssh ") for arg in args)
     assert any("ProxyCommand=ssh -o ConnectTimeout=8 " in str(arg) for arg in args)
     assert args[-1] == "user@node-host"
+
+
+def test_mux_is_enabled_on_both_hops_without_sharing_other_route_socket():
+    deps = replace(_deps(), ssh_disable_mux=False)
+    first = ssh_base_args_with_proxy("node1", "jump1", deps=deps)
+    second = ssh_base_args_with_proxy("node1", "jump2", deps=deps)
+    assert "ControlMaster=auto" in first
+    assert "ControlPath=~/.ssh/scheduleurm-%r@%h-%p-jump1" in first
+    assert "ControlPath=~/.ssh/scheduleurm-%r@%h-%p-jump2" in second
+    proxy = next(arg for arg in first if arg.startswith("ProxyCommand="))
+    assert "ControlMaster=auto" in proxy
+    assert "ControlPath=~/.ssh/scheduleurm-jump-jump1" in proxy
+    assert "%r@%h" not in proxy
+
+
+def test_busy_cached_jump_yields_to_less_loaded_healthy_jump():
+    nodes = {"hpc": {"host": "login", "ssh_proxy_jumps": ["jump1", "jump2"]}}
+    deps = replace(_deps(nodes=nodes), transport_load=lambda route: 6 if route == "jump1" else 0)
+    deps.ssh_proxy_jump_cache["hpc"] = ("jump1", 99)
+    assert select_proxy_jump("hpc", deps=deps) == "jump2"
+
+
+def test_direct_jump_and_proxy_use_the_same_budget_key():
+    from scheduler_transport.budget import transport_routes
+
+    nodes = {"hpc": {"host": "login", "ssh_proxy_jumps": ["jump1", "jump2"]},
+             "jump1": {"host": "frp-host", "ssh_port": 22916, "ssh_user": "user"},
+             "jump2": {"host": "frp-host", "ssh_port": 23035, "ssh_user": "user"}}
+    deps = _deps(nodes=nodes)
+    direct = ssh_base_args_with_proxy("jump2", None, deps=deps)
+    proxied = ssh_base_args_with_proxy("hpc", "jump2", deps=deps)
+    assert "Hostname=frp-host" in direct
+    assert transport_routes(direct) == ["jump2"]
+    assert transport_routes(proxied) == ["jump2", "login"]
+
+
+def test_jump_alias_keeps_its_ssh_config_hostname():
+    nodes = {"hpc": {"host": "login", "ssh_proxy_jump": "jump1"},
+             "jump1": {"host": "jump1"}}
+    args = ssh_base_args_with_proxy("jump1", None, deps=_deps(nodes=nodes))
+    assert "Hostname=jump1" not in args
+    assert args[-1] == "jump1"
+
+
+def test_busy_preferred_jump_uses_other_route_without_poisoning_cache():
+    from contextlib import contextmanager
+    from scheduler_transport.budget import TransportBusy
+
+    @contextmanager
+    def guard(args):
+        if any("-W %h:%p jump1" in arg for arg in args):
+            raise TransportBusy(["jump1"])
+        yield
+
+    nodes = {"hpc": {"host": "login", "ssh_proxy_jumps": ["jump1", "jump2"]}}
+    deps = replace(_deps(nodes=nodes), transport_guard=guard)
+    assert select_proxy_jump("hpc", deps=deps) == "jump2"
+    deps.ssh_proxy_jump_cache["hpc"] = ("jump1", 99)
+    assert run_on("hpc", "true", deps=deps) == (0, "ok", "")
+    assert probe_outer_ssh_route("hpc", deps=deps) == (True, "")
+    assert all(value[0] is True for value in deps.ssh_outer_route_cache.values())
+
+
+def test_busy_route_is_not_cached_as_down():
+    from scheduler_transport.budget import TransportBusy
+    from contextlib import contextmanager
+
+    @contextmanager
+    def full(args):
+        raise TransportBusy(["jump1"])
+        yield
+
+    deps = replace(_deps(), transport_guard=full)
+    with pytest.raises(TransportBusy):
+        probe_outer_ssh_route("node1", deps=deps)
+    assert deps.ssh_outer_route_cache == {}
 
 
 def test_remote_bash_command_for_sudo_hop_wraps_inner_command():

@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import subprocess as _subprocess
 from typing import Any, Mapping, Optional
+import shlex
+import sys
+from pathlib import Path
 
 from scheduler_probe.running_wiring import build_remote_exec_deps as _build_remote_exec_deps
 from scheduler_remote.exec import (
@@ -58,6 +61,7 @@ def build_transport_remote_runtime_exports(namespace: Mapping[str, Any]) -> dict
         stdout=None,
         stderr=None,
         text=None,
+        **kwargs,
     ):
         return _run_ssh_subprocess_impl(
             args,
@@ -67,6 +71,7 @@ def build_transport_remote_runtime_exports(namespace: Mapping[str, Any]) -> dict
             stdout=stdout,
             stderr=stderr,
             text=text,
+            **kwargs,
             deps=_ns(namespace, "_remote_exec_deps")(),
         )
 
@@ -93,17 +98,6 @@ def build_transport_remote_runtime_exports(namespace: Mapping[str, Any]) -> dict
                 text=text,
                 **kwargs,
             )
-        if kwargs:
-            return run(
-                args,
-                timeout=timeout,
-                input=input,
-                capture_output=capture_output,
-                stdout=stdout,
-                stderr=stderr,
-                text=text,
-                **kwargs,
-            )
         return _run_ssh_subprocess(
             args,
             timeout=timeout,
@@ -112,6 +106,7 @@ def build_transport_remote_runtime_exports(namespace: Mapping[str, Any]) -> dict
             stdout=stdout,
             stderr=stderr,
             text=text,
+            **kwargs,
         )
 
     def _ssh_arg_value(args: list, opt: str) -> Optional[str]:
@@ -207,7 +202,9 @@ def build_transport_remote_runtime_exports(namespace: Mapping[str, Any]) -> dict
         )
 
     def _ssh_rsync_shell_for_node(node: str) -> str:
-        return _ssh_rsync_shell_for_node_impl(node, deps=_ns(namespace, "_remote_exec_deps")())
+        shell = _ssh_rsync_shell_for_node_impl(node, deps=_ns(namespace, "_remote_exec_deps")())
+        runner = Path(__file__).resolve().parents[1] / "transport_exec.py"
+        return f"{shlex.quote(sys.executable)} {shlex.quote(str(runner))} --bulk -- {shell}"
 
     def _ssh_target_for_node(node: str) -> str:
         return _ssh_target_for_node_impl(node, deps=_ns(namespace, "_remote_exec_deps")())

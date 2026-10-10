@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import os
 import re
+import shlex
 
 
 def cmd_looks_like_training(cmd: str) -> bool:
@@ -18,10 +20,33 @@ def cmd_looks_like_training(cmd: str) -> bool:
     ))
 
 
+def _cmd_has_training_subcommand(cmd: str) -> bool:
+    try:
+        tokens = shlex.split(cmd or "")
+    except ValueError:
+        return False
+    for index, token in enumerate(tokens):
+        if not re.fullmatch(r"python(?:\d(?:\.\d+)?)?", os.path.basename(token)):
+            continue
+        entry = index + 1
+        while entry < len(tokens) and tokens[entry].startswith("-"):
+            if tokens[entry] == "-c":
+                break
+            if tokens[entry] == "-m":
+                entry += 1
+                break
+            entry += 1
+        if (entry + 1 < len(tokens)
+                and not tokens[entry].startswith("-")
+                and tokens[entry + 1] == "train"):
+            return True
+    return False
+
+
 def cmd_explicitly_cpu(cmd: str) -> bool:
     lower = (cmd or "").lower()
     norm = lower.replace("=", " ")
-    norm = re.sub(r"(?:^|\s)--replay[-_]?device\s+cpu(?:\s|$)", " ", norm)
+    norm = re.sub(r"(?:^|\s)--(?:replay|sampling)[-_]?device\s+cpu(?:\s|$)", " ", norm)
     cuda_empty = bool(re.search(
         r"(?:^|\s)(?:export\s+)?cuda_visible_devices\s*=\s*(?:\"\"|''|-1|;|$|\s)",
         lower,
@@ -33,7 +58,7 @@ def cmd_explicitly_cpu(cmd: str) -> bool:
 
 
 def task_looks_like_training(cmd: str, description: str = "") -> bool:
-    if cmd_looks_like_training(cmd):
+    if cmd_looks_like_training(cmd) or _cmd_has_training_subcommand(cmd):
         return True
     lower_desc = (description or "").lower()
     # Training words must be tokens. A raw ``"train" in description`` check
@@ -43,10 +68,8 @@ def task_looks_like_training(cmd: str, description: str = "") -> bool:
         r"(?:^|[^a-z0-9])(?:pre)?train(?:ing|ed|er)?(?:$|[^a-z0-9])",
         lower_desc,
     )
-    return bool(training_word) or any(p in lower_desc for p in (
-        "baseline:",
-        " iql", "iql ", "awac", "td3", "rlpd", "wsrl", "sac", "bc on",
-    ))
+    # Algorithm names also label evaluation and analysis jobs, not just training.
+    return bool(training_word)
 
 
 def cpu_training_policy_reason(

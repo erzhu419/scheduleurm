@@ -39,7 +39,7 @@ def test_windows_and_sudo_probe_wiring_uses_scheduler_namespace(sch):
     assert win.node_configs is sch.NODES
     assert win.queue_tasks() == [{"id": "t1"}, {"id": "t2"}]
     assert win.run_windows_ps is sch._run_windows_ps
-    assert win.run_subprocess is sch.subprocess.run
+    assert win.run_subprocess is sch._run_control_subprocess
     assert win.ssh_base_args is sch._ssh_base_args
     assert win.windows_probe_error_hint is sch._windows_probe_error_hint
 
@@ -90,6 +90,7 @@ def test_running_and_eta_wiring_uses_scheduler_namespace(sch):
     assert eta_tail.windows_tail_ps is sch._windows_tail_ps
     assert eta_tail.run_windows_ps is sch._run_windows_ps
     assert eta_tail.run_on is sch.run_on
+    assert eta_tail.remote_python('node001') == (sch.NODES.get('node001', {}).get('resume_scan_python') or 'python3')
 
     eta = sch._eta_refresh_deps()
     assert eta.load_eta_tracker_module is sch._load_eta_tracker_module

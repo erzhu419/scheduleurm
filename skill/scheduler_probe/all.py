@@ -5,6 +5,11 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import Callable
 
+try:
+    from scheduler_transport.budget import TransportBusy
+except ModuleNotFoundError:
+    from ..scheduler_transport.budget import TransportBusy
+
 
 @dataclass(frozen=True)
 class ProbeAllDeps:
@@ -15,10 +20,14 @@ class ProbeAllDeps:
     probe_all_route_failures: Callable[[], dict]
     probe_node: Callable[[str], dict]
     fold_claims_into_probe: Callable[[list], list]
+    load_probe_cache: Callable[[], dict] = lambda: {}
 
 
 def probe_all_nodes(*, deps: ProbeAllDeps) -> list:
-    route_failures = deps.probe_all_route_failures()
+    try:
+        route_failures = deps.probe_all_route_failures()
+    except TransportBusy:
+        route_failures = {}
     precomputed = {}
     route_limits = {
         key: threading.Semaphore(deps.route_max_workers)
@@ -49,4 +58,9 @@ def probe_all_nodes(*, deps: ProbeAllDeps) -> list:
 
     with ThreadPoolExecutor(max_workers=workers) as executor:
         nodes = list(executor.map(probe_or_route_down, probe_names))
+    cached = deps.load_probe_cache()
+    for index, node in enumerate(nodes):
+        if node.get("transport_waiting") and node["name"] in cached:
+            nodes[index] = {**cached[node["name"]],
+                            "transport_waiting": True, "error": node["error"]}
     return deps.fold_claims_into_probe(nodes)

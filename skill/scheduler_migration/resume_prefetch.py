@@ -15,6 +15,7 @@ class ResumePrefetchDeps:
     load_state: Callable[[], dict]
     save_state: Callable[[dict], Any]
     task_requires_resume_scan: Callable[[dict], bool]
+    queued_wait_for_file_block_reason: Callable[[dict], str | None]
     resume_scan_key: Callable[[dict, Optional[list]], list]
     cached_resume_locations_for_task: Callable[[dict, list], tuple[bool, list, dict]]
     scan_resume_locations: Callable[..., tuple[list, dict]]
@@ -93,6 +94,8 @@ def _claim_scan_work(
             if len(claimed) >= max(1, int(deps.max_tasks_per_pass or 1)):
                 break
             if not deps.task_requires_resume_scan(task):
+                continue
+            if deps.queued_wait_for_file_block_reason(task):
                 continue
             fresh, _, _ = deps.cached_resume_locations_for_task(task, nodes)
             if fresh:

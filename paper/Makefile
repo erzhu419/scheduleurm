@@ -18,9 +18,13 @@ GENERALIZATION_INPUTS := $(ART)/or_generalization_certificate_v6_20260810.json \
 GENERALIZATION_OUTPUTS := generated/or_generalization_v7_results.tex \
 	$(ART)/or_generalization_certificate_v7_20260830.json \
 	../md/or_generalization_certificate_v7_20260830.md
+BG_CONFIRMATION_OUTPUT := generated/bg_confirmation_results.tex
+BG_CONFIRMATION_INPUTS := $(ART)/aligned_hardware_BG_empirical_service_confirmation_20261004_results_projection.json \
+	$(ART)/aligned_hardware_BG_empirical_service_confirmation_20261004_completion_receipt.json \
+	../algorithm/experiments/bg_confirmation_paper_results.py
 QUADRANT_FIGURE := ../md/figures/scheduleurm_quadrant_sota_grid
 QUADRANT_OUTPUTS := $(addprefix $(QUADRANT_FIGURE),.pdf .png .svg .tiff _data.json)
-GENERATED_INPUTS := generated/unified_hardware_results.tex generated/or_generalization_v7_results.tex
+GENERATED_INPUTS := generated/unified_hardware_results.tex generated/or_generalization_v7_results.tex $(BG_CONFIRMATION_OUTPUT)
 FIGURE_INPUTS := ../md/figures/scheduleurm_fig1_nature_python_combo.pdf ../md/figures/scheduleurm_quadrant_sota_grid.pdf
 COMMON_INPUTS := main.tex informs4.cls eqndefns-left.sty informs_Logo.pdf $(GENERATED_INPUTS)
 
@@ -59,7 +63,13 @@ $(QUADRANT_OUTPUTS) &: $(REPLAY) ../md/figures/make_scheduleurm_quadrant_sota_gr
 		--artifact md/experiment_artifacts/unified_hardware_or_replay_20260809.json \
 		--output md/figures/scheduleurm_quadrant_sota_grid
 
-current-results: $(HARDWARE_OUTPUTS) $(GENERALIZATION_OUTPUTS) $(QUADRANT_OUTPUTS)
+current-results: $(HARDWARE_OUTPUTS) $(GENERALIZATION_OUTPUTS) $(QUADRANT_OUTPUTS) $(BG_CONFIRMATION_OUTPUT)
+
+$(BG_CONFIRMATION_OUTPUT): $(BG_CONFIRMATION_INPUTS)
+	cd .. && $(PYTHON) -m algorithm.experiments.bg_confirmation_paper_results \
+		--projection md/experiment_artifacts/aligned_hardware_BG_empirical_service_confirmation_20261004_results_projection.json \
+		--receipt md/experiment_artifacts/aligned_hardware_BG_empirical_service_confirmation_20261004_completion_receipt.json \
+		--output paper/generated/bg_confirmation_results.tex
 
 main.pdf: $(COMMON_INPUTS) references.bib informs2014.bst $(FIGURE_INPUTS)
 	$(LATEXMK) -pdf -interaction=nonstopmode -halt-on-error main.tex

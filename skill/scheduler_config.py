@@ -110,7 +110,7 @@ def build_scheduler_config_exports(*, environ=None, home=None) -> dict:
         "RUNNING_PROBE_TIMEOUT_S": max(1, _env_int(env, "SCHEDULEURM_RUNNING_PROBE_TIMEOUT_S", "25")),
         "CANCEL_KILL_MAX_WORKERS": max(1, _env_int(env, "SCHEDULEURM_CANCEL_KILL_MAX_WORKERS", "4")),
         # A single watcher pass must be able to expose enough one-core work to
-        # fill all six 192-core CPU nodes. Placement debits resources
+        # fill all six 96-core CPU nodes. Placement debits resources
         # immediately, so this is a scan/throughput limit rather than an
         # overcommit limit.
         "WATCH_DISPATCH_MAX_QUEUED_PER_CYCLE": max(
@@ -231,7 +231,7 @@ def build_scheduler_config_exports(*, environ=None, home=None) -> dict:
         "SSH_ROUTE_CACHE_TTL_S": _env_int(env, "SCHEDULEURM_SSH_ROUTE_CACHE_TTL_S", "300"),
         "SSH_LOGIN_PREFLIGHT_TIMEOUT_S": max(1, _env_int(env, "SCHEDULEURM_SSH_LOGIN_PREFLIGHT_TIMEOUT_S", "15")),
         "SSH_LOGIN_FAILURE_CACHE_TTL_S": max(0, _env_int(env, "SCHEDULEURM_SSH_LOGIN_FAILURE_CACHE_TTL_S", "60")),
-        "SSH_DISABLE_MUX": _env_bool(env, "SCHEDULEURM_SSH_DISABLE_MUX", "1"),
+        "SSH_DISABLE_MUX": _env_bool(env, "SCHEDULEURM_SSH_DISABLE_MUX", "0"),
         "_SSH_PROXY_JUMP_CACHE": {},
         "_SSH_ROUTE_JUMP_CACHE": {},
         "_SSH_OUTER_ROUTE_CACHE": {},

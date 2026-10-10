@@ -149,6 +149,31 @@ def test_identify_respects_load_gates_and_alive_nodes():
     ) == []
 
 
+def test_migration_skips_idle_windows_and_uses_linux_target():
+    state = {"tasks": [_task("move")]}
+    nodes = _nodes() + [{"name": "win", "alive": True, "os": "windows"}]
+    deps = _deps(loads={"win": 0, "free": 10, "loaded": 5000},
+                 can_migrate={("move", "free"), ("move", "win")})
+    planned = identify_migration_candidates(state, nodes, deps=deps)
+    assert [(t["id"], target) for t, target in planned] == [("move", "free")]
+    assert consider_migration(state, nodes, deps=deps) == ["move"]
+    assert state["tasks"][0]["staged_node"] == "free"
+
+
+def test_migration_respects_task_allowed_nodes_before_staging_and_commit():
+    rejected = _task("restricted", allowed_nodes=["loaded", "other-gpu"])
+    permitted = _task("permitted", allowed_nodes=["loaded", "free"])
+    state = {"tasks": [rejected, permitted]}
+    deps = _deps(can_migrate={("restricted", "free"), ("permitted", "free")})
+
+    planned = identify_migration_candidates(state, _nodes(), deps=deps)
+
+    assert [(task["id"], target) for task, target in planned] == [("permitted", "free")]
+    assert consider_migration(state, _nodes(), deps=deps) == ["permitted"]
+    assert rejected["preferred_node"] == "loaded"
+    assert "staged_node" not in rejected
+
+
 def test_consider_uses_supplied_loads_without_recompute_and_sets_staged_node():
     calls = []
     state = {"tasks": [_task("move", eta_seconds=600)]}

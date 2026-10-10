@@ -3,6 +3,20 @@ from __future__ import annotations
 import sys
 
 from skill.scheduler_node import inventory as scheduler_nodes
+from skill.scheduler_node.gates import gpu_task_cap_for_task, node_concurrency_cap_for_task
+
+
+def test_gpu2_small_jobs_use_cpu_bounded_capacity_without_relaxing_large_jobs():
+    node = scheduler_nodes.NODES["gpu_b"]
+    small = {"est_vram_mb": 768}
+    assert gpu_task_cap_for_task(small, node) == 6
+    assert node_concurrency_cap_for_task(small, node) == node["cpu_cores"] == 12
+    assert gpu_task_cap_for_task({"est_vram_mb": 2200}, node) == 4
+    assert gpu_task_cap_for_task(small, scheduler_nodes.NODES["gpu_a"]) == 4
+
+
+def test_311_gpu_jobs_require_available_host_cpu():
+    assert scheduler_nodes.NODES["cpu_a"]["ignore_cpu_for_gpu_tasks"] is False
 
 
 def test_node_inventory_keeps_temporarily_unreachable_hpc_nodes_visible():
@@ -36,16 +50,17 @@ def test_node_inventory_keeps_temporarily_unreachable_hpc_nodes_visible():
         name = f"node{idx:03d}"
         node = scheduler_nodes.NODES[name]
         assert not node.get("retired", False)
+        assert node["cpu_cores"] == node["physical_cores"] == 96
         assert node["max_concurrent_running"] is None
         assert node["sudo_ssh_host"] == name
         assert node["ssh_proxy_jumps"] == ["gpu_a", "gpu_b"]
         assert node["max_vram_per_task"] == 0
         assert node["cpu_slot_accounting"] is True
-        assert node["reserved_cpu_cores"] == 20
+        assert node["reserved_cpu_cores"] == 1
         assert node["live_cpu_backfill_max_task_cores"] == 64
         assert node["live_cpu_backfill_startup_grace_s"] == 90
         assert node["live_cpu_backfill_single_thread_startup_grace_s"] == 10
-        assert node["persistent_cpu_live_backfill_max_declared_cores"] == 276
+        assert node["persistent_cpu_live_backfill_max_declared_cores"] == 138
         assert node["min_free_user_threads_for_jax_cpu_task"] == 1024
         assert node["jax_cpu_launch_user_thread_reserve"] == 512
         assert node["capabilities"] == ["cpu", "jax_cpu"]
@@ -82,6 +97,14 @@ def test_bus_module_python_rewrites_to_each_nodes_torch_environment(sch):
         + "/bin/python -u -m bus_experiments")
 
 
+def test_pinned_jax_gpu_python_uses_isolated_node007_environment(sch):
+    command = scheduler_nodes.GPU_A_RE_SAC_JAX_ENV + "/bin/python -u -m jax_experiments.analysis.run_regularized_comparison_v39 train"
+    assert sch._apply_node_cmd_rewrites("node007", command) == (
+        scheduler_nodes.NODE007_RESAC_JAX_0438_ENV
+        + "/bin/python -u -m jax_experiments.analysis.run_regularized_comparison_v39 train"
+    )
+
+
 def test_gpu_launch_debit_does_not_invent_thread_usage_without_configured_reserve(sch):
     nodes = [{
         "name": "node007",
@@ -112,11 +135,25 @@ def test_gpu_launch_debit_does_not_invent_thread_usage_without_configured_reserv
     assert nodes[0]["free_user_threads"] == 2_096
 
 
+def test_resac_lstm_environment_maps_only_on_node007(sch):
+    command = (
+        "/home/researcher/anaconda3/envs/LSTM-RL/bin/python -u -m "
+        "jax_experiments.experiments.bus_head_alignment_confirmation --day 2"
+    )
+    rewritten = sch._apply_node_cmd_rewrites("node007", command)
+    assert rewritten == command.replace(
+        "/home/researcher/anaconda3/envs/LSTM-RL/bin/python",
+        "/home/hpcuser/scheduleurm_work/conda_envs/sumo-lstm-py310/bin/python",
+    )
+    for node in ("gpu_a", "gpu_b", "cpu_a", "local"):
+        assert sch._apply_node_cmd_rewrites(node, command) == command
+
+
 def test_jax_cpu_launch_debit_reserves_transient_runtime_threads(sch):
     nodes = [{
         "name": "node006",
-        "free_cpu": 192,
-        "observed_free_cpu": 192,
+        "free_cpu": 96,
+        "observed_free_cpu": 96,
         "free_ram_mb": 100_000,
         "running_count": 0,
         "user_threads": 1_000,
@@ -136,7 +173,7 @@ def test_jax_cpu_launch_debit_reserves_transient_runtime_threads(sch):
 
     assert nodes[0]["user_threads"] == 1_512
     assert nodes[0]["free_user_threads"] == 2_584
-    assert nodes[0]["observed_free_cpu"] == 192
+    assert nodes[0]["observed_free_cpu"] == 96
 
 
 def test_hpc_cpu_launch_debit_records_startup_hold_release_window(sch):
@@ -148,7 +185,7 @@ def test_hpc_cpu_launch_debit_records_startup_hold_release_window(sch):
         "cpu_hard_reserved": 0,
         "cpu_hard_free": 48,
         "cpu_startup_hold_remaining_s": 0,
-        "total_cpu": 192,
+        "total_cpu": 96,
         "free_ram_mb": 160_000,
         "running_count": 20,
         "gpus": [],
@@ -168,15 +205,15 @@ def test_hpc_cpu_launch_debit_records_startup_hold_release_window(sch):
     assert nodes[0]["cpu_startup_hold_remaining_s"] == 90
 
 
-def test_hpc_cpu_wave_fills_to_twenty_core_headroom(sch):
+def test_hpc_cpu_wave_fills_to_one_core_headroom(sch):
     nodes = [{
         "name": "node001",
-        "free_cpu": 192,
-        "observed_free_cpu": 192,
+        "free_cpu": 96,
+        "observed_free_cpu": 96,
         "cpu_slot_accounting": True,
-        "cpu_slot_free": 192,
-        "cpu_hard_free": 192,
-        "total_cpu": 192,
+        "cpu_slot_free": 96,
+        "cpu_hard_free": 96,
+        "total_cpu": 96,
         "free_ram_mb": 160_000,
         "running_count": 0,
         "gpus": [],
@@ -190,7 +227,8 @@ def test_hpc_cpu_wave_fills_to_twenty_core_headroom(sch):
     }
     node_info = sch.NODES["node001"]
 
-    for _ in range(14):
+    assert sch._node_schedulable_cpu_free(task, nodes[0], node_info)[0] == 95
+    for _ in range(7):
         free, _, _, _ = sch._node_schedulable_cpu_free(task, nodes[0], node_info)
         assert free >= 12
         sch._debit_node_resources_for_launch(nodes, task)
@@ -199,8 +237,13 @@ def test_hpc_cpu_wave_fills_to_twenty_core_headroom(sch):
         task, nodes[0], node_info
     )
     assert (free, source, slot_free, observed_free) == (
-        4,
+        11,
         "live_guarded",
-        24,
-        192,
+        12,
+        96,
+    )
+    task["cpu_cores"] = 11
+    sch._debit_node_resources_for_launch(nodes, task)
+    assert sch._node_schedulable_cpu_free(task, nodes[0], node_info) == (
+        0, "live_guarded", 1, 96,
     )

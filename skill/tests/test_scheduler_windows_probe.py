@@ -1,3 +1,9 @@
+from dataclasses import replace
+from contextlib import ExitStack
+
+import pytest
+
+from scheduler_transport.budget import TransportBusy, transport_guard
 from skill.scheduler_windows_probe import (
     WindowsNodeProbeDeps,
     collect_windows_probe_targets,
@@ -153,6 +159,33 @@ def test_probe_windows_node_fallback_marks_down_when_ping_fails():
         "alive": False,
         "error": "hint:win:bad",
     }
+
+
+@pytest.mark.parametrize("mode", ["queue", "live", "fallback"])
+def test_windows_capacity_wait_does_not_mark_node_down(mode):
+    def waiting(*args, **kwargs):
+        raise TransportBusy(["win"])
+
+    deps, _ = _node_probe_deps(env_cpu_load_source="queue" if mode == "queue" else "live")
+    deps = replace(deps, run_subprocess=waiting,
+                   run_windows_ps=(lambda *args, **kwargs: (0, "bad", ""))
+                   if mode == "fallback" else waiting)
+    out = probe_windows_node("win", deps=deps)
+    assert out["alive"] is None
+    assert out["transport_waiting"] is True
+    assert "TRANSPORT_WAIT:" in out["error"]
+
+
+def test_windows_node_probe_uses_reserved_transport_capacity(tmp_path):
+    def probe(*args, **kwargs):
+        with transport_guard(["ssh", "win"], root=tmp_path, wait_s=0):
+            return 0, "500000|524288|256\n", ""
+
+    deps, _ = _node_probe_deps()
+    with ExitStack() as active:
+        for _ in range(6):
+            active.enter_context(transport_guard(["ssh", "win"], root=tmp_path, wait_s=0))
+        assert probe_windows_node("win", deps=replace(deps, run_windows_ps=probe))["alive"] is True
 
 
 def test_windows_terminal_log_result_marks_rc_and_reason():

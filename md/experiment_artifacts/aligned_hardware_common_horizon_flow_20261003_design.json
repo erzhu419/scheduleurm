@@ -1,0 +1,43 @@
+{
+  "designed_at_utc": "2026-10-03T02:36:44.249851+00:00",
+  "status": "DESIGN_ONLY_NOT_IMPLEMENTED_OR_EVALUATED",
+  "hypothesis": "Price all unfinished work over a common horizon and fixed MW clearance, rather than only original tagged jobs or batch counts.",
+  "source_tagged_registered_at_utc": "2026-10-02T16:27:26.529005+00:00",
+  "targets": [
+    {
+      "tape_id": "gpu_b:R2:load0.95:seed41",
+      "seed": 41,
+      "frame_index": 11,
+      "parent_root": 2,
+      "native_root": 5
+    },
+    {
+      "tape_id": "gpu_b:R2:load0.95:seed42",
+      "seed": 42,
+      "frame_index": 39,
+      "parent_root": 7,
+      "native_root": 4
+    },
+    {
+      "tape_id": "gpu_b:R2:load0.95:seed43",
+      "seed": 43,
+      "frame_index": 29,
+      "parent_root": 4,
+      "native_root": 5
+    }
+  ],
+  "planning_samples": 8,
+  "planning_event_cap": 128,
+  "horizon_tau_max_multiple": 2,
+  "horizon_rule": "H=t0+2*tau_max for every registered state and root; no horizon sweep.",
+  "candidate_score": "Integral from t0 to H of all waiting plus admitted-unfinished jobs, plus remaining completion-time sum under fixed MW with no arrivals after H.",
+  "continuation": "Same finite parent with complete consumed-anchor after-tree; consume every later native dispatch including idle until common H; keep committed jobs and lane release times in terminal state.",
+  "common_randomness": "Retain original8 planning paths and their globally indexed native Poisson background streams, with fixed anchor rates; add no samples and no future true tape to chooser.",
+  "terminal_rule": "Fixed native MaxWeight, original catalogue/FIFO/lane release and idle polling semantics; no births after H. Count waiting and in-flight work exactly once, including actions crossing H.",
+  "past_cost": "Any elapsed visible/inflight flow before t0 is root-independent; omit only as an explicit common constant in S1 comparisons.",
+  "score_replacement": "Replace old full tagged S1; do not add overlapping cost to it. Preserve original BG risk set and feasibility constraint.",
+  "overflow": "Keep all registered samples and costs; unavailable if an environmental cap prevents full fixed-horizon/terminal score, never drop or resample.",
+  "evaluation_order": "First compare fixed3 states x2 roots x8 paths with separate common-horizon and terminal cost contributions. Any policy promotion subsequently needs original full development protocol and mean/tail checks.",
+  "performance_gain_established": false,
+  "full24_decision": "PERSISTENT_CURRENT_POLICY_DEVELOPMENT_HOLD"
+}

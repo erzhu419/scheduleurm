@@ -1,0 +1,11 @@
+# 固定22状态的预测人口归因（2026-10-02）
+
+24个分片全部done/exit0，3项测试通过。22个缓存A/B评分、决策与原阶段字段全部复现，所有根的分项Fraction精确重建原S1/S2，原生逻辑费用汇总相同；新增服务轨迹0，完整24条性能结论仍HOLD。
+
+7个保留坏动作中，6个至少一类出现“预测获益、旧current完整cohort受损”：CNN4例、JAX2例、LLM1例，类别可重叠。可见FIFO分项偏好A的有5/7个坏动作、3/9个好动作；采样前缀分项分别为4/7、7/9。两个评分部分都存在错误，单独丢掉其中一个没有充分依据。
+
+续排一致性对照已完成：[结果](current_policy_continuation_alignment_20261002.md)。保持上述22状态及同一人口、8样本/cap128和原BG风险范围，仅将第3次起的MW换为持久旧current，正确数12→13，但纠正5个同时损坏4个，类别方向错位总数未减少。随后[两个第三动作标签已补齐](current_policy_third_root_labels_20261002.md)，全部实际22选择的条件均值平均改善0.141617秒，支持下一步完整闭环性能试验；最终仍须通过原MW/BG联合门槛。
+
+局限：预测人口与缓存完整cohort、续排方式均不同，当前结果不能单独证明人口遗漏是原因。20/22状态的未评分背景在A/B下已服务人数不同，不能直接把该成本加回评分；没有读取确认集或改论文。
+
+证据：[小汇总](experiment_artifacts/aligned_hardware_two_step_current_policy_population_accounting_20261001_summary.json)、[逐状态摘要](experiment_artifacts/aligned_hardware_two_step_current_policy_population_accounting_20261001_records_summary.json)、[注册回执](experiment_artifacts/aligned_hardware_two_step_current_policy_population_accounting_20261001_registration_receipt.json)、[完成记录](experiment_artifacts/aligned_hardware_two_step_current_policy_population_accounting_20261001_completion.json)。完整分样本记录留服务器，本地仅取回约176KB摘要。

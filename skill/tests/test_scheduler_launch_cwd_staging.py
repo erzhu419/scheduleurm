@@ -131,19 +131,49 @@ def test_stage_cwd_cache_hit_skips_path_and_rsync(monkeypatch):
     assert "cache hit" in msg
 
 
-def test_launch_input_state_infers_wait_file_parent_for_legacy_task(tmp_path):
+def test_wait_file_gate_does_not_stage_its_parent(monkeypatch, tmp_path):
     cwd = tmp_path / "project"
     bundle = cwd / "bundles" / "seed_0" / "sac"
     bundle.mkdir(parents=True)
     manifest = bundle / "bundle_manifest.json"
     manifest.write_text("{}\n", encoding="utf-8")
     task = {"cwd": str(cwd), "wait_for_files": [str(manifest)]}
+    deps = _deps()
+    monkeypatch.setattr(
+        cwd_stage.subprocess,
+        "run",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("no subprocess")),
+    )
+
+    assert cwd_stage.launch_input_stage_state(task, "remote", deps=deps) == "ready"
+    assert cwd_stage.stage_input_paths_for_launch(task, "remote", deps=deps) == (
+        True, "no remote launch inputs")
+    (bundle / "another_gate.json").write_text("{}\n", encoding="utf-8")
+    assert cwd_stage.launch_input_stage_state(task, "remote", deps=deps) == "ready"
+
+
+def test_explicit_input_receipt_is_independent_of_wait_file_directory(tmp_path):
+    gates = tmp_path / "gates"
+    bundle = tmp_path / "bundle"
+    gates.mkdir()
+    bundle.mkdir()
+    gate = gates / "first.json"
+    gate.write_text("{}\n", encoding="utf-8")
+    task = {
+        "wait_for_files": [str(gate)],
+        "stage_input_paths": [str(bundle)],
+        "skip_launch_staging": True,
+    }
     cache_hits = {("sentinel",)}
     deps = _deps(cache_hits=cache_hits)
 
     assert cwd_stage.launch_input_stage_state(task, "remote", deps=deps) == "needs_stage"
     cache_hits.add(cwd_stage.launch_input_stage_key(task, "remote"))
     assert cwd_stage.launch_input_stage_state(task, "remote", deps=deps) == "ready"
+    (gates / "second.json").write_text("{}\n", encoding="utf-8")
+    assert cwd_stage.launch_input_stage_state(task, "remote", deps=deps) == "ready"
+    (bundle / "payload.json").write_text("{}\n", encoding="utf-8")
+    assert cwd_stage.launch_input_stage_state(task, "remote", deps=deps) == "needs_stage"
 
 
 def test_launch_input_key_aliases_shared_workspace_nodes(tmp_path):

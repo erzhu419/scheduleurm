@@ -1,0 +1,97 @@
+{
+  "registered_at_utc": "2026-10-03T23:30:29.309041+00:00",
+  "unit_index": 462,
+  "unit": {
+    "unit_index": 462,
+    "fixture_file": "aligned_hardware_BG_bursty_arrivals_20261004_fixture_154.json.gz",
+    "policy": "BG",
+    "planning_replication": 1,
+    "planning_seed": "arrival-plan-sensitivity-v1:gpu_b:0.8:online:replicate1",
+    "profile": "steady",
+    "tape_id": "steady:gpu_b:R2:load0.8:seed200006",
+    "node": "gpu_b",
+    "lanes": 2,
+    "load": 0.8,
+    "seed": 200006,
+    "cached_MW_unit": {
+      "unit_index": 617,
+      "tape_index": 154,
+      "fixture_file": "aligned_hardware_BG_bursty_arrivals_20261004_fixture_154.json.gz",
+      "profile": "steady",
+      "policy": "maxweight",
+      "tape_id": "steady:gpu_b:R2:load0.8:seed200006",
+      "node": "gpu_b",
+      "lanes": 2,
+      "load": 0.8,
+      "seed": 200006
+    },
+    "cached_MW_row_file": "aligned_hardware_BG_bursty_arrivals_20261004_unit_617.json",
+    "cached_MW_trajectory_file": "aligned_hardware_BG_bursty_arrivals_20261004_unit_617_trajectory.json.gz"
+  },
+  "trajectory_file": "aligned_hardware_BG_planning_streams_20261004_unit_462_trajectory.json.gz",
+  "prefix_frames_verified": 302,
+  "eligible_frames_verified": 277,
+  "tagged_events_verified": 22774,
+  "prefix_draws_verified": 29366,
+  "prefix_rate_reads_verified": 6648,
+  "exact_target_frames_verified": 1,
+  "certificates": [
+    {
+      "frame_index": 16,
+      "start": 19.79592588210709,
+      "baseline_root": 7,
+      "actual_root": 2,
+      "baseline_S1_sum": {
+        "numerator": 1966927551922117576979,
+        "denominator": 1152921504606846976,
+        "float": 1706.0376999324437
+      },
+      "actual_S1_sum": {
+        "numerator": 1966927551922117568787,
+        "denominator": 1152921504606846976,
+        "float": 1706.0376999324437
+      },
+      "strict_S1_improvement_sum": {
+        "numerator": 1,
+        "denominator": 140737488355328,
+        "float": 7.105427357601002e-15
+      },
+      "baseline_S2_sum": {
+        "numerator": 46863925164538981369930195025569020047913,
+        "denominator": 1329227995784915872903807060280344576,
+        "float": 35256.498744495366
+      },
+      "actual_S2_sum": {
+        "numerator": 46863925164538979940797904426982637343273,
+        "denominator": 1329227995784915872903807060280344576,
+        "float": 35256.498744495366
+      },
+      "S2_nonincrease_sum": {
+        "numerator": 174454625317210251795,
+        "denominator": 162259276829213363391578010288128,
+        "float": 1.0751596378728666e-12
+      },
+      "rounded_scores": {
+        "baseline_predicted_completion_s": 213.25471249155547,
+        "chosen_predicted_completion_s": 213.25471249155547,
+        "baseline_predicted_squared_flow_s2": 4407.062343061921,
+        "chosen_predicted_squared_flow_s2": 4407.062343061921
+      },
+      "exact_S1_strict_improvement": true,
+      "exact_S2_nonincrease": true,
+      "actual_exact_rule_root_matched": true,
+      "target_work_metadata_matched": true
+    }
+  ],
+  "exact_proof_passed": true,
+  "all_other_frozen_checks_certified": false,
+  "new_simulations": 0,
+  "policy_calls": 0,
+  "rng_reconstruction_only": true,
+  "at_utc": "2026-10-03T23:58:06.147871+00:00",
+  "metadata_downloaded_bytes": 2593,
+  "full_trajectory_downloaded": false,
+  "server_writes": false,
+  "read_exit_code": 0,
+  "diagnostic_source_literal": "import json\nimport sys\nfrom dataclasses import fields\nfrom datetime import datetime, timezone\nfrom fractions import Fraction\nfrom pathlib import Path\n\nROOT = Path('/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001')\nsys.path.insert(0, str(ROOT))\nfrom algorithm.arrival_aware_lane_rollout import sample_planning_arrivals\nfrom algorithm.background_competition_continuous_lane_rollout import BackgroundCompetitionContinuousLaneRollout\nfrom algorithm.experiments.aligned_hardware_bg_planning_streams import load_protocol, read, path\nfrom algorithm.experiments.aligned_hardware_performance_necessity import load_models\n\ndirectory = ROOT / 'md/experiment_artifacts'\nprotocol = load_protocol(directory)\nunit = protocol['units'][462]\ntrajectory_file = path(directory, '_unit_462_trajectory.json.gz')\nsaved = read(trajectory_file)\nassert saved['registered_at_utc'] == protocol['registered_at_utc']\nassert saved['unit'] == unit\nfixture = read(directory / unit['fixture_file'])\nassert fixture['registered_at_utc'] == protocol['source_execution_epoch']\nassert fixture['tape']['tape_id'] == unit['tape_id']\nmodel, = load_models([fixture['model']])\nplanner = BackgroundCompetitionContinuousLaneRollout(model.options, unit['planning_seed'], 8, 128)\ncertificates = []\neligible = tagged_events = prefix_draws = prefix_reads = 0\n\ndef fraction(value):\n    return {'numerator': value.numerator, 'denominator': value.denominator,\n            'float': float(value)}\n\nfor index, frame in enumerate(saved['result']['frames']):\n    info = frame['rollout']\n    now, counts = frame['start'], tuple(frame['observed_arrival_counts'])\n    rates = tuple(count / now if now else 0.0 for count in counts)\n    assert rates == tuple(info['estimated_arrival_rates']), ('rates', index)\n    assert counts == tuple(info['observed_arrival_counts']), ('counts', index)\n    assert now == info['rate_exposure_s'], ('exposure', index)\n    queue = tuple(frame['queue'])\n    assert info['eligible'] == (0 < sum(queue) <= model.lanes * planner.batch_width), ('eligible', index)\n    paths = []\n    if info['eligible']:\n        eligible += 1\n        assert info['window_s'] == planner.maximum_duration, ('window', index)\n        for _ in range(planner.sample_count):\n            paths.append(sample_planning_arrivals(rates, planner.maximum_duration, planner.rng, planner.event_cap))\n            if paths[-1].overflow:\n                break\n    assert len(paths) == info['sample_count'], ('sample_count', index)\n    path_events = sum(len(path.events) for path in paths)\n    path_draws = sum(path.random_draws for path in paths)\n    path_reads = sum(path.rate_reads for path in paths)\n    assert path_events == info['tagged_planning_events'], ('prefix events', index)\n    assert path_draws == info['planning_random_draws'] - info['background_planning_random_draws'], ('prefix draws', index)\n    assert path_reads == info['planning_rate_reads'] - info['background_planning_rate_reads'], ('prefix reads', index)\n    assert info['planning_events'] == path_events + info['background_planning_events'], ('all events', index)\n    assert info['planning_overflow'] == (any(path.overflow for path in paths) or info['background_rollout_overflow']), ('overflow', index)\n    tagged_events += path_events\n    prefix_draws += path_draws\n    prefix_reads += path_reads\n    if not (info['changed'] and not info['chosen_predicted_completion_s'] < info['baseline_predicted_completion_s']):\n        continue\n    assert paths and not info['planning_overflow'], ('changed overflow', index)\n    target = BackgroundCompetitionContinuousLaneRollout(model.options, unit['planning_seed'], 8, 128)\n    target.arrival_rates, target.decision_counter = rates, index\n    lane = frame['lane_ids'][0]\n    baseline = target.maxweight(model.options, queue, frame['available_before'], now, lane, frame['waiting_ages'])\n    incumbent, = baseline.selection.option_indices\n    rng_before = target.rng.getstate()\n    scored = target.score_background_roots(queue, frame['available_before'], now, lane, frame['waiting_ages'], paths)\n    assert target.rng.getstate() == rng_before, ('target scorer changed prefix RNG', index)\n    assert not scored.background_rollout_overflow, ('target scoring overflow', index)\n    actual, = frame['option_indices']\n    permitted = tuple(root for root in scored.costs if scored.squared_costs[root] <= scored.squared_costs[incumbent])\n    ordering = lambda root: (scored.costs[root], root != incumbent, target.durations[root], root)\n    chosen = min(permitted, key=ordering)\n    unconstrained = min(scored.costs, key=ordering)\n    assert actual == chosen, ('actual selected root', index)\n    assert actual != incumbent, ('changed root equals incumbent', index)\n    assert scored.costs[actual] < scored.costs[incumbent], ('exact S1', index)\n    assert scored.squared_costs[actual] <= scored.squared_costs[incumbent], ('exact S2', index)\n    rounded = {\n        'baseline_predicted_completion_s': float(scored.costs[incumbent] / len(paths)),\n        'chosen_predicted_completion_s': float(scored.costs[actual] / len(paths)),\n        'baseline_predicted_squared_flow_s2': float(scored.squared_costs[incumbent] / len(paths)),\n        'chosen_predicted_squared_flow_s2': float(scored.squared_costs[actual] / len(paths)),\n    }\n    assert all(info[key] == value for key, value in rounded.items()), ('rounded scores', index)\n    expected_work = {field.name: getattr(scored, field.name) for field in fields(scored)\n                     if field.name not in ('costs', 'squared_costs')}\n    expected_work['root_option_probes'] += baseline.root_option_probes\n    expected_work.update(\n        planning_events=path_events + scored.background_planning_events,\n        planning_random_draws=path_draws + scored.background_planning_random_draws,\n        planning_rate_reads=path_reads + scored.background_planning_rate_reads,\n        risk_filtered_candidates=scored.candidate_count - len(permitted),\n        risk_feasible_candidates=len(permitted), unconstrained_root_index=unconstrained,\n        risk_changed_unconstrained_root=actual != unconstrained)\n    assert all(info[key] == value for key, value in expected_work.items()), ('target work', index)\n    certificates.append(dict(frame_index=index, start=now, baseline_root=incumbent, actual_root=actual,\n        baseline_S1_sum=fraction(scored.costs[incumbent]), actual_S1_sum=fraction(scored.costs[actual]),\n        strict_S1_improvement_sum=fraction(scored.costs[incumbent] - scored.costs[actual]),\n        baseline_S2_sum=fraction(scored.squared_costs[incumbent]), actual_S2_sum=fraction(scored.squared_costs[actual]),\n        S2_nonincrease_sum=fraction(scored.squared_costs[incumbent] - scored.squared_costs[actual]),\n        rounded_scores=rounded, exact_S1_strict_improvement=True, exact_S2_nonincrease=True,\n        actual_exact_rule_root_matched=True, target_work_metadata_matched=True))\n\nassert certificates, 'expected at least one changed frame with lost float strictness'\nprint(json.dumps(dict(registered_at_utc=protocol['registered_at_utc'], unit_index=462,\n    unit=unit, trajectory_file=trajectory_file.name, prefix_frames_verified=len(saved['result']['frames']),\n    eligible_frames_verified=eligible, tagged_events_verified=tagged_events,\n    prefix_draws_verified=prefix_draws, prefix_rate_reads_verified=prefix_reads,\n    exact_target_frames_verified=len(certificates), certificates=certificates,\n    exact_proof_passed=True, all_other_frozen_checks_certified=False,\n    new_simulations=0, policy_calls=0, rng_reconstruction_only=True,\n    at_utc=datetime.now(timezone.utc).isoformat()), separators=(',', ':'), allow_nan=False))\n"
+}

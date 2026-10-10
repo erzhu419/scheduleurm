@@ -8,6 +8,11 @@ from threading import Lock
 from typing import Any, Callable, Optional
 
 try:
+    from scheduler_transport.budget import transport_waiting
+except ModuleNotFoundError:
+    from ..scheduler_transport.budget import transport_waiting
+
+try:
     from ..scheduler_watch.shutdown import WatcherShutdownRequested
 except ImportError:
     from scheduler_watch.shutdown import WatcherShutdownRequested
@@ -78,6 +83,10 @@ def _stage_cwd_candidate(
                 extra_excludes=extra,
             )
             if not ok:
+                if transport_waiting(msg):
+                    _notify(deps, "launch_staging_waiting",
+                            {"target": target_node, "reason": msg[:200]})
+                    return
                 if msg.startswith(("CAP_EXCEEDED:", "UNSAFE_CWD:")):
                     return
                 deps.staging_fails[cwd_key] = (deps.now(), msg[:200])
@@ -87,6 +96,10 @@ def _stage_cwd_candidate(
                     {"target": target_node, "cwd": cwd, "reason": msg[:200]},
                 )
     except Exception as exc:
+        if transport_waiting(exc):
+            _notify(deps, "launch_staging_waiting",
+                    {"target": target_node, "reason": str(exc)[:200]})
+            return
         deps.staging_fails[cwd_key] = (
             deps.now(),
             f"exception: {str(exc)[:150]}",
@@ -132,6 +145,11 @@ def _stage_ckpt_candidate(
                 source_location,
             )
             if not ok:
+                if transport_waiting(msg):
+                    _notify(deps, "launch_ckpt_staging_waiting",
+                            {"task_id": task_snapshot.get("id"), "target": target_node,
+                             "reason": msg[:200]})
+                    return
                 if msg.startswith("CAP_EXCEEDED:"):
                     return
                 deps.staging_fails[ckpt_key] = (deps.now(), msg[:200])
@@ -147,6 +165,11 @@ def _stage_ckpt_candidate(
                     },
                 )
     except Exception as exc:
+        if transport_waiting(exc):
+            _notify(deps, "launch_ckpt_staging_waiting",
+                    {"task_id": task_snapshot.get("id"), "target": target_node,
+                     "reason": str(exc)[:200]})
+            return
         deps.staging_fails[ckpt_key] = (
             deps.now(),
             f"exception: {str(exc)[:150]}",
@@ -187,6 +210,11 @@ def _stage_input_candidate(
             ok, msg = deps.stage_input_paths_for_launch(
                 task_snapshot, target_node)
             if not ok:
+                if transport_waiting(msg):
+                    _notify(deps, "launch_input_staging_waiting",
+                            {"task_id": task_snapshot.get("id"), "target": target_node,
+                             "reason": msg[:200]})
+                    return
                 deps.staging_fails[key] = (deps.now(), msg[:200])
                 _notify(
                     deps,
@@ -198,6 +226,11 @@ def _stage_input_candidate(
                     },
                 )
     except Exception as exc:
+        if transport_waiting(exc):
+            _notify(deps, "launch_input_staging_waiting",
+                    {"task_id": task_snapshot.get("id"), "target": target_node,
+                     "reason": str(exc)[:200]})
+            return
         deps.staging_fails[key] = (deps.now(), f"exception: {str(exc)[:150]}")
         _notify(
             deps,

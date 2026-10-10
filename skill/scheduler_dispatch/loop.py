@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import os
 import time as _time
 from typing import Any, Callable, Optional
 from scheduler_node.reservations import (
@@ -116,10 +115,24 @@ def _interleave_resource_lanes(tasks: list[dict]) -> list[dict]:
     return selected
 
 
-def select_dispatch_cycle_tasks(queued: list[dict], max_queued: Optional[int]) -> list[dict]:
+def select_dispatch_cycle_tasks(
+    queued: list[dict],
+    max_queued: Optional[int],
+    *,
+    wait_for_file_block_reason: Callable[[dict], str] | None = None,
+) -> list[dict]:
     """Bound one pass without letting a saturated resource lane block another."""
     if max_queued is None or max_queued <= 0 or len(queued) <= max_queued:
         return list(queued)
+    if wait_for_file_block_reason is not None:
+        ready, waiting = [], []
+        for task in queued:
+            (waiting if wait_for_file_block_reason(task) else ready).append(task)
+        selected = select_dispatch_cycle_tasks(ready, max_queued)
+        remaining = max_queued - len(selected)
+        if remaining > 0:
+            selected.extend(select_dispatch_cycle_tasks(waiting, remaining))
+        return selected
     buckets = {"high": [], "normal": [], "low": []}
     for task in queued:
         priority = str(task.get("priority") or "normal")
@@ -174,12 +187,6 @@ def _launch_input_state_cache_key(task: dict, target: str) -> tuple:
         for path in (task.get("stage_input_paths") or [])
         if str(path).strip()
     ]
-    if not paths:
-        paths = [
-            os.path.dirname(str(path).strip())
-            for path in (task.get("wait_for_files") or [])
-            if str(path).strip()
-        ]
     return str(target), tuple(dict.fromkeys(paths))
 
 
@@ -255,7 +262,11 @@ def do_dispatch(
     running_keys = queue_plan.running_keys
     identity_index = queue_plan.identity_index
     queued_all = queue_plan.queued
-    queued = select_dispatch_cycle_tasks(queued_all, max_queued)
+    gate_deps = deps.dispatch_task_gate_deps()
+    queued = select_dispatch_cycle_tasks(
+        queued_all, max_queued,
+        wait_for_file_block_reason=gate_deps.queued_wait_for_file_block_reason,
+    )
     global_batch_plan = queue_plan.global_batch_plan
     global_batch_enforced = _enforced_global_batch_event(
         queue_plan.global_batch_event)
@@ -324,14 +335,8 @@ def do_dispatch(
                 return deps.pick_placement(
                     exact, search_nodes, extra_allowed_nodes=extra_allowed_nodes)
             return deps.pick_placement(exact, search_nodes)
-        staged_input_target = str(task.get("stage_input_target") or "")
-        if staged_input_target and not task.get("require_node") and not task.get("preferred_node"):
-            hinted = dict(task)
-            hinted["preferred_node"] = staged_input_target
-            if extra_allowed_nodes is not None:
-                return deps.pick_placement(
-                    hinted, search_nodes, extra_allowed_nodes=extra_allowed_nodes)
-            return deps.pick_placement(hinted, search_nodes)
+        # Automatic input staging is only a placement tie-breaker, not an
+        # operator preference that sends an entire batch to its first target.
         if (
             hint
             and hint.get("node")
@@ -350,6 +355,8 @@ def do_dispatch(
         return deps.pick_placement(task, search_nodes)
 
     for task in queued:
+        if not task.get("stage_input_paths"):
+            task.pop("stage_input_target", None)
         task["last_dispatch_attempt_at"] = attempted_at
         try:
             prior_attempts = int(task.get("dispatch_attempt_count") or 0)
@@ -361,7 +368,7 @@ def do_dispatch(
             state=state,
             running_keys=running_keys,
             identity_index=identity_index,
-            deps=deps.dispatch_task_gate_deps(),
+            deps=gate_deps,
         )
         events.extend(gate_result.events)
         if gate_result.skip_task:
@@ -506,7 +513,7 @@ def do_dispatch(
                     events.append(stage_result.event)
                 continue
 
-        if target and (task.get("stage_input_paths") or task.get("wait_for_files")):
+        if target and task.get("stage_input_paths"):
             input_cache_key = _launch_input_state_cache_key(task, target)
             if input_cache_key not in launch_input_state_cache:
                 launch_input_state_cache[input_cache_key] = (

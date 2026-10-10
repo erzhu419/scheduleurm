@@ -26,11 +26,14 @@ class DispatchTaskGateResult:
 
 
 def _blocked_event(task: dict, reason: str) -> dict:
+    changed = task.get("last_block_reason") != reason
+    task["last_block_reason"] = reason
     return {
         "type": "blocked",
         "task_id": task["id"],
         "task": task,
         "reason": reason,
+        "reason_changed": changed,
     }
 
 
@@ -75,7 +78,6 @@ def apply_dispatch_task_gates(
             f"different cmd/cwd/env/result identities with signature {sig!r} "
             "can still run in parallel."
         )
-        task["last_block_reason"] = reason
         events.append(_blocked_event(task, reason))
         return DispatchTaskGateResult(skip_task=True, events=events)
 
@@ -86,7 +88,6 @@ def apply_dispatch_task_gates(
         identity_index,
     )
     if terminal_artifact_reason:
-        task["last_block_reason"] = terminal_artifact_reason
         events.append(_blocked_event(task, terminal_artifact_reason))
         return DispatchTaskGateResult(skip_task=True, events=events)
 
@@ -96,7 +97,6 @@ def apply_dispatch_task_gates(
         deps.queued_cpu_training_block_reason(task),
     ):
         if reason:
-            task["last_block_reason"] = reason
             events.append(_blocked_event(task, reason))
             return DispatchTaskGateResult(skip_task=True, events=events)
 

@@ -32,6 +32,8 @@ class LocalLaunchDeps:
     set_current_usage: Callable[[dict, int, int, float], Any]
     now: Callable[[], float]
     sleep: Callable[[float], Any]
+    cwd_probe_cache: dict | None = None
+    cwd_probe_locks: dict | None = None
 
 
 def _launch_log_path(task: dict, deps: LocalLaunchDeps) -> str:
@@ -54,6 +56,21 @@ def _prepare_inner_command(task: dict, remote_cwd: str, deps: LocalLaunchDeps) -
 
 
 def _probe_cwd(task: dict, remote_cwd: str, deps: LocalLaunchDeps) -> tuple[bool, str]:
+    if deps.cwd_probe_cache is None:
+        return _probe_cwd_uncached(task, remote_cwd, deps)
+    key = (task["node"], remote_cwd)
+    # A batch sharing one cwd needs one successful remote existence check.
+    with deps.cwd_probe_locks[key]:
+        checked_at = deps.cwd_probe_cache.get(key)
+        if checked_at is not None and 0 <= deps.now() - checked_at < 60:
+            return True, ""
+        result = _probe_cwd_uncached(task, remote_cwd, deps)
+        if result[0]:
+            deps.cwd_probe_cache[key] = deps.now()
+        return result
+
+
+def _probe_cwd_uncached(task: dict, remote_cwd: str, deps: LocalLaunchDeps) -> tuple[bool, str]:
     details = []
     rc_cwd = 1
     err_cwd = ""
@@ -234,13 +251,20 @@ def local_backend_launch(
     status_token, status_path = _runtime_exit_status(task)
     env_prefix = _env_prefix(task, deps, launch_token=status_token)
     wrapped_inner = _completion_wrapper(inner, status_path, status_token)
+    # run_on may replay this command through another SSH route after losing
+    # its reply. Return the same acknowledgement instead of starting twice.
+    receipt_path = shlex.quote(status_path + ".launch")
+    receipt_lock = shlex.quote(status_path + ".launch.lock")
     full_cmd = (
         f"mkdir -p {shlex.quote(os.path.dirname(log_path))}; "
+        f"exec 9>{receipt_lock}; flock -x 9; "
+        f"if test -s {receipt_path}; then cat {receipt_path}; exit 0; fi; "
         f"rm -f -- {shlex.quote(status_path)}; "
         f"cd {shlex.quote(remote_cwd)} && {env_prefix} "
-        f"setsid bash -c {shlex.quote(wrapped_inner)} > {shlex.quote(log_path)} 2>&1 < /dev/null & "
-        "pid=$!; echo PID=$pid; "
-        "awk '{print \"START_TICKS=\" $22}' /proc/$pid/stat 2>/dev/null || true"
+        f"setsid bash -c {shlex.quote(wrapped_inner)} > {shlex.quote(log_path)} 2>&1 < /dev/null 9>&- & "
+        "pid=$!; { echo PID=$pid; "
+        "awk '{print \"START_TICKS=\" $22}' /proc/$pid/stat 2>/dev/null || true; "
+        f"}} > {receipt_path}; cat {receipt_path}"
     )
     try:
         rc, out, err = deps.run_on(task["node"], full_cmd, timeout=20, check=False)

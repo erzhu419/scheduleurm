@@ -1,0 +1,761 @@
+{
+  "analyzed_at_utc": "2026-10-03T03:23:41.619443+00:00",
+  "source_cross_registered_at_utc": "2026-10-02T13:54:41.413129+00:00",
+  "source_forecast_registered_at_utc": "2026-10-03T03:05:46.132942+00:00",
+  "records": [
+    {
+      "tape_id": "gpu_b:R2:load0.95:seed41",
+      "seed": 41,
+      "frame_index": 11,
+      "parent_root": 2,
+      "native_root": 5,
+      "anchor_s": 24.1420191577807,
+      "tau_max_s": 14.972417070959636,
+      "horizon_absolute_s": 54.086853299699975,
+      "horizon_relative_s": 29.944834141919273,
+      "actual_window": {
+        "total": {
+          "jobs": 25,
+          "parent": {
+            "waiting_area": 118.81302110167064,
+            "inflight_area": 125.17338300739245,
+            "common_area": 243.98640410906307
+          },
+          "native": {
+            "waiting_area": 99.17600050880014,
+            "inflight_area": 121.82450161238268,
+            "common_area": 221.00050212118282
+          },
+          "delta_parent_minus_native": {
+            "waiting_area": 19.6370205928705,
+            "inflight_area": 3.3488813950097764,
+            "common_area": 22.985901987880275
+          }
+        },
+        "sources": {
+          "initial_visible": {
+            "jobs": 9,
+            "parent": {
+              "waiting_area": 54.654588731660375,
+              "inflight_area": 69.19806637895402,
+              "common_area": 123.85265511061439
+            },
+            "native": {
+              "waiting_area": 38.74690536247249,
+              "inflight_area": 71.53520506292554,
+              "common_area": 110.28211042539803
+            },
+            "delta_parent_minus_native": {
+              "waiting_area": 15.907683369187886,
+              "inflight_area": -2.3371386839715242,
+              "common_area": 13.570544685216362
+            }
+          },
+          "initial_committed": {
+            "jobs": 1,
+            "parent": {
+              "waiting_area": 0.0,
+              "inflight_area": 0.5828339174691664,
+              "common_area": 0.5828339174691664
+            },
+            "native": {
+              "waiting_area": 0.0,
+              "inflight_area": 0.5828339174691664,
+              "common_area": 0.5828339174691664
+            },
+            "delta_parent_minus_native": {
+              "waiting_area": 0.0,
+              "inflight_area": 0.0,
+              "common_area": 0.0
+            }
+          },
+          "real_prefix": {
+            "jobs": 6,
+            "parent": {
+              "waiting_area": 36.391103045255285,
+              "inflight_area": 46.803841999975226,
+              "common_area": 83.19494504523051
+            },
+            "native": {
+              "waiting_area": 32.76924373299067,
+              "inflight_area": 38.81801485903527,
+              "common_area": 71.58725859202593
+            },
+            "delta_parent_minus_native": {
+              "waiting_area": 3.6218593122646183,
+              "inflight_area": 7.9858271409399535,
+              "common_area": 11.607686453204572
+            }
+          },
+          "real_background": {
+            "jobs": 9,
+            "parent": {
+              "waiting_area": 27.767329324754982,
+              "inflight_area": 8.588640710994028,
+              "common_area": 36.35597003574901
+            },
+            "native": {
+              "waiting_area": 27.659851413336987,
+              "inflight_area": 10.88844777295268,
+              "common_area": 38.54829918628967
+            },
+            "delta_parent_minus_native": {
+              "waiting_area": 0.10747791141799468,
+              "inflight_area": -2.299807061958653,
+              "common_area": -2.192329150540658
+            }
+          }
+        },
+        "per_coordinate": [
+          {
+            "coordinate": 0,
+            "workload": "gpu_cnn_torch_resnet50",
+            "jobs": 5,
+            "parent": {
+              "waiting_area": 22.315630917495753,
+              "inflight_area": 8.321714778895476,
+              "common_area": 30.63734569639123
+            },
+            "native": {
+              "waiting_area": 32.89102245876897,
+              "inflight_area": 18.507252401650256,
+              "common_area": 51.39827486041923
+            },
+            "delta_parent_minus_native": {
+              "waiting_area": -10.57539154127322,
+              "inflight_area": -10.18553762275478,
+              "common_area": -20.760929164028
+            }
+          },
+          {
+            "coordinate": 1,
+            "workload": "gpu_heavy_jax_matmul",
+            "jobs": 11,
+            "parent": {
+              "waiting_area": 19.111948681657818,
+              "inflight_area": 52.07650369832139,
+              "common_area": 71.18845237997921
+            },
+            "native": {
+              "waiting_area": 29.291808375455627,
+              "inflight_area": 34.444956073110546,
+              "common_area": 63.73676444856618
+            },
+            "delta_parent_minus_native": {
+              "waiting_area": -10.179859693797809,
+              "inflight_area": 17.631547625210843,
+              "common_area": 7.4516879314130335
+            }
+          },
+          {
+            "coordinate": 2,
+            "workload": "gpu_llm_distilgpt2",
+            "jobs": 9,
+            "parent": {
+              "waiting_area": 77.38544150251707,
+              "inflight_area": 64.77516453017557,
+              "common_area": 142.16060603269264
+            },
+            "native": {
+              "waiting_area": 36.99316967457554,
+              "inflight_area": 68.87229313762187,
+              "common_area": 105.8654628121974
+            },
+            "delta_parent_minus_native": {
+              "waiting_area": 40.39227182794153,
+              "inflight_area": -4.097128607446287,
+              "common_area": 36.29514322049524
+            }
+          }
+        ],
+        "population_at_H": {
+          "parent": {
+            "waiting": 3,
+            "inflight": 4
+          },
+          "native": {
+            "waiting": 4,
+            "inflight": 4
+          }
+        },
+        "births_anchor_to_H": 15,
+        "prefix_births": 6,
+        "background_births": 9,
+        "exact_common_area_delta": [
+          3234978113356011,
+          140737488355328
+        ]
+      },
+      "forecast": {
+        "mean_parent_minus_native": {
+          "cost": 9.973073692128919,
+          "common_area": 16.93474504859809,
+          "waiting_area": -1.7787747102695464,
+          "inflight_area": 18.713519758867633,
+          "terminal_cost": -6.96167135646917
+        },
+        "mean_source_area_deltas": {
+          "visible": {
+            "waiting_area": 2.1134942284802793,
+            "inflight_area": 14.850955061246493,
+            "common_area": 16.964449289726772
+          },
+          "prefix": {
+            "waiting_area": 2.4585592296514465,
+            "inflight_area": -0.0720707027966423,
+            "common_area": 2.386488526854804
+          },
+          "background": {
+            "waiting_area": -6.3508281684012715,
+            "inflight_area": 3.9346354004177835,
+            "common_area": -2.4161927679834885
+          },
+          "committed": {
+            "waiting_area": 0.0,
+            "inflight_area": 0.0,
+            "common_area": 0.0
+          }
+        },
+        "mean_class_area_deltas": [
+          {
+            "coordinate": 0,
+            "waiting_area": -20.838707063940053,
+            "inflight_area": 1.0982245072396664,
+            "common_area": -19.740482556700385
+          },
+          {
+            "coordinate": 1,
+            "waiting_area": -1.0907596227511407,
+            "inflight_area": 5.346278855496514,
+            "common_area": 4.255519232745374
+          },
+          {
+            "coordinate": 2,
+            "waiting_area": 20.150691976421644,
+            "inflight_area": 12.269016396131454,
+            "common_area": 32.4197083725531
+          }
+        ],
+        "samples": 8
+      },
+      "actual_reported_cohort_effect": {
+        "delta_T_mean": -0.04301648606747932,
+        "delta_T_common_p90": 1.2197847460378668,
+        "delta_900_unfinished": -2,
+        "delta_1200_unfinished": 0
+      },
+      "ordering": {
+        "actual_common_area": "native",
+        "forecast_common_area": "native",
+        "forecast_with_MW_terminal": "native",
+        "actual_reported_cohort_mean": "parent",
+        "opposite_realized_and_forecast_window_order": false,
+        "opposite_actual_window_and_cohort_order": true
+      }
+    },
+    {
+      "tape_id": "gpu_b:R2:load0.95:seed42",
+      "seed": 42,
+      "frame_index": 39,
+      "parent_root": 7,
+      "native_root": 4,
+      "anchor_s": 165.6198134511175,
+      "tau_max_s": 14.972417070959636,
+      "horizon_absolute_s": 195.56464759303677,
+      "horizon_relative_s": 29.944834141919273,
+      "actual_window": {
+        "total": {
+          "jobs": 36,
+          "parent": {
+            "waiting_area": 205.2731989539477,
+            "inflight_area": 174.0833539329514,
+            "common_area": 379.3565528868991
+          },
+          "native": {
+            "waiting_area": 204.1891951470531,
+            "inflight_area": 174.0833539329514,
+            "common_area": 378.2725490800045
+          },
+          "delta_parent_minus_native": {
+            "waiting_area": 1.0840038068946,
+            "inflight_area": 0.0,
+            "common_area": 1.0840038068946
+          }
+        },
+        "sources": {
+          "initial_visible": {
+            "jobs": 8,
+            "parent": {
+              "waiting_area": 32.59836772973236,
+              "inflight_area": 85.55999741112478,
+              "common_area": 118.15836514085714
+            },
+            "native": {
+              "waiting_area": 31.51436392283776,
+              "inflight_area": 85.55999741112478,
+              "common_area": 117.07436133396254
+            },
+            "delta_parent_minus_native": {
+              "waiting_area": 1.0840038068946,
+              "inflight_area": 0.0,
+              "common_area": 1.0840038068946
+            }
+          },
+          "initial_committed": {
+            "jobs": 3,
+            "parent": {
+              "waiting_area": 0.0,
+              "inflight_area": 10.880581900968366,
+              "common_area": 10.880581900968366
+            },
+            "native": {
+              "waiting_area": 0.0,
+              "inflight_area": 10.880581900968366,
+              "common_area": 10.880581900968366
+            },
+            "delta_parent_minus_native": {
+              "waiting_area": 0.0,
+              "inflight_area": 0.0,
+              "common_area": 0.0
+            }
+          },
+          "real_prefix": {
+            "jobs": 7,
+            "parent": {
+              "waiting_area": 89.78241969885534,
+              "inflight_area": 37.090994182196255,
+              "common_area": 126.87341388105159
+            },
+            "native": {
+              "waiting_area": 89.78241969885534,
+              "inflight_area": 37.090994182196255,
+              "common_area": 126.87341388105159
+            },
+            "delta_parent_minus_native": {
+              "waiting_area": 0.0,
+              "inflight_area": 0.0,
+              "common_area": 0.0
+            }
+          },
+          "real_background": {
+            "jobs": 18,
+            "parent": {
+              "waiting_area": 82.89241152536002,
+              "inflight_area": 40.55178043866201,
+              "common_area": 123.44419196402202
+            },
+            "native": {
+              "waiting_area": 82.89241152536002,
+              "inflight_area": 40.55178043866201,
+              "common_area": 123.44419196402202
+            },
+            "delta_parent_minus_native": {
+              "waiting_area": 0.0,
+              "inflight_area": 0.0,
+              "common_area": 0.0
+            }
+          }
+        },
+        "per_coordinate": [
+          {
+            "coordinate": 0,
+            "workload": "gpu_cnn_torch_resnet50",
+            "jobs": 8,
+            "parent": {
+              "waiting_area": 34.10199275752109,
+              "inflight_area": 78.95392052478945,
+              "common_area": 113.05591328231054
+            },
+            "native": {
+              "waiting_area": 34.10199275752109,
+              "inflight_area": 78.95392052478945,
+              "common_area": 113.05591328231054
+            },
+            "delta_parent_minus_native": {
+              "waiting_area": 0.0,
+              "inflight_area": 0.0,
+              "common_area": 0.0
+            }
+          },
+          {
+            "coordinate": 1,
+            "workload": "gpu_heavy_jax_matmul",
+            "jobs": 11,
+            "parent": {
+              "waiting_area": 72.30013607163988,
+              "inflight_area": 27.47397039874795,
+              "common_area": 99.77410647038784
+            },
+            "native": {
+              "waiting_area": 62.83765588689894,
+              "inflight_area": 27.47397039874795,
+              "common_area": 90.3116262856469
+            },
+            "delta_parent_minus_native": {
+              "waiting_area": 9.46248018474094,
+              "inflight_area": 0.0,
+              "common_area": 9.46248018474094
+            }
+          },
+          {
+            "coordinate": 2,
+            "workload": "gpu_llm_distilgpt2",
+            "jobs": 17,
+            "parent": {
+              "waiting_area": 98.87107012478674,
+              "inflight_area": 67.655463009414,
+              "common_area": 166.52653313420075
+            },
+            "native": {
+              "waiting_area": 107.24954650263308,
+              "inflight_area": 67.655463009414,
+              "common_area": 174.9050095120471
+            },
+            "delta_parent_minus_native": {
+              "waiting_area": -8.37847637784634,
+              "inflight_area": 0.0,
+              "common_area": -8.37847637784634
+            }
+          }
+        ],
+        "population_at_H": {
+          "parent": {
+            "waiting": 14,
+            "inflight": 6
+          },
+          "native": {
+            "waiting": 14,
+            "inflight": 6
+          }
+        },
+        "births_anchor_to_H": 25,
+        "prefix_births": 7,
+        "background_births": 18,
+        "exact_common_area_delta": [
+          19069996643745,
+          17592186044416
+        ]
+      },
+      "forecast": {
+        "mean_parent_minus_native": {
+          "cost": 11.783056377349798,
+          "common_area": 9.288698738040974,
+          "waiting_area": 7.4168028077451424,
+          "inflight_area": 1.8718959302958313,
+          "terminal_cost": 2.4943576393088236
+        },
+        "mean_source_area_deltas": {
+          "visible": {
+            "waiting_area": -3.2951612295557737,
+            "inflight_area": -2.905421046677219,
+            "common_area": -6.200582276232993
+          },
+          "prefix": {
+            "waiting_area": 10.075960074322149,
+            "inflight_area": 3.9190118536511562,
+            "common_area": 13.994971927973305
+          },
+          "background": {
+            "waiting_area": 0.636003962978768,
+            "inflight_area": 0.8583051233218939,
+            "common_area": 1.494309086300662
+          },
+          "committed": {
+            "waiting_area": 0.0,
+            "inflight_area": 0.0,
+            "common_area": 0.0
+          }
+        },
+        "mean_class_area_deltas": [
+          {
+            "coordinate": 0,
+            "waiting_area": -3.5592399237686356,
+            "inflight_area": 2.985311249121551,
+            "common_area": -0.5739286746470847
+          },
+          {
+            "coordinate": 1,
+            "waiting_area": 15.902468177987428,
+            "inflight_area": 3.0827267403166028,
+            "common_area": 18.985194918304032
+          },
+          {
+            "coordinate": 2,
+            "waiting_area": -4.926425446473649,
+            "inflight_area": -4.196142059142322,
+            "common_area": -9.122567505615972
+          }
+        ],
+        "samples": 8
+      },
+      "actual_reported_cohort_effect": {
+        "delta_T_mean": 0.0,
+        "delta_T_common_p90": 0.0,
+        "delta_900_unfinished": 0,
+        "delta_1200_unfinished": 0
+      },
+      "ordering": {
+        "actual_common_area": "native",
+        "forecast_common_area": "native",
+        "forecast_with_MW_terminal": "native",
+        "actual_reported_cohort_mean": "tie",
+        "opposite_realized_and_forecast_window_order": false,
+        "opposite_actual_window_and_cohort_order": false
+      }
+    },
+    {
+      "tape_id": "gpu_b:R2:load0.95:seed43",
+      "seed": 43,
+      "frame_index": 29,
+      "parent_root": 4,
+      "native_root": 5,
+      "anchor_s": 69.95098891603772,
+      "tau_max_s": 14.972417070959636,
+      "horizon_absolute_s": 99.89582305795699,
+      "horizon_relative_s": 29.944834141919273,
+      "actual_window": {
+        "total": {
+          "jobs": 31,
+          "parent": {
+            "waiting_area": 125.3882708692149,
+            "inflight_area": 111.20407748677363,
+            "common_area": 236.59234835598852
+          },
+          "native": {
+            "waiting_area": 119.64328945326967,
+            "inflight_area": 116.78972840533785,
+            "common_area": 236.4330178586075
+          },
+          "delta_parent_minus_native": {
+            "waiting_area": 5.744981415945233,
+            "inflight_area": -5.585650918564227,
+            "common_area": 0.15933049738100635
+          }
+        },
+        "sources": {
+          "initial_visible": {
+            "jobs": 7,
+            "parent": {
+              "waiting_area": 37.526491488811246,
+              "inflight_area": 38.190150261085876,
+              "common_area": 75.71664174989712
+            },
+            "native": {
+              "waiting_area": 26.58686961417297,
+              "inflight_area": 50.27310600947216,
+              "common_area": 76.85997562364513
+            },
+            "delta_parent_minus_native": {
+              "waiting_area": 10.939621874638277,
+              "inflight_area": -12.082955748386283,
+              "common_area": -1.1433338737480057
+            }
+          },
+          "initial_committed": {
+            "jobs": 1,
+            "parent": {
+              "waiting_area": 0.0,
+              "inflight_area": 1.0031464943564714,
+              "common_area": 1.0031464943564714
+            },
+            "native": {
+              "waiting_area": 0.0,
+              "inflight_area": 1.0031464943564714,
+              "common_area": 1.0031464943564714
+            },
+            "delta_parent_minus_native": {
+              "waiting_area": 0.0,
+              "inflight_area": 0.0,
+              "common_area": 0.0
+            }
+          },
+          "real_prefix": {
+            "jobs": 8,
+            "parent": {
+              "waiting_area": 48.62631151538251,
+              "inflight_area": 40.435071520064554,
+              "common_area": 89.06138303544707
+            },
+            "native": {
+              "waiting_area": 51.39343576540125,
+              "inflight_area": 37.249593273256195,
+              "common_area": 88.64302903865745
+            },
+            "delta_parent_minus_native": {
+              "waiting_area": -2.767124250018739,
+              "inflight_area": 3.1854782468083584,
+              "common_area": 0.4183539967896195
+            }
+          },
+          "real_background": {
+            "jobs": 15,
+            "parent": {
+              "waiting_area": 39.23546786502115,
+              "inflight_area": 31.575709211266727,
+              "common_area": 70.81117707628788
+            },
+            "native": {
+              "waiting_area": 41.662984073695455,
+              "inflight_area": 28.26388262825303,
+              "common_area": 69.92686670194848
+            },
+            "delta_parent_minus_native": {
+              "waiting_area": -2.427516208674305,
+              "inflight_area": 3.3118265830136977,
+              "common_area": 0.8843103743393925
+            }
+          }
+        },
+        "per_coordinate": [
+          {
+            "coordinate": 0,
+            "workload": "gpu_cnn_torch_resnet50",
+            "jobs": 3,
+            "parent": {
+              "waiting_area": 31.200366200057886,
+              "inflight_area": 8.093888054475514,
+              "common_area": 39.2942542545334
+            },
+            "native": {
+              "waiting_area": 26.849541738340307,
+              "inflight_area": 8.093888054475514,
+              "common_area": 34.94342979281582
+            },
+            "delta_parent_minus_native": {
+              "waiting_area": 4.350824461717579,
+              "inflight_area": 0.0,
+              "common_area": 4.350824461717579
+            }
+          },
+          {
+            "coordinate": 1,
+            "workload": "gpu_heavy_jax_matmul",
+            "jobs": 14,
+            "parent": {
+              "waiting_area": 32.871102855118906,
+              "inflight_area": 45.59686125977164,
+              "common_area": 78.46796411489055
+            },
+            "native": {
+              "waiting_area": 39.85542227873759,
+              "inflight_area": 42.80403580048953,
+              "common_area": 82.65945807922712
+            },
+            "delta_parent_minus_native": {
+              "waiting_area": -6.984319423618686,
+              "inflight_area": 2.7928254592821133,
+              "common_area": -4.191493964336573
+            }
+          },
+          {
+            "coordinate": 2,
+            "workload": "gpu_llm_distilgpt2",
+            "jobs": 14,
+            "parent": {
+              "waiting_area": 61.316801814038115,
+              "inflight_area": 57.51332817252647,
+              "common_area": 118.83012998656459
+            },
+            "native": {
+              "waiting_area": 52.938325436191775,
+              "inflight_area": 65.89180455037281,
+              "common_area": 118.83012998656459
+            },
+            "delta_parent_minus_native": {
+              "waiting_area": 8.37847637784634,
+              "inflight_area": -8.37847637784634,
+              "common_area": 0.0
+            }
+          }
+        ],
+        "population_at_H": {
+          "parent": {
+            "waiting": 8,
+            "inflight": 6
+          },
+          "native": {
+            "waiting": 9,
+            "inflight": 6
+          }
+        },
+        "births_anchor_to_H": 23,
+        "prefix_births": 8,
+        "background_births": 15,
+        "exact_common_area_delta": [
+          700742938119,
+          4398046511104
+        ]
+      },
+      "forecast": {
+        "mean_parent_minus_native": {
+          "cost": 7.854783937122976,
+          "common_area": 5.240574415238132,
+          "waiting_area": 11.856716825870345,
+          "inflight_area": -6.616142410632212,
+          "terminal_cost": 2.614209521884843
+        },
+        "mean_source_area_deltas": {
+          "visible": {
+            "waiting_area": 7.041927665930343,
+            "inflight_area": -6.985620328245328,
+            "common_area": 0.05630733768501539
+          },
+          "prefix": {
+            "waiting_area": 1.9536363163998836,
+            "inflight_area": 1.8777594829841335,
+            "common_area": 3.831395799384017
+          },
+          "background": {
+            "waiting_area": 2.8611528435401175,
+            "inflight_area": -1.5082815653710175,
+            "common_area": 1.3528712781691001
+          },
+          "committed": {
+            "waiting_area": 0.0,
+            "inflight_area": 0.0,
+            "common_area": 0.0
+          }
+        },
+        "mean_class_area_deltas": [
+          {
+            "coordinate": 0,
+            "waiting_area": -1.3065757044423678,
+            "inflight_area": 1.9452164361356408,
+            "common_area": 0.638640731693273
+          },
+          {
+            "coordinate": 1,
+            "waiting_area": 6.178068765405531,
+            "inflight_area": -5.197913586561324,
+            "common_area": 0.9801551788442064
+          },
+          {
+            "coordinate": 2,
+            "waiting_area": 6.9852237649071816,
+            "inflight_area": -3.363445260206529,
+            "common_area": 3.621778504700653
+          }
+        ],
+        "samples": 8
+      },
+      "actual_reported_cohort_effect": {
+        "delta_T_mean": -5.728156731474314,
+        "delta_T_common_p90": -45.23293578063098,
+        "delta_900_unfinished": -7,
+        "delta_1200_unfinished": 0
+      },
+      "ordering": {
+        "actual_common_area": "native",
+        "forecast_common_area": "native",
+        "forecast_with_MW_terminal": "native",
+        "actual_reported_cohort_mean": "parent",
+        "opposite_realized_and_forecast_window_order": false,
+        "opposite_actual_window_and_cohort_order": true
+      }
+    }
+  ],
+  "cached_service_suffixes_read": 6,
+  "new_simulation_executions": 0,
+  "actual_MW_terminal_cost_computed": false,
+  "interpretation": "Exact all-unfinished waiting/inflight area from the anchor to the same fixed H in two cached real finite arms. Past cost cancels. Forecast means use eight original sampled paths; the actual area uses one realized tape, so opposite signs identify a forecast-realization ranking disagreement rather than establish systematic arrival-law error. Window-versus-later-cohort signs distinguish short-window ranking from subsequent propagation. Actual continuation after H is not the synthetic fixed MW terminal drain, which cannot be inferred from these factual jobs."
+}

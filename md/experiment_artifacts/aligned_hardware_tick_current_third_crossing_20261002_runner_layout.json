@@ -1,0 +1,153 @@
+{
+  "returncode": 0,
+  "result": {
+    "protocol_path": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/md/experiment_artifacts/aligned_hardware_current_policy_third_root_labels_20261002_protocol.json",
+    "protocol_bytes": 2632518,
+    "registered_at_utc": "2026-10-01T21:43:45.997408+00:00",
+    "alignment_registered_at_utc": "2026-10-01T16:58:40.486156+00:00",
+    "previous_trajectories": "md/experiment_artifacts/aligned_hardware_two_step_bg_incumbent_original_risk_development_20261001_trajectories.json.gz",
+    "factual_exists": true,
+    "planning_samples": 8,
+    "planning_event_cap": 128,
+    "clocks": {
+      "environment_arrival_end": 1200.0,
+      "arrival_horizon": 900.0,
+      "observation_end": 1200.0,
+      "birth_cohort": [
+        300.0,
+        900.0
+      ]
+    },
+    "targets": [
+      {
+        "target_index": 0,
+        "tape_id": "gpu_a:R2:load0.95:seed43",
+        "frame_index": 76,
+        "node": "gpu_a",
+        "load": 0.95,
+        "seed": 43,
+        "new_native_option_index": 5,
+        "native_choice_kind": "third",
+        "anchor": {
+          "frame_index": 76,
+          "factual_option_index": 4,
+          "replacement_option_index": 3,
+          "visible_cohort_jobs": 15
+        }
+      },
+      {
+        "target_index": 1,
+        "tape_id": "gpu_b:R2:load0.95:seed42",
+        "frame_index": 125,
+        "node": "gpu_b",
+        "load": 0.95,
+        "seed": 42,
+        "new_native_option_index": 5,
+        "native_choice_kind": "third",
+        "anchor": {
+          "frame_index": 125,
+          "factual_option_index": 3,
+          "replacement_option_index": 4,
+          "visible_cohort_jobs": 16
+        }
+      }
+    ],
+    "label_shards": [
+      {
+        "path": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/md/experiment_artifacts/aligned_hardware_current_policy_third_root_labels_20261002_shard_00.json",
+        "bytes": 20158,
+        "keys": [
+          "index",
+          "registered_at_utc",
+          "record",
+          "work",
+          "status",
+          "executed_reuse_work",
+          "new_suffix_executions",
+          "wall_s"
+        ],
+        "record_keys": [
+          "tape_id",
+          "frame_index",
+          "node",
+          "load",
+          "seed",
+          "new_native_option_index",
+          "outcomes",
+          "checks"
+        ],
+        "checks": {
+          "null": {
+            "first_proposal_context_match_passed": true,
+            "native_suffix_checks_passed": true,
+            "null_reproduction_passed": true,
+            "calls": 139
+          },
+          "third": {
+            "first_proposal_context_match_passed": true,
+            "native_suffix_checks_passed": true,
+            "null_reproduction_passed": false,
+            "calls": 136
+          }
+        },
+        "outcomes": {
+          "delta_T_mean": -0.5956319107019041,
+          "delta_T_common_p90": -4.568137208349015,
+          "delta_900_unfinished": -6,
+          "delta_1200_unfinished": 0,
+          "delta_middle_queue_area_s": -133.16029776282357
+        },
+        "new_suffix_executions": 2,
+        "wall_s": 162.7442790484056
+      },
+      {
+        "path": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/md/experiment_artifacts/aligned_hardware_current_policy_third_root_labels_20261002_shard_01.json",
+        "bytes": 20152,
+        "keys": [
+          "index",
+          "registered_at_utc",
+          "record",
+          "work",
+          "status",
+          "executed_reuse_work",
+          "new_suffix_executions",
+          "wall_s"
+        ],
+        "record_keys": [
+          "tape_id",
+          "frame_index",
+          "node",
+          "load",
+          "seed",
+          "new_native_option_index",
+          "outcomes",
+          "checks"
+        ],
+        "checks": {
+          "null": {
+            "first_proposal_context_match_passed": true,
+            "native_suffix_checks_passed": true,
+            "null_reproduction_passed": true,
+            "calls": 130
+          },
+          "third": {
+            "first_proposal_context_match_passed": true,
+            "native_suffix_checks_passed": true,
+            "null_reproduction_passed": false,
+            "calls": 135
+          }
+        },
+        "outcomes": {
+          "delta_T_mean": -2.2415862463261575,
+          "delta_T_common_p90": -14.085880418989518,
+          "delta_900_unfinished": -11,
+          "delta_1200_unfinished": 0,
+          "delta_middle_queue_area_s": -917.5572899656527
+        },
+        "new_suffix_executions": 2,
+        "wall_s": 201.60828170506284
+      }
+    ],
+    "retained_suffix_files": []
+  }
+}

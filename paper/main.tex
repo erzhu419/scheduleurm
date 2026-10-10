@@ -63,6 +63,7 @@
   \input{generated/unified_hardware_results_fallback.tex}%
 }
 \input{generated/or_generalization_v7_results.tex}
+\input{generated/bg_confirmation_results.tex}
 
 \MANUSCRIPTNO{OPRE-2026-XXXX}
 \RUNAUTHOR{Anonymous}
@@ -87,17 +88,20 @@ support-loss bound; diagonal scaling handles heterogeneous service units, and
 a variable-duration result states the corresponding frame conditions.  Lean
 formalizes these implications.  Scheduleurm evaluates the framework using
 measured lower-service actions, exact maximization of a canonical frame score,
-and causal arrival replay.  On \UnifiedOnlineComparisonCount{} online traces
-where all registered policies completed, legacy-to-candidate geometric-mean
-ratios were \UnifiedOnlineLegacyMakespanGeoRatio{} for makespan and
-\UnifiedOnlineLegacyMeanFlowGeoRatio{} for mean flow.  Of
-\UnifiedRegisteredOnlineTraceCount{} registered online traces,
-\UnifiedExcludedIncompleteOnlineTraceCount{} were excluded from these ratios
-because at least one policy left an unfinished tail.  Dedicated-action
-stability certificates and finite-trace performance evidence remain separate
-model instantiations.  The results identify both the utility of explicit loss
-accounting and the modeling obligations required to certify a measured
-scheduler.
+and causal arrival replay.  The frozen BackgroundCompetitionContinuousLaneRollout
+(BG) was independently confirmed on \BGConfirmationBlockCount{} joint
+arrival/service blocks (\BGConfirmationTapeCount{} literal tapes and
+\BGConfirmationTrajectoryCount{} new trajectories).  At the 1200-second
+observation end, mean-calibrated service reduced restricted mean flow from
+\BGConfirmationMeanMW{} to \BGConfirmationMeanBG{}
+(\BGConfirmationMeanRelative{}) and common P90 from
+\BGConfirmationMeanPNinetyMW{} to \BGConfirmationMeanPNinetyBG{}
+(\BGConfirmationMeanPNinetyRelative{}); empirical service produced analogous
+reductions of \BGConfirmationEmpiricalRelative{} and
+\BGConfirmationEmpiricalPNinetyRelative{}.  The 1200-second unfinished cohort
+was zero for both policies.  This finite-slice evidence is conditional on the
+frozen service bank and planning streams; it is separate from the stability
+certificate and does not guarantee deployment performance.
 }%
 
 \KEYWORDS{stochastic processing networks; MaxWeight scheduling; heterogeneous clusters; graphics-processing-unit co-location; robust optimization; formal verification; queueing networks}
@@ -218,6 +222,9 @@ coverage, and live-state dry-run trace checks identify which assumptions are
 certified and which remain finite-slice claims.  These results connect the
 proof obligations to scheduler artifacts; they do not replace a universal
 fabric-cover theorem or an exhaustive full-stack scheduler competition.
+The principal BG policy is evaluated separately under a frozen phase-derived
+service bank: a fresh twelve-block confirmation preserves the original
+performance gates under both mean and empirical service execution.
 Frozen FJSP, MMRCPSP, and port holdouts additionally test whether the finite
 trajectory-action interface survives domain-specific feasibility and
 reconfiguration constraints; they are portability evidence, not automatic
@@ -1498,6 +1505,56 @@ Stratum & Comparisons & Makespan geomean & Mean-flow geomean & Makespan min & Me
 Poisson and bursty arrivals at the four registered load factors.}
 \end{table}
 
+\subsection{Frozen BG confirmation under service variation}
+\label{subsec:bg-confirmation}
+
+The principal algorithmic result is a separate confirmation of the frozen
+BackgroundCompetitionContinuousLaneRollout (BG).  The confirmation reuses the
+same measured action catalogue and planning rule, but generates twelve fresh
+joint arrival/service seed blocks.  Each block contains eight hardware/load
+cells, giving \BGConfirmationTapeCount{} literal tapes and
+\BGConfirmationTrajectoryCount{} new policy trajectories across the two
+policies and two execution conditions.  The selector sees only the frozen
+mean service prediction and the completion state already revealed by the
+empirical-service executor; the service draws are made after the action is
+chosen.
+
+\begin{table}[t]
+\TABLE{Independent confirmation of BG against exact MaxWeight.\label{tab:bg-confirmation}}{
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+Execution condition & MW mean & BG mean & Relative change & MW common P90 & BG common P90 & Relative change \\
+\midrule
+Mean service & \BGConfirmationMeanMW{} & \BGConfirmationMeanBG{} & \BGConfirmationMeanRelative{} &
+\BGConfirmationMeanPNinetyMW{} & \BGConfirmationMeanPNinetyBG{} & \BGConfirmationMeanPNinetyRelative{} \\
+Empirical service & \BGConfirmationEmpiricalMW{} & \BGConfirmationEmpiricalBG{} & \BGConfirmationEmpiricalRelative{} &
+\BGConfirmationEmpiricalPNinetyMW{} & \BGConfirmationEmpiricalPNinetyBG{} & \BGConfirmationEmpiricalPNinetyRelative{} \\
+\bottomrule
+\end{tabular}
+}{Mean and P90 are evaluated at the 1200-second observation end.  Mean is the
+restricted mean flow over the cohort; common P90 is recomputed on the paired
+completion intersection for each tape and then averaged over the twelve blocks.}
+\end{table}
+
+Both execution conditions pass the preregistered mean, group-tail, and pooled
+unfinished-work gates.  At the 900-second checkpoint, unfinished cohort jobs
+change from \BGConfirmationMeanUnfinishedNineHundredMW{} to
+\BGConfirmationMeanUnfinishedNineHundredBG{} under mean service and from
+\BGConfirmationEmpiricalUnfinishedNineHundredMW{} to
+\BGConfirmationEmpiricalUnfinishedNineHundredBG{} under empirical service;
+the corresponding 1200-second counts are zero for both policies.  The result
+is conditional on the frozen phase-derived service bank and planning streams:
+the twelve blocks, rather than the 384 trajectories, are the replication
+units, and no confidence interval is inferred from pooling them with the
+three-block development panel.  Category-level tradeoffs remain visible: the
+mean-service condition has \BGConfirmationMeanCategoryMeanRegressions{} of 24
+class cells with mean regression and \BGConfirmationMeanCategoryPNinetyRegressions{}
+with P90 regression; the empirical-service condition has
+\BGConfirmationEmpiricalCategoryMeanRegressions{} and
+\BGConfirmationEmpiricalCategoryPNinetyRegressions{}, respectively.  Thus the
+confirmation supports an overall finite-slice BG gain, not per-class
+dominance, a random-service stability theorem, or a live-placement guarantee.
+
 The ablation experiment changes support-only and delay-only scoring, bounded
 penalties, statewise loaded actions, migration actions, and the profile
 tie-break rule.  Table~\ref{tab:ablation-results} evaluates
@@ -2199,9 +2256,13 @@ q11 unfinished tails require measured singleton service or a separately declared
 batch-arrival model before full finite-stream completion can be guaranteed.
 The dedicated load reference is a declared service-mixture scale, not a
 certificate of the full state-dependent loaded capacity region.  The present
-three-seed replay and finite-action construction also leave open independent
-confirmation and a computational budget-to-support-loss guarantee.  These are
-substantive extensions beyond the current drift-accounting instantiation.
+BG confirmation narrows the uncertainty about overall finite-slice performance,
+but it remains conditional on the phase-derived service bank and fixed planning
+streams; it does not provide a random-service stability theorem, a per-class
+dominance guarantee, or live-placement evidence.  A computational
+budget-to-support-loss guarantee for the finite-feature representative
+construction also remains open.  These are substantive extensions beyond the
+current drift-accounting instantiation.
 
 \section{Conclusion}
 \label{sec:conclusion}
@@ -2236,6 +2297,14 @@ action unions remove the corresponding registered-family dominance cases while
 retaining those failures.  The evidence therefore supports portability of the
 interface without claiming domain-wide optimality or automatic transfer of the
 server stochastic model.
+
+The frozen BG policy supplies the principal finite-slice performance result:
+its twelve-block confirmation improves both restricted mean flow and common P90
+under mean-calibrated and empirical service execution, while keeping the
+900-second and 1200-second unfinished-work gates within the preregistered
+limits.  Because the confirmation is conditional on a phase-derived service
+bank and fixed planning streams, this result is reported as performance
+evidence alongside, rather than as a consequence of, the stability theorem.
 
 The contribution is therefore not a universal claim about every future workload
 or every external scheduler implementation.  It is a mathematical and empirical

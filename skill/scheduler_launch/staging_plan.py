@@ -165,26 +165,11 @@ def _launch_input_candidate_identity(
     task: dict, target: str, node_configs: dict,
 ) -> tuple:
     """Cheap per-pass identity; content hashing remains in the staging backend."""
-    explicit = [
+    paths = [
         os.path.realpath(os.path.expanduser(str(path)))
         for path in (task.get("stage_input_paths") or [])
         if str(path).strip()
     ]
-    if explicit:
-        paths = explicit
-    else:
-        cwd = os.path.realpath(os.path.expanduser(str(task.get("cwd") or "")))
-        paths = []
-        for raw_path in task.get("wait_for_files") or []:
-            parent = os.path.dirname(
-                os.path.realpath(os.path.expanduser(str(raw_path)))
-            )
-            try:
-                if parent == cwd or os.path.commonpath([parent, cwd]) != cwd:
-                    continue
-            except ValueError:
-                continue
-            paths.append(parent)
     target_info = node_configs.get(target, {}) or {}
     target_scope = str(
         target_info.get("shared_workspace_group") or target)
@@ -215,7 +200,10 @@ def collect_launch_staging_plan(
         soft_require_pool = deps.hpc_cpu_pool_soft_require_nodes(task)
         allowed = set(task.get("allowed_nodes") or [])
         targets = _target_nodes_for_task(task, deps)
-        input_target = str(task.get("stage_input_target") or "")
+        input_target = (
+            str(task.get("stage_input_target") or "")
+            if task.get("stage_input_paths") else ""
+        )
         stage_options: list[tuple[str, dict]] = []
         if not task.get("skip_launch_staging"):
             for target in targets:

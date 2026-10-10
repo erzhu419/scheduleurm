@@ -173,6 +173,7 @@ def build_launch_resume_runtime_exports(namespace: Mapping[str, Any]) -> dict[st
                 load_state=_ns(namespace, "load_state"),
                 save_state=_ns(namespace, "save_state"),
                 task_requires_resume_scan=_ns(namespace, "_task_requires_resume_scan"),
+                queued_wait_for_file_block_reason=_ns(namespace, "_queued_wait_for_file_block_reason"),
                 resume_scan_key=_ns(namespace, "_resume_scan_key"),
                 cached_resume_locations_for_task=_cached_resume_locations_for_task,
                 scan_resume_locations=scan_resume_locations,

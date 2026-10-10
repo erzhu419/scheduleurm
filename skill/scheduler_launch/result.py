@@ -6,6 +6,11 @@ import time
 from dataclasses import dataclass
 from typing import Any, Callable
 
+try:
+    from scheduler_transport.budget import transport_waiting
+except ModuleNotFoundError:
+    from ..scheduler_transport.budget import transport_waiting
+
 
 @dataclass(frozen=True)
 class LaunchResultDeps:
@@ -27,6 +32,16 @@ def apply_launch_result_to_task(
 ) -> bool:
     """Apply launch success/failure to a state task. Returns True on success."""
     if not ok:
+        if transport_waiting(msg):
+            task["status"] = "queued"
+            task["last_block_reason"] = str(msg)
+            task["node"] = None
+            task["gpu_idx"] = None
+            task.pop("launching_started_at", None)
+            task.pop("launch_token", None)
+            events.append({"type": "transport_waiting", "task_id": task["id"],
+                           "task": task, "reason": str(msg)})
+            return False
         if isinstance(msg, str) and msg.startswith("CLAIM_RACE:"):
             attempted_node = task.get("node")
             deps.remember_claim_intent(task, attempted_node)

@@ -229,7 +229,7 @@ _RUNTIME_IDENTITY_FLAGS = frozenset({
     "--method", "--algorithm", "--algo", "--baseline", "--baselines",
     "--implementation", "--protocol", "--heldout", "--problem",
     "--family", "--env", "--profile", "--phase", "--mode", "--variant",
-    "--experiment-variant", "--policy-variant", "--line",
+    "--experiment-variant", "--policy-variant", "--line", "--kind", "--arm",
 })
 
 _RUNTIME_IDENTITY_SWITCHES = frozenset({
@@ -268,6 +268,8 @@ def _runtime_cmd_identity_from_argv(tokens: list[str]) -> dict[str, str]:
         token = tokens[index]
         if token == "-m" and index + 1 < len(tokens):
             identity["__entrypoint__"] = f"module:{str(tokens[index + 1]).strip().lower()}"
+            if index + 2 < len(tokens) and re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]*", tokens[index + 2]):
+                identity["__subcommand__"] = tokens[index + 2].lower()
             index += 2
             continue
         if token.endswith((".py", ".sh")) or ".py:" in token:
@@ -292,6 +294,8 @@ def runtime_cmd_identity(cmd: str) -> dict[str, str]:
 
 def _runtime_identities_compatible(left: dict, right: dict) -> bool:
     if ("__entrypoint__" in left) != ("__entrypoint__" in right):
+        return False
+    if left.get("__subcommand__") != right.get("__subcommand__"):
         return False
     for flag in (*_RUNTIME_IDENTITY_FLAGS, "__entrypoint__"):
         if flag in left and flag in right and left[flag] != right[flag]:

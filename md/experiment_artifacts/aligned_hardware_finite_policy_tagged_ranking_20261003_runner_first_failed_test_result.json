@@ -1,0 +1,23 @@
+{
+  "at_utc": "2026-10-02T16:18:48.252126+00:00",
+  "test_task": "t126947",
+  "status": "failed",
+  "exit_code": 1,
+  "node": "node005",
+  "tests_expected": 3,
+  "tests_passed": null,
+  "authentic_marker_probe": null,
+  "official_diagnosis": {
+    "is_crash": true,
+    "reason": "launcher exit-status sentinel recorded rc=1; err_pattern: Traceback (most recent call, AssertionError",
+    "tail": "de\n    exec(code, run_globals)\n  File \"/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/skill/tests/test_finite_policy_tagged_rollout.py\", line 226, in <module>\n    test_free_finite_consumes_complete_native_calls_after_full_tree_including_idle()\n  File \"/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/skill/tests/test_finite_policy_tagged_rollout.py\", line 150, in test_free_finite_consumes_complete_native_calls_after_full_tree_including_idle\n    assert result[\"paired_complete\"] and free[\"idle_calls\"] == 1 and free[\"calls\"] == len(traced) == 2\nAssertionError",
+    "lifetime_s": 31,
+    "log_size": 1050,
+    "log_path": "/tmp/sched_t126947.log",
+    "success_marker": null
+  },
+  "log_tail": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nTraceback (most recent call last):\n  File \"/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/lib/python3.10/runpy.py\", line 196, in _run_module_as_main\n    return _run_code(code, main_globals, None,\n  File \"/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/lib/python3.10/runpy.py\", line 86, in _run_code\n    exec(code, run_globals)\n  File \"/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/skill/tests/test_finite_policy_tagged_rollout.py\", line 226, in <module>\n    test_free_finite_consumes_complete_native_calls_after_full_tree_including_idle()\n  File \"/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/skill/tests/test_finite_policy_tagged_rollout.py\", line 150, in test_free_finite_consumes_complete_native_calls_after_full_tree_including_idle\n    assert result[\"paired_complete\"] and free[\"idle_calls\"] == 1 and free[\"calls\"] == len(traced) == 2\nAssertionError\n",
+  "log_read_exit_code": 0,
+  "controller_started": false,
+  "protocol_registered": false
+}

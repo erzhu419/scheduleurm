@@ -204,6 +204,28 @@ def test_inline_projection_source_gets_high_confidence():
     assert task["eta_detail"] == "parsed inline_eta from scheduler log tail"
 
 
+def test_real_json_projection_replaces_hist_and_records_auditable_progress():
+    import json
+    from skill import eta_tracker
+
+    task = _task("json-train", log_path="/tmp/t.log", elapsed=700)
+    tail = "SCHEDULEURM_ETA_TOTAL_UNITS=20000\n" + "\n".join(
+        json.dumps({"continuation_updates": current, "elapsed_seconds": stamp})
+        for current, stamp in ((1000, 391), (2000, 491), (3000, 591)))
+    output = "===ETA_LOG_json-train===\n" + tail
+    refresh_eta_from_logs(
+        {"tasks": [task]}, tail_outputs={"n1": output},
+        deps=_deps(by_node={"n1": [(task, "/tmp/t.log")]},
+                   runtime_total_by_id={"json-train": 4000}, eta_tracker=eta_tracker))
+
+    assert task["eta_seconds"] == 1700
+    assert task["eta_source"] == "progress_window"
+    assert task["runtime_total_units"] == 20000
+    assert task["runtime_current_unit"] == 3000
+    assert "continuation_updates=3000/20000" in task["last_progress_line"]
+    assert "0.100s/update" in task["eta_detail"]
+
+
 def test_bapr_projection_overrides_tracker_projection_and_detail():
     task = _task("bapr", log_path="/tmp/b.log", elapsed=100)
     projection = {
@@ -266,6 +288,37 @@ def test_probe_failure_sets_error_and_uses_fallback_only_when_eta_missing():
     assert missing["eta_probe_error"].startswith("log tail probe failed")
     assert existing["eta_seconds"] == 77
     assert existing["eta_probe_error"].startswith("log tail probe failed")
+
+
+def test_partial_batch_failure_preserves_failed_tasks_eta_without_discarding_success():
+    success = _task('success', log_path='/tmp/s.log', elapsed=100)
+    failed = _task('failed', log_path='/tmp/f.log', elapsed=100, eta_seconds=321, eta_source='progress_window')
+    refresh_eta_from_logs({'tasks': [success, failed]}, tail_outputs={'n1': '===ETA_LOG_success===\nPROGRESS\n'},
+                          deps=_deps(by_node={'n1': [(success, '/tmp/s.log'), (failed, '/tmp/f.log')]}))
+    assert success['eta_seconds'] == 200
+    assert 'eta_probe_error' not in success
+    assert failed['eta_seconds'] == 321
+    assert failed['eta_source'] == 'progress_window'
+    assert failed['eta_probe_error'].startswith('log tail probe failed')
+
+
+def test_unknown_contract_phase_clears_old_completed_progress_without_finishing_job():
+    from skill import eta_tracker
+    task = _task('phase', log_path='/tmp/p.log', elapsed=300, eta_source='progress_window',
+                 eta_confidence='medium', runtime_est_source='progress_window',
+                 runtime_current_unit=100, runtime_total_units=100, runtime_total_s_est=300,
+                 runtime_eta_s_est=0, runtime_unit_s_est=3, last_progress_line='epoch=100/100')
+    tail = ('===ETA_LOG_phase===\nSCHEDULEURM_PROGRESS {"current":0,"total":3,'
+            '"phase":"evaluation","phase_index":2,"phase_count":3,"elapsed_seconds":0}\n'
+            '1/1 [00:10<00:00, 1.00it/s]\n')
+    refresh_eta_from_logs({'tasks': [task]}, tail_outputs={'n1': tail},
+                          deps=_deps(by_node={'n1': [(task, '/tmp/p.log')]}, eta_tracker=eta_tracker))
+    assert task['status'] == 'running'
+    assert task['eta_seconds'] == 0
+    assert 'eta_source' not in task
+    assert 'runtime_current_unit' not in task
+    assert 'runtime_total_units' not in task
+    assert 'last_progress_line' not in task
 
 
 def test_probed_task_ids_filter_skips_unprobed_tasks():

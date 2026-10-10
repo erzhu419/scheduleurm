@@ -17,13 +17,15 @@ from .service_cache import (
 from .tasksets import empirical_replay_specs
 
 
-RUN_ROOT = Path("/home/researcher/.claude/scheduler/experiments/runs")
+RUN_ROOT = Path.home() / ".claude/scheduler/experiments/runs"
 REPO_ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_ROOT = REPO_ROOT / "md" / "experiment_artifacts"
 
 
 def build_default_cache() -> ServiceRateCache:
-    cache = ServiceRateCache()
+    # Ship measured summaries so replay does not require the operator's raw runs.
+    snapshot = ARTIFACT_ROOT / "default_service_cache.json"
+    cache = ServiceRateCache.load(snapshot) if snapshot.is_file() else ServiceRateCache()
     _add_summary_dir(
         cache,
         RUN_ROOT / "module12_resac_ant_real_dense_gpu_b_gpu1_20260603_002" / "reports",

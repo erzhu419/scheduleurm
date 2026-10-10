@@ -5,6 +5,7 @@ from dataclasses import replace
 from types import SimpleNamespace
 
 from skill.scheduler_commands import why
+from skill.scheduler_node.gates import gpu_task_cap_for_task
 
 
 @contextmanager
@@ -27,6 +28,7 @@ def _deps(*, state=None, history=None, nodes=None, node_configs=None, gpu_fits=N
         node_is_windows=lambda node: False,
         node_cpu_fallback_block_reason=lambda task, node, node_info: None,
         gpu_fits=gpu_fits or (lambda task, gpu, node_info: True),
+        gpu_task_cap_for_task=gpu_task_cap_for_task,
         algorithm_gpu_fit_block_reason=lambda task, gpu, node_info: None,
         hard_rule_bypassed=lambda *args, **kwargs: False,
         gpu_freeze_line_mb=lambda total: total // 3 + 512,
@@ -37,6 +39,7 @@ def _deps(*, state=None, history=None, nodes=None, node_configs=None, gpu_fits=N
         load_state=lambda: state,
         load_history=lambda: history,
         probe_all=lambda: list(nodes),
+        counts_against_node_concurrency=lambda task: task.get("status") in ("running", "launching"),
         apply_cpu_slot_accounting_to_nodes=lambda state_arg, nodes_arg: None,
         claim_enabled_for=lambda node: False,
         format_claim_intent_hint_for_task=lambda task, node, snap: "",
@@ -154,6 +157,60 @@ def test_cmd_why_applies_startup_cpu_reservations_before_fit_analysis(capsys):
     assert "node-reject: cpu: need 12, free 0" in out
 
 
+def test_cmd_why_counts_running_and_launching_gpu_slots_not_completed_tasks(capsys):
+    task = {"id": "queued", "status": "queued", "est_vram_mb": 430}
+    active = [
+        {"id": f"active-{gpu}-{i}", "status": "launching" if i == 3 else "running",
+         "node": "gpu_a", "gpu_idx": gpu}
+        for gpu in (0, 1) for i in range(4)
+    ]
+    completed = {"id": "old", "status": "done", "node": "gpu_a", "gpu_idx": 0}
+    node = {"name": "gpu_a", "alive": True, "free_cpu": 8, "free_ram_mb": 64000,
+            "gpus": [{"idx": gpu, "used_mb": 1000, "free_mb": 10000,
+                      "total_mb": 12000, "util_pct": 100} for gpu in (0, 1)]}
+    deps = _deps(
+        state={"tasks": [task, *active, completed]}, nodes=[node],
+        node_configs={"gpu_a": {"max_tasks_per_gpu": 4}},
+    )
+
+    why.cmd_why(SimpleNamespace(id="queued", lock_timeout=None), deps=deps)
+
+    out = capsys.readouterr().out
+    assert "GPU0(tasks=4/4)" in out
+    assert "GPU1(tasks=4/4)" in out
+    assert "FITS" not in out
+
+
+def test_explain_node_fit_does_not_offer_an_unpinned_gpu_when_required_gpu_is_full():
+    task = {"id": "pinned", "est_vram_mb": 430, "require_gpu_idx": 0}
+    node = {"name": "gpu_a", "alive": True, "gpus": [
+        {"idx": 0, "running_task_count": 4, "free_mb": 10000},
+        {"idx": 1, "running_task_count": 0, "free_mb": 10000},
+    ]}
+    deps = _deps(node_configs={"gpu_a": {"max_tasks_per_gpu": 4}})
+
+    got = why.explain_node_fit(task, node, deps=deps)
+
+    assert got == "no-GPU-fit: GPU0(tasks=4/4)"
+
+
+def test_explain_node_fit_honors_small_job_cap_and_explicit_cap_override():
+    task = {"id": "small", "est_vram_mb": 430}
+    node = {"name": "gpu_b", "alive": True, "gpus": [
+        {"idx": 0, "running_task_count": 4, "free_mb": 10000},
+    ]}
+    deps = _deps(node_configs={"gpu_b": {
+        "max_tasks_per_gpu": 4, "small_vram_task_threshold_mb": 1024,
+        "small_vram_max_tasks_per_gpu": 6,
+    }})
+    assert "FITS" in why.explain_node_fit(task, node, deps=deps)
+
+    node["gpus"][0]["running_task_count"] = 6
+    assert "tasks=6/6" in why.explain_node_fit(task, node, deps=deps)
+    overridden = replace(deps, hard_rule_bypassed=lambda rule, *args, **kwargs: rule == "max_tasks_per_gpu")
+    assert "FITS" in why.explain_node_fit(task, node, deps=overridden)
+
+
 def test_cmd_why_reports_campaign_reserved_node_for_foreign_task(tmp_path, capsys):
     task = {
         "id": "bapr", "status": "queued", "signature": "BAPR/new",
@@ -179,5 +236,8 @@ def test_cmd_why_reports_campaign_reserved_node_for_foreign_task(tmp_path, capsy
     why.cmd_why(SimpleNamespace(id="bapr", lock_timeout=None), deps=deps)
 
     out = capsys.readouterr().out
-    assert "gpu_b : BLOCKED: node reserved for another campaign" in out
+    assert any(
+        line.strip().startswith("gpu_b") and line.split(":", 1)[-1].strip() == "BLOCKED: node reserved for another campaign"
+        for line in out.splitlines()
+    )
     assert "gpu_b : FITS" not in out

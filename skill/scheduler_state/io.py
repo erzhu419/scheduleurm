@@ -33,13 +33,13 @@ def load_json(path: str | Path, default, *, now_fn: Callable[[], float] = time.t
         ) from exc
 
 
-def atomic_write_json(path: str | Path, obj) -> None:
+def atomic_write_json(path: str | Path, obj, *, indent: int | None = 2) -> None:
     """Write JSON via tmp + fsync + replace so interrupted writes keep old or new state."""
     p = Path(path)
     p.parent.mkdir(parents=True, exist_ok=True)
     tmp = p.with_suffix(p.suffix + ".tmp")
     with open(tmp, "w") as f:
-        json.dump(obj, f, indent=2)
+        f.write(json.dumps(obj, indent=indent, separators=(",", ":") if indent is None else None))
         f.flush()
         os.fsync(f.fileno())
     os.replace(tmp, p)
@@ -183,4 +183,4 @@ def save_scheduler_state(
         min_tasks=empty_guard_min_tasks,
         min_active=empty_guard_min_active,
     )
-    atomic_write_json(queue_file, state)
+    atomic_write_json(queue_file, state, indent=None)

@@ -1,0 +1,193 @@
+{
+  "analysis": "cached_BG_confirmation_paired_seed_block_intervals",
+  "source_registered_at_utc": "2026-09-30T05:57:23.785226+00:00",
+  "source_result": "md/experiment_artifacts/aligned_hardware_background_competition_continuous_confirmation_20260930.json",
+  "source_protocol": "md/experiment_artifacts/aligned_hardware_background_competition_continuous_confirmation_20260930_protocol.json",
+  "source_decision": "BACKGROUND_COMPETITION_CONTINUOUS_CONFIRMATION_PASS",
+  "new_trajectories": 0,
+  "birth_cohort": [
+    300.0,
+    900.0
+  ],
+  "snapshots": {
+    "arrival_horizon": {
+      "labels": [
+        "maxweight",
+        "arrival_rollout"
+      ],
+      "cutoff": "arrival_horizon",
+      "time": 900.0,
+      "paired_tapes": 96,
+      "arrival_seed_blocks": 12,
+      "cells_per_block": 8,
+      "arrival_seeds": [
+        100001,
+        100002,
+        100003,
+        100004,
+        100005,
+        100006,
+        100007,
+        100008,
+        100009,
+        100010,
+        100011,
+        100012
+      ],
+      "bootstrap_replicates": 20000,
+      "bootstrap_seed": 20261003,
+      "bootstrap_generator": "Python random.Random.randrange; 12 whole blocks with replacement",
+      "interval": "pointwise percentile 95%; linear interpolation at 0.025/0.975",
+      "scope": "Exploratory paired actual-arrival seed-block uncertainty, conditional on fixed planning streams; no multiplicity adjustment or new PASS gate.",
+      "metrics": {
+        "restricted_mean_flow_s": {
+          "estimable": true,
+          "baseline": 29.786358490026203,
+          "candidate": 27.54818439186647,
+          "aggregation": "equal_tape_mean",
+          "paired_difference": {
+            "estimate": -2.238174098159732,
+            "ci95": [
+              -2.55243861336915,
+              -1.9257103832263012
+            ]
+          },
+          "relative_change": {
+            "estimate": -0.0751409105248354,
+            "ci95": [
+              -0.08715514658506392,
+              -0.0636159896021379
+            ],
+            "undefined_bootstrap_replicates": 0,
+            "definition": "candidate_mean / baseline_mean - 1"
+          }
+        },
+        "common_p90_flow_s": {
+          "estimable": true,
+          "baseline": 57.94393414255794,
+          "candidate": 48.74246656054656,
+          "aggregation": "equal_tape_mean",
+          "paired_difference": {
+            "estimate": -9.201467582011382,
+            "ci95": [
+              -10.38480591213794,
+              -8.015914447191166
+            ]
+          },
+          "relative_change": {
+            "estimate": -0.15879949675790483,
+            "ci95": [
+              -0.1805854595920941,
+              -0.1359653327296667
+            ],
+            "undefined_bootstrap_replicates": 0,
+            "definition": "candidate_mean / baseline_mean - 1"
+          }
+        },
+        "unfinished_jobs": {
+          "estimable": true,
+          "baseline": 1682.0,
+          "candidate": 1554.0,
+          "aggregation": "total_jobs",
+          "paired_difference": {
+            "estimate": -128.0,
+            "ci95": [
+              -163.0,
+              -91.0
+            ]
+          }
+        }
+      }
+    },
+    "observation_end": {
+      "labels": [
+        "maxweight",
+        "arrival_rollout"
+      ],
+      "cutoff": "observation_end",
+      "time": 1200.0,
+      "paired_tapes": 96,
+      "arrival_seed_blocks": 12,
+      "cells_per_block": 8,
+      "arrival_seeds": [
+        100001,
+        100002,
+        100003,
+        100004,
+        100005,
+        100006,
+        100007,
+        100008,
+        100009,
+        100010,
+        100011,
+        100012
+      ],
+      "bootstrap_replicates": 20000,
+      "bootstrap_seed": 20261003,
+      "bootstrap_generator": "Python random.Random.randrange; 12 whole blocks with replacement",
+      "interval": "pointwise percentile 95%; linear interpolation at 0.025/0.975",
+      "scope": "Exploratory paired actual-arrival seed-block uncertainty, conditional on fixed planning streams; no multiplicity adjustment or new PASS gate.",
+      "metrics": {
+        "restricted_mean_flow_s": {
+          "estimable": true,
+          "baseline": 31.688645905913624,
+          "candidate": 29.050233220763538,
+          "aggregation": "equal_tape_mean",
+          "paired_difference": {
+            "estimate": -2.6384126851500866,
+            "ci95": [
+              -2.997795845894095,
+              -2.2826747519465918
+            ]
+          },
+          "relative_change": {
+            "estimate": -0.08326050576549615,
+            "ci95": [
+              -0.09615882084200156,
+              -0.07108590474216615
+            ],
+            "undefined_bootstrap_replicates": 0,
+            "definition": "candidate_mean / baseline_mean - 1"
+          }
+        },
+        "common_p90_flow_s": {
+          "estimable": true,
+          "baseline": 65.74107426055343,
+          "candidate": 54.544194481221425,
+          "aggregation": "equal_tape_mean",
+          "paired_difference": {
+            "estimate": -11.196879779332008,
+            "ci95": [
+              -13.19980997504399,
+              -9.351673989980839
+            ]
+          },
+          "relative_change": {
+            "estimate": -0.17031787060483838,
+            "ci95": [
+              -0.2036690887207963,
+              -0.13519514680055061
+            ],
+            "undefined_bootstrap_replicates": 0,
+            "definition": "candidate_mean / baseline_mean - 1"
+          }
+        },
+        "unfinished_jobs": {
+          "estimable": true,
+          "baseline": 2.0,
+          "candidate": 2.0,
+          "aggregation": "total_jobs",
+          "paired_difference": {
+            "estimate": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      }
+    }
+  },
+  "design_path": "md/experiment_artifacts/aligned_hardware_BG_confirmation_block_intervals_20261003_design.json"
+}

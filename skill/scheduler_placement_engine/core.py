@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable
 
+from scheduler_cpu.capacity import reserved_cpu_slots_for_task
+
 
 @dataclass(frozen=True)
 class PlacementRuntime:
@@ -265,6 +267,16 @@ def pick_placement(task, nodes, runtime: PlacementRuntime, extra_allowed_nodes=N
                 return []
         ok, _why = runtime.node_resources_ok(task, n, node_info)
         if not ok: return []
+        score_free_cpu = runtime.node_schedulable_cpu_free(task, n, node_info)[0]
+        total_cpu = max(1, int(node_info.get("cpu_cores") or n.get("total_cpu") or 1))
+        # Include earlier launch intents and staging reservations in this batch,
+        # without counting live usage and declared slots twice.
+        planned_cpu = max(
+            total_cpu - min(total_cpu, score_free_cpu),
+            int(n.get("cpu_slot_reserved") or 0),
+        ) + reserved_cpu_slots_for_task(task, default_cpu_cores=1)
+        post_cpu_pressure = planned_cpu / total_cpu
+        staging_penalty = 0 if task.get("stage_input_target") == n["name"] else 1
         out = []
         if cpu_only or cpu_fallback:
             node_info = runtime.nodes_by_name.get(n["name"], {})
@@ -272,11 +284,8 @@ def pick_placement(task, nodes, runtime: PlacementRuntime, extra_allowed_nodes=N
             fallback_penalty = 2 if cpu_fallback and not cpu_only else 0
             rt = runtime.candidate_runtime_seconds(task, n["name"], None)
             rt_unknown = 1 if rt <= 0 else 0
-            score_free_cpu = runtime.node_schedulable_cpu_free(task, n, node_info)[0]
-            if soft_require_pool and cpu_only:
-                score = (fallback_penalty, cpu_labor_bonus, -score_free_cpu, rt_unknown, rt, -n["free_ram_mb"])
-            else:
-                score = (fallback_penalty, rt_unknown, rt, cpu_labor_bonus, -score_free_cpu, -n["free_ram_mb"])
+            score = (fallback_penalty, post_cpu_pressure, cpu_labor_bonus,
+                     -score_free_cpu, staging_penalty, rt_unknown, rt, -n["free_ram_mb"])
             out.append((score, n["name"], None))
         else:
             for g in n["gpus"]:
@@ -301,22 +310,18 @@ def pick_placement(task, nodes, runtime: PlacementRuntime, extra_allowed_nodes=N
                         continue
                 if not gpu_fits(task, g, node_info_with_state, runtime):
                     continue
-                # Empty-first placement: if a node has a genuinely idle GPU, use it before
-                # stacking onto a warm card. Among warm fitting cards, prefer the lowest
-                # post-placement memory pressure. With the 1/3+grace freeze rule, packing
-                # the fullest warm card first just pushes it to the freeze line while a
-                # cooler sibling stays underused.
-                fits_remaining = g["free_mb"] - (task.get("est_vram_mb") or 0)
+                # A tracked launch occupies a card even before VRAM grows.
+                # Balance projected host/card pressure before historical speed.
                 used = int(g.get("used_mb") or 0)
                 total = max(1, int(g.get("total_mb") or 1))
                 need = int(task.get("est_vram_mb") or 0)
-                occupied = 1 if used >= runtime.gpu_empty_used_mb else 0
+                gpu_task_count = int(g.get("running_task_count") or 0)
+                occupied = int(used >= runtime.gpu_empty_used_mb or gpu_task_count > 0)
                 rt = runtime.candidate_runtime_seconds(task, n["name"], g["idx"])
                 rt_unknown = 1 if rt <= 0 else 0
-                if occupied:
-                    score = (occupied, rt_unknown, rt, float(used + need) / float(total), used + need)
-                else:
-                    score = (occupied, rt_unknown, rt, fits_remaining)
+                score = (occupied, post_cpu_pressure, gpu_task_count + 1,
+                         float(used + need) / float(total), staging_penalty,
+                         rt_unknown, rt, used + need)
                 score = runtime.algorithm_gpu_score(task, n, g, score)
                 out.append((score, n["name"], g["idx"]))
         return out
@@ -531,6 +536,12 @@ def build_no_fit_reason(
         if not reported_reasons:
             reported_reasons = list(reasons[:4])
         diagnostic_highlights = (require, prefer)
+    elif allowed_for_reason:
+        reported_reasons = [
+            reason for reason in reasons
+            if reason.split("=", 1)[0] in allowed_for_reason
+        ]
+        diagnostic_highlights = (require, prefer, *tuple(highlight_nodes or ()))
     else:
         reported_reasons = list(reasons[:4])
         diagnostic_highlights = (require, prefer, *tuple(highlight_nodes or ()))

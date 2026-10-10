@@ -10,6 +10,7 @@ from scheduler_eta.tail_snapshot import EtaTailOutputDeps, EtaTailSnapshotDeps
 from .all import ProbeAllDeps
 from .node import ProbeNodeDeps
 from scheduler_remote.exec import RemoteExecDeps
+from scheduler_transport.budget import transport_guard, transport_load
 from scheduler_running.lifecycle import RunningLifecycleDeps
 from scheduler_running.snapshots import (
     BatchCheckRunningDeps,
@@ -59,6 +60,11 @@ def build_remote_exec_deps(namespace: Mapping[str, Any]) -> RemoteExecDeps:
         sigkill=signal_mod.SIGKILL,
         sigterm=signal_mod.SIGTERM,
         route_probe_max_workers=_ns(namespace, "PROBE_ROUTE_MAX_WORKERS"),
+        transport_guard=lambda args: transport_guard(
+            args, root=_ns(namespace, "STATE_DIR") / "transport_coord",
+            check_shutdown=_ns(namespace, "_raise_if_watcher_shutdown")),
+        transport_load=lambda route: transport_load(
+            _ns(namespace, "STATE_DIR") / "transport_coord", route),
     )
 
 
@@ -86,7 +92,7 @@ def build_windows_node_probe_deps(namespace: Mapping[str, Any]) -> WindowsNodePr
         node_configs=_ns(namespace, "NODES"),
         queue_tasks=_queue_tasks,
         run_windows_ps=_ns(namespace, "_run_windows_ps"),
-        run_subprocess=_ns(namespace, "subprocess").run,
+        run_subprocess=_ns(namespace, "_run_control_subprocess"),
         ssh_base_args=_ns(namespace, "_ssh_base_args"),
         windows_probe_error_hint=_ns(namespace, "_windows_probe_error_hint"),
         env_cpu_load_source=os_mod.environ.get("SCHEDULEURM_WINDOWS_CPU_LOAD_SOURCE"),
@@ -134,6 +140,7 @@ def build_probe_all_deps(namespace: Mapping[str, Any]) -> ProbeAllDeps:
         probe_all_route_failures=_ns(namespace, "_probe_all_route_failures"),
         probe_node=_ns(namespace, "probe_node"),
         fold_claims_into_probe=_ns(namespace, "_fold_claims_into_probe"),
+        load_probe_cache=_ns(namespace, "_load_node_probe_cache"),
     )
 
 
@@ -238,6 +245,10 @@ def build_eta_tail_output_deps(namespace: Mapping[str, Any]) -> EtaTailOutputDep
         run_windows_ps=_ns(namespace, "_run_windows_ps"),
         run_on=_ns(namespace, "run_on"),
         timeout_s=_ns(namespace, "ETA_TAIL_PROBE_TIMEOUT_S"),
+        remote_path_for_node=_ns(namespace, "_remote_path_for_node"),
+        remote_python=lambda node: (
+            _ns(namespace, "NODES").get(node, {}).get("resume_scan_python") or "python3"
+        ),
     )
 
 

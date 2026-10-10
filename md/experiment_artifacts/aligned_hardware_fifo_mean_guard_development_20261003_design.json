@@ -1,0 +1,29 @@
+{
+  "status": "IMPLEMENTED_READY_FOR_SERVER_VALIDATION",
+  "created_at_utc": "2026-10-03T08:41:04.303649+00:00",
+  "experiment": "fifo_waiting_mean_admissibility_single_change_v1",
+  "base": "FIFO J=S1_tag+sum(W_tag^2)/tau_max, coefficient1; finite two-current continuation",
+  "source_fifo_registered_at_utc": "2026-10-03T07:36:59.549436+00:00",
+  "scientific_reference_stem": "aligned_hardware_parallel_root_sharded_20261001",
+  "scientific_reference_epoch": "2026-10-01T03:00:01.222638+00:00",
+  "single_intervention": "After original ordinary BG S2<=MW risk membership, admit only roots whose genuine two-current S1 <= same-model BG incumbent S1, then unchanged strict J ranking with BG-first ties. The BG root always remains admissible. All roots continue to be scored on the same paths.",
+  "evidence": "Unconstrained FIFO full24 HOLD: pooled1200 mean +1.8448% vs finite parent, two loads and all three seeds worse; P90 -6.0419%. Existing all-frame metadata: 520 of4487 scored decisions selected S1>BG. This motivates a zero-new-parameter forecast mean guard; it does not prove these520 decisions caused the trajectory regressions.",
+  "planning_samples": 8,
+  "planning_event_cap": 128,
+  "coefficient": 1,
+  "parameter_scan": false,
+  "original_risk_metadata": "Retain original S2<=MW risk candidate counts; separately report mean-allowed and mean-filtered candidates. Charge one exact S1<=BG comparison per original-risk root after completed new-stage scoring. Actual J ordering comparison count is k+mean_allowed-2. Overflow retains original partial scores/work and zero mean comparisons.",
+  "continuation": "Exactly two frozen OLD-current calls then MW, same complete FIFO waiting scorer, inner states, RNG, eligibility and stage fallbacks. Mean guard applies only to actual outer choice, not virtual current policies.",
+  "development": "Original24 literal tapes, four physical catalogues x loads0.8/0.95 x seeds41/42/43; time0..1200, cohort300..900, births through1200, snapshots900/1200.",
+  "new_candidate_trajectories": 24,
+  "cached_reference_trajectories": 96,
+  "comparison_roles": [
+    "MW",
+    "BG",
+    "finite_current",
+    "unconstrained_FIFO_diagnostic"
+  ],
+  "promotion": "Unchanged original MW/BG joint gate AND finite-parent increment gate (1200 pooled restricted mean strictly improves, each load mean nonregresses, pooled common-ID P90 and unfinished at both900/1200 nonregress). UnconstrainedFIFO comparison is diagnostic only.",
+  "execution": "13 workers per trajectory, cpu14 ram8192 vram0, allowed node001-node006 with live cpu-plan soft preferences. Preserve worker root/two-sample chunks and all physical discarded-chunk fees. Merge exit0 then pull only one small summary JSON directly.",
+  "limitations": "The constraint guarantees only sampled same-model S1 no worse than BG, not actual mean nonregression or S1 optimality against finite parent. Three shared development seeds; confirmation remains sealed; no future-arrival oracle, selected-class/seed gate or parameter scan."
+}

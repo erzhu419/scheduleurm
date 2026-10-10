@@ -60,12 +60,17 @@ def cpu_planning_cores_for_node(
         node_info=node_info,
         default_cpu_cores=default_cpu_cores,
     )
+    if str((node_info or {}).get("os") or (node_state or {}).get("os") or "").lower() == "windows":
+        return 0, total
     if isinstance(node_state, dict):
         if node_state.get("alive") is False:
             return 0, total
         if "free_cpu" in node_state:
             try:
                 free = max(0, int(node_state.get("free_cpu") or 0))
+                probe_total = int(node_state.get("total_cpu") or total)
+                if probe_total > total:
+                    free = max(0, free - (probe_total - total))
                 return min(total, free), total
             except Exception:
                 return 0, total
@@ -231,6 +236,14 @@ def apply_cpu_slot_accounting_to_nodes(
         observed_free_cpu = node_state.get("free_cpu")
         try:
             observed_free_cpu_int = max(0, int(observed_free_cpu))
+            # A cached probe can still use the capacity from before a reduction.
+            probe_total_cpu = int(node_state.get("total_cpu") or total_cpu)
+            if probe_total_cpu > total_cpu:
+                observed_free_cpu_int = max(
+                    0, observed_free_cpu_int - (probe_total_cpu - total_cpu)
+                )
+            observed_free_cpu_int = min(total_cpu, observed_free_cpu_int)
+            observed_free_cpu = observed_free_cpu_int
         except Exception:
             observed_free_cpu_int = max(0, total_cpu - hard_reserved_cpu)
         node_state["observed_free_cpu"] = observed_free_cpu

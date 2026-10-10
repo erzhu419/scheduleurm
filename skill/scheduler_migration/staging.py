@@ -6,6 +6,11 @@ legacy import surface used by scheduler.py and older tests.
 
 from __future__ import annotations
 
+try:
+    from scheduler_node.inventory import WINDOWS_TASK_DISPATCH_BLOCK_REASON
+except ModuleNotFoundError:
+    from ..scheduler_node.inventory import WINDOWS_TASK_DISPATCH_BLOCK_REASON
+
 from .candidate_staging import stage_migration_candidates_outside_lock
 from .ckpt_staging import (
     probe_ckpt_size as _probe_ckpt_size,
@@ -31,6 +36,8 @@ def stage_for_migration(
     deps: MigrationStagingDeps,
 ) -> tuple[bool, str]:
     """Stage cwd, checkpoint, and python env prerequisites before migration."""
+    if str(deps.node_configs.get(target_node, {}).get("os") or "").lower() == "windows":
+        return False, WINDOWS_TASK_DISPATCH_BLOCK_REASON
     cwd = task.get("cwd")
     if not cwd:
         return False, "no cwd on task"

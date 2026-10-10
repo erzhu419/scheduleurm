@@ -1,0 +1,51 @@
+{
+  "experiment": "aligned_hardware_BG_strong_controls_20261003",
+  "source_execution_epoch": "2026-09-30T05:57:23.785226+00:00",
+  "source_protocol": "aligned_hardware_background_competition_continuous_confirmation_20260930_protocol.json",
+  "source_result": "aligned_hardware_background_competition_continuous_confirmation_20260930.json",
+  "source_trajectories": "aligned_hardware_background_competition_continuous_confirmation_20260930_trajectories.json.gz",
+  "population": {
+    "catalogue_lanes": [["cpu_a", 2], ["node007", 4], ["gpu_a", 2], ["gpu_b", 2]],
+    "loads": [0.8, 0.95],
+    "arrival_seeds": [100001, 100002, 100003, 100004, 100005, 100006, 100007, 100008, 100009, 100010, 100011, 100012],
+    "arrival_tapes": 96,
+    "birth_cohort": [300, 900],
+    "cohort_checkpoint": 900,
+    "environment_arrival_end": 1200,
+    "observation_end": 1200,
+    "tape_source": "Literal arrivals and physical catalogues from the original source protocol; no regeneration, filtering or seed selection."
+  },
+  "new_controls": {
+    "delay": "Existing complete-catalogue batch SJF heuristic: select smallest mean completion offset across every admitted job, including the loaded resident; tie by larger current queue support, shorter reserved duration and option index. FIFO admission and full physical reservation. It is not a mean-flow oracle.",
+    "no_background": "Existing ContinuousArrivalAgeTailLaneRollout: retain FIFO tagged jobs, eight shared prefix samples through tau_max, MW complete-drain continuation, aggregate sampled S2 no worse than MW, minimum S1 with strict improvement, original ties and queue envelope. Remove sampled post-tau_max untagged background competitors and their combined-event overflow and computation."
+  },
+  "execution": {
+    "units": 192,
+    "unit_order": "0..95 delay, 96..191 no_background, each in original protocol tape order",
+    "reused_BG_MW_trajectories": 192,
+    "new_BG_or_MW_simulations": 0,
+    "new_shadow_references": 0,
+    "planning_samples": 8,
+    "planning_event_cap": 128,
+    "planning_seed_rule": "arrival-plan-v1:{node}:{load}:online",
+    "causal_context": "Current queue, lane availability, FIFO ages and causally released cumulative births divided by now. Real future arrivals, true rates and evaluation stop time stay in the harness.",
+    "clock": "Original cached independent-lane physical service clock with one-second idle polling; computation is measured separately and adds no service delay.",
+    "placement": "192 independent CPU1 tasks on available node001-node006; BLAS1, no trajectory or whole-directory download.",
+    "source_identity": "Freeze literal original dependencies plus the new runner, block statistics and paired-outcome helpers at registration. Save each new full trajectory on the server before outcome checks and small row output."
+  },
+  "outcomes": {
+    "orientation": "New control minus cached BG; negative means the new control is better.",
+    "primary": ["Equal-tape restricted mean flow at1200 for all births in closed cohort[300,900]", "Equal-tape P90 at1200 on each comparison's common completed job IDs"],
+    "secondary": ["900/1200 unfinished, queued and in-flight counts", "Eight catalogue/load group results", "All twelve seed block results", "All twenty-four catalogue/load/class results and class tails", "Comparison with cached MW"],
+    "common_population": "Recompute common completed job IDs separately for BG versus each control and MW versus each control at each cutoff. Do not reuse the original BG/MW common-ID P90 population.",
+    "work": "Count every actual controller constructor, root/continuation option scan, preprocessing, prefix sampling, rate and age reads, flow evaluations and overflow work. Record actual selector/worker time separately from algorithm performance."
+  },
+  "statistics": {
+    "arrival_seed_blocks": 12,
+    "cells_per_block": 8,
+    "bootstrap_replicates": 20000,
+    "bootstrap_seed": 20261003,
+    "definition": "Paired whole-seed-block percentile 95% intervals for each control separately at900 and1200. Mean/P90 use aggregate mean differences and ratios; unfinished uses absolute total differences. Pointwise exploratory intervals, no multiplicity adjustment."
+  },
+  "interpretation": "A post-confirmation extension on already observed arrival tapes, conditional on fixed planning streams, not independent confirmation. Methods and budgets are fixed before these control outcomes are computed. Preserve all negative group/class/seed effects. Do not change the original BG confirmation PASS, automatically adopt a control, tune coefficients or revive the retired finite branch. If batch SJF dominates BG, the claim of BG superiority must narrow; if removing background is as good, the claimed mechanism needs revision. Paper edits wait until the evidence is settled."
+}

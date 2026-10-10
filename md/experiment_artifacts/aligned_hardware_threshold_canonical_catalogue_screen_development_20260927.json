@@ -1,0 +1,267 @@
+{
+  "schema_version": 1,
+  "experiment": "threshold_canonical_physical_catalogue_development_v1",
+  "registered_at_utc": "2026-09-27T08:02:53.462169+00:00",
+  "hardware_catalogue_count": 4,
+  "requirement_topology_count": 3,
+  "quotient_requirement_topology_count": 3,
+  "queue_count": 500,
+  "diagnostic_queue_count": 1,
+  "selector_calls": 1002,
+  "oracle_checks_passed": true,
+  "decision": "MULTI_CATALOGUE_SCALING_ADVANCE",
+  "catalogues": [
+    {
+      "node": "cpu_a",
+      "lanes": 2,
+      "queue_count": 125,
+      "option_count": 8,
+      "requirement_group_count": 7,
+      "full_search_work": {
+        "lp_calls": 1237,
+        "lp_matrix_coefficients": 52109,
+        "candidate_evaluations": 1362,
+        "duration_root_count": 1000,
+        "dual_column_checks": 5491
+      },
+      "threshold_search_work": {
+        "lp_calls": 4116,
+        "lp_matrix_coefficients": 201124,
+        "candidate_evaluations": 4991,
+        "duration_root_count": 875,
+        "dual_column_checks": 20816
+      },
+      "preprocessing_total": {
+        "original_option_count": 1000,
+        "requirement_group_count": 875,
+        "duration_threshold_count": 875,
+        "reduction_option_probes": 1000,
+        "reduction_requirement_coordinate_reads": 3000,
+        "reduction_duration_comparisons": 1125,
+        "grouping_option_probes": 1000,
+        "representative_option_probes": 3875,
+        "proxy_option_count": 3500,
+        "lift_option_probes": 1234
+      },
+      "preprocessing_first_call": {
+        "original_option_count": 8,
+        "requirement_group_count": 7,
+        "duration_threshold_count": 7,
+        "reduction_option_probes": 8,
+        "reduction_requirement_coordinate_reads": 24,
+        "reduction_duration_comparisons": 9,
+        "grouping_option_probes": 8,
+        "representative_option_probes": 31,
+        "proxy_option_count": 28,
+        "lift_option_probes": 0
+      },
+      "full_failures": 0,
+      "threshold_failures": 0,
+      "first_failure": null
+    },
+    {
+      "node": "node007",
+      "lanes": 4,
+      "queue_count": 125,
+      "option_count": 9,
+      "requirement_group_count": 8,
+      "full_search_work": {
+        "lp_calls": 1649,
+        "lp_matrix_coefficients": 87609,
+        "candidate_evaluations": 1774,
+        "duration_root_count": 1125,
+        "dual_column_checks": 8551
+      },
+      "threshold_search_work": {
+        "lp_calls": 7654,
+        "lp_matrix_coefficients": 525453,
+        "candidate_evaluations": 8654,
+        "duration_root_count": 1000,
+        "dual_column_checks": 48499
+      },
+      "preprocessing_total": {
+        "original_option_count": 1125,
+        "requirement_group_count": 1000,
+        "duration_threshold_count": 1000,
+        "reduction_option_probes": 1125,
+        "reduction_requirement_coordinate_reads": 3375,
+        "reduction_duration_comparisons": 1250,
+        "grouping_option_probes": 1125,
+        "representative_option_probes": 4625,
+        "proxy_option_count": 4500,
+        "lift_option_probes": 1811
+      },
+      "preprocessing_first_call": {
+        "original_option_count": 9,
+        "requirement_group_count": 8,
+        "duration_threshold_count": 8,
+        "reduction_option_probes": 9,
+        "reduction_requirement_coordinate_reads": 27,
+        "reduction_duration_comparisons": 10,
+        "grouping_option_probes": 9,
+        "representative_option_probes": 37,
+        "proxy_option_count": 36,
+        "lift_option_probes": 0
+      },
+      "full_failures": 0,
+      "threshold_failures": 0,
+      "first_failure": null
+    },
+    {
+      "node": "gpu_a",
+      "lanes": 2,
+      "queue_count": 125,
+      "option_count": 9,
+      "requirement_group_count": 8,
+      "full_search_work": {
+        "lp_calls": 1963,
+        "lp_matrix_coefficients": 121320,
+        "candidate_evaluations": 2088,
+        "duration_root_count": 1125,
+        "dual_column_checks": 11318
+      },
+      "threshold_search_work": {
+        "lp_calls": 5943,
+        "lp_matrix_coefficients": 375138,
+        "candidate_evaluations": 6943,
+        "duration_root_count": 1000,
+        "dual_column_checks": 35348
+      },
+      "preprocessing_total": {
+        "original_option_count": 1125,
+        "requirement_group_count": 1000,
+        "duration_threshold_count": 1000,
+        "reduction_option_probes": 1125,
+        "reduction_requirement_coordinate_reads": 3375,
+        "reduction_duration_comparisons": 1250,
+        "grouping_option_probes": 1125,
+        "representative_option_probes": 4500,
+        "proxy_option_count": 4500,
+        "lift_option_probes": 1338
+      },
+      "preprocessing_first_call": {
+        "original_option_count": 9,
+        "requirement_group_count": 8,
+        "duration_threshold_count": 8,
+        "reduction_option_probes": 9,
+        "reduction_requirement_coordinate_reads": 27,
+        "reduction_duration_comparisons": 10,
+        "grouping_option_probes": 9,
+        "representative_option_probes": 36,
+        "proxy_option_count": 36,
+        "lift_option_probes": 0
+      },
+      "full_failures": 0,
+      "threshold_failures": 0,
+      "first_failure": null
+    },
+    {
+      "node": "gpu_b",
+      "lanes": 2,
+      "queue_count": 125,
+      "option_count": 9,
+      "requirement_group_count": 8,
+      "full_search_work": {
+        "lp_calls": 2019,
+        "lp_matrix_coefficients": 138446,
+        "candidate_evaluations": 2144,
+        "duration_root_count": 1125,
+        "dual_column_checks": 12334
+      },
+      "threshold_search_work": {
+        "lp_calls": 6075,
+        "lp_matrix_coefficients": 387788,
+        "candidate_evaluations": 7075,
+        "duration_root_count": 1000,
+        "dual_column_checks": 36444
+      },
+      "preprocessing_total": {
+        "original_option_count": 1125,
+        "requirement_group_count": 1000,
+        "duration_threshold_count": 1000,
+        "reduction_option_probes": 1125,
+        "reduction_requirement_coordinate_reads": 3375,
+        "reduction_duration_comparisons": 1250,
+        "grouping_option_probes": 1125,
+        "representative_option_probes": 4500,
+        "proxy_option_count": 4500,
+        "lift_option_probes": 1325
+      },
+      "preprocessing_first_call": {
+        "original_option_count": 9,
+        "requirement_group_count": 8,
+        "duration_threshold_count": 8,
+        "reduction_option_probes": 9,
+        "reduction_requirement_coordinate_reads": 27,
+        "reduction_duration_comparisons": 10,
+        "grouping_option_probes": 9,
+        "representative_option_probes": 36,
+        "proxy_option_count": 36,
+        "lift_option_probes": 0
+      },
+      "full_failures": 0,
+      "threshold_failures": 0,
+      "first_failure": null
+    }
+  ],
+  "known_r2_diagnostic": {
+    "node": "node007",
+    "lanes": 2,
+    "queue_count": 1,
+    "option_count": 9,
+    "requirement_group_count": 8,
+    "full_search_work": {
+      "lp_calls": 16,
+      "lp_matrix_coefficients": 1004,
+      "candidate_evaluations": 17,
+      "duration_root_count": 9,
+      "dual_column_checks": 94
+    },
+    "threshold_search_work": {
+      "lp_calls": 51,
+      "lp_matrix_coefficients": 3413,
+      "candidate_evaluations": 59,
+      "duration_root_count": 8,
+      "dual_column_checks": 315
+    },
+    "preprocessing_total": {
+      "original_option_count": 9,
+      "requirement_group_count": 8,
+      "duration_threshold_count": 8,
+      "reduction_option_probes": 9,
+      "reduction_requirement_coordinate_reads": 27,
+      "reduction_duration_comparisons": 10,
+      "grouping_option_probes": 9,
+      "representative_option_probes": 37,
+      "proxy_option_count": 36,
+      "lift_option_probes": 13
+    },
+    "preprocessing_first_call": {
+      "original_option_count": 9,
+      "requirement_group_count": 8,
+      "duration_threshold_count": 8,
+      "reduction_option_probes": 9,
+      "reduction_requirement_coordinate_reads": 27,
+      "reduction_duration_comparisons": 10,
+      "grouping_option_probes": 9,
+      "representative_option_probes": 37,
+      "proxy_option_count": 36,
+      "lift_option_probes": 13
+    },
+    "full_failures": 0,
+    "threshold_failures": 0,
+    "first_failure": null,
+    "queues": [
+      1,
+      0,
+      4
+    ],
+    "oracle_option_indices": [
+      0,
+      8
+    ],
+    "oracle_score_fraction": "4785074604081152/6782791744861525"
+  },
+  "limitations": "Cached phase point models only. No joint95 transfer, trajectory, flow-time, wall-time, or independent confirmation claim. Native lane counts only in the main panel.",
+  "protocol_path": "md/experiment_artifacts/aligned_hardware_threshold_canonical_catalogue_screen_development_20260927_protocol.json"
+}

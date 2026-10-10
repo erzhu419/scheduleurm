@@ -7,6 +7,11 @@ allowed-tools: Bash(*), Read
 
 # scheduler — multi-resource job dispatch
 
+New tasks run only on Linux/WSL nodes. All Windows nodes, including
+`windows_a` and `windows_b`, are monitoring-only: automatic dispatch, explicit
+node pins, forced launches, CPU batch planning, and migration cannot launch new
+tasks there. Existing Windows tasks remain available for monitoring and cancellation.
+
 You are the front-end for `~/.claude/skills/scheduler/scheduler.py`. The user does NOT want to remember its argv — they tell you what to run, you translate. **You also make judgment calls about how aggressively to pack work**; the scheduler computes "what fits", but YOU decide what to actually launch.
 
 ## Pre-flight: handle heal-blockers FIRST (you, not the user)
@@ -79,14 +84,14 @@ It never rewrites running tasks. If it reports a running-task warning, surface t
 
 Note: local has 16 physical cores / 32 logical threads; scheduleurm budgets the 16 physical cores by default. WSL OOM freezes the host — the fixed local RAM headroom is non-negotiable.
 
-`windows_a` and `windows_b` are schedulable by `scheduler.py` for CPU-only work
-(`--vram 0`). They are Windows/OpenSSH nodes at
+`windows_a` and `windows_b` are retained for monitoring, not new task dispatch.
+They are Windows/OpenSSH nodes at
 `forwarder.example.org:22945` and `forwarder.example.org:23565`,
 workspace paths map from
 `/home/researcher/mine_code/<project>/...` to `F:\<project>\...`, and Python runs via
-`F:\python\python.exe`. The scheduler refuses GPU tasks there, probes RAM via
+`F:\python\python.exe`. The scheduler refuses all new tasks there, probes RAM via
 PowerShell/.NET and CPU load from Python process CPU-time deltas (with Windows counters only
-as fallback), launches through a Windows wrapper, and records logs under
+as fallback), and reads existing Windows wrapper logs under
 `F:\.scheduleurm\logs\`.
 
 Windows CPU-node self-check when TUI/status looks wrong:
@@ -104,21 +109,21 @@ just windows_a. Windows uses 64-bit affinity masks → splits CPUs into Processo
 ≤64 logical each; a process is locked to one group at startup; mp.Pool inherits master's
 group. Without explicit cross-group pinning, every worker fights over one group's 64 logical
 CPUs (regardless of how many physical cores the machine has), running at ~50% per-worker.
-For scheduler-launched Windows tasks, the wrapper periodically pins child worker processes
-to unique physical cores across processor groups, so future high-parallel CPU eval jobs do
-not need project-level edits for pinning. `scripts/windows_a_pin_block.py` remains a manual
+For previously launched Windows tasks, the wrapper periodically pins child worker processes
+to unique physical cores across processor groups. New scheduler tasks cannot use Windows.
+`scripts/windows_a_pin_block.py` remains a manual
 helper for processes launched outside scheduler.py.
 
 CPU batch worker sizing is built into scheduler.py. For M independent CPU items, it probes
 all CPU-labor nodes and uses **currently free physical cores**, not full node capacity. If
-`windows_a` has `n1/128` free and `windows_b` has `n2/128` free, the planner uses
+`node001` has `n1/96` free and `node002` has `n2/96` free, the planner uses
 `N=n1+n2`, splits M proportionally into `m1,m2`, then computes each shard independently:
 `e_i = ceil(m_i / n_i)` waves and `workers_i = ceil(m_i / e_i)`. Example: 901 items on
-one fully-free 128-physical-core node → 8 waves, 113 workers, final wave 110 items. Do not
+one fully-free 96-physical-core node → 10 waves, 91 workers, final wave 82 items. Do not
 hand-compute this in future turns; use:
 
 ```bash
-python ~/.claude/skills/scheduler/scheduler.py cpu-plan --items 901
+python ~/.claude/skills/scheduler/scheduler.py cpu-plan --items 901 --nodes node001,node002
 ```
 
 On Windows CPU nodes, a single Python multiprocessing process must stay below the Windows
@@ -148,14 +153,17 @@ tree. Only exclude data that the job definitely does not read; for SUMO evals, d
 exclude small runtime assets such as `env/sumo_env/initialize_obj`, because missing files
 there produce fast all-error CSVs.
 
-By default this plans across all CPU-labor nodes (`windows_a,windows_b`) from live
-`free_cpu` values, skipping full/down nodes. Add `--use-total-cores` only for offline
+Select Linux CPU workers explicitly with `--nodes`; Windows nodes are excluded
+even when requested. Default planning uses eligible CPU-labor nodes, with local
+WSL as the fallback when none remain. Live planning skips full/down nodes.
+Add `--use-total-cores` only for offline
 what-if planning. To submit a generic sharded CPU batch, use `submit-cpu-batch` with a
 command template:
 
 ```bash
 python ~/.claude/skills/scheduler/scheduler.py submit-cpu-batch \
   --items 901 \
+  --nodes node001,node002,node003,node004,node005,node006 \
   --item-multiplier 1 \
   --stage-exclude 'env/calibrated_env/_line_envs/*/data' \
   --stage-exclude 'data/datasets_v2' \
@@ -297,7 +305,48 @@ When the user says "跑在 X 上" / "用 gpu_b 跑这个" / "在 local 跑":
 
 If you previously submitted a batch with `--require-node` and now realize they should have been soft-pinned, edit the queued tasks (e.g. via a small `python3 -c '...'` script under `state_lock`) to swap `require_node` → `preferred_node` and clear `node`/`gpu_idx` so dispatch re-decides.
 
-### Pre-submit: ensure the training loop uses `tqdm` (Phase 3.0 ETA accuracy)
+### Progress contract for new tasks
+
+Before submitting a new finite task, use an existing supported progress signal
+or add observational logging to its actual work loop. Do not change its budget,
+random state, optimizer, checkpoints, or output semantics to obtain an ETA.
+An ETA gap must not become a new dispatch refusal.
+
+The project-independent format is one flushed JSON line, emitted at loop start,
+every 30-60 seconds, at phase changes, and on completion:
+
+```python
+print("SCHEDULEURM_PROGRESS " + json.dumps({
+    "current": completed, "total": configured_total, "unit": "iteration",
+    "elapsed_seconds": time.monotonic() - loop_started,
+}), flush=True)
+```
+
+`current` and `total` must count the same work units. Read `configured_total`
+from the experiment's real configuration, not a scheduler guess. Recent timing
+deltas exclude restored checkpoint counts and one-time setup from the rate.
+Ordinary JSON/dict logs with `epoch/epochs`, `episode/episodes`,
+`step/total_steps`, or `iteration/max_iters` are also accepted; a matching
+command-line total can supply a missing total. Existing tqdm remains supported.
+The collector can also supply a missing total from the run directory's
+`results/protocol.json` or `protocol.json` (`--out`, `--output`, `--output-dir`,
+`--run-dir`), or `<entrypoint>_protocol.json` / `protocol.json` beside the script.
+Use matching budget fields such as `epochs`, `total_steps`, or `max_iters`.
+Saved per-run budgets precede shared defaults; explicit logged/command totals
+precede protocol defaults. Wrapper names and project versions need no new rule.
+
+For a multi-phase job, also emit one-based `phase_index`, `phase_count`, and
+`phase`. Supply `remaining_phases_seconds` from measured phase timings when
+available; otherwise the whole-job ETA stays unknown rather than treating the
+current phase as the entire job. `remaining_seconds`, when provided, is the
+task's own estimate for the **whole job**, including future phases.
+An indefinite watcher/daemon has no finite ETA. Auto-adopted processes without
+logs cannot provide live progress; use a scheduler log or measured history.
+
+The same format works with `--test-log` / `profile-local`, so a local preflight
+can seed the first queued run's runtime history without a project-specific parser.
+
+### Pre-submit: use supported progress (Phase 3.0 ETA accuracy)
 
 Phase 3.0's load-balanced migration makes per-node load decisions based on `eta_seconds`
 of each in-flight task. The watcher computes `eta_seconds` by tailing the task's log;
@@ -322,6 +371,7 @@ When user says "跑这个 ..." / "submit this", **before** issuing the `submit` 
      ...` print still happens, tqdm just adds the progress bar on top).
    - One sentence diff explanation; user reviews + approves.
 6. **Skip auto-add** when:
+   - Script already emits the progress contract or supported structured JSON/dict progress above.
    - Script already prints something parseable as `Iter N` AND has a `--max_iters N` flag
      in cmd (parser's tier-2 fallback handles this)
    - User explicitly says "no tqdm" / "I have my own progress" / etc.

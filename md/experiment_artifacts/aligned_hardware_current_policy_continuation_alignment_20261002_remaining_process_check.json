@@ -1,0 +1,103 @@
+{
+  "captured_at_utc": "2026-10-01T17:24:25.217723+00:00",
+  "tasks": [
+    {
+      "task_id": "t119837",
+      "node": "node004",
+      "queue_status": "running",
+      "returncode": 0,
+      "metadata": {
+        "root_pids": [
+          442253
+        ],
+        "log_bytes": 130,
+        "log_error_markers": false,
+        "log_last4": [
+          "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)",
+          "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)"
+        ],
+        "matched_process_tree": [
+          {
+            "pid": 442253,
+            "state": "S",
+            "cmd": "bash -c set +e; bash -c '/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/bin/python -u -m algorithm.experiments.aligned_hardware_current_policy_continuation_alignment --run-shard 9'; rc=$?; tmp=/tmp/scheduleurm_exit_t119837_2acf3fb778a18021a13572ac.status.tmp.$$; umask 077; printf '%s\\t%s\\t%s\\n' \"$rc\" \"$(date +%s)\" 1790874134640340501:2660202:126184382337024 > \"$tmp\"; mv -f -- \"$tmp\" /tmp/scheduleurm_exit_t119837_2acf3fb778a18021a13572ac.status; exit \"$rc\" ",
+            "cwd": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001",
+            "exists_after": true,
+            "cpu_percent_2s": 0.0,
+            "state_after": "S"
+          },
+          {
+            "pid": 442262,
+            "state": "R",
+            "cmd": "/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/bin/python -u -m algorithm.experiments.aligned_hardware_current_policy_continuation_alignment --run-shard 9 ",
+            "cwd": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001",
+            "exists_after": true,
+            "cpu_percent_2s": 99.7,
+            "state_after": "R"
+          }
+        ],
+        "python_workers": [
+          {
+            "pid": 442262,
+            "state": "R",
+            "cmd": "/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/bin/python -u -m algorithm.experiments.aligned_hardware_current_policy_continuation_alignment --run-shard 9 ",
+            "cwd": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001",
+            "exists_after": true,
+            "cpu_percent_2s": 99.7,
+            "state_after": "R"
+          }
+        ]
+      },
+      "error": ""
+    },
+    {
+      "task_id": "t119839",
+      "node": "node006",
+      "queue_status": "running",
+      "returncode": 0,
+      "metadata": {
+        "root_pids": [
+          401833
+        ],
+        "log_bytes": 130,
+        "log_error_markers": false,
+        "log_last4": [
+          "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)",
+          "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)"
+        ],
+        "matched_process_tree": [
+          {
+            "pid": 401833,
+            "state": "S",
+            "cmd": "bash -c set +e; bash -c '/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/bin/python -u -m algorithm.experiments.aligned_hardware_current_policy_continuation_alignment --run-shard 11'; rc=$?; tmp=/tmp/scheduleurm_exit_t119839_8b8eb3ee52f3be3de877473c.status.tmp.$$; umask 077; printf '%s\\t%s\\t%s\\n' \"$rc\" \"$(date +%s)\" 1790874134643929322:2660202:126184382337024 > \"$tmp\"; mv -f -- \"$tmp\" /tmp/scheduleurm_exit_t119839_8b8eb3ee52f3be3de877473c.status; exit \"$rc\" ",
+            "cwd": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001",
+            "exists_after": true,
+            "cpu_percent_2s": 0.0,
+            "state_after": "S"
+          },
+          {
+            "pid": 401849,
+            "state": "R",
+            "cmd": "/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/bin/python -u -m algorithm.experiments.aligned_hardware_current_policy_continuation_alignment --run-shard 11 ",
+            "cwd": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001",
+            "exists_after": true,
+            "cpu_percent_2s": 99.9,
+            "state_after": "R"
+          }
+        ],
+        "python_workers": [
+          {
+            "pid": 401849,
+            "state": "R",
+            "cmd": "/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/bin/python -u -m algorithm.experiments.aligned_hardware_current_policy_continuation_alignment --run-shard 11 ",
+            "cwd": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001",
+            "exists_after": true,
+            "cpu_percent_2s": 99.9,
+            "state_after": "R"
+          }
+        ]
+      },
+      "error": ""
+    }
+  ]
+}

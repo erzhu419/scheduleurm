@@ -19,6 +19,7 @@ def build_cpu_runtime_exports(namespace: dict[str, Any]) -> dict[str, Any]:
         return [
             name for name, info in _ns(namespace, "NODES").items()
             if info.get("cpu_labor_node") and not info.get("retired")
+            and not _ns(namespace, "_node_is_windows")(name)
         ]
 
     def _cpu_slot_accounting_node_names() -> list:

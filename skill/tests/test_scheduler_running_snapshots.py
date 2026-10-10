@@ -1,4 +1,8 @@
 from contextlib import contextmanager
+import base64
+import json
+import shlex
+import pytest
 
 from skill.scheduler_running.snapshots import (
     BatchCheckRunningDeps,
@@ -78,6 +82,65 @@ def test_running_probe_snapshot_retries_pending_terminal_without_full_probe():
     assert result["pending"]["state"] == "dead"
     assert result["pending"]["terminal_diagnosis_deferred"] is True
     assert result["pending"]["terminal_retry_only"] is True
+    assert "terminal_ok" not in result["pending"]
+    assert "exit_code" not in result["pending"]
+
+
+@pytest.mark.parametrize("exit_code", [0, 1])
+def test_pending_terminal_retry_preserves_backend_exit_for_diagnosis(exit_code):
+    task = {
+        "id": "pending",
+        "status": "running",
+        "terminal_transition_deferred": True,
+        "exit_code": exit_code,
+        "backend_finished_at": 151.0,
+        "started_at": 10.0,
+        "node": "node001",
+        "log_path": "/tmp/pending.log",
+        "cmd": "python -m algorithm.experiments.aligned_hardware_finite_policy_tagged_ranking",
+    }
+    state = {"tasks": [task]}
+    result, ids = running_probe_snapshot_outside_lock(
+        deps=RunningProbeSnapshotDeps(
+            state_lock=_lock,
+            load_state=lambda: state,
+            running_probe_due=lambda snapshot: False,
+            backend_batch_probe=lambda snapshot: (_ for _ in ()).throw(
+                AssertionError("diagnostic retry must reuse the confirmed exit")
+            ),
+            notify=lambda *a, **k: None,
+        )
+    )
+    assert result["pending"]["exit_code"] == exit_code
+    assert result["pending"]["terminal_ok"] is (exit_code == 0)
+    assert result["pending"]["backend_finished_at"] == 151.0
+
+    calls = []
+    out = terminal_diagnostics_snapshot_outside_lock(
+        result,
+        ids,
+        deps=TerminalDiagnosticsSnapshotDeps(
+            state_lock=_lock,
+            load_state=lambda: state,
+            scan_completed_log_for_crash=lambda task: (
+                calls.append("explicit_crash_scan") or (False, "")
+            ),
+            diagnose_terminal=lambda task: calls.append("full_diagnosis") or {
+                "is_crash": True,
+                "reason": "finished in 141s with no success marker",
+            },
+            discover_result_artifacts=lambda task, **kwargs: [],
+            notify=lambda *a, **k: None,
+            now=lambda: 152.0,
+        ),
+    )
+    if exit_code == 0:
+        assert calls == ["explicit_crash_scan"]
+        assert out["pending"]["completed_log_crash"] == (False, "")
+        assert "diagnosis" not in out["pending"]
+    else:
+        assert calls == ["full_diagnosis"]
+        assert out["pending"]["diagnosis"]["is_crash"] is True
 
 
 def test_terminal_diagnostics_snapshot_precomputes_dead_tasks_only():
@@ -170,6 +233,22 @@ def test_terminal_diagnostics_snapshot_precomputes_due_unknown_reroutes():
 
     assert set(out) == {"tdue"}
     assert out["tdue"]["diagnosis"]["success_marker"] == "DONE"
+
+
+def test_transport_wait_does_not_mark_running_task_unknown_or_requeue():
+    task = {"id": "t1", "status": "running"}
+    calls = []
+    def unexpected(*args, **kwargs):
+        calls.append(args)
+    batch_check_running({"tasks": [task]}, probe_results={
+        "t1": {"state": "unknown", "error": "probe exception: TRANSPORT_WAIT: gpu2"}},
+        deps=BatchCheckRunningDeps(
+            backend_batch_probe=lambda state: {}, running_lifecycle_deps=lambda: None,
+            handle_unknown_probe_result=unexpected, clear_probe_unknown=unexpected,
+            handle_dead_probe_result=unexpected, apply_alive_probe_result=unexpected))
+    assert task["status"] == "running"
+    assert "probe_unknown_since" not in task
+    assert calls == []
 
 
 def test_batch_check_running_routes_only_probed_running_tasks():
@@ -403,14 +482,21 @@ def test_eta_tail_outputs_by_node_uses_freqduet_expanded_tail():
             run_windows_ps=lambda *a, **k: (1, "", ""),
             run_on=run_on,
             timeout_s=7,
+            remote_path_for_node=lambda node, path: path,
         ),
     )
 
     assert out == {"node001": "ok"}
     assert captured["node"] == "node001"
-    assert "grep -aE '^(Shard jobs|SKIP |DONE )' /tmp/freq.log" in captured["cmd"]
-    assert "tail -c 65536 /tmp/freq.log" in captured["cmd"]
-    assert "tail -c 4096 /tmp/other.log" in captured["cmd"]
+    requests = json.loads(base64.b64decode(shlex.split(captured["cmd"])[-1]))
+    freq, other = requests
+    assert freq["id"] == "t1" and freq["path"] == "/tmp/freq.log"
+    assert freq["pattern"] == r"^(Shard jobs|SKIP |DONE )"
+    assert freq["bytes"] == 65536
+    assert freq["limit"] is None
+    assert other["id"] == "t2" and other["path"] == "/tmp/other.log"
+    assert other["bytes"] == 16384
+    assert other["pattern"] == ""
     assert captured["kwargs"] == {"timeout": 7, "check": False}
 
 
@@ -436,13 +522,18 @@ def test_eta_tail_outputs_by_node_preserves_bapr_stage_markers():
             run_windows_ps=lambda *a, **k: (1, "", ""),
             run_on=run_on,
             timeout_s=7,
+            remote_path_for_node=lambda node, path: path,
         ),
     )
 
     assert out == {"node001": "ok"}
-    assert "TRAIN SUBPROCESS:" in captured["cmd"]
-    assert "Training complete! Total time:" in captured["cmd"]
-    assert "tail -c 65536 /tmp/bapr.log" in captured["cmd"]
+    request, = json.loads(base64.b64decode(shlex.split(captured["cmd"])[-1]))
+    assert "TRAIN SUBPROCESS:" in request["pattern"]
+    assert "Training complete! Total time:" in request["pattern"]
+    assert request["id"] == "t1" and request["path"] == "/tmp/bapr.log"
+    assert request["pattern"] == r"^(TRAIN SUBPROCESS:|Training complete! Total time:|PAIR .*COMPLETE:)"
+    assert request["bytes"] == 65536
+    assert request["limit"] == 40
 
 
 def test_effective_elapsed_s_preserves_slurm_pending_semantics():

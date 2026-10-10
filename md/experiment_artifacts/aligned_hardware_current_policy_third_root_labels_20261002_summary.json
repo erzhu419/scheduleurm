@@ -1,0 +1,779 @@
+{
+  "decision": "CURRENT_POLICY_THIRD_ROOT_LABELS_COMPLETE",
+  "execution_checks_passed": true,
+  "performance_gain_established": false,
+  "registered_at_utc": "2026-10-01T21:43:45.997408+00:00",
+  "full24_parent_decision": "TWO_STEP_CURRENT_POLICY_BG_INCUMBENT_DEVELOPMENT_HOLD",
+  "new_suffix_executions": 4,
+  "interpretation": "22 conditional actual-selection effects on reused development states, not an additive closed-loop gain. Mean and tails share the full fixed birth cohort. Cached20 P90 uses prior four-arm common IDs; two new third labels use their paired common IDs. Report support separately; these are averages of conditional P90 differences, not pooled P90. Retain full24 HOLD and sealed confirmation.",
+  "summary": {
+    "states": 22,
+    "metrics": {
+      "delta_T_mean": {
+        "available": 22,
+        "mean": -0.141616892881766,
+        "helped": 6,
+        "harmed": 4,
+        "unchanged": 12
+      },
+      "delta_T_common_p90": {
+        "available": 22,
+        "mean": -0.8520873752865316,
+        "helped": 5,
+        "harmed": 5,
+        "unchanged": 12
+      },
+      "delta_900_unfinished": {
+        "available": 22,
+        "mean": -0.6363636363636364,
+        "helped": 5,
+        "harmed": 3,
+        "unchanged": 14
+      },
+      "delta_1200_unfinished": {
+        "available": 22,
+        "mean": 0,
+        "helped": 0,
+        "harmed": 0,
+        "unchanged": 22
+      }
+    }
+  },
+  "seeds": {
+    "41": {
+      "states": 8,
+      "metrics": {
+        "delta_T_mean": {
+          "available": 8,
+          "mean": -0.13925899647770024,
+          "helped": 2,
+          "harmed": 1,
+          "unchanged": 5
+        },
+        "delta_T_common_p90": {
+          "available": 8,
+          "mean": -0.12979257310285197,
+          "helped": 1,
+          "harmed": 2,
+          "unchanged": 5
+        },
+        "delta_900_unfinished": {
+          "available": 8,
+          "mean": -0.25,
+          "helped": 2,
+          "harmed": 0,
+          "unchanged": 6
+        },
+        "delta_1200_unfinished": {
+          "available": 8,
+          "mean": 0,
+          "helped": 0,
+          "harmed": 0,
+          "unchanged": 8
+        }
+      }
+    },
+    "42": {
+      "states": 6,
+      "metrics": {
+        "delta_T_mean": {
+          "available": 6,
+          "mean": 0.1003292008240108,
+          "helped": 1,
+          "harmed": 2,
+          "unchanged": 3
+        },
+        "delta_T_common_p90": {
+          "available": 6,
+          "mean": -0.6024840720517695,
+          "helped": 1,
+          "harmed": 2,
+          "unchanged": 3
+        },
+        "delta_900_unfinished": {
+          "available": 6,
+          "mean": 0.5,
+          "helped": 1,
+          "harmed": 2,
+          "unchanged": 3
+        },
+        "delta_1200_unfinished": {
+          "available": 6,
+          "mean": 0,
+          "helped": 0,
+          "harmed": 0,
+          "unchanged": 6
+        }
+      }
+    },
+    "43": {
+      "states": 8,
+      "metrics": {
+        "delta_T_mean": {
+          "available": 8,
+          "mean": -0.3254343595651643,
+          "helped": 3,
+          "harmed": 1,
+          "unchanged": 4
+        },
+        "delta_T_common_p90": {
+          "available": 8,
+          "mean": -1.7615846548962826,
+          "helped": 3,
+          "harmed": 1,
+          "unchanged": 4
+        },
+        "delta_900_unfinished": {
+          "available": 8,
+          "mean": -1.875,
+          "helped": 2,
+          "harmed": 1,
+          "unchanged": 5
+        },
+        "delta_1200_unfinished": {
+          "available": 8,
+          "mean": 0,
+          "helped": 0,
+          "harmed": 0,
+          "unchanged": 8
+        }
+      }
+    }
+  },
+  "full_cohort_P90_support_states": 22,
+  "native_third_roots_without_labels": 0,
+  "third_root_records": [
+    {
+      "tape_id": "gpu_a:R2:load0.95:seed43",
+      "frame_index": 76,
+      "node": "gpu_a",
+      "load": 0.95,
+      "seed": 43,
+      "new_native_option_index": 5,
+      "outcomes": {
+        "snapshots": {
+          "arrival_horizon": {
+            "factual": {
+              "time": 900.0,
+              "arrivals": 362,
+              "completed_jobs": 329,
+              "queued_jobs": 22,
+              "inflight_jobs": 11,
+              "unfinished_jobs": 33,
+              "restricted_mean_flow_s": 31.090328270950984,
+              "completed_mean_flow_s": 30.8724811321114,
+              "completed_p90_flow_s": 50.9035674622877,
+              "completion_rate": 0.9088397790055248,
+              "per_coordinate": [
+                {
+                  "time": 900.0,
+                  "arrivals": 55,
+                  "completed_jobs": 41,
+                  "queued_jobs": 11,
+                  "inflight_jobs": 3,
+                  "unfinished_jobs": 14,
+                  "restricted_mean_flow_s": 53.68535282418335,
+                  "completed_mean_flow_s": 53.2694770309846,
+                  "completed_p90_flow_s": 81.62306639020125,
+                  "completion_rate": 0.7454545454545455,
+                  "common_class_jobs": 41,
+                  "common_class_mean_flow_s": 53.2694770309846,
+                  "common_class_p90_flow_s": 81.62306639020125
+                },
+                {
+                  "time": 900.0,
+                  "arrivals": 158,
+                  "completed_jobs": 153,
+                  "queued_jobs": 5,
+                  "inflight_jobs": 0,
+                  "unfinished_jobs": 5,
+                  "restricted_mean_flow_s": 19.91498851977991,
+                  "completed_mean_flow_s": 20.039446350306907,
+                  "completed_p90_flow_s": 32.77818457180566,
+                  "completion_rate": 0.9683544303797469,
+                  "common_class_jobs": 153,
+                  "common_class_mean_flow_s": 20.039446350306907,
+                  "common_class_p90_flow_s": 32.77818457180566
+                },
+                {
+                  "time": 900.0,
+                  "arrivals": 149,
+                  "completed_jobs": 135,
+                  "queued_jobs": 6,
+                  "inflight_jobs": 8,
+                  "unfinished_jobs": 14,
+                  "restricted_mean_flow_s": 34.60024323912049,
+                  "completed_mean_flow_s": 36.34786994516538,
+                  "completed_p90_flow_s": 50.58888925285531,
+                  "completion_rate": 0.9060402684563759,
+                  "common_class_jobs": 135,
+                  "common_class_mean_flow_s": 36.34786994516538,
+                  "common_class_p90_flow_s": 50.58888925285531
+                }
+              ],
+              "common_mean_flow_s": 30.872481132111403,
+              "common_p90_flow_s": 50.9035674622877,
+              "common_jobs": 329
+            },
+            "replacement": {
+              "time": 900.0,
+              "arrivals": 362,
+              "completed_jobs": 335,
+              "queued_jobs": 21,
+              "inflight_jobs": 6,
+              "unfinished_jobs": 27,
+              "restricted_mean_flow_s": 30.97264635698998,
+              "completed_mean_flow_s": 30.9936972923366,
+              "completed_p90_flow_s": 48.295624643200895,
+              "completion_rate": 0.925414364640884,
+              "per_coordinate": [
+                {
+                  "time": 900.0,
+                  "arrivals": 55,
+                  "completed_jobs": 42,
+                  "queued_jobs": 10,
+                  "inflight_jobs": 3,
+                  "unfinished_jobs": 13,
+                  "restricted_mean_flow_s": 48.51560043368518,
+                  "completed_mean_flow_s": 47.91361070890412,
+                  "completed_p90_flow_s": 74.73526293838924,
+                  "completion_rate": 0.7636363636363637,
+                  "common_class_jobs": 41,
+                  "common_class_mean_flow_s": 47.36702702862102,
+                  "common_class_p90_flow_s": 75.22545419815344
+                },
+                {
+                  "time": 900.0,
+                  "arrivals": 158,
+                  "completed_jobs": 153,
+                  "queued_jobs": 2,
+                  "inflight_jobs": 3,
+                  "unfinished_jobs": 5,
+                  "restricted_mean_flow_s": 21.341041906152338,
+                  "completed_mean_flow_s": 21.512102788521567,
+                  "completed_p90_flow_s": 32.84005191811563,
+                  "completion_rate": 0.9683544303797469,
+                  "common_class_jobs": 153,
+                  "common_class_mean_flow_s": 21.512102788521567,
+                  "common_class_p90_flow_s": 32.84005191811563
+                },
+                {
+                  "time": 900.0,
+                  "arrivals": 149,
+                  "completed_jobs": 140,
+                  "queued_jobs": 9,
+                  "inflight_jobs": 0,
+                  "unfinished_jobs": 9,
+                  "restricted_mean_flow_s": 34.710438498024295,
+                  "completed_mean_flow_s": 36.27975154653561,
+                  "completed_p90_flow_s": 49.467594546351066,
+                  "completion_rate": 0.9395973154362416,
+                  "common_class_jobs": 135,
+                  "common_class_mean_flow_s": 36.63302267566496,
+                  "common_class_p90_flow_s": 49.507843395868335
+                }
+              ],
+              "common_mean_flow_s": 30.93877779948946,
+              "common_p90_flow_s": 48.22790843775723,
+              "common_jobs": 329
+            }
+          },
+          "observation_end": {
+            "factual": {
+              "time": 1200.0,
+              "arrivals": 362,
+              "completed_jobs": 362,
+              "queued_jobs": 0,
+              "inflight_jobs": 0,
+              "unfinished_jobs": 0,
+              "restricted_mean_flow_s": 34.77885114365776,
+              "completed_mean_flow_s": 34.77885114365776,
+              "completed_p90_flow_s": 56.217934619189656,
+              "completion_rate": 1.0,
+              "per_coordinate": [
+                {
+                  "time": 1200.0,
+                  "arrivals": 55,
+                  "completed_jobs": 55,
+                  "queued_jobs": 0,
+                  "inflight_jobs": 0,
+                  "unfinished_jobs": 0,
+                  "restricted_mean_flow_s": 69.76561439715182,
+                  "completed_mean_flow_s": 69.76561439715184,
+                  "completed_p90_flow_s": 120.75968354518491,
+                  "completion_rate": 1.0,
+                  "common_class_jobs": 55,
+                  "common_class_mean_flow_s": 69.76561439715184,
+                  "common_class_p90_flow_s": 120.75968354518491
+                },
+                {
+                  "time": 1200.0,
+                  "arrivals": 158,
+                  "completed_jobs": 158,
+                  "queued_jobs": 0,
+                  "inflight_jobs": 0,
+                  "unfinished_jobs": 0,
+                  "restricted_mean_flow_s": 20.46013034424826,
+                  "completed_mean_flow_s": 20.460130344248256,
+                  "completed_p90_flow_s": 32.96977420113109,
+                  "completion_rate": 1.0,
+                  "common_class_jobs": 158,
+                  "common_class_mean_flow_s": 20.460130344248256,
+                  "common_class_p90_flow_s": 32.96977420113109
+                },
+                {
+                  "time": 1200.0,
+                  "arrivals": 149,
+                  "completed_jobs": 149,
+                  "queued_jobs": 0,
+                  "inflight_jobs": 0,
+                  "unfinished_jobs": 0,
+                  "restricted_mean_flow_s": 37.04788407899022,
+                  "completed_mean_flow_s": 37.0478840789902,
+                  "completed_p90_flow_s": 51.18071926637452,
+                  "completion_rate": 1.0,
+                  "common_class_jobs": 149,
+                  "common_class_mean_flow_s": 37.0478840789902,
+                  "common_class_p90_flow_s": 51.18071926637452
+                }
+              ],
+              "common_mean_flow_s": 34.778851143657775,
+              "common_p90_flow_s": 56.217934619189656,
+              "common_jobs": 362
+            },
+            "replacement": {
+              "time": 1200.0,
+              "arrivals": 362,
+              "completed_jobs": 362,
+              "queued_jobs": 0,
+              "inflight_jobs": 0,
+              "unfinished_jobs": 0,
+              "restricted_mean_flow_s": 34.18321923295586,
+              "completed_mean_flow_s": 34.18321923295587,
+              "completed_p90_flow_s": 51.64979741084064,
+              "completion_rate": 1.0,
+              "per_coordinate": [
+                {
+                  "time": 1200.0,
+                  "arrivals": 55,
+                  "completed_jobs": 55,
+                  "queued_jobs": 0,
+                  "inflight_jobs": 0,
+                  "unfinished_jobs": 0,
+                  "restricted_mean_flow_s": 63.84767064205147,
+                  "completed_mean_flow_s": 63.847670642051476,
+                  "completed_p90_flow_s": 117.37299808082301,
+                  "completion_rate": 1.0,
+                  "common_class_jobs": 55,
+                  "common_class_mean_flow_s": 63.847670642051476,
+                  "common_class_p90_flow_s": 117.37299808082301
+                },
+                {
+                  "time": 1200.0,
+                  "arrivals": 158,
+                  "completed_jobs": 158,
+                  "queued_jobs": 0,
+                  "inflight_jobs": 0,
+                  "unfinished_jobs": 0,
+                  "restricted_mean_flow_s": 21.724285470676104,
+                  "completed_mean_flow_s": 21.724285470676094,
+                  "completed_p90_flow_s": 33.42127101449211,
+                  "completion_rate": 1.0,
+                  "common_class_jobs": 158,
+                  "common_class_mean_flow_s": 21.724285470676094,
+                  "common_class_p90_flow_s": 33.42127101449211
+                },
+                {
+                  "time": 1200.0,
+                  "arrivals": 149,
+                  "completed_jobs": 149,
+                  "queued_jobs": 0,
+                  "inflight_jobs": 0,
+                  "unfinished_jobs": 0,
+                  "restricted_mean_flow_s": 36.44474075604275,
+                  "completed_mean_flow_s": 36.44474075604274,
+                  "completed_p90_flow_s": 49.648533468115154,
+                  "completion_rate": 1.0,
+                  "common_class_jobs": 149,
+                  "common_class_mean_flow_s": 36.44474075604274,
+                  "common_class_p90_flow_s": 49.648533468115154
+                }
+              ],
+              "common_mean_flow_s": 34.18321923295587,
+              "common_p90_flow_s": 51.64979741084064,
+              "common_jobs": 362
+            }
+          }
+        },
+        "middle_queue_area_s": {
+          "factual": 6637.090243892398,
+          "replacement": 6503.929946129574
+        },
+        "delta_T_mean": -0.5956319107019041,
+        "delta_T_common_p90": -4.568137208349015,
+        "delta_900_unfinished": -6,
+        "delta_1200_unfinished": 0,
+        "delta_middle_queue_area_s": -133.16029776282357,
+        "per_coordinate_deltas": [
+          {
+            "coordinate": 0,
+            "workload": "gpu_cnn_torch_resnet50",
+            "delta_T_mean": -5.917943755100353,
+            "delta_T_common_mean": -5.91794375510036,
+            "delta_T_common_p90": -3.3866854643619035,
+            "delta_900_unfinished": -1,
+            "delta_1200_unfinished": 0
+          },
+          {
+            "coordinate": 1,
+            "workload": "gpu_heavy_jax_matmul",
+            "delta_T_mean": 1.2641551264278448,
+            "delta_T_common_mean": 1.2641551264278377,
+            "delta_T_common_p90": 0.4514968133610253,
+            "delta_900_unfinished": 0,
+            "delta_1200_unfinished": 0
+          },
+          {
+            "coordinate": 2,
+            "workload": "gpu_llm_distilgpt2",
+            "delta_T_mean": -0.6031433229474743,
+            "delta_T_common_mean": -0.6031433229474601,
+            "delta_T_common_p90": -1.5321857982593627,
+            "delta_900_unfinished": -5,
+            "delta_1200_unfinished": 0
+          }
+        ]
+      },
+      "checks": {
+        "null": {
+          "first_proposal_context_match_passed": true,
+          "native_suffix_checks_passed": true,
+          "null_reproduction_passed": true,
+          "calls": 139
+        },
+        "third": {
+          "first_proposal_context_match_passed": true,
+          "native_suffix_checks_passed": true,
+          "null_reproduction_passed": false,
+          "calls": 136
+        }
+      }
+    },
+    {
+      "tape_id": "gpu_b:R2:load0.95:seed42",
+      "frame_index": 125,
+      "node": "gpu_b",
+      "load": 0.95,
+      "seed": 42,
+      "new_native_option_index": 5,
+      "outcomes": {
+        "snapshots": {
+          "arrival_horizon": {
+            "factual": {
+              "time": 900.0,
+              "arrivals": 445,
+              "completed_jobs": 419,
+              "queued_jobs": 15,
+              "inflight_jobs": 11,
+              "unfinished_jobs": 26,
+              "restricted_mean_flow_s": 36.85362032099159,
+              "completed_mean_flow_s": 37.24284305703702,
+              "completed_p90_flow_s": 83.43617234452137,
+              "completion_rate": 0.9415730337078652,
+              "per_coordinate": [
+                {
+                  "time": 900.0,
+                  "arrivals": 74,
+                  "completed_jobs": 66,
+                  "queued_jobs": 8,
+                  "inflight_jobs": 0,
+                  "unfinished_jobs": 8,
+                  "restricted_mean_flow_s": 94.741944097676,
+                  "completed_mean_flow_s": 98.42037593427638,
+                  "completed_p90_flow_s": 138.4025123281455,
+                  "completion_rate": 0.8918918918918919,
+                  "common_class_jobs": 66,
+                  "common_class_mean_flow_s": 98.42037593427638,
+                  "common_class_p90_flow_s": 138.4025123281455
+                },
+                {
+                  "time": 900.0,
+                  "arrivals": 173,
+                  "completed_jobs": 165,
+                  "queued_jobs": 5,
+                  "inflight_jobs": 3,
+                  "unfinished_jobs": 8,
+                  "restricted_mean_flow_s": 23.68416983549836,
+                  "completed_mean_flow_s": 24.2540388078881,
+                  "completed_p90_flow_s": 37.01247253949072,
+                  "completion_rate": 0.953757225433526,
+                  "common_class_jobs": 165,
+                  "common_class_mean_flow_s": 24.2540388078881,
+                  "common_class_p90_flow_s": 37.01247253949072
+                },
+                {
+                  "time": 900.0,
+                  "arrivals": 198,
+                  "completed_jobs": 188,
+                  "queued_jobs": 2,
+                  "inflight_jobs": 8,
+                  "unfinished_jobs": 10,
+                  "restricted_mean_flow_s": 26.72523130339407,
+                  "completed_mean_flow_s": 27.165372478376256,
+                  "completed_p90_flow_s": 37.235001312955895,
+                  "completion_rate": 0.9494949494949495,
+                  "common_class_jobs": 188,
+                  "common_class_mean_flow_s": 27.165372478376256,
+                  "common_class_p90_flow_s": 37.235001312955895
+                }
+              ],
+              "common_mean_flow_s": 37.24284305703703,
+              "common_p90_flow_s": 83.43617234452137,
+              "common_jobs": 419
+            },
+            "replacement": {
+              "time": 900.0,
+              "arrivals": 445,
+              "completed_jobs": 430,
+              "queued_jobs": 9,
+              "inflight_jobs": 6,
+              "unfinished_jobs": 15,
+              "restricted_mean_flow_s": 35.08617729477881,
+              "completed_mean_flow_s": 35.395038010009465,
+              "completed_p90_flow_s": 65.25049621836696,
+              "completion_rate": 0.9662921348314607,
+              "per_coordinate": [
+                {
+                  "time": 900.0,
+                  "arrivals": 74,
+                  "completed_jobs": 69,
+                  "queued_jobs": 2,
+                  "inflight_jobs": 3,
+                  "unfinished_jobs": 5,
+                  "restricted_mean_flow_s": 86.7870771755039,
+                  "completed_mean_flow_s": 89.11840917559154,
+                  "completed_p90_flow_s": 137.96723129218338,
+                  "completion_rate": 0.9324324324324325,
+                  "common_class_jobs": 66,
+                  "common_class_mean_flow_s": 90.60963887000317,
+                  "common_class_p90_flow_s": 138.4025123281455
+                },
+                {
+                  "time": 900.0,
+                  "arrivals": 173,
+                  "completed_jobs": 170,
+                  "queued_jobs": 0,
+                  "inflight_jobs": 3,
+                  "unfinished_jobs": 3,
+                  "restricted_mean_flow_s": 22.367129367394636,
+                  "completed_mean_flow_s": 22.657459576438402,
+                  "completed_p90_flow_s": 36.829155645405116,
+                  "completion_rate": 0.9826589595375722,
+                  "common_class_jobs": 165,
+                  "common_class_mean_flow_s": 23.019529678424078,
+                  "common_class_p90_flow_s": 37.01247253949072
+                },
+                {
+                  "time": 900.0,
+                  "arrivals": 198,
+                  "completed_jobs": 191,
+                  "queued_jobs": 7,
+                  "inflight_jobs": 0,
+                  "unfinished_jobs": 7,
+                  "restricted_mean_flow_s": 26.87672628601014,
+                  "completed_mean_flow_s": 27.3242302785012,
+                  "completed_p90_flow_s": 38.232043811018116,
+                  "completion_rate": 0.9646464646464646,
+                  "common_class_jobs": 188,
+                  "common_class_mean_flow_s": 27.47707270113266,
+                  "common_class_p90_flow_s": 38.2612627068646
+                }
+              ],
+              "common_mean_flow_s": 35.66622489301461,
+              "common_p90_flow_s": 67.24778264128943,
+              "common_jobs": 419
+            }
+          },
+          "observation_end": {
+            "factual": {
+              "time": 1200.0,
+              "arrivals": 445,
+              "completed_jobs": 445,
+              "queued_jobs": 0,
+              "inflight_jobs": 0,
+              "unfinished_jobs": 0,
+              "restricted_mean_flow_s": 37.92813374484189,
+              "completed_mean_flow_s": 37.92813374484191,
+              "completed_p90_flow_s": 85.5230694307711,
+              "completion_rate": 1.0,
+              "per_coordinate": [
+                {
+                  "time": 1200.0,
+                  "arrivals": 74,
+                  "completed_jobs": 74,
+                  "queued_jobs": 0,
+                  "inflight_jobs": 0,
+                  "unfinished_jobs": 0,
+                  "restricted_mean_flow_s": 99.344637830657,
+                  "completed_mean_flow_s": 99.34463783065702,
+                  "completed_p90_flow_s": 137.20434201125548,
+                  "completion_rate": 1.0,
+                  "common_class_jobs": 74,
+                  "common_class_mean_flow_s": 99.34463783065702,
+                  "common_class_p90_flow_s": 137.20434201125548
+                },
+                {
+                  "time": 1200.0,
+                  "arrivals": 173,
+                  "completed_jobs": 173,
+                  "queued_jobs": 0,
+                  "inflight_jobs": 0,
+                  "unfinished_jobs": 0,
+                  "restricted_mean_flow_s": 24.03443892134477,
+                  "completed_mean_flow_s": 24.034438921344783,
+                  "completed_p90_flow_s": 36.46907137055924,
+                  "completion_rate": 1.0,
+                  "common_class_jobs": 173,
+                  "common_class_mean_flow_s": 24.034438921344783,
+                  "common_class_p90_flow_s": 36.46907137055924
+                },
+                {
+                  "time": 1200.0,
+                  "arrivals": 198,
+                  "completed_jobs": 198,
+                  "queued_jobs": 0,
+                  "inflight_jobs": 0,
+                  "unfinished_jobs": 0,
+                  "restricted_mean_flow_s": 27.113931230269582,
+                  "completed_mean_flow_s": 27.113931230269603,
+                  "completed_p90_flow_s": 37.235001312955895,
+                  "completion_rate": 1.0,
+                  "common_class_jobs": 198,
+                  "common_class_mean_flow_s": 27.113931230269603,
+                  "common_class_p90_flow_s": 37.235001312955895
+                }
+              ],
+              "common_mean_flow_s": 37.92813374484191,
+              "common_p90_flow_s": 85.5230694307711,
+              "common_jobs": 445
+            },
+            "replacement": {
+              "time": 1200.0,
+              "arrivals": 445,
+              "completed_jobs": 445,
+              "queued_jobs": 0,
+              "inflight_jobs": 0,
+              "unfinished_jobs": 0,
+              "restricted_mean_flow_s": 35.68654749851573,
+              "completed_mean_flow_s": 35.68654749851574,
+              "completed_p90_flow_s": 71.43718901178158,
+              "completion_rate": 1.0,
+              "per_coordinate": [
+                {
+                  "time": 1200.0,
+                  "arrivals": 74,
+                  "completed_jobs": 74,
+                  "queued_jobs": 0,
+                  "inflight_jobs": 0,
+                  "unfinished_jobs": 0,
+                  "restricted_mean_flow_s": 88.43782869765255,
+                  "completed_mean_flow_s": 88.43782869765252,
+                  "completed_p90_flow_s": 137.20434201125548,
+                  "completion_rate": 1.0,
+                  "common_class_jobs": 74,
+                  "common_class_mean_flow_s": 88.43782869765252,
+                  "common_class_p90_flow_s": 137.20434201125548
+                },
+                {
+                  "time": 1200.0,
+                  "arrivals": 173,
+                  "completed_jobs": 173,
+                  "queued_jobs": 0,
+                  "inflight_jobs": 0,
+                  "unfinished_jobs": 0,
+                  "restricted_mean_flow_s": 22.43833878318794,
+                  "completed_mean_flow_s": 22.438338783187962,
+                  "completed_p90_flow_s": 36.46907137055924,
+                  "completion_rate": 1.0,
+                  "common_class_jobs": 173,
+                  "common_class_mean_flow_s": 22.438338783187962,
+                  "common_class_p90_flow_s": 36.46907137055924
+                },
+                {
+                  "time": 1200.0,
+                  "arrivals": 198,
+                  "completed_jobs": 198,
+                  "queued_jobs": 0,
+                  "inflight_jobs": 0,
+                  "unfinished_jobs": 0,
+                  "restricted_mean_flow_s": 27.54687729152371,
+                  "completed_mean_flow_s": 27.54687729152372,
+                  "completed_p90_flow_s": 38.33823100973934,
+                  "completion_rate": 1.0,
+                  "common_class_jobs": 198,
+                  "common_class_mean_flow_s": 27.54687729152372,
+                  "common_class_p90_flow_s": 38.33823100973934
+                }
+              ],
+              "common_mean_flow_s": 35.686547498515736,
+              "common_p90_flow_s": 71.43718901178158,
+              "common_jobs": 445
+            }
+          }
+        },
+        "middle_queue_area_s": {
+          "factual": 12188.484593902032,
+          "replacement": 11270.92730393638
+        },
+        "delta_T_mean": -2.2415862463261575,
+        "delta_T_common_p90": -14.085880418989518,
+        "delta_900_unfinished": -11,
+        "delta_1200_unfinished": 0,
+        "delta_middle_queue_area_s": -917.5572899656527,
+        "per_coordinate_deltas": [
+          {
+            "coordinate": 0,
+            "workload": "gpu_cnn_torch_resnet50",
+            "delta_T_mean": -10.906809133004458,
+            "delta_T_common_mean": -10.9068091330045,
+            "delta_T_common_p90": 0.0,
+            "delta_900_unfinished": -3,
+            "delta_1200_unfinished": 0
+          },
+          {
+            "coordinate": 1,
+            "workload": "gpu_heavy_jax_matmul",
+            "delta_T_mean": -1.596100138156828,
+            "delta_T_common_mean": -1.596100138156821,
+            "delta_T_common_p90": 0.0,
+            "delta_900_unfinished": -5,
+            "delta_1200_unfinished": 0
+          },
+          {
+            "coordinate": 2,
+            "workload": "gpu_llm_distilgpt2",
+            "delta_T_mean": 0.43294606125412827,
+            "delta_T_common_mean": 0.4329460612541176,
+            "delta_T_common_p90": 1.103229696783444,
+            "delta_900_unfinished": -3,
+            "delta_1200_unfinished": 0
+          }
+        ]
+      },
+      "checks": {
+        "null": {
+          "first_proposal_context_match_passed": true,
+          "native_suffix_checks_passed": true,
+          "null_reproduction_passed": true,
+          "calls": 130
+        },
+        "third": {
+          "first_proposal_context_match_passed": true,
+          "native_suffix_checks_passed": true,
+          "null_reproduction_passed": false,
+          "calls": 135
+        }
+      }
+    }
+  ]
+}

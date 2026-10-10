@@ -5,6 +5,11 @@ from __future__ import annotations
 import subprocess
 from typing import Any, Callable
 
+try:
+    from scheduler_transport.budget import bulk_transport
+except ModuleNotFoundError:
+    from ..scheduler_transport.budget import bulk_transport
+
 
 def _stream_text(value: Any) -> str:
     if value is None:
@@ -52,6 +57,7 @@ def run_local_rsync(
         return False, f"{exception_name} exception: {str(exc)[:exception_limit]}"
 
 
+@bulk_transport()
 def run_remote_rsync_command(
     *,
     node: str,

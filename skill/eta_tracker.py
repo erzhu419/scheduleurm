@@ -21,11 +21,14 @@ absurd values (clamps current ≤ total, eta ≥ 0).
 """
 from __future__ import annotations
 
+import ast
 import json
+import math
 import re
 import shlex
 import statistics
 from datetime import datetime
+from pathlib import Path
 from typing import Optional, Tuple
 
 
@@ -49,12 +52,17 @@ _ETA_PATTERNS = [
         r'(?:^|[^\w])epoch\s*(?:[:=]\s*|\s+)(\d+)\s*/\s*(\d+)\b',
         re.IGNORECASE,
     ),
+    re.compile(
+        r'(?:^|[^\w])episode\s*(?:[:=]\s*|\s+)(\d+)\s*/\s*(\d+)\b',
+        re.IGNORECASE,
+    ),
     # "Iter 100/1000", "Step 100/1000", "iter 100/1000", "step 100 of 1000"
     re.compile(r'(?:^|\s)(?:Iter|Step|step|iter)[:\s]+(\d+)\s*(?:/|of)\s*(\d+)\b'),
     # "100/1000 done" / "(100/1000)" trailing or in parens
     re.compile(r'(?:^|[\s(])(\d+)\s*/\s*(\d+)\s*(?:done|complete|completed|\))'),
     # batch/eval counters: "[16/103] OK ..." (offline-sumo style)
     re.compile(r'^\s*\[\s*(\d+)\s*/\s*(\d+)\s*\]'),
+    re.compile(r'\bbranches=(\d+)\s*/\s*(\d+)\b'),
 ]
 
 
@@ -89,7 +97,7 @@ _LOG_TIMESTAMP_RE = re.compile(
 )
 
 _ITER_TIME_RE = re.compile(
-    r'(?:^|[^\w])(?:Iter|Iteration|Step|step)\s+(\d+)\b.*?\bTime:\s*(\d+(?:\.\d+)?)\s*s\b',
+    r'(?:^|[^\w])(?:Iter|Iteration|Step|step)\s+(\d+)\b.*?\b(?:Time:\s*|elapsed=)(\d+(?:\.\d+)?)\s*s\b',
     re.IGNORECASE,
 )
 
@@ -282,7 +290,7 @@ def parse_seconds_per_unit(tail_text: str) -> Optional[float]:
 def iter_time_window_projection(tail_text: str,
                                 elapsed_s: float,
                                 cmd: Optional[str] = None,
-                                min_points: int = 3,
+                                min_points: int = 2,
                                 max_points: int = 80) -> Optional[dict]:
     """Estimate ETA from recent cumulative ``Iter N ... Time: Xs`` slope.
 
@@ -323,6 +331,10 @@ def iter_time_window_projection(tail_text: str,
     first_current, first_time = window[0]
     last_current, last_time = window[-1]
     if last_current <= first_current or last_time <= first_time:
+        return None
+    # Sparse logs can span many iterations with only two samples. Adjacent
+    # startup samples are not enough to estimate steady-state throughput.
+    if len(window) == 2 and last_current - first_current < _min_progress_for_rate(total):
         return None
     if last_current >= total:
         return {
@@ -1445,6 +1457,323 @@ def _min_progress_for_rate(total: int, configured: Optional[int] = None) -> int:
     return max(1, min(total_i, adaptive))
 
 
+def _thesis_episode_protocol(cmd: Optional[str]) -> Optional[dict]:
+    """Read the fixed budget when an older watcher only collects the log tail."""
+    families = {"bus_control_repair_v3": "cs_episodes", "bus_legacy_dual_v1": "episodes"}
+    if not any(family in (cmd or "") for family in families):
+        return None
+    tokens = shlex.split(cmd or "")
+    if _command_arg(cmd or "", "--phase") != "train":
+        return None
+    script = next((Path(token) for token in tokens
+                   if Path(token).parent.name in families
+                   and Path(token).name in ("cs.py", "node_run.py", "run.py")), None)
+    if script is None:
+        return None
+    if script.parent.name == "bus_control_repair_v3" and (
+        script.name == "run.py" or (script.name == "node_run.py" and "cs" not in tokens)
+    ):
+        return None
+    if script.parent.name == "bus_legacy_dual_v1" and script.name == "cs.py":
+        return None
+    protocol_path = script.parent / "protocol.json"
+    if not protocol_path.is_file():
+        protocol_path = (Path(__file__).resolve().parents[2] / "Thesis" / "experiments"
+                         / script.parent.name / "protocol.json")
+    try:
+        protocol = json.loads(protocol_path.read_text())
+        return {"episodes": 1 if "--smoke" in tokens else protocol[families[script.parent.name]]}
+    except (OSError, ValueError, KeyError):
+        return None
+
+
+def _structured_progress_row(line: str) -> Optional[dict]:
+    try:
+        row = json.loads(line)
+        return row if isinstance(row, dict) else None
+    except ValueError:
+        # Thesis prints dict reprs containing np.float64 calls in nested metrics.
+        # Extract only literal top-level progress fields, without executing calls.
+        try:
+            tree = ast.parse(line, mode="eval").body
+            if not isinstance(tree, ast.Dict):
+                return None
+            fields = {"episode", "episodes", "total_episodes", "max_episodes",
+                      "epoch", "epochs", "total_epochs", "max_epochs", "num_epochs", "n_epochs",
+                      "step", "total_steps", "max_steps", "num_steps", "n_steps",
+                      "iteration", "iter", "iterations", "max_iters", "num_iters", "n_iters",
+                      "current", "completed", "total", "phase_total", "unit", "phase",
+                      "continuation_updates", "phase_updates", "updates", "offline_updates",
+                      "total_offline_updates", "elapsed_seconds", "elapsed_s", "wall_seconds",
+                      "phase_index", "phase_count", "remaining_seconds", "remaining_phases_seconds"}
+            return {key.value: ast.literal_eval(value)
+                    for key, value in zip(tree.keys, tree.values)
+                    if isinstance(key, ast.Constant) and key.value in fields}
+        except (SyntaxError, ValueError, TypeError):
+            return None
+
+
+def _eta_protocol_document(tail_text: str) -> dict:
+    protocol_match = re.search(
+        r'^===ETA_PROTOCOL===\n(.*?)\n===ETA_PROTOCOL_END===$', tail_text, re.M | re.S)
+    if protocol_match:
+        try:
+            document = json.loads(protocol_match.group(1))
+            return document if isinstance(document, dict) else {}
+        except (ValueError, TypeError):
+            pass
+    return {}
+
+
+def _eta_protocol_budget(document: dict) -> dict:
+    budget = document.get("protocol", document)
+    return budget if isinstance(budget, dict) else document
+
+
+def structured_training_projection(tail_text: str, elapsed_s: float,
+                                   cmd: Optional[str] = None) -> Optional[dict]:
+    """Project logged episodes/phase updates against this run's protocol budget."""
+    document = _eta_protocol_document(tail_text)
+    protocol = _eta_protocol_budget(document) or None
+    evaluation = document.get("eta_evaluation")
+    if protocol is None:
+        protocol = _thesis_episode_protocol(cmd)
+    key, unit = "continuation_updates", "update"
+    total_match = _SCHEDULEURM_ETA_TOTAL_RE.search(tail_text)
+    if total_match:
+        total = int(total_match.group(1))
+    else:
+        try:
+            if "episodes" in protocol:
+                return structured_progress_projection(tail_text, elapsed_s, cmd=cmd)
+            elif "continuation_updates" in protocol:
+                key = "phase_updates"
+                total = int(protocol["continuation_updates"])
+            else:
+                budget = protocol.get("source_event_budget", protocol.get("source_events"))
+                total = int(budget) - int(protocol["warmup_events"])
+        except (ValueError, TypeError, KeyError):
+            return None
+    evaluation_s = 0.0
+    if key == "phase_updates" and protocol and protocol.get("evaluation"):
+        # A finished training loop is not a finished train-and-evaluate job.
+        if not evaluation or evaluation.get("remaining_seconds") is None:
+            return None
+        evaluation_s = max(0.0, float(evaluation["remaining_seconds"]))
+        if evaluation.get("training_finished"):
+            eta_s = int(evaluation_s)
+            return {
+                "source": "progress_window", "eta_s": eta_s,
+                "total_s": int(max(0, elapsed_s) + eta_s),
+                "current": int(evaluation["completed_cases"]),
+                "total_units": int(evaluation["total_cases"]),
+                "unit_s": float(evaluation.get("case_seconds") or 0),
+                "progress_line": (f"evaluation_cases={evaluation['completed_cases']}/"
+                                  f"{evaluation['total_cases']}; case timing includes subprocess startup"),
+            }
+    if total <= 0:
+        return None
+    points = []
+    phase = None
+    for line in tail_text.splitlines():
+        if not line.startswith("{"):
+            continue
+        row = _structured_progress_row(line)
+        if row is None:
+            continue
+        try:
+            current_value = row.get(key)
+            if current_value is None and key == "continuation_updates":
+                current_value = row.get("updates")
+            current = int(current_value)
+            timestamp = float(row.get("elapsed_seconds", row.get("elapsed_s", row.get("wall_seconds"))))
+        except (ValueError, TypeError, KeyError):
+            continue
+        if not 0 <= current <= total or not 0 <= timestamp < float("inf"):
+            continue
+        if points and (row.get("phase") != phase or current < points[-1][0]
+                       or timestamp < points[-1][1]):
+            points = []
+        phase = row.get("phase")
+        if points and current == points[-1][0]:
+            points[-1] = (current, timestamp)
+        else:
+            points.append((current, timestamp))
+    window = points[-8:]
+    if len(window) < 3:
+        return None
+    current, timestamp = window[-1]
+    delta = current - window[0][0]
+    window_s = timestamp - window[0][1]
+    if delta <= 0 or window_s <= 0:
+        return None
+    unit_s = window_s / delta
+    eta_s = int(max(0, (total - current) * unit_s) + evaluation_s)
+    return {
+        "source": "progress_window",
+        "eta_s": eta_s,
+        "total_s": int(max(0, elapsed_s) + eta_s),
+        "current": current,
+        "total_units": total,
+        "unit_s": unit_s,
+        "window_points": len(window),
+        "progress_line": (f"{key}={current}/{total}; {unit_s:.3f}s/{unit}"
+                          + (f"; evaluation_remaining={evaluation_s:.0f}s" if evaluation else "")),
+    }
+
+
+def structured_progress_projection(tail_text: str, elapsed_s: float,
+                                   cmd: Optional[str] = None) -> Optional[dict]:
+    """Project ordinary JSON/dict progress and the project-independent log contract."""
+    pairs = (
+        ("current", ("total",), "unit"),
+        ("completed", ("total",), "unit"),
+        ("epoch", ("epochs", "total_epochs", "max_epochs", "num_epochs", "n_epochs"), "epoch"),
+        ("episode", ("episodes", "total_episodes", "max_episodes", "cs_episodes"), "episode"),
+        ("step", ("total_steps", "max_steps", "num_steps", "n_steps"), "step"),
+        ("iteration", ("iterations", "max_iters", "num_iters", "n_iters"), "iteration"),
+        ("iter", ("iterations", "max_iters", "num_iters", "n_iters"), "iteration"),
+        ("phase_updates", ("phase_total",), "update"),
+        ("offline_updates", ("total_offline_updates",), "update"),
+    )
+    points, latest = [], None
+    context = None
+    document = _eta_protocol_document(tail_text)
+    protocol = _eta_protocol_budget(document) or _thesis_episode_protocol(cmd) or {}
+    marker = _SCHEDULEURM_ETA_TOTAL_RE.search(tail_text + "\n" + (cmd or ""))
+    for line in tail_text.splitlines():
+        if line.startswith("SCHEDULEURM_PROGRESS "):
+            line = line[len("SCHEDULEURM_PROGRESS "):]
+        if not line.startswith("{"):
+            continue
+        row = _structured_progress_row(line)
+        if not row:
+            continue
+        for key, totals, unit in pairs:
+            if key not in row or isinstance(row[key], bool):
+                continue
+            total = next((row[name] for name in totals if row.get(name) is not None), None)
+            if total is None and key in ("current", "completed") and marker:
+                total = marker.group(1)
+            if total is None and cmd:
+                command_totals = totals + (("offline_updates",) if key == "offline_updates" else ())
+                for name in command_totals:
+                    total = (_command_arg(cmd, "--" + name)
+                             or _command_arg(cmd, "--" + name.replace("_", "-")))
+                    if total is not None:
+                        break
+            if total is None:
+                # Match the counter's unit; an epoch budget is not a step budget.
+                total = next((protocol[name] for name in totals if protocol.get(name) is not None), None)
+                if total is None and key == "offline_updates":
+                    total = protocol.get("offline_updates")
+            try:
+                current, total = int(row[key]), int(total)
+                stamp = float(row.get("elapsed_seconds", row.get("elapsed_s", row.get("wall_seconds", -1))))
+            except (ValueError, TypeError):
+                continue
+            if total <= 0 or not 0 <= current <= total or not math.isfinite(stamp):
+                continue
+            new_context = (key, total, row.get("phase"), row.get("phase_index"))
+            if context != new_context or (points and
+                    (current < points[-1][0] or stamp < points[-1][1])):
+                points = []
+            context = new_context
+            latest = (row, current, total, str(row.get("unit") or unit))
+            if stamp >= 0:
+                if points and current == points[-1][0]:
+                    points[-1] = (current, stamp)
+                else:
+                    points.append((current, stamp))
+            break
+    if latest is None:
+        return None
+    row, current, total, unit = latest
+    native_eta = row.get("remaining_seconds")
+    future_eta = row.get("remaining_phases_seconds")
+    if native_eta is None and future_eta is None and protocol.get("evaluation"):
+        return None
+    try:
+        unfinished_phases = int(row.get("phase_index", 1)) < int(row.get("phase_count", 1))
+        if native_eta is None and unfinished_phases and future_eta is None:
+            return None
+        future_s = float(future_eta or 0)
+        if future_s < 0 or not math.isfinite(future_s):
+            return None
+        if native_eta is not None:
+            eta_s = float(native_eta)
+            if eta_s < 0 or not math.isfinite(eta_s):
+                return None
+            return {
+                "source": "inline_eta", "eta_s": int(eta_s),
+                "total_s": int(max(0, elapsed_s) + eta_s),
+                "current": current, "total_units": total,
+                "unit_s": 0.0,
+                "progress_line": f"{unit}={current}/{total}; task-reported remaining={eta_s:.0f}s",
+            }
+    except (ValueError, TypeError):
+        return None
+    if current == total:
+        return {
+            "source": "progress_window", "eta_s": int(future_s),
+            "total_s": int(max(0, elapsed_s) + future_s),
+            "current": current, "total_units": total,
+            "unit_s": 0.0,
+            "progress_line": f"{unit}={current}/{total}; future_phases={future_s:.0f}s",
+        }
+    window = points[-8:]
+    if len(window) < 3:
+        return None
+    delta = current - window[0][0]
+    window_s = window[-1][1] - window[0][1]
+    if delta <= 0 or window_s <= 0:
+        return None
+    unit_s = window_s / delta
+    eta_s = int((total - current) * unit_s + future_s)
+    return {
+        "source": "progress_window", "eta_s": eta_s,
+        "total_s": int(max(0, elapsed_s) + eta_s),
+        "current": current, "total_units": total, "unit_s": unit_s,
+        "window_points": len(window),
+        "progress_line": (f"{unit}={current}/{total}; {unit_s:.3f}s/{unit}"
+                          + (f"; future_phases={future_s:.0f}s" if unfinished_phases else "")),
+    }
+
+
+def action_branch_projection(tail_text: str, elapsed_s: float) -> Optional[dict]:
+    """Exclude branches restored from checkpoint from this run's observed rate."""
+    start = None
+    progress = None
+    for line in tail_text.splitlines():
+        if not line.startswith(("ACTION_RISK_START ", "ACTION_RISK_BRANCH ")):
+            continue
+        parsed = parse_progress(line)
+        if parsed is None:
+            continue
+        if line.startswith("ACTION_RISK_START "):
+            start = parsed
+            progress = None
+        else:
+            progress = parsed
+    if start is None or progress is None or start[1] != progress[1]:
+        return None
+    current, total = progress
+    completed = current - start[0]
+    if completed < _min_progress_for_rate(total) or elapsed_s <= 0:
+        return None
+    unit_s = elapsed_s / completed
+    eta_s = int(max(0, (total - current) * unit_s))
+    return {
+        "source": "progress_rate",
+        "eta_s": eta_s,
+        "total_s": int(elapsed_s + eta_s),
+        "current": current,
+        "total_units": total,
+        "unit_s": unit_s,
+        "progress_line": f"branches={current}/{total}; restored={start[0]}; {unit_s:.2f}s/branch",
+    }
+
+
 def compute_eta_seconds(tail_text: str,
                         elapsed_s: float,
                         fallback_ewma_s: float = 0,
@@ -1472,6 +1801,18 @@ def compute_eta_seconds(tail_text: str,
     would be worse (would trigger premature migration).
     """
     elapsed = max(1.0, float(elapsed_s))  # avoid div-by-zero
+
+    if "SCHEDULEURM_PROGRESS " in tail_text:
+        projection = structured_progress_projection(tail_text, elapsed, cmd=cmd)
+        return (int(projection["eta_s"]) if projection is not None
+                else int(max(0, float(fallback_ewma_s or 0) - elapsed)))
+
+    for projection in (
+        structured_training_projection(tail_text, elapsed, cmd=cmd),
+        action_branch_projection(tail_text, elapsed),
+    ):
+        if projection is not None:
+            return int(projection["eta_s"])
 
     # Tier 0 (highest priority): tqdm's own pre-computed remaining-seconds.
     # tqdm uses a smoothed windowed rate that adapts to warmup vs steady-state
@@ -1522,7 +1863,11 @@ def compute_eta_seconds(tail_text: str,
     if progress_window_projection is not None:
         return int(progress_window_projection.get("eta_s") or 0)
 
-    progress = parse_progress(tail_text, cmd=cmd)
+    structured_projection = structured_progress_projection(tail_text, elapsed, cmd=cmd)
+    if structured_projection is not None:
+        return int(structured_projection["eta_s"])
+
+    progress = None if "ACTION_RISK_" in tail_text else parse_progress(tail_text, cmd=cmd)
     if progress is not None and _BOTORCH_SAASBO_RE.search(cmd or ""):
         try:
             saas_n0 = max(0, int(_command_arg(cmd or "", "--n0") or 0))
@@ -1571,7 +1916,15 @@ def runtime_projection(tail_text: str,
     tqdm's smoothed estimate, then `total_s = elapsed_s + remaining_s`.
     """
     elapsed = max(0.0, float(elapsed_s or 0))
-    progress = parse_progress(tail_text, cmd=cmd)
+    if "SCHEDULEURM_PROGRESS " in tail_text:
+        return structured_progress_projection(tail_text, elapsed, cmd=cmd)
+    for projection in (
+        structured_training_projection(tail_text, elapsed, cmd=cmd),
+        action_branch_projection(tail_text, elapsed),
+    ):
+        if projection is not None:
+            return projection
+    progress = None if "ACTION_RISK_" in tail_text else parse_progress(tail_text, cmd=cmd)
 
     tqdm_eta = parse_tqdm_eta(tail_text)
     if tqdm_eta is not None:
@@ -1648,6 +2001,10 @@ def runtime_projection(tail_text: str,
     if progress_window_projection is not None:
         return progress_window_projection
 
+    structured_projection = structured_progress_projection(tail_text, elapsed, cmd=cmd)
+    if structured_projection is not None:
+        return structured_projection
+
     if progress is not None and _BOTORCH_SAASBO_RE.search(cmd or ""):
         try:
             saas_n0 = max(0, int(_command_arg(cmd or "", "--n0") or 0))
@@ -1697,6 +2054,24 @@ def runtime_projection_from_log(log_text: str,
       2. progress N/M plus observed wall duration, if the caller monitored the
          preflight process.
     """
+    structured = structured_progress_projection(log_text, elapsed_s=max(0, observed_duration_s), cmd=cmd)
+    if structured is not None:
+        if observed_duration_s <= 0:
+            stamps = []
+            for line in log_text.splitlines():
+                if line.startswith("SCHEDULEURM_PROGRESS "):
+                    line = line[len("SCHEDULEURM_PROGRESS "):]
+                if line.startswith("{"):
+                    row = _structured_progress_row(line) or {}
+                    try:
+                        stamps.append(float(row.get("elapsed_seconds", row.get("elapsed_s", 0))))
+                    except (TypeError, ValueError):
+                        pass
+            structured["total_s"] = int(max(0, stamps[-1] if stamps else 0) + structured["eta_s"])
+        structured["source"] = "local_test_progress"
+        return structured
+    if "SCHEDULEURM_PROGRESS " in log_text:
+        return None
     tqdm_times = parse_tqdm_elapsed_remaining(log_text)
     progress = parse_progress(log_text, cmd=cmd)
     if tqdm_times is not None:

@@ -24,6 +24,23 @@ def test_backend_base_requires_local_capacity_check_by_default():
         backend.batch_probe({"tasks": []})
 
 
+def test_windows_new_launches_are_blocked_without_network_or_task_mutation(sch, monkeypatch):
+    def unexpected_io(*args, **kwargs):
+        pytest.fail("Windows launch must be rejected before any remote operation")
+
+    monkeypatch.setattr(sch, "_run_windows_ps", unexpected_io)
+    monkeypatch.setattr(sch, "_run_control_subprocess", unexpected_io)
+    for node in ("windows_a", "windows_b"):
+        for backend in (sch.WindowsBackend(), sch.HybridBackend()):
+            task = {"id": "no-windows", "status": "queued", "node": node,
+                    "est_vram_mb": 0, "cpu_cores": 1}
+            original = dict(task)
+            ok, reason = backend.launch(task)
+            assert not ok
+            assert "windows-node-disabled" in reason
+            assert task == original
+
+
 def test_legacy_external_backend_refuses_launch_and_kill_and_reports_legacy_probe_unknown():
     backend = LegacyExternalBackend(lambda: "Legacy external scheduler records are read-only")
     running = {"id": "old", "status": "running", "slurm_job_id": 123}
@@ -188,7 +205,7 @@ def test_scheduler_backend_runtime_deps_are_built_from_scheduler_namespace(sch):
     assert windows.launcher_text is sch._WINDOWS_LAUNCHER
     assert windows.detacher_text is sch._WINDOWS_DETACHER
     assert windows.ssh_base_args is sch._ssh_base_args
-    assert windows.run_subprocess is sch.subprocess.run
+    assert windows.run_subprocess is sch._run_control_subprocess
     assert windows.node_cpu_fallback_block_reason is sch._node_cpu_fallback_block_reason
     assert windows.windows_env_spec_error is sch._windows_env_spec_error
     assert windows.windows_path_for_node is sch._windows_path_for_node

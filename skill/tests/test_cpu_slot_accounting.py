@@ -76,8 +76,8 @@ def test_cpu_slot_accounting_uses_auto_worker_floor(check, sch):
                 "status": "running",
                 "node": "node006",
                 "cpu_cores": 1,
-                "cpu_auto_workers": 170,
-                "cpu_batch_plan": {"workers": 170},
+                "cpu_auto_workers": 74,
+                "cpu_batch_plan": {"workers": 74},
             },
             {
                 "id": "tfreq",
@@ -87,28 +87,43 @@ def test_cpu_slot_accounting_uses_auto_worker_floor(check, sch):
             },
         ]
     }
-    nodes = [{"name": "node006", "free_cpu": 168, "total_cpu": 192, "loadavg": 24.0}]
+    nodes = [{"name": "node006", "free_cpu": 72, "total_cpu": 96, "loadavg": 24.0}]
     sch._apply_cpu_slot_accounting_to_nodes(state, nodes)
     check("CPU slot accounting reserves auto-worker floor",
-          nodes[0]["cpu_slot_reserved"] == 178,
+          nodes[0]["cpu_slot_reserved"] == 82,
           diag=f"reserved={nodes[0].get('cpu_slot_reserved')}")
     check("CPU slot accounting free_cpu reflects planned worker slots",
           nodes[0]["free_cpu"] == 14,
           diag=f"free_cpu={nodes[0].get('free_cpu')}")
 
 
+def test_hpc_slot_accounting_converts_old_probe_capacity_without_changing_tasks(sch):
+    task = {"id": "old", "status": "running", "node": "node001",
+            "cpu_cores": 120, "started_at": 1}
+    for free_cpu, expected in ((192, 96), (141, 45), (95, 0)):
+        nodes = [{"name": "node001", "total_cpu": 192, "free_cpu": free_cpu}]
+        sch._apply_cpu_slot_accounting_to_nodes({"tasks": [task]}, nodes)
+        assert nodes[0]["total_cpu"] == 96
+        assert nodes[0]["observed_free_cpu"] == expected
+        assert nodes[0]["cpu_hard_free"] == expected
+        assert nodes[0]["cpu_slot_free"] == 0
+        assert nodes[0]["cpu_slot_overcommitted"] == 24
+        assert task["status"] == "running"
+        assert task["cpu_cores"] == 120
+
+
 def test_hpc_starting_wide_tasks_keep_hard_reservations_with_live_probe(check, sch):
     state = {
         "tasks": [
-            {"id": f"t{i}", "status": "running", "node": "node006", "cpu_cores": 40}
+            {"id": f"t{i}", "status": "running", "node": "node006", "cpu_cores": 16}
             for i in range(4)
         ]
     }
     nodes = [{
         "name": "node006",
-        "free_cpu": 96,
-        "total_cpu": 192,
-        "loadavg": 96.0,
+        "free_cpu": 48,
+        "total_cpu": 96,
+        "loadavg": 48.0,
         "free_ram_mb": 170000,
         "total_ram_mb": 192793,
         "running_count": 4,
@@ -129,7 +144,7 @@ def test_hpc_starting_wide_tasks_keep_hard_reservations_with_live_probe(check, s
           nodes[0]["free_cpu"] == 32,
           diag=f"free_cpu={nodes[0].get('free_cpu')}")
     check("starting wide HPC tasks reserve their unobserved startup load",
-          (not ok) and "cpu: need 40, free 0/192" in why,
+          (not ok) and "cpu: need 40, free 0/96" in why,
           diag=f"ok={ok} why={why} node={nodes[0]}")
 
 
@@ -143,17 +158,17 @@ def test_hpc_mature_single_core_task_can_use_guarded_live_backfill(check, sch):
                 "cpu_cores": 1,
                 "started_at": 1,
             }
-            for i in range(192)
+            for i in range(96)
         ]
     }
     nodes = [{
         "name": "node006",
         "free_cpu": 48,
-        "total_cpu": 192,
-        "loadavg": 144.0,
+        "total_cpu": 96,
+        "loadavg": 48.0,
         "free_ram_mb": 170000,
         "total_ram_mb": 192793,
-        "running_count": 192,
+        "running_count": 96,
     }]
     sch._apply_cpu_slot_accounting_to_nodes(state, nodes)
     task = {
@@ -170,7 +185,7 @@ def test_hpc_mature_single_core_task_can_use_guarded_live_backfill(check, sch):
     )
 
     check("mature single-core jobs remain eligible for guarded live backfill",
-          (free, source, slot_free, observed_free) == (28, "live_guarded", 0, 48),
+          (free, source, slot_free, observed_free) == (47, "live_guarded", 0, 48),
           diag=f"free={free} source={source} node={nodes[0]}")
 
 
@@ -184,17 +199,17 @@ def test_hpc_launching_single_core_wave_blocks_stale_probe_backfill(check, sch):
                 "cpu_cores": 1,
                 "launching_started_at": 1,
             }
-            for i in range(192)
+            for i in range(96)
         ]
     }
     nodes = [{
         "name": "node006",
-        "free_cpu": 192,
-        "total_cpu": 192,
+        "free_cpu": 96,
+        "total_cpu": 96,
         "loadavg": 0.0,
         "free_ram_mb": 170000,
         "total_ram_mb": 192793,
-        "running_count": 192,
+        "running_count": 96,
     }]
     sch._apply_cpu_slot_accounting_to_nodes(state, nodes)
     task = {
@@ -211,7 +226,7 @@ def test_hpc_launching_single_core_wave_blocks_stale_probe_backfill(check, sch):
     )
 
     check("launching one-core wave reserves capacity before CPU utilization rises",
-          (free, source, slot_free, observed_free) == (0, "live_guarded", 0, 192),
+          (free, source, slot_free, observed_free) == (0, "live_guarded", 0, 96),
           diag=f"free={free} source={source} node={nodes[0]}")
 
 
@@ -231,8 +246,8 @@ def test_hpc_cpu_slot_accounting_backfill_still_rejects_live_cpu_shortage(check,
     nodes = [{
         "name": "node006",
         "free_cpu": 20,
-        "total_cpu": 192,
-        "loadavg": 172.0,
+        "total_cpu": 96,
+        "loadavg": 76.0,
         "free_ram_mb": 170000,
         "total_ram_mb": 192793,
         "running_count": 4,
@@ -250,7 +265,7 @@ def test_hpc_cpu_slot_accounting_backfill_still_rejects_live_cpu_shortage(check,
     ok, why = sch._node_resources_ok(task, nodes[0], sch.NODES["node006"])
 
     check("wide HPC CPU task obeys the tighter live CPU limit",
-          (not ok) and "cpu: need 40, free 0/192" in why,
+          (not ok) and "cpu: need 40, free 19/96" in why,
           diag=f"ok={ok} why={why} node={nodes[0]}")
 
 
@@ -264,17 +279,17 @@ def test_hpc_wide_cpu_task_rejects_zero_live_free_despite_open_slots(check, sch)
                 "cpu_cores": 12,
                 "started_at": 1,
             }
-            for i in range(15)
+            for i in range(7)
         ]
     }
     nodes = [{
         "name": "node004",
         "free_cpu": 0,
-        "total_cpu": 192,
-        "loadavg": 192.0,
+        "total_cpu": 96,
+        "loadavg": 96.0,
         "free_ram_mb": 170000,
         "total_ram_mb": 192793,
-        "running_count": 15,
+        "running_count": 7,
     }]
     sch._apply_cpu_slot_accounting_to_nodes(state, nodes)
     task = {
@@ -296,7 +311,7 @@ def test_hpc_wide_cpu_task_rejects_zero_live_free_despite_open_slots(check, sch)
           == (0, "live_guarded", 12, 0),
           diag=f"free={free} source={source} node={nodes[0]}")
     check("wide task is rejected on a live-saturated node",
-          (not ok) and "cpu: need 12, free 0/192" in why,
+          (not ok) and "cpu: need 12, free 0/96" in why,
           diag=f"ok={ok} why={why}")
 
 
@@ -310,17 +325,17 @@ def test_hpc_mature_wide_tasks_can_backfill_real_idle_cpu(check, sch):
                 "cpu_cores": 12,
                 "started_at": 1,
             }
-            for i in range(15)
+            for i in range(7)
         ]
     }
     nodes = [{
         "name": "node002",
         "free_cpu": 47,
-        "total_cpu": 192,
-        "loadavg": 145.0,
+        "total_cpu": 96,
+        "loadavg": 49.0,
         "free_ram_mb": 170000,
         "total_ram_mb": 192793,
-        "running_count": 15,
+        "running_count": 7,
     }]
     sch._apply_cpu_slot_accounting_to_nodes(state, nodes)
     task = {
@@ -339,7 +354,7 @@ def test_hpc_mature_wide_tasks_can_backfill_real_idle_cpu(check, sch):
 
     check("mature wide jobs use real idle CPU instead of permanent slot floors",
           (free, source, slot_free, observed_free)
-          == (27, "live_guarded", 12, 47),
+          == (46, "live_guarded", 12, 47),
           diag=f"free={free} source={source} node={nodes[0]}")
     check("12-core task fits in observed 47-core headroom",
           ok and why == "ok",
@@ -363,8 +378,8 @@ def test_hpc_startup_reservation_only_covers_unobserved_cpu(check, sch):
     nodes = [{
         "name": "node003",
         "free_cpu": 65,
-        "total_cpu": 192,
-        "loadavg": 127.0,
+        "total_cpu": 96,
+        "loadavg": 31.0,
         "free_ram_mb": 170000,
         "total_ram_mb": 192793,
         "running_count": 5,
@@ -388,7 +403,7 @@ def test_hpc_startup_reservation_only_covers_unobserved_cpu(check, sch):
           diag=f"node={nodes[0]}")
     check("remaining startup deficit leaves schedulable headroom",
           (free, source, slot_free, observed_free)
-          == (15, "live_guarded", 132, 65),
+          == (34, "live_guarded", 36, 65),
           diag=f"free={free} source={source} node={nodes[0]}")
 
 

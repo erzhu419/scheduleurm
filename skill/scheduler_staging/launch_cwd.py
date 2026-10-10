@@ -199,35 +199,11 @@ def launch_input_stage_key(
 
 
 def _launch_input_paths(task: dict) -> list[str]:
-    explicit = [
+    return _minimal_directory_roots([
         str(path).strip()
         for path in (task.get("stage_input_paths") or [])
         if str(path).strip()
-    ]
-    if explicit:
-        return _minimal_directory_roots(explicit)
-    # Backward compatibility for queued dependency chains created before
-    # stage_input_paths existed: a ready prerequisite file is an input, so
-    # stage its smallest meaningful containing directory.  Keep this scoped
-    # below cwd and never turn the entire project root into an input transfer.
-    cwd = Path(str(task.get("cwd") or "")).expanduser()
-    try:
-        cwd = cwd.resolve(strict=True)
-    except OSError:
-        return []
-    inferred = []
-    for raw_path in task.get("wait_for_files") or []:
-        path = Path(str(raw_path)).expanduser()
-        if not path.is_file():
-            continue
-        parent = path.parent.resolve()
-        try:
-            if parent == cwd or os.path.commonpath([str(parent), str(cwd)]) != str(cwd):
-                continue
-        except ValueError:
-            continue
-        inferred.append(str(parent))
-    return _minimal_directory_roots(inferred)
+    ])
 
 
 def _minimal_directory_roots(paths: list[str]) -> list[str]:

@@ -5,6 +5,25 @@ The default policy is `legacy`, which preserves existing scheduler behavior.
 Non-legacy policies are kept here so experiments can change the action selection
 surface without rewriting the scheduler.
 
+## Current main result (2026-10-03)
+
+The adopted research policy is **BG** (`BackgroundCompetitionContinuousLaneRollout`).
+Independent confirmation used 96 paired tapes: 12 fresh arrival-seed blocks,
+four measured catalogues and loads 0.8/0.95. Relative to exact enumerated
+single-lane MaxWeight, mean flow decreased **8.33%** and the mean of paired
+common-completion P90 values decreased **17.03%**. See the
+[confirmation evidence](../md/background_competition_continuous_20260930.md)
+and [current result record](../md/main_result_BG_20261003.md).
+
+Evidence covers the frozen asynchronous independent-lane model with fixed-rate
+Poisson arrivals, deterministic measured-cache service and zero computation
+delay in the service clock. BG is a research replay policy; live placement
+integration and an asynchronous stability proof remain incomplete.
+
+The finite branch is closed as exploratory negative evidence, retaining its
+original full24 **HOLD** and subsequent results. Its pending later-action
+intervention design is parked. The experimental history below remains archived.
+
 Select a policy without editing scheduler code:
 
 ```bash

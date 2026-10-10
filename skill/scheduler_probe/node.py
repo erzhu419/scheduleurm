@@ -2,6 +2,11 @@
 
 from __future__ import annotations
 
+try:
+    from scheduler_transport.budget import TransportBusy, control_transport
+except ModuleNotFoundError:
+    from ..scheduler_transport.budget import TransportBusy, control_transport
+
 from dataclasses import dataclass
 from typing import Any, Callable
 
@@ -182,6 +187,7 @@ def parse_probe_output(name: str, info: dict, out: str, *, deps: ProbeNodeDeps) 
     return result
 
 
+@control_transport()
 def probe_node(name: str, *, deps: ProbeNodeDeps) -> dict:
     name = deps.canonical_node_name(name)
     if deps.node_is_windows(name):
@@ -197,6 +203,9 @@ def probe_node(name: str, *, deps: ProbeNodeDeps) -> dict:
             if rc == 0:
                 break
             last_error = (err or f"rc={rc}")[:160]
+        except TransportBusy as exc:
+            return {"name": name, "alive": None, "transport_waiting": True,
+                    "error": str(exc)}
         except Exception as exc:
             rc = 1
             last_error = str(exc)[:160]

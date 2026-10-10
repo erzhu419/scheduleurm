@@ -1,4 +1,5 @@
 from skill.scheduler_cpu import plan as cpu_plan
+from skill.scheduler_node import inventory as scheduler_nodes
 
 
 def _nodes():
@@ -56,11 +57,37 @@ def test_cpu_batch_plan_skips_dead_or_full_nodes():
     ) == []
 
 
-def test_cpu_batch_plan_splits_windows_workers_into_lanes_when_needed():
+def test_hpc_batch_plan_caps_workers_at_physical_cores_even_with_old_probe_cache():
+    names = [f"node{idx:03d}" for idx in range(1, 7)]
+    states = {
+        name: {"alive": True, "free_cpu": 192, "total_cpu": 192, "cores": 192}
+        for name in names
+    }
+    plan = cpu_plan.cpu_batch_plan(
+        1152, names, node_states=states, node_info_by_name=scheduler_nodes.NODES,
+    )
+    assert len(plan) == 6
+    assert sum(row["items"] for row in plan) == 1152
+    for row in plan:
+        assert row["total_physical_cores"] == row["physical_cores"] == 96
+        assert row["workers"] == 96
+        assert row["waves"] == 2
+
+
+def test_hpc_planning_converts_free_cpu_from_old_logical_capacity():
+    for free_cpu, expected in ((192, 96), (141, 45), (95, 0)):
+        assert cpu_plan.cpu_planning_cores_for_node(
+            "node001",
+            node_state={"free_cpu": free_cpu, "total_cpu": 192, "cores": 192},
+            node_info=scheduler_nodes.NODES["node001"],
+        ) == (expected, 96)
+
+
+def test_cpu_batch_plan_splits_capped_linux_workers_into_lanes_when_needed():
     nodes = {
         "win": {
             "cpu_cores": 128,
-            "os": "windows",
+            "os": "linux",
             "max_cpu_workers_per_process": 60,
         }
     }
@@ -78,6 +105,22 @@ def test_cpu_batch_plan_splits_windows_workers_into_lanes_when_needed():
     assert sum(row["items"] for row in plan) == 901
     assert all(row["workers"] <= 60 for row in plan)
     assert all(row["unsplit_workers"] == 113 for row in plan)
+
+
+def test_cpu_batch_plan_excludes_windows_even_when_explicitly_requested():
+    nodes = {"win": {"os": "windows", "cpu_cores": 128},
+             "linux": {"cpu_cores": 96}}
+    assert cpu_plan.cpu_batch_plan(100, ["win"], node_info_by_name=nodes) == []
+    plan = cpu_plan.cpu_batch_plan(100, ["win", "linux"], node_info_by_name=nodes)
+    assert {row["node"] for row in plan} == {"linux"}
+    assert sum(row["items"] for row in plan) == 100
+
+
+def test_scheduler_default_cpu_planning_does_not_include_windows(sch):
+    assert not any(sch._node_is_windows(name) for name in sch._cpu_labor_node_names())
+    plan = sch._cpu_batch_plan(100)
+    assert plan
+    assert not any(sch._node_is_windows(row["node"]) for row in plan)
 
 
 def test_cpu_wave_summary_and_log_payload_keep_detailed_rows():

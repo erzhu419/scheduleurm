@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import pytest
 
 from skill.scheduler_node import gates as node_gates
 from skill.scheduler_node.gates import (
@@ -286,6 +287,29 @@ def test_python_command_identity_is_parsed_once_for_both_gate_fields(monkeypatch
     assert node_gates.python_entrypoint_identity(command) == "module:package.runner"
     assert node_gates.python_runtime_identity(command) == "/env/bin/python3"
     assert calls == [command]
+
+
+@pytest.mark.parametrize('arguments,blocked', [
+    ('--kind cs_symbolic --phase train --seed 2', True),
+    ('--phase=train --kind=cs_symbolic --seed 2', True),
+    ('--kind resac --phase train --seed 2', False),
+    ('--kind cs_native --phase train --seed 2', False),
+    ('--kind cs_symbolic --phase evaluate --seed 2', False),
+])
+def test_python_import_block_stays_within_wrapper_workload_and_phase(tmp_path, arguments, blocked):
+    prefix = '/env/bin/python /work/node_run.py '
+    record = {'task_id': 'failed', 'status': 'pending', 'category': 'PYTHON_IMPORT',
+              'node': 'node004', 'signature': 'symbolic-smoke', 'cwd': '/work',
+              'project': 'Thesis', 'cmd': prefix + '--kind cs_symbolic --phase train --seed 1',
+              'ts': 100.0}
+    deps = BlockedNodesDeps(escalations_file=tmp_path / 'missing.jsonl',
+                           project_wide_env_block_ttl_s=3600, now=lambda: 101.0,
+                           latest_escalations=lambda: {'failed': record})
+    task = {'signature': 'formal', 'cwd': '/work', 'project': 'Thesis', 'cmd': prefix + arguments}
+    assert blocked_nodes_for_task(task, deps=deps) == ({'node004'} if blocked else set())
+    assert blocked_nodes_for_task(dict(task, signature='symbolic-smoke'), deps=deps) == {'node004'}
+    record['category'] = 'ENV_MISSING'
+    assert blocked_nodes_for_task(task, deps=deps) == {'node004'}
 
 
 def test_launch_failed_nodes_expire_after_soft_block_ttl():

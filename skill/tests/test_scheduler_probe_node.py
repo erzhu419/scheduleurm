@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from skill.scheduler_node import inventory as scheduler_nodes
 from skill.scheduler_probe.node import ProbeNodeDeps, parse_probe_output, probe_node
 
 
-def _sample_output(*, loadavg="4.0", threads="20 4096 30 1000"):
+def _sample_output(*, loadavg="4.0", cores=16, threads="20 4096 30 1000"):
     return (
         "0, 1000, 24000, 23000, 10\n"
         "1, 2000, 24000, 22000, 20\n"
@@ -11,7 +12,7 @@ def _sample_output(*, loadavg="4.0", threads="20 4096 30 1000"):
         "30000\n"
         "64000\n"
         "===SEP===\n"
-        "16\n"
+        f"{cores}\n"
         "===SEP===\n"
         f"{loadavg}\n"
         "===SEP===\n"
@@ -84,6 +85,18 @@ def test_parse_probe_output_uses_memavailable_first_caps_declared_ram_and_averag
     assert result["free_cgroup_pids"] == 970
     assert result["gpus"][0]["util_pct"] == 40
     assert result["gpus"][1]["util_pct"] == 46
+
+
+def test_hpc_individual_probe_budgets_physical_cores_not_smt_threads():
+    for idx in range(1, 7):
+        name = f"node{idx:03d}"
+        result = parse_probe_output(
+            name, scheduler_nodes.NODES[name],
+            _sample_output(cores=192, loadavg="20.0"), deps=_deps(),
+        )
+        assert result["cores"] == 192
+        assert result["total_cpu"] == 96
+        assert result["free_cpu"] == 76
 
 
 def test_local_probe_prefers_windows_nvidia_smi_and_folds_host_extras():

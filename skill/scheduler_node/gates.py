@@ -9,6 +9,8 @@ from dataclasses import dataclass
 from functools import lru_cache
 from typing import Any, Callable, Optional
 
+from .inventory import WINDOWS_TASK_DISPATCH_BLOCK_REASON
+
 
 @dataclass(frozen=True)
 class BlockedNodesDeps:
@@ -85,6 +87,25 @@ def python_runtime_identity(command: str) -> str:
 def python_entrypoint_identity(command: str) -> str:
     """Return the Python script/module launched by a command."""
     return _python_command_identities(str(command or ""))[1]
+
+
+@lru_cache(maxsize=4096)
+def _python_workload_selectors(command: str) -> tuple:
+    """Keep import failures within a wrapper's selected workload and phase."""
+    try:
+        tokens = shlex.split(command or "")
+    except ValueError:
+        tokens = str(command or "").split()
+    selected = {}
+    for index, token in enumerate(tokens):
+        name, separator, value = token.partition("=")
+        if name not in ("--kind", "--phase"):
+            continue
+        if separator:
+            selected[name] = value
+        elif index + 1 < len(tokens) and not tokens[index + 1].startswith("-"):
+            selected[name] = tokens[index + 1]
+    return tuple(selected.get(name) for name in ("--kind", "--phase"))
 
 
 def node_numeric(node_state: Optional[dict], *keys, default=None):
@@ -192,6 +213,8 @@ def blocked_nodes_for_task(task: dict, *, deps: BlockedNodesDeps) -> set:
                 and task_entrypoint
                 and failed_entrypoint
                 and task_entrypoint == failed_entrypoint
+                and _python_workload_selectors(str(task.get("cmd") or ""))
+                == _python_workload_selectors(str(rec.get("cmd") or ""))
             )
             same_cwd = same_cwd and same_python_invocation
             same_proj = same_proj and same_python_invocation
@@ -429,6 +452,8 @@ def node_schedulable_cpu_free(task: dict, node_state: dict, node_info: dict) -> 
 def node_resources_ok(task: dict, node_state: dict, node_info: dict,
                       *, deps: NodeResourceGateDeps) -> tuple[bool, str]:
     """CPU + RAM + concurrency check at node level."""
+    if str(node_info.get("os") or node_state.get("os") or "").lower() == "windows":
+        return False, WINDOWS_TASK_DISPATCH_BLOCK_REASON
     cap = node_concurrency_cap_for_task(task, node_info)
     cur_running = node_state.get("running_count", 0)
     if (cap is not None and cur_running >= cap

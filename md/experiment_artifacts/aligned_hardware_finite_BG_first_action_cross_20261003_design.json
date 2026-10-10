@@ -1,0 +1,181 @@
+{
+  "registered_at_utc": "2026-10-03T11:53:19.711392+00:00",
+  "experiment": "Finite factual first root versus BG first root with identical finite continuation",
+  "source_analysis": "aligned_hardware_cached_finite_bg_regression_20261003_summary.json",
+  "source_analysis_design_epoch": "2026-10-03T11:35:46.335571+00:00",
+  "finite_scientific_epoch": "2026-10-01T03:00:01.222638+00:00",
+  "BG_epoch": "2026-09-30T05:45:18.017710+00:00",
+  "selection": "The only node/load group with worsened mean versus BG: Linux/.95. Retain all three original seeds and their natural first physical action divergence, including seed42 after900. No filtering by a single-seed effect.",
+  "targets": [
+    {
+      "tape_id": "cpu_a:R2:load0.95:seed41",
+      "seed": 41,
+      "frame_index": 53,
+      "context": {
+        "start": 120.20813764717337,
+        "queue": [
+          1,
+          1,
+          2
+        ],
+        "waiting_ages": [
+          [
+            9.193988809291866
+          ],
+          [
+            23.642576969203787
+          ],
+          [
+            2.552847604137682,
+            1.0457077498825669
+          ]
+        ],
+        "available_before": [
+          120.20813764717337,
+          128.356257342363
+        ],
+        "observed_arrival_counts": [
+          7,
+          4,
+          22
+        ],
+        "lane_ids": [
+          0
+        ]
+      },
+      "factual_finite_root": 1,
+      "replacement_BG_root": 3,
+      "BG_requirements": [
+        0,
+        1,
+        0
+      ],
+      "finite_requirements": [
+        1,
+        0,
+        1
+      ]
+    },
+    {
+      "tape_id": "cpu_a:R2:load0.95:seed42",
+      "seed": 42,
+      "frame_index": 153,
+      "context": {
+        "start": 916.3159755953957,
+        "queue": [
+          1,
+          3,
+          3
+        ],
+        "waiting_ages": [
+          [
+            13.376353056639914
+          ],
+          [
+            180.57177947609193,
+            44.09066480841466,
+            31.60463172162497
+          ],
+          [
+            13.996574377637103,
+            5.2898259111372,
+            4.590036688033479
+          ]
+        ],
+        "available_before": [
+          916.3159755953957,
+          926.3079820766703
+        ],
+        "observed_arrival_counts": [
+          69,
+          34,
+          185
+        ],
+        "lane_ids": [
+          0
+        ]
+      },
+      "factual_finite_root": 6,
+      "replacement_BG_root": 1,
+      "BG_requirements": [
+        1,
+        0,
+        1
+      ],
+      "finite_requirements": [
+        0,
+        0,
+        3
+      ]
+    },
+    {
+      "tape_id": "cpu_a:R2:load0.95:seed43",
+      "seed": 43,
+      "frame_index": 36,
+      "context": {
+        "start": 73.32430574573043,
+        "queue": [
+          2,
+          0,
+          1
+        ],
+        "waiting_ages": [
+          [
+            14.949423323787435,
+            1.8810473957548908
+          ],
+          [],
+          [
+            9.55281357728731
+          ]
+        ],
+        "available_before": [
+          73.32430574573043,
+          75.98254996744495
+        ],
+        "observed_arrival_counts": [
+          7,
+          1,
+          14
+        ],
+        "lane_ids": [
+          0
+        ]
+      },
+      "factual_finite_root": 5,
+      "replacement_BG_root": 1,
+      "BG_requirements": [
+        1,
+        0,
+        1
+      ],
+      "finite_requirements": [
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "planning_samples": 8,
+  "event_cap": 128,
+  "workers_per_suffix": 13,
+  "cohort": [
+    300,
+    900
+  ],
+  "snapshot_cutoffs": [
+    900,
+    1200
+  ],
+  "environment_arrival_end": 1200,
+  "intervention": "Restore finite own RNG/counters/FIFO/arrival counts/all lane commitments, consume and verify its complete factual first proposal, then force only the cached BG first physical root. Every later proposal uses the unchanged finite controller. Never transplant BG planner state.",
+  "baseline": "Reuse original complete finite trajectory. The original BG full trajectory only establishes the common prefix, not the suffix control.",
+  "expected_new_service_suffixes": 3,
+  "expected_reused_complete_finite_arms": 3,
+  "expected_extra_prefix_native_proposals_upper_bound": 6,
+  "fee_scope": "Charge full native prefix/anchor/suffix, override MW scan, state restoration and actual parallel worker work; computation excluded from physical service clock as before.",
+  "outcomes": "Forced BG minus cached finite: restricted mean, same-pair common-ID P90, class metrics and unfinished at900/1200; waiting/service decomposition. Do not add effects across three states or treat them as whole-policy gain.",
+  "causality_check": "Committed prefix jobs unchanged, canonical births identical, own native first proposal/fees reproduce cached finite anchor. Seed42 intervention after900 must leave900 jobs/snapshot unchanged.",
+  "decision_boundary": "Conditional causal evidence only. No new policy, parameter scan, adoption gate or confirmation. Decide the next single state mechanism from all three signs; preserve original full24 HOLD.",
+  "launch_status": "design_frozen_not_submitted"
+}

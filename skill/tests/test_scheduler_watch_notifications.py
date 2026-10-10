@@ -180,3 +180,16 @@ def test_notify_dispatch_events_ignores_noisy_internal_events():
     )
 
     assert calls == []
+
+
+def test_notify_dispatch_events_reports_changed_blocks_only():
+    calls = []
+    notify_dispatch_events(
+        [
+            {"type": "blocked", "task_id": "t1", "reason": "waiting", "reason_changed": False},
+            {"type": "blocked", "task_id": "t2", "reason": "new dependency", "reason_changed": True},
+        ],
+        notify_fn=lambda *args, **kwargs: calls.append(args),
+        compact_task_payload_fn=lambda task: task,
+    )
+    assert calls == [("task_blocked", {"task_id": "t2", "reason": "new dependency"})]

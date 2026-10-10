@@ -1,0 +1,88 @@
+{
+  "at_utc": "2026-10-03T12:43:20.074989+00:00",
+  "execution_checks_passed": true,
+  "preparation": [
+    {
+      "id": "t130198",
+      "status": "done",
+      "exit_code": 0,
+      "node": "node005",
+      "finished_at": 1791030190.2098815
+    }
+  ],
+  "null_validation": [
+    {
+      "id": "t130199",
+      "status": "done",
+      "exit_code": 0,
+      "node": "node005",
+      "finished_at": 1791030309.8325868
+    }
+  ],
+  "scientific_suffixes": [
+    {
+      "id": "t130202",
+      "status": "done",
+      "exit_code": 0,
+      "node": "node005",
+      "finished_at": 1791030430.4247303
+    },
+    {
+      "id": "t130203",
+      "status": "done",
+      "exit_code": 0,
+      "node": "node006",
+      "finished_at": 1791030949.863936
+    },
+    {
+      "id": "t130201",
+      "status": "done",
+      "exit_code": 0,
+      "node": "node004",
+      "finished_at": 1791031329.3934689
+    }
+  ],
+  "merge": [
+    {
+      "id": "t130205",
+      "status": "done",
+      "exit_code": 0,
+      "node": "node005",
+      "finished_at": 1791031395.1672578
+    }
+  ],
+  "small_transfers": [
+    {
+      "node": "node005",
+      "file": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/md/experiment_artifacts/aligned_hardware_finite_BG_first_action_cross_20261003_null_seed42.json",
+      "bytes": 47909
+    },
+    {
+      "node": "node005",
+      "file": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/md/experiment_artifacts/aligned_hardware_finite_BG_first_action_cross_20261003_summary.json",
+      "bytes": 67798
+    }
+  ],
+  "complete_trajectories_retained_on_server": true,
+  "failed_validation_attempts": [
+    {
+      "at_utc": "2026-10-03T12:19:13.643884+00:00",
+      "failed_task": {
+        "id": "t130193",
+        "node": "node005",
+        "status": "failed",
+        "exit_code": 1,
+        "started_at": 1791029603.590705,
+        "finished_at": 1791029712.759194,
+        "log_path": "/tmp/sched_t130193.log"
+      },
+      "failed_validation": "after900 snapshot comparison",
+      "cause": "new runner compared snapshot900 with cached raw snapshot1200; original full24 cohort metrics were correct",
+      "scientific_suffixes_started": 0,
+      "repair": "preserve raw1200 snapshots for exact null replay; recompute both900 states from jobs",
+      "old_execution_protocol_retained_on_server": true
+    }
+  ],
+  "original_full24_decision": "HOLD",
+  "performance_gain_established": false
+}

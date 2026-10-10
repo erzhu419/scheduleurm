@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+try:
+    from scheduler_transport.budget import transport_waiting
+except ModuleNotFoundError:
+    from ..scheduler_transport.budget import transport_waiting
+
 from dataclasses import dataclass
 from typing import Any, Callable, Optional
 
@@ -49,7 +54,28 @@ def _candidate_from_task(task: dict, result_dir, result_dirs: list, host) -> dic
     return candidate
 
 
-def _dependency_priority(task: dict, active_wait_files: tuple[str, ...]) -> int:
+def _dependency_result_paths(tasks: list[dict]) -> set[str]:
+    paths = set()
+    for waiter in tasks:
+        if waiter.get("status") not in {"queued", "launching"}:
+            continue
+        waits = waiter.get("wait_for_files") or []
+        if isinstance(waits, str):
+            waits = [waits]
+        for wait_file in waits:
+            path = str(wait_file).rstrip("/")
+            if path in paths:
+                continue
+            # A producer directory may contain the prerequisite several levels down.
+            while path:
+                paths.add(path)
+                path = path.rpartition("/")[0]
+            if str(wait_file).startswith("/"):
+                paths.add("")
+    return paths
+
+
+def _dependency_priority(task: dict, dependency_paths: set[str]) -> int:
     local_dirs = list(task.get("local_result_dirs") or [])
     if not local_dirs:
         local_dir = task.get("local_result_dir") or task.get("result_dir")
@@ -57,11 +83,7 @@ def _dependency_priority(task: dict, active_wait_files: tuple[str, ...]) -> int:
             local_dirs.append(local_dir)
     for local_dir in local_dirs:
         prefix = str(local_dir).rstrip("/")
-        if any(
-            str(wait_file) == prefix
-            or str(wait_file).startswith(prefix + "/")
-            for wait_file in active_wait_files
-        ):
+        if prefix in dependency_paths:
             return 0
     return 1
 
@@ -74,25 +96,21 @@ def _snapshot_candidates(
     stale_threshold = deps.result_sync_timeout_s + deps.result_sync_stale_grace_s
     candidates = []
     dependency_candidates = 0
-    with deps.state_lock(purpose="watch:startup-recover-launching"):
+    with deps.state_lock(purpose="result-sync:claim"):
         state = deps.load_state()
         now = deps.now()
         tasks = list(state.get("tasks", []))
-        active_wait_files = tuple(
-            str(wait_file)
-            for waiter in tasks
-            if waiter.get("status") in {"queued", "launching"}
-            for wait_file in (waiter.get("wait_for_files") or [])
-        )
-        ordered_tasks = sorted(
-            enumerate(tasks),
-            key=lambda item: (
-                _dependency_priority(item[1], active_wait_files),
-                item[0],
-            ),
-        )
-        for _, task in ordered_tasks:
-            is_dependency = _dependency_priority(task, active_wait_files) == 0
+        dependency_paths = _dependency_result_paths(tasks)
+        ordered_tasks = [
+            (_dependency_priority(task, dependency_paths), task)
+            for task in tasks
+            if task.get("status") == "done"
+            and not task.get("result_synced_at")
+            and int(task.get("result_sync_attempts") or 0) < deps.result_sync_max_attempts
+        ]
+        ordered_tasks.sort(key=lambda item: item[0])
+        for priority, task in ordered_tasks:
+            is_dependency = priority == 0
             if is_dependency:
                 if dependency_candidates >= dependency_limit:
                     continue
@@ -166,7 +184,8 @@ def _commit_results(results: list[tuple[str, bool, str]], deps: ResultSyncDeps) 
                 task["result_sync_error"] = None
             else:
                 task["result_sync_error"] = msg[:300]
-                task["result_sync_attempts"] = int(task.get("result_sync_attempts") or 0) + 1
+                if not transport_waiting(msg):
+                    task["result_sync_attempts"] = int(task.get("result_sync_attempts") or 0) + 1
         deps.save_state(state)
 
 
@@ -201,7 +220,8 @@ def sync_completed_results_outside_lock(
         results.append((candidate["id"], ok, msg))
         _notify(
             deps,
-            "result_sync_done" if ok else "result_sync_failed",
+            ("result_sync_done" if ok else "result_sync_waiting"
+             if transport_waiting(msg) else "result_sync_failed"),
             {
                 "task_id": candidate["id"],
                 "result_dir": candidate["result_dir"],

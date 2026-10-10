@@ -1,0 +1,28 @@
+{
+  "registered_at_utc": "2026-10-03T11:22:22.429887+00:00",
+  "source_native_epoch": "2026-10-03T04:18:21.983431+00:00",
+  "source_horizon_epoch": "2026-10-03T03:05:46.132942+00:00",
+  "tapes": [
+    "gpu_b:R2:load0.95:seed41",
+    "gpu_b:R2:load0.95:seed42",
+    "gpu_b:R2:load0.95:seed43"
+  ],
+  "score": "J = unchanged complete native H-population cost + sum_c(anchor estimated lambda_c * (last H waiting-job start_c - H)^2 / 2)",
+  "coefficient": 1,
+  "planning_samples": 8,
+  "planning_event_cap": 128,
+  "horizon_tau_max_multiple": 2,
+  "root_set": "Original two feasible roots inside the frozen BG S2<=MW risk set",
+  "rates": "Original anchor estimates only; no generating rates or actual future arrivals",
+  "population": "All original H waiting IDs; empty coordinates have clearance H",
+  "evaluation_unit": "Three existing selected development states; eight paired forecast paths per state; neutral actual effects remain neutral",
+  "screen": "Proceed to rule implementation only if at least one root ranking changes, every nonzero cohort mean direction matches, one changed choice improves conditional mean, and changed choices add no conditional mean/P90/900 or1200 unfinished harm. Otherwise HOLD without full24.",
+  "limitations": "Endogenous clearance proxy, not expected-cost lower bound; omits busy-only congestion and future service cost. Selected-state results do not establish policy gains or independent confirmation.",
+  "sources": [
+    "algorithm/experiments/fifo_clearance_externality.py",
+    "algorithm/experiments/cached_fifo_clearance_screen.py",
+    "skill/tests/test_fifo_clearance_externality.py"
+  ],
+  "new_simulations": 0,
+  "new_planner_calls": 0
+}

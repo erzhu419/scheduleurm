@@ -1,0 +1,64 @@
+{
+  "status": "IMPLEMENTED_READY_FOR_VALIDATION",
+  "created_at_utc": "2026-10-03T06:27:46.232102+00:00",
+  "source_native_terminal_epoch": "2026-10-03T04:18:21.983431+00:00",
+  "source_H_epoch": "2026-10-03T03:05:46.132942+00:00",
+  "motivation": "Post-H known-rate sensitivity leaves all24 paired preferences unchanged, including seed43 8/8 native. Test within-H timing without changing class counts or arrival law.",
+  "single_intervention": "Reflect every original newborn time within (0,H] as H-t, retaining coordinate and identity. Visible/busy births and commitments stay fixed. Recompute temporal prefix/background source labels.",
+  "states": [
+    {
+      "seed": 41,
+      "frame_index": 11,
+      "parent_root": 2,
+      "native_root": 5
+    },
+    {
+      "seed": 42,
+      "frame_index": 39,
+      "parent_root": 7,
+      "native_root": 4
+    },
+    {
+      "seed": 43,
+      "frame_index": 29,
+      "parent_root": 4,
+      "native_root": 5
+    }
+  ],
+  "planning_samples": 8,
+  "planning_event_cap": 128,
+  "new_root_sample_units": 48,
+  "new_anchor_proposals": 0,
+  "initial_controller": "Restore the original complete consumed anchor tree and fixed physical context; original two roots and risk membership retained.",
+  "during_H": "Replay reflected births through the complete native finite controller. H queues, costs and controller states are outputs and may change; per-class H roster counts and identities remain fixed.",
+  "after_H": "Use original anchor-MLE rates, original through-H-generated pending residual clocks and RNG state. Preserve the same external post-H continuation for each original/mirror pair; do not use oracle rates.",
+  "arrival_law": "Conditional on each class count over H, homogeneous Poisson event times are uniform; reflection preserves this conditional law and the sampled class counts. No realized-tape timing is injected.",
+  "cost": "Same fixed H population; compare complete cumulative cost plus waiting/processing, sources/classes, preferences and leave-one-out sensitivity against the completed original native-terminal caches.",
+  "work": "Charge new H and terminal native proposals, child CPU, clock reflection, sorting and stream replay separately; keep all partial caps and unavailable scores.",
+  "algorithm_direction": "Timing sensitivity would motivate four original/mirror pairs within an eight-path budget as a future candidate; its mean/p90 gains require complete development evaluation, not these selected labels.",
+  "full24_decision": "PERSISTENT_CURRENT_POLICY_DEVELOPMENT_HOLD",
+  "limitations": "This is a paired timing sensitivity diagnostic. Neither a selected-realization ranking match nor a mirror preference flip establishes expected-cost accuracy or deployable policy gain.",
+  "paired_budget_projection": {
+    "primary_sample_indices": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "separate_sensitivity_indices": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "paths_per_projection": 8,
+    "selection": "fixed before execution; report separately; no favorable block selection"
+  },
+  "implementation": {
+    "kernel": "algorithm/experiments/h_timing_mirror_rollout.py",
+    "runner": "algorithm/experiments/aligned_hardware_h_timing_mirror.py",
+    "tests": "skill/tests/test_h_timing_mirror_rollout.py",
+    "test_count": 4,
+    "diagnostic_overhead": "Reused H simulator computes a fixed MW drain; its H-waiting assignments are undone, and its extra probes/admissions/CPU are charged. No finite controller state is consumed by that MW drain."
+  }
+}

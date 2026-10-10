@@ -6,6 +6,16 @@
 
 Built for the real shape of ML research: dozens of multi-hour training runs, mixed GPU/CPU jobs, mixed local/remote nodes, peak-memory uncertainty, processes that get killed and need to resume, externally-launched jobs that need to be tracked retroactively.
 
+## Current algorithm research result
+
+The main research policy is **BG** (`BackgroundCompetitionContinuousLaneRollout`).
+Frozen Poisson-arrival simulations using four measured service catalogues and
+96 paired tapes in 12 fresh seed blocks show **8.33% lower mean flow time** and
+**17.03% lower mean per-tape common-completion P90** relative to exact enumerated
+single-lane MaxWeight. The finite continuation branch retains its **HOLD** as
+exploratory negative evidence. See the [main result and limitations](md/main_result_BG_20261003.md)
+and [algorithm layer](algorithm/README.md) for the research implementation.
+
 ## What it actually does
 
 | Problem you have today | What scheduleurm gives you |
@@ -40,7 +50,7 @@ NODES = {
 
 GPUs are auto-probed at dispatch via `nvidia-smi --query-gpu=memory.used,memory.total,utilization.gpu`. CPU/RAM is read from `/proc/loadavg` + `/proc/meminfo` (over SSH for remotes).
 
-Edit the `NODES` dict at the top of `skill/scheduler.py` to match your cluster, then re-run `install.sh`. (See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for the full set of knobs.)
+Configure your cluster in `~/.claude/scheduler/nodes.json`, outside the repository. Alternatively set `SCHEDULEURM_NODES_FILE` to an absolute JSON path. Without a file, only the local machine is enabled, with a conservative one-core budget. See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) and [nodes.example.json](docs/nodes.example.json). Restart the watcher after changing this file.
 
 ## Install
 
@@ -49,11 +59,13 @@ Requires: Python 3.10+, `nvidia-smi` on each GPU node, passwordless SSH for remo
 ```bash
 git clone https://github.com/erzhu419/scheduleurm.git
 cd scheduleurm
-./install.sh                  # COPY mode: cp skill files to ~/.claude/skills/scheduler/
+./install.sh                  # LINK mode: ~/.claude/skills/scheduler -> clone/skill
 # OR
 ./install.sh --link           # LINK mode: symlink ~/.claude/skills/scheduler -> clone/skill
                               #            edits in the clone are picked up immediately
                               #            (recommended if you plan to git pull / hack on it)
+# OR
+./install.sh --copy           # COPY mode: install a snapshot, including algorithm modules
 # OR
 ./install.sh --no-systemd     # skip watcher unit; you'll run watch by hand
                               # (combinable with --link)
@@ -96,9 +108,9 @@ Trigger surface (the skill description routes any of these to the scheduler):
 
 The skill translates intent → `submit` / `dispatch` / `status` / `wait-for` calls. See [`skill/SKILL.md`](skill/SKILL.md) for the full decision rules.
 
-### From any MCP-capable client (ChatGPT Desktop / Cursor / Cline / …)
+### From a client supporting local stdio MCP (Codex / Claude / Cursor / Cline)
 
-The MCP wrapper at [`skill/integrations/scheduler_mcp.py`](skill/integrations/scheduler_mcp.py) exposes 9 tools (`submit_task`, `dispatch`, `status`, `doctor`, `show_task`, `cancel_task`, `history`, `queue_dump`, `task_log`) over stdio JSON-RPC. Per-client config in [`skill/integrations/README.md`](skill/integrations/README.md).
+The MCP wrapper at [`skill/integrations/scheduler_mcp.py`](skill/integrations/scheduler_mcp.py) exposes 12 tools, including bulk CPU submission and cancellation, over stdio JSON-RPC. It uses the same scheduler, queue, watcher and algorithms as the CLI. Installation and client configuration are in [`skill/integrations/README.md`](skill/integrations/README.md).
 
 ### Directly from the CLI
 
@@ -130,6 +142,28 @@ python3 $sch cancel t0042
 
 Full subcommand list: `python3 scheduler.py --help`.
 
+## Shared SSH Transport
+
+Scheduler commands and file transfers share per-route admission across local
+processes: eight slots, with two reserved for probes/cancellation and at most
+two concurrent bulk transfers. Capacity waits do not consume launch/result
+retries or mark a node offline, and never wait while holding the state lock.
+SSH sessions reuse route-specific control sockets; gpu1/gpu2 selection considers
+the shared route occupancy and retains the alternate route on connection failure.
+
+Project rsync calls using `scheduler._ssh_rsync_shell_for_node(node)` automatically
+use the same admission. For other project transport commands, use the common
+entrypoint on the scheduler host:
+
+```bash
+python3 skill/transport_exec.py --bulk -- rsync -az -e "ssh -J gpu_a" source/ user@host:destination/
+python3 skill/transport_exec.py -- ssh gpu_a hostname
+```
+
+Clients on other machines and raw SSH calls that bypass this entrypoint are not
+covered by the local shared budget. Transport wait timing is recorded in
+`~/.claude/scheduler/transport_coord/waits.jsonl`.
+
 ## Slurm support status
 
 New launches are scheduler-managed only. The old Slurm install/submit path has
@@ -159,7 +193,28 @@ ETA is the load-imbalance signal, not task count (one 30-hour job ≠ thirty 1-h
 | 3 | History EWMA − elapsed | Coarse | Fallback for new signatures |
 | — | 0 (unknown) | None | No signal at all |
 
-For best ETA accuracy, **wrap the training loop with tqdm**. The skill auto-checks scripts at submit time and proposes adding `from tqdm import tqdm; for x in tqdm(loop): ...` if missing — your loop's existing per-iter logging stays intact, tqdm just adds the bar.
+New tasks can expose progress without a project-specific parser:
+
+```text
+SCHEDULEURM_PROGRESS {"current": 40, "total": 100, "unit": "iteration", "elapsed_seconds": 240}
+```
+
+Emit this flushed JSON record at start, every 30-60 seconds, on phase changes,
+and at completion. Use the actual configured total. Recent timestamp deltas
+estimate remaining work without counting restored checkpoints as new work.
+For multi-phase jobs, include one-based `phase_index` and `phase_count`; add
+`remaining_phases_seconds` from measured timings, or report a whole-job
+`remaining_seconds`. Without future-phase timing, ETA stays unknown rather than
+claiming the training loop finishes the whole job. Existing tqdm and ordinary
+JSON/dict epoch, episode, step, and iteration counters remain supported.
+If a structured log omits its total, the collector also reads small JSON protocols
+from the command's `--out` / `--output` run directory (`results/protocol.json`,
+then `protocol.json`), followed by `<entrypoint>_protocol.json` and `protocol.json`
+beside the entrypoint. This discovery does not depend on a project or script name.
+Counter units must match the budget; an explicit logged or command-line total
+takes precedence over a shared default protocol. Multi-phase jobs still need
+future-phase timing or a whole-job progress record.
+See [the submission skill](skill/SKILL.md#progress-contract-for-new-tasks).
 
 The same progress signal is also folded into `~/.claude/scheduler/runtime_history.json`.
 For later scheduler placement and ETA display with the same cmd/cwd/env parameters,
@@ -347,7 +402,7 @@ scheduleurm/
 │   ├── test_regression.py # 290+ regression checks (one per known footgun)
 │   ├── test_hook.sh       # PostToolUse hook script for Claude Code
 │   └── integrations/
-│       ├── scheduler_mcp.py    # MCP server wrapper (9 tools)
+│       ├── scheduler_mcp.py    # MCP server wrapper (12 tools)
 │       └── README.md
 ├── systemd/
 │   └── scheduler.service  # user unit; install.sh rewrites paths and enables

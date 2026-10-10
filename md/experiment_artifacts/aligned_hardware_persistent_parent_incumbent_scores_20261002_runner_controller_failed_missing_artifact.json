@@ -1,0 +1,41 @@
+{
+  "test_task": "t125032",
+  "phase": "failed",
+  "score_tasks": [],
+  "completed_exit0": [
+    {
+      "id": "t125032",
+      "status": "done",
+      "exit_code": 0,
+      "node": "node004",
+      "finished_at": 1790938070.5336738
+    }
+  ],
+  "failures": [],
+  "old_tasks_modified": false,
+  "at_utc": "2026-10-02T10:48:09.112027+00:00",
+  "task_states": [
+    {
+      "id": "t125032",
+      "status": "done",
+      "exit_code": 0,
+      "node": "node004",
+      "last_progress_line": null
+    }
+  ],
+  "test_completed": [
+    {
+      "id": "t125032",
+      "status": "done",
+      "exit_code": 0,
+      "node": "node004",
+      "finished_at": 1790938070.5336738
+    }
+  ],
+  "registration": {
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nTraceback (most recent call last):\n  File \"/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/lib/python3.10/runpy.py\", line 196, in _run_module_as_main\n    return _run_code(code, main_globals, None,\n  File \"/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/lib/python3.10/runpy.py\", line 86, in _run_code\n    exec(code, run_globals)\n  File \"/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/experiments/aligned_hardware_persistent_parent_incumbent_scores.py\", line 253, in <module>\n    main()\n  File \"/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/experiments/aligned_hardware_persistent_parent_incumbent_scores.py\", line 245, in main\n    register(args.artifact_dir, args.workers)\n  File \"/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/experiments/aligned_hardware_persistent_parent_incumbent_scores.py\", line 59, in register\n    divergence = read(Path(directory) / (DIVERGENCE + \"_summary.json\"))\n  File \"/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/experiments/aligned_hardware_persistent_parent_incumbent_scores.py\", line 42, in read\n    return json.loads(Path(file).read_text())\n  File \"/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/lib/python3.10/pathlib.py\", line 1134, in read_text\n    with self.open(mode='r', encoding=encoding, errors=errors) as f:\n  File \"/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/lib/python3.10/pathlib.py\", line 1119, in open\n    return self._accessor.open(self, mode, buffering, encoding, errors,\nFileNotFoundError: [Errno 2] No such file or directory: '/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/md/experiment_artifacts/aligned_hardware_persistent_first_divergence_20261002_summary.json'\n"
+  },
+  "controller_error": "registration failed: bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nTraceback (most recent call last):\n  File \"/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/lib/python3.10/runpy.py\", line 196, in _run_module_as_main\n    return _run_code(code, main_globals, None,\n  File \"/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/lib/python3.10/runpy.py\", line 86, in _run_code\n    exec(code, run_globals)\n  File \"/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/experiments/aligned_hardware_persistent_parent_incumbent_scores.py\", line 253, in <module>\n    main()\n  File \"/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/experiments/aligned_hardware_persistent_parent_incumbent_scores.py\", line 245, in main\n    register(args.artifact_dir, args.workers)\n  File \"/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/experiments/aligned_hardware_persistent_parent_incumbent_scores.py\", line 59, in register\n    divergence = read(Path(directory) / (DIVERGENCE + \"_summary.json\"))\n  File \"/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/experiments/aligned_hardware_persistent_parent_incumbent_scores.py\", line 42, in read\n    return json.loads(Path(file).read_text())\n  File \"/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/lib/python3.10/pathlib.py\", line 1134, in read_text\n    with self.open(mode='r', encoding=encoding, errors=errors) as f:\n  File \"/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/lib/python3.10/pathlib.py\", line 1119, in open\n    return self._accessor.open(self, mode, buffering, encoding, errors,\nFileNotFoundError: [Errno 2] No such file or directory: '/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/md/experiment_artifacts/aligned_hardware_persistent_first_divergence_20261002_summary.json'\n"
+}

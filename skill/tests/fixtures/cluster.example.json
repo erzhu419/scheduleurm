@@ -1,0 +1,1014 @@
+{
+  "local": {
+    "host": null,
+    "cpu_cores": 16,
+    "reserved_cpu_cores": 0,
+    "ram_mb": 57344,
+    "ram_headroom_mb": 2048,
+    "ram_headroom_frac": 0.2,
+    "max_vram_per_task": null,
+    "max_concurrent_running": 10,
+    "max_tasks_per_gpu": 4,
+    "gpu_util_saturation_pct": null,
+    "capabilities": [
+      "cpu",
+      "cuda",
+      "torch_cuda",
+      "jax_cuda"
+    ],
+    "blocked_gpu_projects": [
+      "BAPR"
+    ],
+    "cmd_rewrites": [
+      [
+        "/home/researcher/anaconda3/bin/python -u -m bus_experiments",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -u -m bus_experiments"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python -m bus_experiments",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -m bus_experiments"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python -u sac_ensemble",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -u sac_ensemble"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python sac_ensemble",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python sac_ensemble"
+      ]
+    ]
+  },
+  "gpu_a": {
+    "max_vram_per_task": null,
+    "max_concurrent_running": null,
+    "max_tasks_per_gpu": 4,
+    "allow_gpu_over_one_third": true,
+    "enable_claims": true,
+    "gpu_util_saturation_pct": null,
+    "capabilities": [
+      "cpu",
+      "cuda",
+      "torch_cuda",
+      "jax_cuda"
+    ],
+    "host": "gpu_a",
+    "cpu_cores": 12,
+    "ram_mb": 0,
+    "ram_headroom_frac": 0.1,
+    "launch_stage_include_paths": [
+      "SC-OLH-KG",
+      "jax_experiments/__init__.py",
+      "jax_experiments/train.py",
+      "jax_experiments/analysis",
+      "jax_experiments/algos",
+      "jax_experiments/common",
+      "jax_experiments/configs",
+      "jax_experiments/envs",
+      "jax_experiments/networks",
+      "mode_profiles.py",
+      "normalization.py",
+      "bapr_components.py"
+    ],
+    "launch_stage_fingerprint_exclude_paths": [
+      "SC-OLH-KG/manuscript/review",
+      "SC-OLH-KG/results",
+      "SC-OLH-KG/profiles",
+      "SC-OLH-KG/checkpoints",
+      "SC-OLH-KG/data/external"
+    ],
+    "cmd_rewrites": [
+      [
+        "/home/researcher/anaconda3/bin/python -u -m bus_experiments",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -u -m bus_experiments"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python -m bus_experiments",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -m bus_experiments"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python -u sac_ensemble",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -u sac_ensemble"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python sac_ensemble",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python sac_ensemble"
+      ],
+      [
+        "/home/researcher/.conda/envs/resac-jax/bin/python",
+        "/home/researcher/.venvs/resac-jax-gpu1-0438/bin/python"
+      ]
+    ],
+    "launch_extra_env": {
+      "PATH": "/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/cuda_nvcc/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+      "LD_LIBRARY_PATH": "/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/cublas/lib:/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/cuda_nvcc/lib:/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/cuda_nvrtc/lib:/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/cuda_runtime/lib:/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/cudnn/lib:/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/cufft/lib:/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/curand/lib:/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/cusolver/lib:/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/cusparse/lib:/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/nccl/lib:/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/nvjitlink/lib",
+      "XLA_PYTHON_CLIENT_MEM_FRACTION": "0.20"
+    }
+  },
+  "gpu_b": {
+    "max_vram_per_task": null,
+    "max_concurrent_running": null,
+    "max_tasks_per_gpu": 4,
+    "allow_gpu_over_one_third": true,
+    "enable_claims": true,
+    "gpu_util_saturation_pct": null,
+    "capabilities": [
+      "cpu",
+      "cuda",
+      "torch_cuda",
+      "jax_cuda"
+    ],
+    "small_vram_task_threshold_mb": 1024,
+    "small_vram_max_tasks_per_gpu": 6,
+    "small_vram_max_concurrent_running": 12,
+    "host": "gpu_b",
+    "cpu_cores": 12,
+    "ram_mb": 0,
+    "ram_headroom_frac": 0.1,
+    "launch_stage_include_paths": [
+      "SC-OLH-KG",
+      "jax_experiments/__init__.py",
+      "jax_experiments/train.py",
+      "jax_experiments/analysis",
+      "jax_experiments/algos",
+      "jax_experiments/common",
+      "jax_experiments/configs",
+      "jax_experiments/envs",
+      "jax_experiments/networks",
+      "mode_profiles.py",
+      "normalization.py",
+      "bapr_components.py"
+    ],
+    "launch_stage_fingerprint_exclude_paths": [
+      "SC-OLH-KG/manuscript/review",
+      "SC-OLH-KG/results",
+      "SC-OLH-KG/profiles",
+      "SC-OLH-KG/checkpoints",
+      "SC-OLH-KG/data/external"
+    ],
+    "cmd_rewrites": [
+      [
+        "/home/researcher/anaconda3/bin/python -u -m bus_experiments",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -u -m bus_experiments"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python -m bus_experiments",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -m bus_experiments"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python -u sac_ensemble",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -u sac_ensemble"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python sac_ensemble",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python sac_ensemble"
+      ],
+      [
+        "/home/researcher/.conda/envs/resac-jax/bin/python",
+        "/home/researcher/.venvs/resac-jax-gpu1-0438/bin/python"
+      ]
+    ],
+    "launch_extra_env": {
+      "PATH": "/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/cuda_nvcc/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+      "LD_LIBRARY_PATH": "/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/cublas/lib:/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/cuda_nvcc/lib:/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/cuda_nvrtc/lib:/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/cuda_runtime/lib:/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/cudnn/lib:/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/cufft/lib:/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/curand/lib:/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/cusolver/lib:/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/cusparse/lib:/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/nccl/lib:/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/nvjitlink/lib",
+      "XLA_PYTHON_CLIENT_MEM_FRACTION": "0.20"
+    }
+  },
+  "cpu_a": {
+    "host": "cpu_a",
+    "cpu_cores": 8,
+    "ignore_cpu_for_gpu_tasks": false,
+    "ram_mb": 0,
+    "ram_headroom_frac": 0.1,
+    "max_vram_per_task": null,
+    "max_concurrent_running": null,
+    "max_tasks_per_gpu": 3,
+    "enable_claims": true,
+    "gpu_util_saturation_pct": null,
+    "capabilities": [
+      "cpu",
+      "cuda",
+      "torch_cuda",
+      "jax_cuda"
+    ],
+    "launch_stage_include_paths": [
+      "SC-OLH-KG",
+      "jax_experiments/__init__.py",
+      "jax_experiments/train.py",
+      "jax_experiments/analysis",
+      "jax_experiments/algos",
+      "jax_experiments/common",
+      "jax_experiments/configs",
+      "jax_experiments/envs",
+      "jax_experiments/networks",
+      "mode_profiles.py",
+      "normalization.py",
+      "bapr_components.py"
+    ],
+    "launch_stage_fingerprint_exclude_paths": [
+      "SC-OLH-KG/manuscript/review",
+      "SC-OLH-KG/results",
+      "SC-OLH-KG/profiles",
+      "SC-OLH-KG/checkpoints",
+      "SC-OLH-KG/data/external"
+    ],
+    "cmd_rewrites": [
+      [
+        "/home/researcher/anaconda3/bin/python -u -m bus_experiments",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -u -m bus_experiments"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python -m bus_experiments",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -m bus_experiments"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python -u sac_ensemble",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -u sac_ensemble"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python sac_ensemble",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python sac_ensemble"
+      ],
+      [
+        "/home/researcher/.conda/envs/resac-jax/bin/python",
+        "/home/researcher/.venvs/resac-jax-gpu1-0438/bin/python"
+      ]
+    ],
+    "launch_extra_env": {
+      "PATH": "/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/cuda_nvcc/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+      "LD_LIBRARY_PATH": "/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/cublas/lib:/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/cuda_nvcc/lib:/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/cuda_nvrtc/lib:/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/cuda_runtime/lib:/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/cudnn/lib:/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/cufft/lib:/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/curand/lib:/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/cusolver/lib:/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/cusparse/lib:/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/nccl/lib:/home/researcher/.venvs/resac-jax-gpu1-0438/lib/python3.11/site-packages/nvidia/nvjitlink/lib",
+      "XLA_PYTHON_CLIENT_MEM_FRACTION": "0.20"
+    }
+  },
+  "login_hpc": {
+    "host": "192.0.2.10",
+    "ssh_user": "hpcuser",
+    "ssh_proxy_jump": "gpu_a",
+    "ssh_proxy_jumps": [
+      "gpu_a",
+      "gpu_b"
+    ],
+    "cpu_cores": 64,
+    "ram_mb": 0,
+    "ram_headroom_frac": 0.1,
+    "max_vram_per_task": null,
+    "max_concurrent_running": 0,
+    "monitor_only": true,
+    "skip_launch_staging": true,
+    "disable_auto_adopt": true,
+    "only_when_targeted": true,
+    "stage_only_when_targeted": true,
+    "relay_node": null,
+    "relay_nodes": [],
+    "relay_root": "/tmp/scheduleurm-hpc-relay/login_hpc",
+    "remote_workspace_root": "/home/hpcuser/scheduleurm_work",
+    "remote_path_prefixes": [
+      "/home/researcher/mine_code",
+      "/home/researcher/mine_code"
+    ],
+    "capabilities": [
+      "cpu",
+      "cuda",
+      "torch_cuda",
+      "jax_cuda"
+    ]
+  },
+  "node007": {
+    "host": "192.0.2.10",
+    "ssh_user": "hpcuser",
+    "ssh_proxy_jump": "gpu_a",
+    "ssh_proxy_jumps": [
+      "gpu_a",
+      "gpu_b"
+    ],
+    "sudo_ssh_host": "node007",
+    "sudo_ssh_run_as": "hpcuser",
+    "cpu_cores": 64,
+    "ram_mb": 0,
+    "ram_headroom_frac": 0.1,
+    "max_vram_per_task": null,
+    "max_concurrent_running": 24,
+    "max_tasks_per_gpu": 4,
+    "small_vram_task_threshold_mb": 1536,
+    "small_vram_max_concurrent_running": 24,
+    "small_vram_max_tasks_per_gpu": 6,
+    "allow_gpu_over_one_third": true,
+    "gpu_util_saturation_pct": null,
+    "ignore_cpu_for_gpu_tasks": true,
+    "cpu_slot_accounting": true,
+    "min_free_user_threads_for_gpu_task": 256,
+    "max_user_thread_fraction_for_gpu_task": 0.92,
+    "probe_attempts": 8,
+    "enable_claims": false,
+    "skip_launch_staging": false,
+    "only_when_targeted": false,
+    "stage_only_when_targeted": false,
+    "relay_node": null,
+    "relay_nodes": [],
+    "relay_root": "/tmp/scheduleurm-hpc-relay/node007",
+    "remote_workspace_root": "/home/hpcuser/scheduleurm_work",
+    "remote_path_prefixes": [
+      "/home/researcher/mine_code",
+      "/home/researcher/mine_code"
+    ],
+    "launch_staging_method": "rsync",
+    "launch_stage_include_paths": [
+      "SC-OLH-KG",
+      "jax_experiments/__init__.py",
+      "jax_experiments/train.py",
+      "jax_experiments/analysis",
+      "jax_experiments/algos",
+      "jax_experiments/common",
+      "jax_experiments/configs",
+      "jax_experiments/envs",
+      "jax_experiments/networks",
+      "mode_profiles.py",
+      "normalization.py",
+      "bapr_components.py"
+    ],
+    "launch_stage_fingerprint_exclude_paths": [
+      "SC-OLH-KG/manuscript/review",
+      "SC-OLH-KG/results",
+      "SC-OLH-KG/profiles",
+      "SC-OLH-KG/checkpoints",
+      "SC-OLH-KG/data/external"
+    ],
+    "cmd_rewrites": [
+      [
+        "/home/researcher/anaconda3/bin/python -u -m bus_experiments",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -u -m bus_experiments"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python -m bus_experiments",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -m bus_experiments"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python -u sac_ensemble",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -u sac_ensemble"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python sac_ensemble",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python sac_ensemble"
+      ],
+      [
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -u -m bus_experiments",
+        "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -u -m bus_experiments"
+      ],
+      [
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -m bus_experiments",
+        "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python -m bus_experiments"
+      ],
+      [
+        "/home/researcher/anaconda3/envs/LSTM-RL/bin/python",
+        "/home/hpcuser/scheduleurm_work/conda_envs/sumo-lstm-py310/bin/python"
+      ],
+      [
+        "/home/researcher/miniconda3/envs/csbapr/bin/python",
+        "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python"
+      ],
+      [
+        "/home/researcher/.venvs/scheduleurm-torch-bench/bin/python",
+        "/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/bin/python"
+      ],
+      [
+        "/home/researcher/.conda/envs/resac-jax/bin/python",
+        "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python"
+      ],
+      [
+        "/home/researcher/.venvs/resac-jax-gpu1-0438/bin/python",
+        "/home/hpcuser/scheduleurm_work/conda_envs/bapr-v39-gpu-0438/bin/python"
+      ]
+    ],
+    "launch_extra_env": {
+      "PATH": "/cm/local/apps/cuda-driver/libs/535.261.03/bin:/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin:/usr/local/bin:/usr/bin:/bin",
+      "LD_LIBRARY_PATH": "/cm/local/apps/cuda-driver/libs/535.261.03/lib64",
+      "BAPR_PYTHON": "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python",
+      "XLA_PYTHON_CLIENT_MEM_FRACTION": "0.20"
+    },
+    "resume_scan_python": "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python",
+    "nvidia_smi_path": "/cm/local/apps/cuda-driver/libs/535.261.03/bin/nvidia-smi",
+    "capabilities": [
+      "cpu",
+      "cuda",
+      "torch_cuda",
+      "jax_cuda"
+    ]
+  },
+  "windows_a": {
+    "host": "forwarder.example.org",
+    "ssh_user": "researcher",
+    "ssh_port": 22945,
+    "ssh_identity": "/home/researcher/.ssh/id_ed25519",
+    "os": "windows",
+    "cpu_cores": 128,
+    "ram_mb": 524288,
+    "ram_headroom_frac": 0.1,
+    "max_vram_per_task": 0,
+    "windows_python": "F:\\v\\Scripts\\python.exe",
+    "windows_workspace_root": "F:\\researcher_smoke",
+    "windows_scheduleurm_dir": "F:\\researcher_smoke\\.scheduleurm",
+    "windows_auto_pin": true,
+    "windows_skip_ht_pair": true,
+    "capabilities": [
+      "cpu",
+      "jax_cpu"
+    ],
+    "cpu_labor_node": true
+  },
+  "windows_b": {
+    "host": "forwarder.example.org",
+    "ssh_user": "researcher",
+    "ssh_port": 23565,
+    "ssh_identity": "/home/researcher/.ssh/id_ed25519",
+    "os": "windows",
+    "cpu_cores": 128,
+    "ram_mb": 524288,
+    "ram_headroom_frac": 0.1,
+    "max_vram_per_task": 0,
+    "windows_python": "F:\\v\\Scripts\\python.exe",
+    "windows_workspace_root": "F:\\researcher_smoke",
+    "windows_scheduleurm_dir": "F:\\researcher_smoke\\.scheduleurm",
+    "windows_auto_pin": true,
+    "windows_skip_ht_pair": false,
+    "capabilities": [
+      "cpu",
+      "jax_cpu"
+    ],
+    "cpu_labor_node": true
+  },
+  "node001": {
+    "host": "192.0.2.10",
+    "ssh_user": "hpcuser",
+    "ssh_proxy_jump": "gpu_a",
+    "ssh_proxy_jumps": [
+      "gpu_a",
+      "gpu_b"
+    ],
+    "sudo_ssh_host": "node001",
+    "sudo_ssh_run_as": "hpcuser",
+    "cpu_cores": 96,
+    "physical_cores": 96,
+    "reserved_cpu_cores": 1,
+    "ram_mb": 0,
+    "ram_headroom_frac": 0.1,
+    "max_vram_per_task": 0,
+    "max_concurrent_running": null,
+    "cpu_slot_accounting": true,
+    "min_free_user_threads_for_jax_cpu_task": 1024,
+    "jax_cpu_launch_user_thread_reserve": 512,
+    "live_cpu_backfill": true,
+    "live_cpu_backfill_max_task_cores": 64,
+    "persistent_cpu_live_backfill_max_declared_cores": 138,
+    "live_cpu_backfill_startup_grace_s": 90,
+    "live_cpu_backfill_single_thread_startup_grace_s": 10,
+    "skip_launch_staging": false,
+    "only_when_targeted": true,
+    "stage_only_when_targeted": true,
+    "relay_node": null,
+    "relay_nodes": [],
+    "relay_root": "/tmp/scheduleurm-hpc-relay/node001",
+    "remote_workspace_root": "/home/hpcuser/scheduleurm_work",
+    "shared_workspace_group": "login_hpc-home",
+    "disable_auto_adopt": true,
+    "auto_adopt_owners": [
+      "hpcuser",
+      "root"
+    ],
+    "remote_path_prefixes": [
+      "/home/researcher/mine_code",
+      "/home/researcher/mine_code"
+    ],
+    "launch_stage_include_paths": [
+      "SC-OLH-KG",
+      "jax_experiments/__init__.py",
+      "jax_experiments/train.py",
+      "jax_experiments/analysis",
+      "jax_experiments/algos",
+      "jax_experiments/common",
+      "jax_experiments/configs",
+      "jax_experiments/envs",
+      "jax_experiments/networks",
+      "mode_profiles.py",
+      "normalization.py",
+      "bapr_components.py"
+    ],
+    "launch_stage_fingerprint_exclude_paths": [
+      "SC-OLH-KG/manuscript/review",
+      "SC-OLH-KG/results",
+      "SC-OLH-KG/profiles",
+      "SC-OLH-KG/checkpoints",
+      "SC-OLH-KG/data/external"
+    ],
+    "cmd_rewrites": [
+      [
+        "/home/researcher/anaconda3/bin/python -u -m bus_experiments",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -u -m bus_experiments"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python -m bus_experiments",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -m bus_experiments"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python -u sac_ensemble",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -u sac_ensemble"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python sac_ensemble",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python sac_ensemble"
+      ],
+      [
+        "/home/researcher/.conda/envs/resac-jax/bin/python",
+        "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python"
+      ]
+    ],
+    "launch_extra_env": {
+      "PATH": "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin:/usr/local/bin:/usr/bin:/bin",
+      "LD_LIBRARY_PATH": "/cm/local/apps/cuda-driver/libs/535.261.03/lib64",
+      "BAPR_PYTHON": "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python"
+    },
+    "resume_scan_python": "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python",
+    "capabilities": [
+      "cpu",
+      "jax_cpu"
+    ]
+  },
+  "node002": {
+    "host": "192.0.2.10",
+    "ssh_user": "hpcuser",
+    "ssh_proxy_jump": "gpu_a",
+    "ssh_proxy_jumps": [
+      "gpu_a",
+      "gpu_b"
+    ],
+    "sudo_ssh_host": "node002",
+    "sudo_ssh_run_as": "hpcuser",
+    "cpu_cores": 96,
+    "physical_cores": 96,
+    "reserved_cpu_cores": 1,
+    "ram_mb": 0,
+    "ram_headroom_frac": 0.1,
+    "max_vram_per_task": 0,
+    "max_concurrent_running": null,
+    "cpu_slot_accounting": true,
+    "min_free_user_threads_for_jax_cpu_task": 1024,
+    "jax_cpu_launch_user_thread_reserve": 512,
+    "live_cpu_backfill": true,
+    "live_cpu_backfill_max_task_cores": 64,
+    "persistent_cpu_live_backfill_max_declared_cores": 138,
+    "live_cpu_backfill_startup_grace_s": 90,
+    "live_cpu_backfill_single_thread_startup_grace_s": 10,
+    "skip_launch_staging": false,
+    "only_when_targeted": true,
+    "stage_only_when_targeted": true,
+    "relay_node": null,
+    "relay_nodes": [],
+    "relay_root": "/tmp/scheduleurm-hpc-relay/node002",
+    "remote_workspace_root": "/home/hpcuser/scheduleurm_work",
+    "shared_workspace_group": "login_hpc-home",
+    "disable_auto_adopt": true,
+    "auto_adopt_owners": [
+      "hpcuser",
+      "root"
+    ],
+    "remote_path_prefixes": [
+      "/home/researcher/mine_code",
+      "/home/researcher/mine_code"
+    ],
+    "launch_stage_include_paths": [
+      "SC-OLH-KG",
+      "jax_experiments/__init__.py",
+      "jax_experiments/train.py",
+      "jax_experiments/analysis",
+      "jax_experiments/algos",
+      "jax_experiments/common",
+      "jax_experiments/configs",
+      "jax_experiments/envs",
+      "jax_experiments/networks",
+      "mode_profiles.py",
+      "normalization.py",
+      "bapr_components.py"
+    ],
+    "launch_stage_fingerprint_exclude_paths": [
+      "SC-OLH-KG/manuscript/review",
+      "SC-OLH-KG/results",
+      "SC-OLH-KG/profiles",
+      "SC-OLH-KG/checkpoints",
+      "SC-OLH-KG/data/external"
+    ],
+    "cmd_rewrites": [
+      [
+        "/home/researcher/anaconda3/bin/python -u -m bus_experiments",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -u -m bus_experiments"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python -m bus_experiments",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -m bus_experiments"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python -u sac_ensemble",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -u sac_ensemble"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python sac_ensemble",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python sac_ensemble"
+      ],
+      [
+        "/home/researcher/.conda/envs/resac-jax/bin/python",
+        "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python"
+      ]
+    ],
+    "launch_extra_env": {
+      "PATH": "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin:/usr/local/bin:/usr/bin:/bin",
+      "LD_LIBRARY_PATH": "/cm/local/apps/cuda-driver/libs/535.261.03/lib64",
+      "BAPR_PYTHON": "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python"
+    },
+    "resume_scan_python": "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python",
+    "capabilities": [
+      "cpu",
+      "jax_cpu"
+    ]
+  },
+  "node003": {
+    "host": "192.0.2.10",
+    "ssh_user": "hpcuser",
+    "ssh_proxy_jump": "gpu_a",
+    "ssh_proxy_jumps": [
+      "gpu_a",
+      "gpu_b"
+    ],
+    "sudo_ssh_host": "node003",
+    "sudo_ssh_run_as": "hpcuser",
+    "cpu_cores": 96,
+    "physical_cores": 96,
+    "reserved_cpu_cores": 1,
+    "ram_mb": 0,
+    "ram_headroom_frac": 0.1,
+    "max_vram_per_task": 0,
+    "max_concurrent_running": null,
+    "cpu_slot_accounting": true,
+    "min_free_user_threads_for_jax_cpu_task": 1024,
+    "jax_cpu_launch_user_thread_reserve": 512,
+    "live_cpu_backfill": true,
+    "live_cpu_backfill_max_task_cores": 64,
+    "persistent_cpu_live_backfill_max_declared_cores": 138,
+    "live_cpu_backfill_startup_grace_s": 90,
+    "live_cpu_backfill_single_thread_startup_grace_s": 10,
+    "skip_launch_staging": false,
+    "only_when_targeted": true,
+    "stage_only_when_targeted": true,
+    "relay_node": null,
+    "relay_nodes": [],
+    "relay_root": "/tmp/scheduleurm-hpc-relay/node003",
+    "remote_workspace_root": "/home/hpcuser/scheduleurm_work",
+    "shared_workspace_group": "login_hpc-home",
+    "disable_auto_adopt": true,
+    "auto_adopt_owners": [
+      "hpcuser",
+      "root"
+    ],
+    "remote_path_prefixes": [
+      "/home/researcher/mine_code",
+      "/home/researcher/mine_code"
+    ],
+    "launch_stage_include_paths": [
+      "SC-OLH-KG",
+      "jax_experiments/__init__.py",
+      "jax_experiments/train.py",
+      "jax_experiments/analysis",
+      "jax_experiments/algos",
+      "jax_experiments/common",
+      "jax_experiments/configs",
+      "jax_experiments/envs",
+      "jax_experiments/networks",
+      "mode_profiles.py",
+      "normalization.py",
+      "bapr_components.py"
+    ],
+    "launch_stage_fingerprint_exclude_paths": [
+      "SC-OLH-KG/manuscript/review",
+      "SC-OLH-KG/results",
+      "SC-OLH-KG/profiles",
+      "SC-OLH-KG/checkpoints",
+      "SC-OLH-KG/data/external"
+    ],
+    "cmd_rewrites": [
+      [
+        "/home/researcher/anaconda3/bin/python -u -m bus_experiments",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -u -m bus_experiments"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python -m bus_experiments",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -m bus_experiments"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python -u sac_ensemble",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -u sac_ensemble"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python sac_ensemble",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python sac_ensemble"
+      ],
+      [
+        "/home/researcher/.conda/envs/resac-jax/bin/python",
+        "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python"
+      ]
+    ],
+    "launch_extra_env": {
+      "PATH": "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin:/usr/local/bin:/usr/bin:/bin",
+      "LD_LIBRARY_PATH": "/cm/local/apps/cuda-driver/libs/535.261.03/lib64",
+      "BAPR_PYTHON": "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python"
+    },
+    "resume_scan_python": "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python",
+    "capabilities": [
+      "cpu",
+      "jax_cpu"
+    ]
+  },
+  "node004": {
+    "host": "192.0.2.10",
+    "ssh_user": "hpcuser",
+    "ssh_proxy_jump": "gpu_a",
+    "ssh_proxy_jumps": [
+      "gpu_a",
+      "gpu_b"
+    ],
+    "sudo_ssh_host": "node004",
+    "sudo_ssh_run_as": "hpcuser",
+    "cpu_cores": 96,
+    "physical_cores": 96,
+    "reserved_cpu_cores": 1,
+    "ram_mb": 0,
+    "ram_headroom_frac": 0.1,
+    "max_vram_per_task": 0,
+    "max_concurrent_running": null,
+    "cpu_slot_accounting": true,
+    "min_free_user_threads_for_jax_cpu_task": 1024,
+    "jax_cpu_launch_user_thread_reserve": 512,
+    "live_cpu_backfill": true,
+    "live_cpu_backfill_max_task_cores": 64,
+    "persistent_cpu_live_backfill_max_declared_cores": 138,
+    "live_cpu_backfill_startup_grace_s": 90,
+    "live_cpu_backfill_single_thread_startup_grace_s": 10,
+    "skip_launch_staging": false,
+    "only_when_targeted": true,
+    "stage_only_when_targeted": true,
+    "relay_node": null,
+    "relay_nodes": [],
+    "relay_root": "/tmp/scheduleurm-hpc-relay/node004",
+    "remote_workspace_root": "/home/hpcuser/scheduleurm_work",
+    "shared_workspace_group": "login_hpc-home",
+    "disable_auto_adopt": true,
+    "auto_adopt_owners": [
+      "hpcuser",
+      "root"
+    ],
+    "remote_path_prefixes": [
+      "/home/researcher/mine_code",
+      "/home/researcher/mine_code"
+    ],
+    "launch_stage_include_paths": [
+      "SC-OLH-KG",
+      "jax_experiments/__init__.py",
+      "jax_experiments/train.py",
+      "jax_experiments/analysis",
+      "jax_experiments/algos",
+      "jax_experiments/common",
+      "jax_experiments/configs",
+      "jax_experiments/envs",
+      "jax_experiments/networks",
+      "mode_profiles.py",
+      "normalization.py",
+      "bapr_components.py"
+    ],
+    "launch_stage_fingerprint_exclude_paths": [
+      "SC-OLH-KG/manuscript/review",
+      "SC-OLH-KG/results",
+      "SC-OLH-KG/profiles",
+      "SC-OLH-KG/checkpoints",
+      "SC-OLH-KG/data/external"
+    ],
+    "cmd_rewrites": [
+      [
+        "/home/researcher/anaconda3/bin/python -u -m bus_experiments",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -u -m bus_experiments"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python -m bus_experiments",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -m bus_experiments"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python -u sac_ensemble",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -u sac_ensemble"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python sac_ensemble",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python sac_ensemble"
+      ],
+      [
+        "/home/researcher/.conda/envs/resac-jax/bin/python",
+        "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python"
+      ]
+    ],
+    "launch_extra_env": {
+      "PATH": "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin:/usr/local/bin:/usr/bin:/bin",
+      "LD_LIBRARY_PATH": "/cm/local/apps/cuda-driver/libs/535.261.03/lib64",
+      "BAPR_PYTHON": "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python"
+    },
+    "resume_scan_python": "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python",
+    "capabilities": [
+      "cpu",
+      "jax_cpu"
+    ]
+  },
+  "node005": {
+    "host": "192.0.2.10",
+    "ssh_user": "hpcuser",
+    "ssh_proxy_jump": "gpu_a",
+    "ssh_proxy_jumps": [
+      "gpu_a",
+      "gpu_b"
+    ],
+    "sudo_ssh_host": "node005",
+    "sudo_ssh_run_as": "hpcuser",
+    "cpu_cores": 96,
+    "physical_cores": 96,
+    "reserved_cpu_cores": 1,
+    "ram_mb": 0,
+    "ram_headroom_frac": 0.1,
+    "max_vram_per_task": 0,
+    "max_concurrent_running": null,
+    "cpu_slot_accounting": true,
+    "min_free_user_threads_for_jax_cpu_task": 1024,
+    "jax_cpu_launch_user_thread_reserve": 512,
+    "live_cpu_backfill": true,
+    "live_cpu_backfill_max_task_cores": 64,
+    "persistent_cpu_live_backfill_max_declared_cores": 138,
+    "live_cpu_backfill_startup_grace_s": 90,
+    "live_cpu_backfill_single_thread_startup_grace_s": 10,
+    "skip_launch_staging": false,
+    "only_when_targeted": true,
+    "stage_only_when_targeted": true,
+    "relay_node": null,
+    "relay_nodes": [],
+    "relay_root": "/tmp/scheduleurm-hpc-relay/node005",
+    "remote_workspace_root": "/home/hpcuser/scheduleurm_work",
+    "shared_workspace_group": "login_hpc-home",
+    "disable_auto_adopt": true,
+    "auto_adopt_owners": [
+      "hpcuser",
+      "root"
+    ],
+    "remote_path_prefixes": [
+      "/home/researcher/mine_code",
+      "/home/researcher/mine_code"
+    ],
+    "launch_stage_include_paths": [
+      "SC-OLH-KG",
+      "jax_experiments/__init__.py",
+      "jax_experiments/train.py",
+      "jax_experiments/analysis",
+      "jax_experiments/algos",
+      "jax_experiments/common",
+      "jax_experiments/configs",
+      "jax_experiments/envs",
+      "jax_experiments/networks",
+      "mode_profiles.py",
+      "normalization.py",
+      "bapr_components.py"
+    ],
+    "launch_stage_fingerprint_exclude_paths": [
+      "SC-OLH-KG/manuscript/review",
+      "SC-OLH-KG/results",
+      "SC-OLH-KG/profiles",
+      "SC-OLH-KG/checkpoints",
+      "SC-OLH-KG/data/external"
+    ],
+    "cmd_rewrites": [
+      [
+        "/home/researcher/anaconda3/bin/python -u -m bus_experiments",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -u -m bus_experiments"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python -m bus_experiments",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -m bus_experiments"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python -u sac_ensemble",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -u sac_ensemble"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python sac_ensemble",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python sac_ensemble"
+      ],
+      [
+        "/home/researcher/.conda/envs/resac-jax/bin/python",
+        "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python"
+      ]
+    ],
+    "launch_extra_env": {
+      "PATH": "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin:/usr/local/bin:/usr/bin:/bin",
+      "LD_LIBRARY_PATH": "/cm/local/apps/cuda-driver/libs/535.261.03/lib64",
+      "BAPR_PYTHON": "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python"
+    },
+    "resume_scan_python": "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python",
+    "capabilities": [
+      "cpu",
+      "jax_cpu"
+    ]
+  },
+  "node006": {
+    "host": "192.0.2.10",
+    "ssh_user": "hpcuser",
+    "ssh_proxy_jump": "gpu_a",
+    "ssh_proxy_jumps": [
+      "gpu_a",
+      "gpu_b"
+    ],
+    "sudo_ssh_host": "node006",
+    "sudo_ssh_run_as": "hpcuser",
+    "cpu_cores": 96,
+    "physical_cores": 96,
+    "reserved_cpu_cores": 1,
+    "ram_mb": 0,
+    "ram_headroom_frac": 0.1,
+    "max_vram_per_task": 0,
+    "max_concurrent_running": null,
+    "cpu_slot_accounting": true,
+    "min_free_user_threads_for_jax_cpu_task": 1024,
+    "jax_cpu_launch_user_thread_reserve": 512,
+    "live_cpu_backfill": true,
+    "live_cpu_backfill_max_task_cores": 64,
+    "persistent_cpu_live_backfill_max_declared_cores": 138,
+    "live_cpu_backfill_startup_grace_s": 90,
+    "live_cpu_backfill_single_thread_startup_grace_s": 10,
+    "skip_launch_staging": false,
+    "only_when_targeted": true,
+    "stage_only_when_targeted": true,
+    "relay_node": null,
+    "relay_nodes": [],
+    "relay_root": "/tmp/scheduleurm-hpc-relay/node006",
+    "remote_workspace_root": "/home/hpcuser/scheduleurm_work",
+    "shared_workspace_group": "login_hpc-home",
+    "disable_auto_adopt": true,
+    "auto_adopt_owners": [
+      "hpcuser",
+      "root"
+    ],
+    "remote_path_prefixes": [
+      "/home/researcher/mine_code",
+      "/home/researcher/mine_code"
+    ],
+    "launch_stage_include_paths": [
+      "SC-OLH-KG",
+      "jax_experiments/__init__.py",
+      "jax_experiments/train.py",
+      "jax_experiments/analysis",
+      "jax_experiments/algos",
+      "jax_experiments/common",
+      "jax_experiments/configs",
+      "jax_experiments/envs",
+      "jax_experiments/networks",
+      "mode_profiles.py",
+      "normalization.py",
+      "bapr_components.py"
+    ],
+    "launch_stage_fingerprint_exclude_paths": [
+      "SC-OLH-KG/manuscript/review",
+      "SC-OLH-KG/results",
+      "SC-OLH-KG/profiles",
+      "SC-OLH-KG/checkpoints",
+      "SC-OLH-KG/data/external"
+    ],
+    "cmd_rewrites": [
+      [
+        "/home/researcher/anaconda3/bin/python -u -m bus_experiments",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -u -m bus_experiments"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python -m bus_experiments",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -m bus_experiments"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python -u sac_ensemble",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python -u sac_ensemble"
+      ],
+      [
+        "/home/researcher/anaconda3/bin/python sac_ensemble",
+        "/home/researcher/.conda/envs/offline-sumo/bin/python sac_ensemble"
+      ],
+      [
+        "/home/researcher/.conda/envs/resac-jax/bin/python",
+        "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python"
+      ]
+    ],
+    "launch_extra_env": {
+      "PATH": "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin:/usr/local/bin:/usr/bin:/bin",
+      "LD_LIBRARY_PATH": "/cm/local/apps/cuda-driver/libs/535.261.03/lib64",
+      "BAPR_PYTHON": "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python"
+    },
+    "resume_scan_python": "/home/hpcuser/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python",
+    "capabilities": [
+      "cpu",
+      "jax_cpu"
+    ]
+  }
+}

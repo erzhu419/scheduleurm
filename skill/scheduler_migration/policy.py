@@ -50,6 +50,7 @@ def _alive_load_extremes(loads: dict, nodes: list, deps: MigrationPolicyDeps):
         node["name"]
         for node in nodes
         if node.get("alive") and not node.get("measurement_reservation_active")
+        and str(node.get("os") or "").lower() != "windows"
     }
     candidate_loads = [(name, load) for name, load in loads.items() if name in alive_names]
     if len(candidate_loads) < 2:
@@ -88,6 +89,9 @@ def _base_candidate_allowed(task: dict, source_name: str, target_name: str, deps
     if task.get("auto_adopted"):
         return False
     if task.get("preferred_node") != source_name:
+        return False
+    allowed_nodes = task.get("allowed_nodes") or []
+    if allowed_nodes and target_name not in allowed_nodes:
         return False
     if target_name in deps.blocked_nodes_for_task(task):
         return False

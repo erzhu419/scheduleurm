@@ -2,17 +2,17 @@
 """MCP server wrapping ~/.claude/skills/scheduler/scheduler.py for cross-AI use.
 
 Same scheduler — different transport. Claude Code uses the SKILL.md auto-route; this MCP
-server exposes the same operations as standard MCP tools so any MCP-aware client (ChatGPT
-Desktop, Claude Desktop, Cursor, Cline, Continue, custom agents) can drive the queue.
+server exposes the same operations as standard MCP tools so a local stdio MCP client
+(Codex, Claude Desktop, Cursor, Cline, Continue, custom agents) can drive the queue.
 
 Tool descriptions are written so the host LLM can auto-route user intent to the right call
 (e.g. "跑这个 python script" → submit_task; "GPU 还空吗" → node_status; "看看 t0007" → show_task).
 
 Usage (one-time, per client):
-    pip install mcp
+    pip install -r skill/integrations/requirements.txt
     Add to client's MCP config:
       {"command": "/usr/bin/python3",
-       "args": ["/home/researcher/.claude/skills/scheduler/integrations/scheduler_mcp.py"]}
+       "args": ["/ABS/HOME/.claude/skills/scheduler/integrations/scheduler_mcp.py"]}
 
 Then restart the client. Tools auto-appear with `submit_task`, `dispatch`, etc.
 """
@@ -28,11 +28,11 @@ from typing import Optional
 try:
     from mcp.server.fastmcp import FastMCP
 except ImportError:
-    sys.exit("MCP SDK not found. Run: pip install mcp")
+    sys.exit("MCP SDK not found. Install skill/integrations/requirements.txt in your MCP Python environment.")
 
 SCHED = os.environ.get(
     "SCHEDULER_PY",
-    str(Path.home() / ".claude" / "skills" / "scheduler" / "scheduler.py"),
+    str(Path(__file__).resolve().parents[1] / "scheduler.py"),
 )
 QUEUE = Path.home() / ".claude" / "scheduler" / "queue.json"
 

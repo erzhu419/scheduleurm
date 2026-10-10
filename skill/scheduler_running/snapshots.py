@@ -6,6 +6,11 @@ from dataclasses import dataclass
 from typing import Any, Callable, Optional
 
 try:
+    from scheduler_transport.budget import transport_waiting
+except ModuleNotFoundError:
+    from ..scheduler_transport.budget import transport_waiting
+
+try:
     from scheduler_eta.tail_snapshot import (
         EtaTailOutputDeps,
         EtaTailSnapshotDeps,
@@ -84,6 +89,14 @@ def running_probe_snapshot_outside_lock(
                         ),
                         "terminal_diagnosis_deferred": True,
                         "terminal_retry_only": True,
+                        # A budget-delayed log diagnosis must retain the
+                        # backend's confirmed exit result. Otherwise a short
+                        # successful job falls back to missing-marker heuristics.
+                        **({
+                            "exit_code": task["exit_code"],
+                            "terminal_ok": task["exit_code"] == 0,
+                            "backend_finished_at": task.get("backend_finished_at"),
+                        } if task.get("exit_code") is not None else {}),
                     }
                     for task in snapshot.get("tasks", [])
                     if task.get("status") == "running"
@@ -145,6 +158,10 @@ def batch_check_running(
         if probed_task_ids is not None and str(task.get("id") or "") not in probed_task_ids:
             continue
         res = probe_results.get(task["id"])
+        if res and transport_waiting(res.get("error")):
+            task["last_probe_deferred_reason"] = res["error"]
+            continue
+        task.pop("last_probe_deferred_reason", None)
         if res is None or res["state"] == "unknown":
             deps.handle_unknown_probe_result(
                 task,

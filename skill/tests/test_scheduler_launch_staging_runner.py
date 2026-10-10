@@ -167,6 +167,26 @@ def test_cwd_cap_exceeded_is_not_recorded_as_transport_failure():
     assert not any(call[0] == "notify" for call in calls)
 
 
+def test_transport_waiting_does_not_create_staging_failure_cooldown():
+    calls, fails = [], {}
+    task = {"id": "t1", "cwd": "/work/a", "ckpt_dir": "/work/ckpt",
+            "stage_input_paths": ["/work/input"]}
+    plan = _Plan({}, [("nodeA", "/work/a")], [(task, "nodeA", {"node": "local"})],
+                 [(task, "nodeA")])
+    waiting = (False, "TRANSPORT_WAIT: waiting for transport capacity on gpu2")
+    stage_launch_candidates_outside_lock(deps=_deps(
+        plan=plan, calls=calls, staging_fails=fails,
+        cwd_results={("nodeA", "/work/a"): waiting},
+        ckpt_results={("t1", "nodeA"): waiting},
+        input_results={("t1", "nodeA"): waiting}))
+    assert fails == {}
+    events = {call[1] for call in calls if call[0] == "notify"}
+    assert events == {"launch_staging_waiting", "launch_ckpt_staging_waiting",
+                      "launch_input_staging_waiting"}
+    stage_launch_candidates_outside_lock(deps=_deps(plan=plan, calls=calls, staging_fails=fails))
+    assert fails == {}
+
+
 def test_cwd_failure_and_exception_are_recorded_and_notified():
     calls = []
     fails = {}

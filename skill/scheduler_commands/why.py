@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 from dataclasses import dataclass
 from typing import Any, Callable
+from scheduler_dispatch.core import DispatchAccountingDeps, prepare_dispatch_node_accounting
 from scheduler_node.reservations import blocked_reserved_nodes
 
 
@@ -17,6 +18,7 @@ class WhyCommandDeps:
     node_is_windows: Callable[[str], bool]
     node_cpu_fallback_block_reason: Callable[[dict, str, dict], str | None]
     gpu_fits: Callable[[dict, dict, dict], bool]
+    gpu_task_cap_for_task: Callable[[dict, dict], int | None]
     algorithm_gpu_fit_block_reason: Callable[[dict, dict, dict], str | None]
     hard_rule_bypassed: Callable[..., bool]
     gpu_freeze_line_mb: Callable[[int], int]
@@ -27,6 +29,7 @@ class WhyCommandDeps:
     load_state: Callable[[], dict]
     load_history: Callable[[], dict]
     probe_all: Callable[[], list]
+    counts_against_node_concurrency: Callable[[dict], bool]
     apply_cpu_slot_accounting_to_nodes: Callable[[dict, list], Any]
     claim_enabled_for: Callable[[str], bool]
     format_claim_intent_hint_for_task: Callable[[dict, str, dict], str]
@@ -85,13 +88,27 @@ def explain_node_fit(task: dict, node_state: dict, *, deps: WhyCommandDeps) -> s
     reject_gpus = []
     est = int(task.get("est_vram_mb") or 0)
     cap_per_task = node_info.get("max_vram_per_task")
+    gpu_task_cap = deps.gpu_task_cap_for_task(task, node_info)
+    required_gpu = task.get("require_gpu_idx")
+    node_info_with_state = dict(node_info, _scheduler_node_state=node_state)
     for gpu in node_state.get("gpus") or []:
-        if deps.gpu_fits(task, gpu, node_info):
+        if required_gpu is not None and gpu["idx"] != required_gpu:
+            continue
+        task_count = int(gpu.get("running_task_count") or 0)
+        if (
+            gpu_task_cap is not None and gpu_task_cap > 0 and task_count >= gpu_task_cap
+            and not deps.hard_rule_bypassed(
+                "max_tasks_per_gpu", task, node_info=node_info, node_state=node_state, gpu=gpu,
+            )
+        ):
+            reject_gpus.append(f"GPU{gpu['idx']}(tasks={task_count}/{gpu_task_cap})")
+            continue
+        if deps.gpu_fits(task, gpu, node_info_with_state):
             fit_gpus.append(f"GPU{gpu['idx']}(free={gpu['free_mb']}MB)")
             continue
 
         reasons = []
-        algo_reason = deps.algorithm_gpu_fit_block_reason(task, gpu, node_info)
+        algo_reason = deps.algorithm_gpu_fit_block_reason(task, gpu, node_info_with_state)
         if algo_reason:
             reasons.append(algo_reason)
         if (
@@ -240,7 +257,13 @@ def cmd_why(args, *, deps: WhyCommandDeps) -> None:
     print()
     print("  per-node fit analysis (probe_all snapshot):")
     nodes = deps.probe_all()
-    deps.apply_cpu_slot_accounting_to_nodes(state, nodes)
+    prepare_dispatch_node_accounting(
+        state, nodes, [],
+        deps=DispatchAccountingDeps(
+            counts_against_node_concurrency=deps.counts_against_node_concurrency,
+            apply_cpu_slot_accounting_to_nodes=deps.apply_cpu_slot_accounting_to_nodes,
+        ),
+    )
     reserved_nodes = blocked_reserved_nodes(state, task)
     for node in nodes:
         fit = (

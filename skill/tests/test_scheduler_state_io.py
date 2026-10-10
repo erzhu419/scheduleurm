@@ -125,3 +125,19 @@ def test_load_and_save_scheduler_state_apply_hooks(tmp_path):
     assert loaded["canonicalized"] is True
     assert "drop_me" not in loaded
     assert calls == ["canonicalize", "compact", "canonicalize"]
+
+
+def test_queue_save_uses_compact_json_without_losing_task_fields(tmp_path):
+    path = tmp_path / "queue.json"
+    state = {
+        "next_id": 110000,
+        "tasks": [{"id": "t109999", "cmd": "echo hello", "wait_for_files": ["/work/gate.json"]}],
+    }
+    state_io.save_scheduler_state(
+        state, queue_file=path, allow_env=ALLOW_ENV,
+        empty_guard_min_tasks=20, empty_guard_min_active=5,
+    )
+    text = path.read_text()
+    assert "\n" not in text
+    assert json.loads(text) == state
+    assert not path.with_suffix(".json.tmp").exists()

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 import skill.scheduler_migration.resume_prefetch as resume_prefetch
 from skill.scheduler_migration.resume_prefetch import (
@@ -70,6 +70,7 @@ def _deps(state: dict, calls: list, *, max_tasks=8, scan_hook=None, now=100.0):
         load_state=lambda: state,
         save_state=lambda saved: calls.append(("save", lock_state.depth)),
         task_requires_resume_scan=lambda task: bool(task.get("ckpt_dir")),
+        queued_wait_for_file_block_reason=lambda task: None,
         resume_scan_key=lambda task, nodes: [
             task["ckpt_dir"],
             [node["name"] for node in nodes],
@@ -107,6 +108,45 @@ def test_prefetch_scans_outside_lock_and_commits_weighted_fair_batch():
     ]
     assert all(task.get("resume_scan_inflight") is None for task in tasks)
     assert [call for call in calls if call[0] == "save"] == [("save", 1), ("save", 1)]
+
+
+def test_prefetch_waits_for_prerequisite_then_scans_automatically(sch, tmp_path):
+    marker = tmp_path / "model_ready.json"
+    task = _task("dependent", "normal", 1)
+    task["wait_for_files"] = [str(marker)]
+    state = {"tasks": [task]}
+    calls = []
+    deps = replace(_deps(state, calls),
+                   queued_wait_for_file_block_reason=sch._queued_wait_for_file_block_reason)
+    nodes = [{"name": "node001"}]
+
+    summary = prefetch_resume_scans_outside_lock(nodes, deps=deps)
+
+    assert summary["claimed"] == 0
+    assert "resume_scan_inflight" not in task
+    assert not any(call[0] in ("scan", "save") for call in calls)
+
+    marker.write_text('{}\n')
+    summary = prefetch_resume_scans_outside_lock(nodes, deps=deps)
+
+    assert summary["claimed"] == summary["committed"] == 1
+    assert [call[1] for call in calls if call[0] == "scan"] == ["dependent"]
+
+
+def test_waiting_tasks_do_not_consume_resume_prefetch_batch_budget(sch, tmp_path):
+    tasks = [_task(f"blocked-{i}", "high", i) for i in range(100)]
+    for task in tasks:
+        task["wait_for_files"] = [str(tmp_path / "not_ready.json")]
+    tasks.extend([_task("ready1", "normal", 1), _task("ready2", "low", 2)])
+    state = {"tasks": tasks}
+    calls = []
+    deps = replace(_deps(state, calls, max_tasks=2),
+                   queued_wait_for_file_block_reason=sch._queued_wait_for_file_block_reason)
+
+    summary = prefetch_resume_scans_outside_lock([{"name": "node001"}], deps=deps)
+
+    assert summary["claimed"] == summary["committed"] == 2
+    assert [call[1] for call in calls if call[0] == "scan"] == ["ready1", "ready2"]
 
 
 def test_prefetch_skips_fresh_and_live_inflight_but_reclaims_stale_claim():

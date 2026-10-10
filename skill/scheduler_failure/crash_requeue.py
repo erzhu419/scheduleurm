@@ -73,6 +73,7 @@ RETRY_CLEAR_KEYS = (
     "exit_status_path",
     "exit_status_token",
     "remote_pid_start_ticks",
+    "exit_code",
     "backend_finished_at",
     "last_launch_pre_snapshot",
     "last_launch_post_snapshot",
@@ -93,6 +94,7 @@ RETRY_CLEAR_KEYS = (
     "terminal_transition_deferred",
     "terminal_transition_deferred_at",
     "resolved_environment_retry",
+    "result_syncing_pid",
 )
 
 
@@ -251,6 +253,10 @@ def requeue_after_crash(parent: dict, state: dict, *, deps: CrashRequeueDeps):
             "_diagnosis": None,
             "result_artifacts": [],
             "result_artifacts_discovered_at": None,
+            "result_synced_at": None,
+            "result_sync_error": None,
+            "result_sync_attempts": 0,
+            "result_syncing_at": None,
             "notified_launch": False,
             "notified_done": False,
             "retry_count": retry_n,

@@ -26,6 +26,7 @@ import os
 import sys
 import time
 from pathlib import Path
+from threading import Lock
 
 try:
     from textual import work
@@ -51,6 +52,8 @@ _NODE_INVENTORY_SOURCE = Path(
     getattr(_NODE_INVENTORY_MODULE, "__file__", _SCHED_SOURCE)
 ).resolve()
 _SOURCE_MTIMES = {}
+_DISPLAY_FILE_CACHE = {}
+_DISPLAY_CACHE_LOCK = Lock()
 PROBE_UNKNOWN_WARN_S = max(0, int(os.environ.get("SCHEDULEURM_TUI_PROBE_UNKNOWN_WARN_S", "180")))
 TERMINAL_TASK_STATUSES = frozenset({"done", "failed", "cancelled"})
 for _src in (_SCHED_SOURCE, _TUI_SOURCE, _NODE_INVENTORY_SOURCE):
@@ -592,15 +595,25 @@ def _node_probe_cache_snapshot(max_age_s: int):
 
 def _load_display_state():
     """Read atomically-written display state without taking the scheduler lock."""
-    try:
-        state = sch.load_state()
-    except Exception:
-        state = {"tasks": []}
-    try:
-        hist = sch.load_history()
-    except Exception:
-        hist = {}
-    return state, hist
+    def cached_load(path, loader, default):
+        path = Path(path)
+        try:
+            st = path.stat()
+            version = (st.st_mtime_ns, st.st_size)
+            previous = _DISPLAY_FILE_CACHE.get(path)
+            if previous and previous[0] == version:
+                return previous[1]
+            value = loader()
+            _DISPLAY_FILE_CACHE[path] = (version, value)
+            return value
+        except Exception:
+            return default
+
+    with _DISPLAY_CACHE_LOCK:
+        return (
+            cached_load(sch.QUEUE_FILE, sch.load_state, {"tasks": []}),
+            cached_load(sch.VRAM_FILE, sch.load_history, {}),
+        )
 
 
 def _probe_snapshot():
@@ -712,6 +725,8 @@ class SchedulerTUI(App):
         super().__init__()
         self._snap = {"state": {"tasks": []}, "hist": {}, "nodes": [], "ts": 0}
         self._probing = False
+        self._fast_refreshing = False
+        self._rendered_rows = {}
         self.column_order, self.column_widths = _load_tui_layout()
         self._table_layout_sig = None
         self._column_drag = None
@@ -735,9 +750,7 @@ class SchedulerTUI(App):
         # We render only on probe-complete or user action — periodic rendering caused
         # cursor/scroll to snap back to top mid-scroll. Runtime/eta numbers therefore
         # update only every 5s, but the table stays scroll-able.
-        self._snap = _fast_snapshot()
-        self._render_from_cache()
-        self._kick_probe()
+        self._refresh_fast_state(start_probe=True)
         self.set_interval(5.0, self._kick_probe)
 
     def _layout_signature(self):
@@ -906,10 +919,23 @@ class SchedulerTUI(App):
         return True
 
     # Background probe ---------------------------------------------------
-    def _refresh_fast_state(self):
+    def _refresh_fast_state(self, *, start_probe=False):
         """Refresh tasks and watcher telemetry while a live probe is in flight."""
-        self._snap = _merge_fast_snapshot(self._snap, _fast_snapshot())
-        self._render_from_cache()
+        if self._fast_refreshing:
+            return
+        self._fast_refreshing = True
+        self.run_worker(
+            self._do_fast_refresh(start_probe=start_probe),
+            exclusive=False, thread=True, name="fast-refresh",
+        )
+
+    async def _do_fast_refresh(self, *, start_probe=False):
+        snap = _fast_snapshot()
+        self._snap = _merge_fast_snapshot(self._snap, snap)
+        self._fast_refreshing = False
+        self.call_from_thread(self._render_from_cache)
+        if start_probe:
+            self.call_from_thread(self._kick_probe)
 
     def _kick_probe(self):
         if _scheduler_source_changed():
@@ -936,6 +962,8 @@ class SchedulerTUI(App):
     def on_worker_state_changed(self, event):
         if event.worker.name == "probe" and event.state == WorkerState.ERROR:
             self._probing = False
+        elif event.worker.name == "fast-refresh" and event.state == WorkerState.ERROR:
+            self._fast_refreshing = False
 
     # Actions ------------------------------------------------------------
     def action_set_filter(self, status: str):
@@ -996,7 +1024,7 @@ class SchedulerTUI(App):
         tid = self._selected_task_id()
         if not tid: return
         import fcntl
-        sp = sch.QUEUE_FILE; lp = sch.LOCK_FILE
+        lp = sch.LOCK_FILE
         with open(lp, "r+") as lf:
             fcntl.flock(lf, fcntl.LOCK_EX)
             state = sch.load_state()
@@ -1013,8 +1041,7 @@ class SchedulerTUI(App):
             if 0 <= new_idx < len(same_prio) and new_idx != idx:
                 neighbor = same_prio[new_idx]
                 target["submitted_at"], neighbor["submitted_at"] = neighbor["submitted_at"], target["submitted_at"]
-            tmp = sp.with_suffix(".json.tmp"); tmp.write_text(json.dumps(state, indent=2))
-            os.replace(tmp, sp)
+            sch.save_state(state)
             fcntl.flock(lf, fcntl.LOCK_UN)
         # Update cache immediately so render reflects new order.
         self._snap["state"] = state
@@ -1234,8 +1261,14 @@ class SchedulerTUI(App):
                 # Avoids clear() + add_row() which interrupts scroll/cursor.
                 for t in tasks:
                     cells = _row_for(t)
+                    previous = self._rendered_rows.get(t["id"], {})
+                    if cells == previous:
+                        continue
                     status = cells.get("status", "-")
                     for col_key in self.column_order:
+                        if (cells.get(col_key) == previous.get(col_key)
+                                and status == previous.get("status")):
+                            continue
                         try:
                             table.update_cell(
                                 t["id"],
@@ -1245,6 +1278,7 @@ class SchedulerTUI(App):
                             )
                         except Exception:
                             pass
+                    self._rendered_rows[t["id"]] = cells
             else:
                 # Structural change (sort/filter/task set) → full rebuild with cursor+scroll restore.
                 saved_task_id = None
@@ -1265,6 +1299,7 @@ class SchedulerTUI(App):
                     self._apply_table_columns(table)
                 else:
                     table.clear()
+                self._rendered_rows = {}
                 for t in tasks:
                     cells = _row_for(t)
                     status = cells.get("status", "-")
@@ -1276,6 +1311,7 @@ class SchedulerTUI(App):
                         key=t["id"],
                         height=None,
                     )
+                    self._rendered_rows[t["id"]] = cells
 
                 if saved_task_id and saved_task_id in new_id_order:
                     try:

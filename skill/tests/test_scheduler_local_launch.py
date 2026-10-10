@@ -1,9 +1,17 @@
 from __future__ import annotations
 
 import subprocess
+import copy
+import shlex
+import time
+from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import replace
 from pathlib import Path
+from threading import Lock
 
 from skill.scheduler_local_launch import LocalLaunchDeps, local_backend_launch
+from skill.scheduler_backend.local_launch import _probe_cwd
 
 
 def _task(**overrides):
@@ -128,7 +136,7 @@ def test_happy_path_sets_runtime_fields_and_builds_launch_command(tmp_path: Path
     assert "export SCHEDULEURM_TASK_ID=t1;" in launch_cmd
     assert f"export SCHEDULEURM_LAUNCH_TOKEN={task['exit_status_token']};" in launch_cmd
     assert "export FOO=bar;" in launch_cmd
-    assert "bad" not in launch_cmd
+    assert "export CUDA_VISIBLE_DEVICES=bad;" not in launch_cmd
     assert "python -u rewritten.py" in launch_cmd
     assert "START_TICKS=" in launch_cmd
     assert task["exit_status_path"] in launch_cmd
@@ -145,6 +153,46 @@ def test_local_node_uses_state_dir_log_path(tmp_path: Path):
 
     assert ok is True
     assert task["log_path"] == f"{tmp_path}/logs/t1.log"
+
+
+def test_launch_transport_replay_runs_once_and_preserves_terminal_evidence(tmp_path, monkeypatch):
+    from skill.scheduler_backend import local_launch
+
+    status_path = tmp_path / "exit.status"
+    monkeypatch.setattr(local_launch, "runtime_exit_status_path", lambda *_: str(status_path))
+    births = tmp_path / "executions"
+    command = f"printf 'once\\n' >> {shlex.quote(str(births))}; sleep 0.2; printf 'canonical log\\n'"
+    task = _task(cwd=str(tmp_path), cmd=command, launch_token="same-transport-attempt")
+
+    def run_on(_node, command, *, timeout, check):
+        result = subprocess.run(["bash", "-c", command], capture_output=True, text=True, timeout=timeout)
+        return result.returncode, result.stdout, result.stderr
+
+    deps = replace(_deps(tmp_path, node_configs={"nodeA": {"host": None}}),
+                   remote_path_for_node=lambda _node, path: path, run_on=run_on,
+                   now=time.time)
+    attempts = [copy.deepcopy(task), copy.deepcopy(task)]
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        results = list(pool.map(lambda attempt: local_backend_launch(attempt, node_state=None, deps=deps), attempts))
+    assert all(ok for ok, _ in results)
+    assert attempts[0]["remote_pids"] == attempts[1]["remote_pids"]
+    deadline = time.monotonic() + 3
+    while not status_path.exists() and time.monotonic() < deadline:
+        time.sleep(0.02)
+    assert status_path.exists()
+    original_status = status_path.read_bytes()
+    log_path = Path(attempts[0]["log_path"])
+    original_log = log_path.read_bytes()
+    assert original_status.split(b"\t")[0] == b"0"
+    assert original_log == b"canonical log\n"
+    assert births.read_text() == "once\n"
+
+    after_exit = copy.deepcopy(task)
+    assert local_backend_launch(after_exit, node_state=None, deps=deps)[0]
+    assert after_exit["remote_pids"] == attempts[0]["remote_pids"]
+    assert births.read_text() == "once\n"
+    assert status_path.read_bytes() == original_status
+    assert log_path.read_bytes() == original_log
 
 
 def test_resume_flag_appends_remote_checkpoint_path(tmp_path: Path):
@@ -194,6 +242,30 @@ def test_cwd_probe_retries_and_reports_transport_failure(tmp_path: Path):
     assert "timeout after 10s" in msg
     assert "ssh down" in msg
     assert ("sleep", 0.5) in calls
+
+
+def test_batch_shares_successful_cwd_probe_until_cache_expires(tmp_path):
+    calls = []
+    clock = [123.0]
+    deps = replace(_deps(tmp_path, calls=calls), cwd_probe_cache={},
+                   cwd_probe_locks=defaultdict(Lock), now=lambda: clock[0])
+    with ThreadPoolExecutor(max_workers=10) as pool:
+        results = list(pool.map(lambda _: _probe_cwd(_task(), "/work", deps), range(30)))
+    assert all(result == (True, "") for result in results)
+    assert len([call for call in calls if call[0] == "run_on"]) == 1
+    clock[0] += 61
+    assert _probe_cwd(_task(), "/work", deps) == (True, "")
+    assert len([call for call in calls if call[0] == "run_on"]) == 2
+
+
+def test_failed_cwd_probe_is_not_cached(tmp_path):
+    calls = []
+    deps = replace(_deps(tmp_path, calls=calls, run_results=[(1, "", ""), (1, "", "")]),
+                   cwd_probe_cache={}, cwd_probe_locks=defaultdict(Lock))
+    assert _probe_cwd(_task(), "/work", deps)[0] is False
+    assert deps.cwd_probe_cache == {}
+    assert _probe_cwd(_task(), "/work", deps) == (True, "")
+    assert len([call for call in calls if call[0] == "run_on"]) == 3
 
 
 def test_claim_conflict_restores_original_gpu_and_returns_claim_race(tmp_path: Path):

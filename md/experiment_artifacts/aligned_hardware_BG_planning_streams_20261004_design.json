@@ -1,0 +1,48 @@
+{
+  "experiment": "aligned_hardware_BG_planning_streams_20261004",
+  "source_execution_epoch": "2026-10-03T17:08:54.918852+00:00",
+  "source_experiment": "aligned_hardware_BG_bursty_arrivals_20261004",
+  "planning_replications": [1, 2, 3],
+  "planning_seed_rule": "arrival-plan-sensitivity-v1:{node}:{load}:online:replicate{replication}",
+  "intervention": "Change only BG's constructor planning_seed to three prespecified stream keys. Keep the frozen BG code, prefix/background planning, FIFO population, S1/S2 root rule, causal count/now rates, MW continuation, queue envelope and whole-decision overflow fallback unchanged. No best-stream selection, parameter sweep or algorithm adoption.",
+  "population": {
+    "profiles": ["steady", "bursty"],
+    "catalogue_lanes": [["cpu_a", 2], ["node007", 4], ["gpu_a", 2], ["gpu_b", 2]],
+    "loads": [0.8, 0.95],
+    "arrival_seeds": [200001, 200002, 200003, 200004, 200005, 200006, 200007, 200008, 200009, 200010, 200011, 200012],
+    "literal_tapes": 192,
+    "new_BG_trajectories": 576,
+    "reused_MW_trajectory_arms": 192,
+    "new_MW_simulations": 0,
+    "new_shadow_references": 0,
+    "birth_cohort": [300, 900],
+    "cohort_checkpoint": 900,
+    "environment_arrival_end": 1200,
+    "observation_end": 1200
+  },
+  "fixed_model": "Reuse the authentic192 registered source fixtures and original MW trajectories. No new arrival generation, service-duration variation, capacity/rate changes or physical data collection. The two source profiles retain their existing matched counts/cohort IDs and phase.",
+  "planning": {
+    "sample_count": 8,
+    "combined_event_cap": 128,
+    "window": "tau_max without an evaluation stop-time input",
+    "information": "Constructor receives catalogue, new planning stream key and the original budgets. Selector receives only causal queues/ages/counts/lane state. No real future tape, modulation phase, true rates or observation end enters BG.",
+    "clock": "Original deterministic physical service and idle-poll clock; computation recorded separately and does not delay service."
+  },
+  "outcomes": {
+    "orientation": "New BG minus cached MW; negative improves flow or unfinished counts.",
+    "primary": "1200-second birth-cohort restricted mean flow; same-pair common completed-ID P90,900/1200 unfinished counts reported alongside it.",
+    "pairing": "Recompute paired outcomes separately for each new BG versus the same authentic MW arm, retaining saved jobs and snapshots. Do not reuse an old BG/MW common-completion population.",
+    "aggregation": "Average the three prespecified planning replications within each source tape/cell first, then aggregate each of the12 complete actual-arrival seed blocks. Baseline MW counts are counted once for the averaged contrast; fractional averaged BG unfinished counts describe the mean over these three fixed streams.",
+    "retention": "Retain each replication's complete96-tape profile outcomes, all8 catalogue/load groups, all24 classes, all12 seed blocks, actual work and regressions. Original BG stream remains historical descriptive evidence only."
+  },
+  "performance_gates": "Apply the original1% mean reduction, per-load mean nonregression,5% per-group P90/unfinished tolerance and nonincreasing pooled unfinished counts to both the three-stream average and each individual stream in each profile. Zero baseline unfinished requires zero. Retain all HOLD outcomes; no tolerance or adoption change.",
+  "bootstrap": {
+    "replicates": 20000,
+    "seed": 20261004,
+    "unit": "Twelve actual-arrival seed blocks; resample both profiles, all8 cells and all3 planning replications together.",
+    "scope": "Pointwise95% paired intervals. New streams are fixed design replicates; inference is conditional on these three streams and does not treat576 trajectories as independent samples."
+  },
+  "execution": "Register the new protocol before outcomes. Verify authentic frozen source literals, completed source epoch, source fixture identity and MW actual births. Submit one independent BG trajectory per unit, with BLAS threads1/CPU1 on node001-node006; save full trajectory before postchecks. Merge all576 passing units using the unchanged paired metric/statistical interfaces. Keep full trajectories on server and pull only small receipts, logs and compact summary.",
+  "statistics": "Prespecified planning-stream sensitivity supplement on reused12 actual-arrival seed blocks and two matched profiles. Three-stream averages are primary; all three individual stream results remain visible. Twelve blocks, not576 independent replicates; pointwise intervals conditional on the fixed planning stream roster. Original BG confirmation and the bursty HOLD remain preserved.",
+  "limitations": "This changes planning randomness alone in the existing deterministic cached service model. It is not new independent arrival confirmation, random-service evidence, live placement evidence, an actual P90 guarantee or a test of theoretical novelty. The three selected streams are never ranked for deployment selection."
+}

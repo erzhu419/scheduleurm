@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import replace
+
 from skill.scheduler_probe.all import ProbeAllDeps, probe_all_nodes
 
 
@@ -96,3 +98,14 @@ def test_probe_all_handles_empty_inventory():
 
     assert probe_all_nodes(deps=deps) == []
     assert folded == [[]]
+
+
+def test_transport_wait_preserves_known_node_health():
+    deps = _deps(node_configs={"node001": {}}, probe_results={
+        "node001": {"name": "node001", "alive": None, "transport_waiting": True,
+                    "error": "TRANSPORT_WAIT: gpu2"}})
+    deps = replace(deps, load_probe_cache=lambda: {
+        "node001": {"name": "node001", "alive": True, "free_cpu": 10}})
+    node = probe_all_nodes(deps=deps)[0]
+    assert node["alive"] is True
+    assert node["transport_waiting"] is True

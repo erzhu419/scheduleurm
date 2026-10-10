@@ -2,9 +2,13 @@
 
 [English README](README.md) · 中文
 
-**多资源（CPU + RAM + VRAM）调度器，跨异构节点跑 ML 训练任务。** 以 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill 形态发布，但底层 `scheduler.py` 是一个单文件 Python 脚本，可被任意 LLM agent 或人工驱动。
+**多资源（CPU + RAM + VRAM）调度器，跨异构节点跑 ML 训练任务。** 可通过 Claude Code skill、MCP 或 CLI 使用；底层为模块化 Python 调度器，三种入口共用同一队列和算法。
 
 为真实 ML 研究场景而设计：几十个跑数小时的训练同时排队、GPU/CPU 任务混合、本地+远程节点混合、内存峰值不确定、进程会被 kill 然后需要 resume、外部启动的进程也要追踪。
+
+## 当前算法研究主结论
+
+主算法为 **BG**（`BackgroundCompetitionContinuousLaneRollout`）。四个实测服务目录的固定率Poisson到达模拟中，12个新种子块、96组配对轨迹相对精确枚举的单通道MaxWeight，平均流时间改善 **8.33%**，逐轨迹共同完成集P90的等权均值改善 **17.03%**。finite加深续排分支保留 **HOLD**，作为已结束的探索负结果。详见[主结论与限制](md/main_result_BG_20261003.md)及[算法层](algorithm/README.md)。
 
 ## 它实际能解决的问题
 
@@ -40,7 +44,7 @@ NODES = {
 
 GPU 在 dispatch 时通过 `nvidia-smi --query-gpu=memory.used,memory.total,utilization.gpu` 自动探测。CPU/RAM 来自 `/proc/loadavg` + `/proc/meminfo`（远程节点走 SSH）。
 
-改 `skill/scheduler.py` 顶部的 `NODES` 字典匹配你的集群，然后重跑 `install.sh`。完整旋钮列表见 [docs/CONFIGURATION.md](docs/CONFIGURATION.md)。
+节点配置放在仓库外的 `~/.claude/scheduler/nodes.json`，也可用环境变量 `SCHEDULEURM_NODES_FILE` 指定绝对路径。没有配置时只启用本机，默认保守使用 1 核。配置示例见 [docs/nodes.example.json](docs/nodes.example.json)，字段说明见 [docs/CONFIGURATION.md](docs/CONFIGURATION.md)。修改后重启 watcher。
 
 ## 安装
 
@@ -49,11 +53,13 @@ GPU 在 dispatch 时通过 `nvidia-smi --query-gpu=memory.used,memory.total,util
 ```bash
 git clone https://github.com/erzhu419/scheduleurm.git
 cd scheduleurm
-./install.sh                  # COPY 模式：把 skill 拷到 ~/.claude/skills/scheduler/
+./install.sh                  # 默认 LINK 模式：链接到本仓库的 skill/
 # 或者
 ./install.sh --link           # LINK 模式：symlink ~/.claude/skills/scheduler -> clone/skill
                               #            clone 里改了立即生效，不用重装
                               #            （推荐：会 git pull / 自己改的人）
+# 或者
+./install.sh --copy           # COPY 模式：安装包含算法模块的独立快照
 # 或者
 ./install.sh --no-systemd     # 跳过 watcher unit；自己手动跑 watch
                               # （可以和 --link 组合）
@@ -96,9 +102,9 @@ python3 ~/.claude/skills/scheduler/test_regression.py    # 290+ 回归测试
 
 Skill 把意图翻译成 `submit` / `dispatch` / `status` / `wait-for` 调用。完整决策规则见 [`skill/SKILL.md`](skill/SKILL.md)。
 
-### 在任何 MCP 客户端里（ChatGPT Desktop / Cursor / Cline / …）
+### 在支持本地 stdio MCP 的客户端里（Codex / Claude / Cursor / Cline）
 
-[`skill/integrations/scheduler_mcp.py`](skill/integrations/scheduler_mcp.py) 是 MCP server，通过 stdio JSON-RPC 暴露 9 个工具（`submit_task`, `dispatch`, `status`, `doctor`, `show_task`, `cancel_task`, `history`, `queue_dump`, `task_log`）。每客户端配置见 [`skill/integrations/README.md`](skill/integrations/README.md)。
+[`skill/integrations/scheduler_mcp.py`](skill/integrations/scheduler_mcp.py) 通过 stdio JSON-RPC 暴露 12 个工具，包含批提交和批取消；与 CLI 共用调度器、队列和算法。安装及客户端配置见 [`skill/integrations/README.md`](skill/integrations/README.md)。
 
 ### 直接命令行
 
@@ -257,7 +263,7 @@ scheduleurm/
 │   ├── test_regression.py # 290+ 回归测试（每个对应一个已知 footgun）
 │   ├── test_hook.sh       # Claude Code 的 PostToolUse 钩子脚本
 │   └── integrations/
-│       ├── scheduler_mcp.py    # MCP server 包装（9 个工具）
+│       ├── scheduler_mcp.py    # MCP server 包装（12 个工具）
 │       └── README.md
 ├── systemd/
 │   └── scheduler.service  # user 单元；install.sh 改写路径并启用

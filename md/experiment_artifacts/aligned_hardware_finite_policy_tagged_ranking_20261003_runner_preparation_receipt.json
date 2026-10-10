@@ -1,0 +1,49 @@
+{
+  "at_utc": "2026-10-02T16:09:17.408739+00:00",
+  "phase": "prepared_not_staged_or_submitted",
+  "stem": "aligned_hardware_finite_policy_tagged_ranking_20261003",
+  "module": "algorithm.experiments.aligned_hardware_finite_policy_tagged_ranking",
+  "live_cpu_plan_command": "cpu-plan --items48 --nodes001-006",
+  "live_free_physical": {
+    "node001": 95,
+    "node004": 95,
+    "node005": 92,
+    "node006": 96
+  },
+  "doctor_ok": true,
+  "heal_inboxes_empty": true,
+  "active_and_experiment_scoped_pending_escalations": 0,
+  "prepare_tasks": 3,
+  "prepare_workers": 22,
+  "prepare_cpu": 23,
+  "prepare_ram_mb": 8192,
+  "prepare_soft_preferences": [
+    "node001",
+    "node004",
+    "node006"
+  ],
+  "ranking_units": 48,
+  "unit_workers": 6,
+  "unit_cpu": 7,
+  "unit_ram_mb": 8192,
+  "unit_soft_preference_counts": {
+    "node001": 12,
+    "node004": 12,
+    "node005": 12,
+    "node006": 12
+  },
+  "unit_assignment": "target=index//16;root_slot=(index%16)//8;sample=index%8",
+  "pipeline": "test exit0 ->metadata register ->prep3 actualexit0 gate ->48units actualexit0 gate ->merge ->onlysummarysync",
+  "same_population_samples_and_cap": "8/cap128 unchanged",
+  "large_artifacts_pulled": false,
+  "sources_changed": false,
+  "server_staged": false,
+  "tasks_submitted": false,
+  "summary_only_result_dir": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/finite_policy_tagged_ranking_small_results_20261003",
+  "test_cpu": 3,
+  "test_ram_mb": 2048,
+  "tests_expected": 3,
+  "test_max_active_workers": 2,
+  "test_final_source_pending": true,
+  "register_command": "--register --workers 6 --prepare-workers 22"
+}

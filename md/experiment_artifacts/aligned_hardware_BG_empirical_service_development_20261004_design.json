@@ -1,0 +1,68 @@
+{
+  "experiment": "aligned_hardware_BG_empirical_service_development_20261004",
+  "status": "design_frozen_before_performance_execution",
+  "sample_bank": "aligned_hardware_BG_empirical_service_samples_20261004.json",
+  "mean_capacity_calibration": "aligned_hardware_BG_empirical_service_development_20261004_loads.json",
+  "question": "Does BG retain its mean-flow advantage and the original tail/backlog guards when complete-frame execution varies according to the measured-phase-derived service model? Compare random execution with execution of the same fitted mean catalogue to isolate service variability.",
+  "population": {
+    "catalogue_lanes": [["cpu_a", 2], ["node007", 4], ["gpu_a", 2], ["gpu_b", 2]],
+    "loads": [0.8, 0.95],
+    "arrival_seeds": [300001, 300002, 300003],
+    "service_seeds": [400001, 400002, 400003],
+    "seed_pairing": "Zip arrival and service seeds in the declared order; three complete joint seed blocks across all eight catalogue/load cells and both execution conditions.",
+    "literal_arrival_tapes": 24,
+    "execution_conditions": ["mean", "empirical"],
+    "policies": ["maxweight", "BG"],
+    "new_trajectories": 96,
+    "reused_trajectory_arms": 0,
+    "birth_cohort": [300, 900],
+    "cohort_checkpoint": 900,
+    "environment_arrival_end": 1200,
+    "observation_end": 1200
+  },
+  "measurement_support": {
+    "action_roster": "Retain all 35 supported native complete-frame actions: 27 dedicated and 8 loaded. Preserve each of the four catalogues' three native job scales, requirements, lane counts and excluded actions.",
+    "training": "Use only each source gate's accepted waves1..12 and its exact source_artifacts/correction_artifacts. Do not add old excluded or unsafe attempts. Never filter a wave/action by new scheduler performance.",
+    "holdout": "Keep wave13 components separate. Do not use them in fitting the mean catalogue or sampling the primary empirical distribution, or to choose a model/action/threshold. They support phase-model diagnostics, not physical complete-action holdout validation.",
+    "dedicated": "Preserve each wave's child-aggregate initialization, native-unit loop time and finalization as one record; reconstruct the original native job size by the existing complete-frame composition rule.",
+    "loaded": "Keep target phase and resident conservative overlap service from the same accepted loaded row together. Combine that row with a dedicated resident p1 training-wave phase by the existing initialization/overlap/residual-drain/finalization rule. Empty and loaded campaigns have separate dates: their Cartesian product assumes independence across campaigns.",
+    "replication_unit": "A loaded12x12 product supplies144 derived support points from12 loaded and12 dedicated phase waves; it does not supply144 independent physical executions. Per-wave resident conservative overlap estimates are not raw instantaneous rate observations."
+  },
+  "mean_catalogue_and_load": {
+    "policy_catalogue": "Both policies see one catalogue with each action's E[max(1,duration)] and the mean of every jointly retained native-job completion-offset slot, fitted only to training support.",
+    "arrival_rates": "Recompute the original capacity LP direction and .8/.95 loads using requirements/E[max(1,duration)]. Do not use E[requirements/duration] or legacy rates. Generate each literal independent-Poisson arrival tape once and reuse it across both policies and both execution conditions.",
+    "mean_condition": "Execute the fitted mean duration/offset vector supplied to the policies.",
+    "empirical_condition": "Sample a whole fitted support record at each action admission and reserve max(1,its duration). No artificial jitter, time normalization, per-coordinate resampling or mean-service correction is added."
+  },
+  "policy_and_information": {
+    "algorithm": "Unchanged BG S1/S2 root selection, MW continuation, queue envelope, FIFO population, overflow fallback and observed-count/now arrival estimate. MaxWeight uses exact single-lane enumeration on the same mean catalogue.",
+    "planning_samples": 8,
+    "planning_event_cap": 128,
+    "planning_seed_rule": "arrival-plan-v1:{node}:{load}:online",
+    "window": "Mean-catalogue tau_max; no true arrival rates, real future arrival tape, service samples, service seed, evaluation horizon or hidden release times enter the policy.",
+    "busy_lane_forecast": "Use max(now,last nominal release time) for a still-busy lane and now for an observed released lane. A busy overdue lane has zero forecast residual; this is mean-model prediction error, not knowledge of its real release time. Actual sampled release times determine environment events only.",
+    "clock": "Actual service clock with one-second idle polling and complete loaded lane reservations. Computation is recorded separately and does not delay service."
+  },
+  "service_pairing": {
+    "seed_rule": "service-empirical-v1:{node}:{load}:{service_seed}",
+    "stream_rule": "Each policy arm creates its own fresh EmpiricalServiceTape with the same paired seed; never share a mutable tape between arms. One environment-only Python Random stream per action_id is seeded with seed_rule + ':action:' + action_id. The nth use of the same action receives the same whole support record across policies, regardless of lane or intervening other-action draws.",
+    "scope": "Policies can select different actions and action counts. Pair the exogenous indexed streams and literal births, not realized job completion times or different action histories."
+  },
+  "outcomes": {
+    "primary": "1200-second birth-cohort restricted mean flow, BG minus MW, in the empirical condition.",
+    "secondary": "Same-pair common completed-ID P90 and900/1200 unfinished counts. Recompute common populations separately for each BG/MW condition; never pool completed jobs or transfer one condition's P90 population to another.",
+    "variability_contrast": "Empirical-minus-mean change in the paired BG-minus-MW effect, using all24 matched arrival tapes.",
+    "retention": "Report both conditions, all eight catalogue/load groups, all24 workload classes, all three complete joint seed blocks, every paired tape and actual algorithm work. Keep all regressions and HOLD outcomes."
+  },
+  "performance_gates": {
+    "mean_reduction": 0.01,
+    "per_load_mean_nonregression": true,
+    "per_group_p90_and_unfinished_tolerance": 0.05,
+    "zero_baseline_unfinished_requires_zero": true,
+    "pooled_unfinished_nonincreasing_at_both_cutoffs": true,
+    "application": "Apply the original numerical gates separately to mean and empirical execution; neither condition overrides a HOLD in the other or in prior experiments."
+  },
+  "statistics": "Three joint arrival/service-seed blocks, not96 independent observations. This is descriptive development evidence; no confidence interval or new independent BG confirmation is claimed. No parameter, planning stream, action or service sample is selected from these outcomes.",
+  "execution": "Complete sample coverage, deterministic-mean replay agreement, hidden-service prefix causality and whole-record paired-stream checks before registration/submission. Capture the design, literal mean catalogue, service bank, birth tapes and executed source text before performance. Keep trajectories on the server and pull only small logs/receipts/summary. Use node001-node006 with one independent trajectory per shard.",
+  "limitations": "This is a measured-phase-derived stochastic complete-frame model with an explicit cross-campaign independence assumption. It is not a measured joint distribution of full native loaded-action executions, a live placement result, a random-service stability theorem or an actual P90 guarantee. Original BG confirmation, planning-stream results and all prior HOLD outcomes remain unchanged."
+}

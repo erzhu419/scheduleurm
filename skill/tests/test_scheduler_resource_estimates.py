@@ -1,3 +1,5 @@
+import pytest
+
 from skill.scheduler_resource.estimates import (
     description_resource_family_key,
     description_sibling_resource_estimate,
@@ -569,6 +571,7 @@ def test_description_sibling_estimate_requires_two_samples_and_uses_upper_observ
         "description": "transfer fairness official InventorySupplyChain malibo_cbo seed=2",
         "current_ram_mb": 489,
         "est_vram_mb": 0,
+        "last_progress_line": "Iter 20/100",
     }
     failed_outlier = dict(second, id="failed", status="failed", peak_ram_mb=32000)
 
@@ -798,6 +801,121 @@ def _actual_resource_deps(now=123.0):
         description_sibling_resource_estimate_index=description_sibling_resource_estimate_index,
         now=lambda: now,
     )
+
+
+def test_matching_archived_family_raises_underestimated_ram_and_vram():
+    queued = {
+        "id": "next", "status": "queued", "project": "BAPR",
+        "signature": "BAPR/next/seed-9", "resource_family": "train-runtime",
+        "ram_mb": 1024, "ram_mb_explicit": True,
+        "est_vram_mb": 256, "est_vram_mb_explicit": True,
+    }
+    completed = dict(queued, signature="BAPR/previous/seed-1", status="done")
+    history = {
+        completed["signature"]: {
+            **resource_history_metadata(completed), "ram_mb": 4000, "vram_mb": 1800,
+        },
+    }
+
+    refresh_queued_resource_estimates({"tasks": [queued]}, history, deps=_actual_resource_deps())
+
+    assert queued["ram_mb"] == 4800
+    assert queued["est_vram_mb"] == 2160
+    assert queued["last_resource_estimate_update"]["kind"] == "ram_learned_family_raise"
+
+
+@pytest.mark.parametrize("ram,vram", [(12000, 8000), (512, 256)])
+def test_archived_description_actuals_survive_changed_run_directories(ram, vram):
+    queued = {
+        "id": "next", "status": "queued", "project": "BAPR",
+        "signature": "BAPR/new-campaign/seed-9", "description": "paired train seed 9 d=200",
+        "ram_mb": ram, "ram_mb_explicit": True,
+        "est_vram_mb": vram, "est_vram_mb_explicit": True,
+    }
+    history = {}
+    for seed, observed in ((1, 1500), (2, 1800)):
+        completed = dict(
+            queued, signature=f"BAPR/old-campaign/seed-{seed}",
+            description=f"paired train seed {seed} d=200", status="done",
+        )
+        history[completed["signature"]] = {
+            **resource_history_metadata(completed), "ram_mb": observed, "vram_mb": observed // 2,
+        }
+
+    refresh_queued_resource_estimates({"tasks": [queued]}, history, deps=_actual_resource_deps())
+
+    assert queued["ram_mb"] == 2160
+    assert queued["est_vram_mb"] == 1080
+    assert queued["last_resource_estimate_update"]["evidence_scope"] == "description"
+    assert queued["last_resource_estimate_update"]["sample_count"] == 2
+
+
+def test_broad_campaign_measurements_do_not_raise_different_workload_estimates():
+    queued = {
+        "id": "audit", "status": "queued", "project": "BAPR",
+        "signature": "BAPR/campaign/audit/seed-9", "description": "CPU-light audit",
+        "ram_mb": 512, "ram_mb_explicit": True,
+        "est_vram_mb": 256, "est_vram_mb_explicit": True,
+    }
+    history = {}
+    for seed in (1, 2):
+        completed = dict(
+            queued, signature=f"BAPR/campaign/train/seed-{seed}",
+            description=f"heavy train seed {seed}", status="done",
+        )
+        history[completed["signature"]] = {
+            **resource_history_metadata(completed), "ram_mb": 8000, "vram_mb": 4000,
+        }
+
+    refresh_queued_resource_estimates({"tasks": [queued]}, history, deps=_actual_resource_deps())
+
+    assert queued["ram_mb"] == 512
+    assert queued["est_vram_mb"] == 256
+
+
+@pytest.mark.parametrize("line", ["Starting training", "JAX devices: [CudaDevice(id=0)]"])
+def test_startup_messages_do_not_lower_family_or_description_budgets(line):
+    queued = {
+        "id": "next", "status": "queued", "project": "BAPR",
+        "signature": "BAPR/train/seed-9", "description": "paired train seed 9",
+        "ram_mb": 12000, "ram_mb_explicit": True,
+        "est_vram_mb": 8000, "est_vram_mb_explicit": True,
+    }
+    siblings = [dict(
+        queued, id=f"running-{seed}", signature=f"BAPR/train/seed-{seed}",
+        description=f"paired train seed {seed}", status="running",
+        peak_ram_mb=1500, peak_vram_mb=500, last_progress_line=line,
+    ) for seed in (1, 2)]
+    state = {"tasks": [queued, *siblings]}
+
+    assert not description_sibling_resource_estimate_index(state)
+    refresh_queued_resource_estimates(state, {}, deps=_actual_resource_deps())
+
+    assert queued["ram_mb"] == 12000
+    assert queued["est_vram_mb"] == 8000
+
+
+@pytest.mark.parametrize("line", [
+    "continuation_updates=1000/20000; 0.15s/update",
+    "branches=12/512; restored=0; 14s/branch",
+    "Iter 20 | steps=100000", "PROGRESS 8/10",
+])
+def test_native_training_progress_enables_actual_resource_learning(line):
+    queued = {
+        "id": "next", "status": "queued", "project": "Thesis",
+        "signature": "Thesis/train/seed-9",
+        "ram_mb": 13000, "ram_mb_explicit": True,
+        "est_vram_mb": 1536, "est_vram_mb_explicit": True,
+    }
+    running = dict(
+        queued, id="running", signature="Thesis/train/seed-1", status="running",
+        peak_ram_mb=8000, peak_vram_mb=600, last_progress_line=line,
+    )
+
+    refresh_queued_resource_estimates({"tasks": [queued, running]}, {}, deps=_actual_resource_deps())
+
+    assert queued["ram_mb"] == 9600
+    assert queued["est_vram_mb"] == 720
 
 
 def test_explicit_bapr_ram_is_cold_start_hint_after_campaign_has_actuals():

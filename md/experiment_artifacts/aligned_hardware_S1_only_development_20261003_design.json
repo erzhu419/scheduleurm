@@ -1,0 +1,46 @@
+{
+  "experiment": "aligned_hardware_S1_only_development_20261003",
+  "source_execution_epochs": {
+    "no_background": "2026-09-30T03:21:59.853626+00:00",
+    "BG": "2026-09-30T05:45:18.017710+00:00"
+  },
+  "population": {
+    "catalogue_lanes": [["cpu_a", 2], ["node007", 4], ["gpu_a", 2], ["gpu_b", 2]],
+    "loads": [0.8, 0.95],
+    "arrival_seeds": [41, 42, 43],
+    "tapes": 24,
+    "birth_cohort": [300, 900],
+    "cohort_checkpoint": 900,
+    "environment_arrival_end": 1200,
+    "observation_end": 1200,
+    "roster": "Every original development tape in registered order; no seed, group or outcome selection."
+  },
+  "intervention": "Against frozen no-background ContinuousArrivalAgeTailLaneRollout, remove only the candidate S2<=MW filter. Minimize sample-summed S1 over every feasible root, retaining MW on ties and requiring strict S1 improvement. Keep exact FIFO scoring, complete loaded-job offsets/reservations, ordinary MW continuation and the original queue envelope.",
+  "matched_budget": {
+    "planning_samples": 8,
+    "planning_event_cap": 128,
+    "planning_window": "tau_max, without evaluation stop-time input",
+    "planning_seed_rule": "arrival-plan-v1:{node}:{load}:online",
+    "rate_estimator": "Causally released cumulative births / now, zero exposure gives zero rates",
+    "overflow": "Any prefix overflow discards the entire root ranking and returns exact MW",
+    "S2_diagnostic": "Reuse the same exact S1/S2 scorer; S2 is still computed and fully charged but never filters or ranks roots. Record chosen S2>MW using exact Fraction comparison.",
+    "clock": "Unchanged asynchronous physical service clock with one-second idle polling; computation recorded separately."
+  },
+  "execution": {
+    "expected_new_trajectories": 24,
+    "reused_BG_MW_no_background_trajectory_arms": 72,
+    "new_bg_mw_or_no_background_simulations": 0,
+    "new_shadow_references": 0,
+    "placement": "24 independent CPU1 units on available node001-node006, BLAS1; first registered unit checks integration, remaining23 follow without duplicate execution.",
+    "sources": "Freeze literal original dependencies, new S1-only policy and runner plus reused paired-metric helpers at registration. Original development caches remain unchanged; full new trajectories stay on server."
+  },
+  "outcomes": {
+    "primary_comparison": "S1-only minus cached no-background S1/S2; negative means removing the S2 constraint improves the metric",
+    "primary_metrics": ["1200-second cohort restricted mean flow", "1200-second per-pair common-completed-ID P90"],
+    "secondary": ["900/1200 queued/inflight/unfinished counts", "All eight catalogue/load groups", "All three arrival-seed blocks", "All twenty-four workload-class groups", "Cached BG and MW contrasts", "Number of selected roots with predicted S2 greater than MW and actual work"],
+    "common_population": "Recompute completed-ID intersection separately for S1/no-background, S1/BG and S1/MW at each cutoff. Do not transfer P90s between comparisons.",
+    "MW_reference_screen": "Retain original 1% mean improvement, load nonregression, 5% per-group P90/unfinished tolerance and pooled tail nonincrease against cached MW. This is a development screen, not automatic adoption or a new confirmation."
+  },
+  "statistics": "Three reused actual-arrival seeds with eight paired cells per seed, conditional on fixed planning streams. Give all block and group point estimates; do not treat24 cells as independent, bootstrap three blocks into a confirmation claim or use the hard-coded twelve-block CI module.",
+  "interpretation": "This is a mean-only one-step stochastic MW-rollout comparator under the same information, population and sample budget. S1 can improve while actual P90 or unfinished tails worsen: retain both. A weaker result after removing S2 supports its role in this model; domination by S1-only requires narrowing the risk-constraint contribution. Do not tune coefficients, alter the original BG main result, revive finite/current-policy continuation or edit the paper."
+}

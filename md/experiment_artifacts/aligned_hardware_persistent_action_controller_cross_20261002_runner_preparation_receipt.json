@@ -1,0 +1,47 @@
+{
+  "at_utc": "2026-10-02T13:44:54.363827+00:00",
+  "stage": "prepared_not_staged_or_submitted",
+  "stem": "aligned_hardware_persistent_action_controller_cross_20261002",
+  "harness_module": "algorithm.experiments.aligned_hardware_persistent_action_controller_cross",
+  "test_module_pending_final_confirmation": "skill.tests.test_persistent_action_controller_cross",
+  "prepared_runner_files": [
+    "aligned_hardware_persistent_action_controller_cross_20261002_runner_controller.py",
+    "aligned_hardware_persistent_action_controller_cross_20261002_runner_merge_entry.py",
+    "aligned_hardware_persistent_action_controller_cross_20261002_runner_test_specs.jsonl",
+    "aligned_hardware_persistent_action_controller_cross_20261002_runner_specs.template.jsonl",
+    "aligned_hardware_persistent_action_controller_cross_20261002_runner_merge_specs.template.jsonl"
+  ],
+  "workers_per_suffix": 22,
+  "suffix_cpu": 23,
+  "suffix_ram_mb": 8192,
+  "soft_preferred_nodes": [
+    "node004",
+    "node005",
+    "node006"
+  ],
+  "allowed_nodes": [
+    "node001",
+    "node002",
+    "node003",
+    "node004",
+    "node005",
+    "node006"
+  ],
+  "test_cpu": 1,
+  "test_ram_mb": 2048,
+  "test_soft_preferred": "node005",
+  "merge_cpu": 1,
+  "merge_ram_mb": 1536,
+  "register_command": "--register --workers 22",
+  "run_command": "--shard-index 0..2",
+  "merge_command": "--merge",
+  "metadata_register_node": "node005",
+  "only_summary_sync": true,
+  "small_result_dir": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/persistent_action_controller_cross_small_results_20261002",
+  "real_marker_method": "existing backend actual registered exit_status_token; targeted terminal diagnostics then state_lock/update_running_tasks",
+  "tracked_probe_interval_s": 60,
+  "old_task_ids_or_old_gate_files_used": false,
+  "scientific_sources_changed": false,
+  "jobs_submitted": false,
+  "server_files_staged": false
+}

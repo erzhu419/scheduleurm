@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 import sys
 from pathlib import Path
 
@@ -9,6 +10,10 @@ import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCHEDULER_PATH = REPO_ROOT / "skill" / "scheduler.py"
+
+# Collection imports the inventory before fixtures execute. The synthetic
+# cluster keeps node-specific regressions independent of the operator's nodes.
+os.environ["SCHEDULEURM_NODES_FILE"] = str(REPO_ROOT / "skill" / "tests" / "fixtures" / "cluster.example.json")
 
 
 @pytest.fixture

@@ -186,6 +186,17 @@ def _exact_history_matches_resource_family(
     return bool(expected and observed == expected)
 
 
+def _has_resource_progress(task: dict) -> bool:
+    if int(task.get("runtime_current_unit") or 0) > 0 or task.get("progress_ratio"):
+        return True
+    return bool(re.search(
+        r"\b(?:Iter|Iteration|Epoch|Step)\s*(?:[:=]\s*)?\d+|"
+        r"\b\d+\s*/\s*\d+\b|\d+%\||"
+        r"\b(?:branches|continuation_updates)\s*[:=]\s*\d+",
+        str(task.get("last_progress_line") or ""), re.IGNORECASE,
+    ))
+
+
 def live_sibling_resource_estimate_index(state: dict) -> dict[tuple[str, str], int]:
     """Build exact live-family RAM/VRAM estimates in one state pass."""
     samples: dict[tuple[str, str], list[int]] = {}
@@ -205,10 +216,7 @@ def live_sibling_resource_estimate_index(state: dict) -> dict[tuple[str, str], i
             # Startup/compile samples are incomplete. They may raise an
             # estimate immediately, but cannot lower queued descendants until
             # the task has emitted progress or completed.
-            has_progress = bool(
-                other.get("last_progress_line")
-                or int(other.get("runtime_current_unit") or 0) > 0
-            )
+            has_progress = _has_resource_progress(other)
             submitted = int(other.get(
                 "est_vram_mb" if kind == "vram" else "ram_mb") or 0)
             mature = other.get("status") == "done" or has_progress
@@ -276,10 +284,7 @@ def description_sibling_resource_estimate_index(state: dict) -> dict[tuple[str, 
         for kind, minimum_observed in (("ram", 16), ("vram", 100)):
             if kind == "vram" and task_has_host_aggregate_vram(other):
                 continue
-            observed = max(
-                int(other.get(f"current_{kind}_mb") or 0),
-                int(other.get(f"peak_{kind}_mb") or 0),
-            )
+            observed = _mature_resource_observation(other, kind)
             if observed > minimum_observed:
                 key_mode = mode if kind == "ram" else "vram"
                 samples.setdefault((family, key_mode, kind), []).append(observed)
@@ -310,10 +315,7 @@ def _signature_prefix(signature: str) -> str:
 def _mature_resource_observation(task: dict, kind: str) -> int:
     if task.get("status") not in ("running", "done"):
         return 0
-    if task.get("status") == "running" and not (
-        task.get("last_progress_line")
-        or int(task.get("runtime_current_unit") or 0) > 0
-    ):
+    if task.get("status") == "running" and not _has_resource_progress(task):
         return 0
     if kind == "vram" and task_has_host_aggregate_vram(task):
         return 0
@@ -360,6 +362,7 @@ def learned_resource_estimate_index(
                 continue
             kind_mode = mode if kind == "vram" else ""
             add("family", resource_family_key(task, kind), kind_mode, kind, observed)
+            add("description", description_resource_family_key(task), kind_mode, kind, observed)
             add("prefix", prefix, kind_mode, kind, observed)
             add("project", project, kind_mode, kind, observed)
 
@@ -386,13 +389,15 @@ def learned_resource_estimate_index(
             kind_mode = recorded_mode if kind == "vram" else ""
             family = str(record.get(f"{kind}_resource_family_key") or "").strip().lower()
             add("family", family, kind_mode, kind, observed)
+            description = str(record.get("description_resource_family_key") or "").strip().lower()
+            add("description", description, kind_mode, kind, observed)
             add("prefix", prefix, kind_mode, kind, observed)
             add("project", project, kind_mode, kind, observed)
 
     result: dict[tuple[str, str, str, str], dict[str, int | str]] = {}
     for index_key, values in buckets.items():
         scope = index_key[0]
-        minimum_samples = 1 if scope == "family" else 2 if scope == "prefix" else 5
+        minimum_samples = 1 if scope == "family" else 2 if scope in ("description", "prefix") else 5
         if len(values) < minimum_samples:
             continue
         observed = (
@@ -688,13 +693,15 @@ def _apply_learned_fallback_estimate(
     kind: str,
     deps: ResourceEstimateDeps,
 ) -> bool:
-    """Lower a cold-start estimate only when indexed actual evidence is lower."""
+    """Use matching historical actuals in both directions; broad fallbacks only lower."""
     if not evidence:
         return False
     observed_mb = int(evidence.get("observed_mb") or 0)
     cur = int(task.get(key) or 0)
     proposed = with_resource_slack(observed_mb, min_mb=min_mb)
-    if cur <= 0 or proposed <= 0 or proposed >= cur:
+    if proposed <= 0 or proposed == cur:
+        return False
+    if proposed > cur and evidence.get("scope") not in ("family", "description"):
         return False
     changed = _apply_live_family_estimate(
         task,
@@ -739,6 +746,7 @@ def refresh_queued_resource_estimates(
         # leak measurements from older code into that new contract.
         if not _explicit_resource_family(task, kind):
             candidates.extend([
+                ("description", description_resource_family_key(task)),
                 ("prefix", _signature_prefix(task.get("signature") or "")),
                 ("project", str(task.get("project") or "").strip().lower()),
             ])

@@ -1,0 +1,3400 @@
+{
+  "post_result": true,
+  "development_only": true,
+  "formal_results_unchanged": true,
+  "purpose": "Diagnose retained boxes after one fractional-first K288 run; offline bound/key alternatives are not executed search variants.",
+  "method": "Capture selector return-frame locals with sys.settrace; inspect retained live boxes; exact Fraction bound arithmetic and mandatory-count-reserving resource-aware greedy key.",
+  "node": "gpu_a",
+  "lanes": 8,
+  "queues": [
+    6,
+    6,
+    37
+  ],
+  "budget": 288,
+  "selector_calls": 1,
+  "reference_source": "md/experiment_artifacts/aligned_hardware_shared_threshold_queue_confirmation_failure_diagnostic_20260927.json",
+  "new_reference_calls": 0,
+  "selection": {
+    "option_counts": [
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      2,
+      1,
+      4
+    ],
+    "option_indices": [
+      3,
+      6,
+      6,
+      7,
+      8,
+      8,
+      8,
+      8
+    ],
+    "service": [
+      3,
+      0,
+      37
+    ],
+    "duration": 20.924459477588243,
+    "score": 66.28606112791526,
+    "upper_bound": 66.49399930940298,
+    "gap": 0.20793818148771948,
+    "epsilon": 0.004243636356892234,
+    "exact": false,
+    "score_exact": false,
+    "canonical_exact": false,
+    "lp_node_budget": 288,
+    "lp_calls": 288,
+    "duration_root_count": 8,
+    "successful_lp_calls": 288,
+    "dual_certified_lp_calls": 288,
+    "safe_fallback_lp_calls": 0,
+    "dual_repair_count": 3,
+    "maximum_dual_repair": 2.1316282072803006e-14,
+    "candidate_evaluations": 289,
+    "singleton_candidate_evaluations": 0,
+    "residual_fill_option_probes": 2031,
+    "branch_splits": 159,
+    "analytic_infeasible_regions": 36,
+    "threshold_empty_regions": 1,
+    "singleton_regions_closed": 0,
+    "bound_pruned_regions": 110,
+    "canonical_key_bound_evaluations": 12,
+    "canonical_tie_pruned_regions": 5,
+    "canonical_tie_regions_remaining": 1,
+    "canonical_tie_incumbent_updates": 2,
+    "canonical_tie_singletons_resolved": 0,
+    "frontier_regions_remaining": 20,
+    "inherited_unsolved_regions": 1,
+    "frontier_peak": 33,
+    "lp_matrix_coefficients": 22573,
+    "dual_column_checks": 2031,
+    "represented_ordered_configurations": 100000000,
+    "represented_count_vectors": 24310
+  },
+  "incumbent": {
+    "score": {
+      "numerator": 190627828465664,
+      "denominator": 2875835812567,
+      "value": 66.28606112791526
+    },
+    "weighted_service_numerator": 1387,
+    "canonical_key": {
+      "duration": {
+        "numerator": 2875835812567,
+        "denominator": 137438953472,
+        "value": 20.924459477588243
+      },
+      "indices": [
+        3,
+        6,
+        6,
+        7,
+        8,
+        8,
+        8,
+        8
+      ]
+    }
+  },
+  "reference": {
+    "score": {
+      "numerator": 190627828465664,
+      "denominator": 2875835812567,
+      "value": 66.28606112791526
+    },
+    "service": [
+      3,
+      0,
+      37
+    ],
+    "option_indices": [
+      3,
+      6,
+      6,
+      7,
+      8,
+      8,
+      8,
+      8
+    ],
+    "matches_incumbent_score": true,
+    "matches_incumbent_action": true
+  },
+  "summary": {
+    "live_regions": 20,
+    "classifications": {
+      "score_slack": 19,
+      "canonical_slack": 1
+    },
+    "would_prune_integer_rounding_only": 0,
+    "would_prune_lattice_rounding_only": 0,
+    "would_prune_resource_key_only": 0,
+    "would_prune_integer_and_resource_key": 0,
+    "would_prune_lattice_and_resource_key": 0,
+    "integer_rounding_tightened_regions": 8,
+    "lattice_rounding_tightened_regions": 8,
+    "regions_with_implied_integer_count_upper_tightening": 20,
+    "solved_regions_with_primal_violating_implied_integer_count_upper": 19,
+    "solved_live_regions": 19
+  },
+  "regions": [
+    {
+      "region": 0,
+      "threshold": {
+        "numerator": 746610965394611,
+        "denominator": 35184372088832,
+        "value": 21.219959915999056
+      },
+      "eligible_groups": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "eligible_original_representatives": [
+        0,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "lower": [
+        0,
+        0,
+        2,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "upper": [
+        8,
+        8,
+        8,
+        1,
+        0,
+        8,
+        0,
+        8
+      ],
+      "primal": [
+        0.0,
+        0.0,
+        2.0,
+        1.0,
+        0.0,
+        0.42857142857142855,
+        0.0,
+        4.571428571428571
+      ],
+      "solved": true,
+      "classification": "score_slack",
+      "numerator_upper": {
+        "numerator": 1411,
+        "denominator": 1,
+        "value": 1411.0
+      },
+      "incumbent_score_at_threshold_numerator": {
+        "numerator": 1035549409002325457,
+        "denominator": 736213968017152,
+        "value": 1406.587560123825
+      },
+      "integer_numerator_upper": 1411,
+      "lower_objective": 42,
+      "open_weight_gcd": 1,
+      "lattice_numerator_upper": 1411,
+      "old_canonical_key": {
+        "duration": {
+          "numerator": 746610965394611,
+          "denominator": 35184372088832,
+          "value": 21.219959915999056
+        },
+        "indices": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          3,
+          3,
+          4
+        ]
+      },
+      "resource_aware_canonical_key": {
+        "duration": {
+          "numerator": 746610965394611,
+          "denominator": 35184372088832,
+          "value": 21.219959915999056
+        },
+        "indices": [
+          3,
+          3,
+          4,
+          6,
+          6,
+          6,
+          6,
+          6
+        ]
+      },
+      "would_prune_integer_rounding_only": false,
+      "would_prune_lattice_rounding_only": false,
+      "would_prune_resource_key_only": false,
+      "would_prune_integer_and_resource_key": false,
+      "would_prune_lattice_and_resource_key": false,
+      "eligible_requirements": [
+        [
+          1,
+          0,
+          1
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          3,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          3
+        ],
+        [
+          0,
+          0,
+          8
+        ]
+      ],
+      "implied_integer_count_upper": [
+        0,
+        0,
+        2,
+        1,
+        0,
+        5,
+        0,
+        4
+      ],
+      "primal_exceeds_implied_integer_count_upper_positions": [
+        7
+      ],
+      "count_upper_tightened_without_lp": true
+    },
+    {
+      "region": 1,
+      "threshold": {
+        "numerator": 2875835812567,
+        "denominator": 137438953472,
+        "value": 20.924459477588243
+      },
+      "eligible_groups": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "eligible_original_representatives": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "lower": [
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        4
+      ],
+      "upper": [
+        0,
+        1,
+        1,
+        0,
+        8,
+        1,
+        8
+      ],
+      "primal": [
+        0.0,
+        0.875,
+        1.0,
+        0.0,
+        1.0,
+        1.0,
+        4.125
+      ],
+      "solved": true,
+      "classification": "score_slack",
+      "numerator_upper": {
+        "numerator": 5563,
+        "denominator": 4,
+        "value": 1390.75
+      },
+      "incumbent_score_at_threshold_numerator": {
+        "numerator": 1387,
+        "denominator": 1,
+        "value": 1387.0
+      },
+      "integer_numerator_upper": 1390,
+      "lower_objective": 1338,
+      "open_weight_gcd": 1,
+      "lattice_numerator_upper": 1390,
+      "old_canonical_key": {
+        "duration": {
+          "numerator": 2875835812567,
+          "denominator": 137438953472,
+          "value": 20.924459477588243
+        },
+        "indices": [
+          3,
+          4,
+          6,
+          7,
+          8,
+          8,
+          8,
+          8
+        ]
+      },
+      "resource_aware_canonical_key": {
+        "duration": {
+          "numerator": 2875835812567,
+          "denominator": 137438953472,
+          "value": 20.924459477588243
+        },
+        "indices": [
+          3,
+          4,
+          6,
+          7,
+          8,
+          8,
+          8,
+          8
+        ]
+      },
+      "would_prune_integer_rounding_only": false,
+      "would_prune_lattice_rounding_only": false,
+      "would_prune_resource_key_only": false,
+      "would_prune_integer_and_resource_key": false,
+      "would_prune_lattice_and_resource_key": false,
+      "eligible_requirements": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          3,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          3
+        ],
+        [
+          0,
+          0,
+          8
+        ]
+      ],
+      "implied_integer_count_upper": [
+        0,
+        1,
+        1,
+        0,
+        2,
+        1,
+        4
+      ],
+      "primal_exceeds_implied_integer_count_upper_positions": [
+        6
+      ],
+      "count_upper_tightened_without_lp": true
+    },
+    {
+      "region": 2,
+      "threshold": {
+        "numerator": 746610965394611,
+        "denominator": 35184372088832,
+        "value": 21.219959915999056
+      },
+      "eligible_groups": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "eligible_original_representatives": [
+        0,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "lower": [
+        0,
+        0,
+        2,
+        1,
+        0,
+        0,
+        1,
+        0
+      ],
+      "upper": [
+        8,
+        8,
+        8,
+        1,
+        0,
+        8,
+        8,
+        8
+      ],
+      "primal": null,
+      "solved": false,
+      "classification": "score_slack",
+      "numerator_upper": {
+        "numerator": 1411,
+        "denominator": 1,
+        "value": 1411.0
+      },
+      "incumbent_score_at_threshold_numerator": {
+        "numerator": 1035549409002325457,
+        "denominator": 736213968017152,
+        "value": 1406.587560123825
+      },
+      "integer_numerator_upper": 1411,
+      "lower_objective": 153,
+      "open_weight_gcd": 1,
+      "lattice_numerator_upper": 1411,
+      "old_canonical_key": {
+        "duration": {
+          "numerator": 746610965394611,
+          "denominator": 35184372088832,
+          "value": 21.219959915999056
+        },
+        "indices": [
+          0,
+          0,
+          0,
+          0,
+          3,
+          3,
+          4,
+          7
+        ]
+      },
+      "resource_aware_canonical_key": {
+        "duration": {
+          "numerator": 746610965394611,
+          "denominator": 35184372088832,
+          "value": 21.219959915999056
+        },
+        "indices": [
+          3,
+          3,
+          4,
+          6,
+          6,
+          6,
+          6,
+          7
+        ]
+      },
+      "would_prune_integer_rounding_only": false,
+      "would_prune_lattice_rounding_only": false,
+      "would_prune_resource_key_only": false,
+      "would_prune_integer_and_resource_key": false,
+      "would_prune_lattice_and_resource_key": false,
+      "eligible_requirements": [
+        [
+          1,
+          0,
+          1
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          3,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          3
+        ],
+        [
+          0,
+          0,
+          8
+        ]
+      ],
+      "implied_integer_count_upper": [
+        0,
+        0,
+        2,
+        1,
+        0,
+        4,
+        5,
+        4
+      ],
+      "primal_exceeds_implied_integer_count_upper_positions": null,
+      "count_upper_tightened_without_lp": true
+    },
+    {
+      "region": 3,
+      "threshold": {
+        "numerator": 2875835812567,
+        "denominator": 137438953472,
+        "value": 20.924459477588243
+      },
+      "eligible_groups": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "eligible_original_representatives": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "lower": [
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0
+      ],
+      "upper": [
+        1,
+        1,
+        1,
+        0,
+        8,
+        0,
+        8
+      ],
+      "primal": [
+        1.0,
+        0.5,
+        1.0,
+        0.0,
+        1.0,
+        0.0,
+        4.5
+      ],
+      "solved": true,
+      "classification": "score_slack",
+      "numerator_upper": {
+        "numerator": 1390,
+        "denominator": 1,
+        "value": 1390.0
+      },
+      "incumbent_score_at_threshold_numerator": {
+        "numerator": 1387,
+        "denominator": 1,
+        "value": 1387.0
+      },
+      "integer_numerator_upper": 1390,
+      "lower_objective": 49,
+      "open_weight_gcd": 1,
+      "lattice_numerator_upper": 1390,
+      "old_canonical_key": {
+        "duration": {
+          "numerator": 2875835812567,
+          "denominator": 137438953472,
+          "value": 20.924459477588243
+        },
+        "indices": [
+          2,
+          3,
+          4,
+          6,
+          6,
+          6,
+          6,
+          6
+        ]
+      },
+      "resource_aware_canonical_key": {
+        "duration": {
+          "numerator": 2875835812567,
+          "denominator": 137438953472,
+          "value": 20.924459477588243
+        },
+        "indices": [
+          2,
+          3,
+          4,
+          6,
+          6,
+          6,
+          6,
+          6
+        ]
+      },
+      "would_prune_integer_rounding_only": false,
+      "would_prune_lattice_rounding_only": false,
+      "would_prune_resource_key_only": false,
+      "would_prune_integer_and_resource_key": false,
+      "would_prune_lattice_and_resource_key": false,
+      "eligible_requirements": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          3,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          3
+        ],
+        [
+          0,
+          0,
+          8
+        ]
+      ],
+      "implied_integer_count_upper": [
+        1,
+        1,
+        1,
+        0,
+        6,
+        0,
+        4
+      ],
+      "primal_exceeds_implied_integer_count_upper_positions": [
+        6
+      ],
+      "count_upper_tightened_without_lp": true
+    },
+    {
+      "region": 4,
+      "threshold": {
+        "numerator": 2875835812567,
+        "denominator": 137438953472,
+        "value": 20.924459477588243
+      },
+      "eligible_groups": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "eligible_original_representatives": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "lower": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        3,
+        0
+      ],
+      "upper": [
+        1,
+        1,
+        0,
+        0,
+        8,
+        8,
+        8
+      ],
+      "primal": [
+        0.5,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        3.0,
+        3.5
+      ],
+      "solved": true,
+      "classification": "score_slack",
+      "numerator_upper": {
+        "numerator": 1390,
+        "denominator": 1,
+        "value": 1390.0
+      },
+      "incumbent_score_at_threshold_numerator": {
+        "numerator": 1387,
+        "denominator": 1,
+        "value": 1387.0
+      },
+      "integer_numerator_upper": 1390,
+      "lower_objective": 333,
+      "open_weight_gcd": 1,
+      "lattice_numerator_upper": 1390,
+      "old_canonical_key": {
+        "duration": {
+          "numerator": 2875835812567,
+          "denominator": 137438953472,
+          "value": 20.924459477588243
+        },
+        "indices": [
+          2,
+          3,
+          6,
+          6,
+          6,
+          7,
+          7,
+          7
+        ]
+      },
+      "resource_aware_canonical_key": {
+        "duration": {
+          "numerator": 2875835812567,
+          "denominator": 137438953472,
+          "value": 20.924459477588243
+        },
+        "indices": [
+          2,
+          3,
+          6,
+          6,
+          6,
+          7,
+          7,
+          7
+        ]
+      },
+      "would_prune_integer_rounding_only": false,
+      "would_prune_lattice_rounding_only": false,
+      "would_prune_resource_key_only": false,
+      "would_prune_integer_and_resource_key": false,
+      "would_prune_lattice_and_resource_key": false,
+      "eligible_requirements": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          3,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          3
+        ],
+        [
+          0,
+          0,
+          8
+        ]
+      ],
+      "implied_integer_count_upper": [
+        1,
+        1,
+        0,
+        0,
+        5,
+        8,
+        3
+      ],
+      "primal_exceeds_implied_integer_count_upper_positions": [
+        6
+      ],
+      "count_upper_tightened_without_lp": true
+    },
+    {
+      "region": 5,
+      "threshold": {
+        "numerator": 746610965394611,
+        "denominator": 35184372088832,
+        "value": 21.219959915999056
+      },
+      "eligible_groups": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "eligible_original_representatives": [
+        0,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "lower": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "upper": [
+        1,
+        0,
+        0,
+        8,
+        8,
+        8,
+        8,
+        8
+      ],
+      "primal": [
+        1.0,
+        0.0,
+        0.0,
+        0.75,
+        1.75,
+        0.0,
+        0.0,
+        4.5
+      ],
+      "solved": true,
+      "classification": "score_slack",
+      "numerator_upper": {
+        "numerator": 1411,
+        "denominator": 1,
+        "value": 1411.0
+      },
+      "incumbent_score_at_threshold_numerator": {
+        "numerator": 1035549409002325457,
+        "denominator": 736213968017152,
+        "value": 1406.587560123825
+      },
+      "integer_numerator_upper": 1411,
+      "lower_objective": 43,
+      "open_weight_gcd": 1,
+      "lattice_numerator_upper": 1411,
+      "old_canonical_key": {
+        "duration": {
+          "numerator": 746610965394611,
+          "denominator": 35184372088832,
+          "value": 21.219959915999056
+        },
+        "indices": [
+          0,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4
+        ]
+      },
+      "resource_aware_canonical_key": {
+        "duration": {
+          "numerator": 746610965394611,
+          "denominator": 35184372088832,
+          "value": 21.219959915999056
+        },
+        "indices": [
+          0,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4,
+          6
+        ]
+      },
+      "would_prune_integer_rounding_only": false,
+      "would_prune_lattice_rounding_only": false,
+      "would_prune_resource_key_only": false,
+      "would_prune_integer_and_resource_key": false,
+      "would_prune_lattice_and_resource_key": false,
+      "eligible_requirements": [
+        [
+          1,
+          0,
+          1
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          3,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          3
+        ],
+        [
+          0,
+          0,
+          8
+        ]
+      ],
+      "implied_integer_count_upper": [
+        1,
+        0,
+        0,
+        6,
+        2,
+        7,
+        7,
+        4
+      ],
+      "primal_exceeds_implied_integer_count_upper_positions": [
+        7
+      ],
+      "count_upper_tightened_without_lp": true
+    },
+    {
+      "region": 6,
+      "threshold": {
+        "numerator": 2875835812567,
+        "denominator": 137438953472,
+        "value": 20.924459477588243
+      },
+      "eligible_groups": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "eligible_original_representatives": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "lower": [
+        2,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "upper": [
+        2,
+        0,
+        0,
+        1,
+        8,
+        0,
+        8
+      ],
+      "primal": [
+        2.0,
+        0.0,
+        0.0,
+        0.5,
+        1.0,
+        0.0,
+        4.5
+      ],
+      "solved": true,
+      "classification": "score_slack",
+      "numerator_upper": {
+        "numerator": 1390,
+        "denominator": 1,
+        "value": 1390.0
+      },
+      "incumbent_score_at_threshold_numerator": {
+        "numerator": 1387,
+        "denominator": 1,
+        "value": 1387.0
+      },
+      "integer_numerator_upper": 1390,
+      "lower_objective": 49,
+      "open_weight_gcd": 1,
+      "lattice_numerator_upper": 1390,
+      "old_canonical_key": {
+        "duration": {
+          "numerator": 2875835812567,
+          "denominator": 137438953472,
+          "value": 20.924459477588243
+        },
+        "indices": [
+          2,
+          2,
+          5,
+          6,
+          6,
+          6,
+          6,
+          6
+        ]
+      },
+      "resource_aware_canonical_key": {
+        "duration": {
+          "numerator": 2875835812567,
+          "denominator": 137438953472,
+          "value": 20.924459477588243
+        },
+        "indices": [
+          2,
+          2,
+          5,
+          6,
+          6,
+          6,
+          6,
+          6
+        ]
+      },
+      "would_prune_integer_rounding_only": false,
+      "would_prune_lattice_rounding_only": false,
+      "would_prune_resource_key_only": false,
+      "would_prune_integer_and_resource_key": false,
+      "would_prune_lattice_and_resource_key": false,
+      "eligible_requirements": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          3,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          3
+        ],
+        [
+          0,
+          0,
+          8
+        ]
+      ],
+      "implied_integer_count_upper": [
+        2,
+        0,
+        0,
+        1,
+        6,
+        0,
+        4
+      ],
+      "primal_exceeds_implied_integer_count_upper_positions": [
+        6
+      ],
+      "count_upper_tightened_without_lp": true
+    },
+    {
+      "region": 7,
+      "threshold": {
+        "numerator": 2875835812567,
+        "denominator": 137438953472,
+        "value": 20.924459477588243
+      },
+      "eligible_groups": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "eligible_original_representatives": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "lower": [
+        1,
+        0,
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "upper": [
+        8,
+        0,
+        2,
+        0,
+        8,
+        8,
+        8
+      ],
+      "primal": [
+        1.375,
+        0.0,
+        2.0,
+        0.0,
+        0.0,
+        0.0,
+        4.625
+      ],
+      "solved": true,
+      "classification": "score_slack",
+      "numerator_upper": {
+        "numerator": 5557,
+        "denominator": 4,
+        "value": 1389.25
+      },
+      "incumbent_score_at_threshold_numerator": {
+        "numerator": 1387,
+        "denominator": 1,
+        "value": 1387.0
+      },
+      "integer_numerator_upper": 1389,
+      "lower_objective": 18,
+      "open_weight_gcd": 1,
+      "lattice_numerator_upper": 1389,
+      "old_canonical_key": {
+        "duration": {
+          "numerator": 2875835812567,
+          "denominator": 137438953472,
+          "value": 20.924459477588243
+        },
+        "indices": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          4,
+          4
+        ]
+      },
+      "resource_aware_canonical_key": {
+        "duration": {
+          "numerator": 2875835812567,
+          "denominator": 137438953472,
+          "value": 20.924459477588243
+        },
+        "indices": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          4,
+          4
+        ]
+      },
+      "would_prune_integer_rounding_only": false,
+      "would_prune_lattice_rounding_only": false,
+      "would_prune_resource_key_only": false,
+      "would_prune_integer_and_resource_key": false,
+      "would_prune_lattice_and_resource_key": false,
+      "eligible_requirements": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          3,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          3
+        ],
+        [
+          0,
+          0,
+          8
+        ]
+      ],
+      "implied_integer_count_upper": [
+        6,
+        0,
+        2,
+        0,
+        5,
+        5,
+        4
+      ],
+      "primal_exceeds_implied_integer_count_upper_positions": [
+        6
+      ],
+      "count_upper_tightened_without_lp": true
+    },
+    {
+      "region": 8,
+      "threshold": {
+        "numerator": 2875835812567,
+        "denominator": 137438953472,
+        "value": 20.924459477588243
+      },
+      "eligible_groups": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "eligible_original_representatives": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "lower": [
+        0,
+        0,
+        3,
+        0,
+        0,
+        0,
+        0
+      ],
+      "upper": [
+        8,
+        0,
+        8,
+        0,
+        8,
+        8,
+        8
+      ],
+      "primal": [
+        0.375,
+        0.0,
+        3.0,
+        0.0,
+        0.0,
+        0.0,
+        4.625
+      ],
+      "solved": true,
+      "classification": "score_slack",
+      "numerator_upper": {
+        "numerator": 5557,
+        "denominator": 4,
+        "value": 1389.25
+      },
+      "incumbent_score_at_threshold_numerator": {
+        "numerator": 1387,
+        "denominator": 1,
+        "value": 1387.0
+      },
+      "integer_numerator_upper": 1389,
+      "lower_objective": 18,
+      "open_weight_gcd": 1,
+      "lattice_numerator_upper": 1389,
+      "old_canonical_key": {
+        "duration": {
+          "numerator": 2875835812567,
+          "denominator": 137438953472,
+          "value": 20.924459477588243
+        },
+        "indices": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          4,
+          4,
+          4
+        ]
+      },
+      "resource_aware_canonical_key": {
+        "duration": {
+          "numerator": 2875835812567,
+          "denominator": 137438953472,
+          "value": 20.924459477588243
+        },
+        "indices": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          4,
+          4,
+          4
+        ]
+      },
+      "would_prune_integer_rounding_only": false,
+      "would_prune_lattice_rounding_only": false,
+      "would_prune_resource_key_only": false,
+      "would_prune_integer_and_resource_key": false,
+      "would_prune_lattice_and_resource_key": false,
+      "eligible_requirements": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          3,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          3
+        ],
+        [
+          0,
+          0,
+          8
+        ]
+      ],
+      "implied_integer_count_upper": [
+        5,
+        0,
+        6,
+        0,
+        5,
+        5,
+        4
+      ],
+      "primal_exceeds_implied_integer_count_upper_positions": [
+        6
+      ],
+      "count_upper_tightened_without_lp": true
+    },
+    {
+      "region": 9,
+      "threshold": {
+        "numerator": 2875835812567,
+        "denominator": 137438953472,
+        "value": 20.924459477588243
+      },
+      "eligible_groups": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "eligible_original_representatives": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "lower": [
+        0,
+        0,
+        2,
+        0,
+        1,
+        0,
+        0
+      ],
+      "upper": [
+        0,
+        1,
+        2,
+        0,
+        8,
+        0,
+        8
+      ],
+      "primal": [
+        0.0,
+        0.5,
+        2.0,
+        0.0,
+        1.0,
+        0.0,
+        4.5
+      ],
+      "solved": true,
+      "classification": "score_slack",
+      "numerator_upper": {
+        "numerator": 1390,
+        "denominator": 1,
+        "value": 1390.0
+      },
+      "incumbent_score_at_threshold_numerator": {
+        "numerator": 1387,
+        "denominator": 1,
+        "value": 1387.0
+      },
+      "integer_numerator_upper": 1390,
+      "lower_objective": 49,
+      "open_weight_gcd": 1,
+      "lattice_numerator_upper": 1390,
+      "old_canonical_key": {
+        "duration": {
+          "numerator": 2875835812567,
+          "denominator": 137438953472,
+          "value": 20.924459477588243
+        },
+        "indices": [
+          3,
+          4,
+          4,
+          6,
+          6,
+          6,
+          6,
+          6
+        ]
+      },
+      "resource_aware_canonical_key": {
+        "duration": {
+          "numerator": 2875835812567,
+          "denominator": 137438953472,
+          "value": 20.924459477588243
+        },
+        "indices": [
+          3,
+          4,
+          4,
+          6,
+          6,
+          6,
+          6,
+          6
+        ]
+      },
+      "would_prune_integer_rounding_only": false,
+      "would_prune_lattice_rounding_only": false,
+      "would_prune_resource_key_only": false,
+      "would_prune_integer_and_resource_key": false,
+      "would_prune_lattice_and_resource_key": false,
+      "eligible_requirements": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          3,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          3
+        ],
+        [
+          0,
+          0,
+          8
+        ]
+      ],
+      "implied_integer_count_upper": [
+        0,
+        1,
+        2,
+        0,
+        6,
+        0,
+        4
+      ],
+      "primal_exceeds_implied_integer_count_upper_positions": [
+        6
+      ],
+      "count_upper_tightened_without_lp": true
+    },
+    {
+      "region": 10,
+      "threshold": {
+        "numerator": 746610965394611,
+        "denominator": 35184372088832,
+        "value": 21.219959915999056
+      },
+      "eligible_groups": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "eligible_original_representatives": [
+        0,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "lower": [
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "upper": [
+        1,
+        0,
+        1,
+        8,
+        1,
+        8,
+        8,
+        8
+      ],
+      "primal": [
+        1.0,
+        0.0,
+        1.0,
+        1.0,
+        0.5,
+        0.0,
+        0.0,
+        4.5
+      ],
+      "solved": true,
+      "classification": "score_slack",
+      "numerator_upper": {
+        "numerator": 1408,
+        "denominator": 1,
+        "value": 1408.0
+      },
+      "incumbent_score_at_threshold_numerator": {
+        "numerator": 1035549409002325457,
+        "denominator": 736213968017152,
+        "value": 1406.587560123825
+      },
+      "integer_numerator_upper": 1408,
+      "lower_objective": 67,
+      "open_weight_gcd": 1,
+      "lattice_numerator_upper": 1408,
+      "old_canonical_key": {
+        "duration": {
+          "numerator": 746610965394611,
+          "denominator": 35184372088832,
+          "value": 21.219959915999056
+        },
+        "indices": [
+          0,
+          3,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4
+        ]
+      },
+      "resource_aware_canonical_key": {
+        "duration": {
+          "numerator": 746610965394611,
+          "denominator": 35184372088832,
+          "value": 21.219959915999056
+        },
+        "indices": [
+          0,
+          3,
+          4,
+          4,
+          4,
+          4,
+          4,
+          4
+        ]
+      },
+      "would_prune_integer_rounding_only": false,
+      "would_prune_lattice_rounding_only": false,
+      "would_prune_resource_key_only": false,
+      "would_prune_integer_and_resource_key": false,
+      "would_prune_lattice_and_resource_key": false,
+      "eligible_requirements": [
+        [
+          1,
+          0,
+          1
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          3,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          3
+        ],
+        [
+          0,
+          0,
+          8
+        ]
+      ],
+      "implied_integer_count_upper": [
+        1,
+        0,
+        1,
+        6,
+        1,
+        5,
+        5,
+        4
+      ],
+      "primal_exceeds_implied_integer_count_upper_positions": [
+        7
+      ],
+      "count_upper_tightened_without_lp": true
+    },
+    {
+      "region": 11,
+      "threshold": {
+        "numerator": 2875835812567,
+        "denominator": 137438953472,
+        "value": 20.924459477588243
+      },
+      "eligible_groups": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "eligible_original_representatives": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "lower": [
+        1,
+        0,
+        0,
+        0,
+        1,
+        1,
+        4
+      ],
+      "upper": [
+        1,
+        1,
+        0,
+        0,
+        8,
+        1,
+        8
+      ],
+      "primal": [
+        1.0,
+        0.875,
+        0.0,
+        0.0,
+        1.0,
+        1.0,
+        4.125
+      ],
+      "solved": true,
+      "classification": "score_slack",
+      "numerator_upper": {
+        "numerator": 5563,
+        "denominator": 4,
+        "value": 1390.75
+      },
+      "incumbent_score_at_threshold_numerator": {
+        "numerator": 1387,
+        "denominator": 1,
+        "value": 1387.0
+      },
+      "integer_numerator_upper": 1390,
+      "lower_objective": 1338,
+      "open_weight_gcd": 1,
+      "lattice_numerator_upper": 1390,
+      "old_canonical_key": {
+        "duration": {
+          "numerator": 2875835812567,
+          "denominator": 137438953472,
+          "value": 20.924459477588243
+        },
+        "indices": [
+          2,
+          3,
+          6,
+          7,
+          8,
+          8,
+          8,
+          8
+        ]
+      },
+      "resource_aware_canonical_key": {
+        "duration": {
+          "numerator": 2875835812567,
+          "denominator": 137438953472,
+          "value": 20.924459477588243
+        },
+        "indices": [
+          2,
+          3,
+          6,
+          7,
+          8,
+          8,
+          8,
+          8
+        ]
+      },
+      "would_prune_integer_rounding_only": false,
+      "would_prune_lattice_rounding_only": false,
+      "would_prune_resource_key_only": false,
+      "would_prune_integer_and_resource_key": false,
+      "would_prune_lattice_and_resource_key": false,
+      "eligible_requirements": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          3,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          3
+        ],
+        [
+          0,
+          0,
+          8
+        ]
+      ],
+      "implied_integer_count_upper": [
+        1,
+        1,
+        0,
+        0,
+        2,
+        1,
+        4
+      ],
+      "primal_exceeds_implied_integer_count_upper_positions": [
+        6
+      ],
+      "count_upper_tightened_without_lp": true
+    },
+    {
+      "region": 12,
+      "threshold": {
+        "numerator": 746610965394611,
+        "denominator": 35184372088832,
+        "value": 21.219959915999056
+      },
+      "eligible_groups": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "eligible_original_representatives": [
+        0,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "lower": [
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "upper": [
+        1,
+        0,
+        1,
+        0,
+        1,
+        8,
+        8,
+        8
+      ],
+      "primal": [
+        1.0,
+        0.0,
+        1.0,
+        0.0,
+        1.0,
+        0.0,
+        0.8,
+        4.2
+      ],
+      "solved": true,
+      "classification": "score_slack",
+      "numerator_upper": {
+        "numerator": 1411,
+        "denominator": 1,
+        "value": 1411.0
+      },
+      "incumbent_score_at_threshold_numerator": {
+        "numerator": 1035549409002325457,
+        "denominator": 736213968017152,
+        "value": 1406.587560123825
+      },
+      "integer_numerator_upper": 1411,
+      "lower_objective": 61,
+      "open_weight_gcd": 1,
+      "lattice_numerator_upper": 1411,
+      "old_canonical_key": {
+        "duration": {
+          "numerator": 746610965394611,
+          "denominator": 35184372088832,
+          "value": 21.219959915999056
+        },
+        "indices": [
+          0,
+          3,
+          5,
+          6,
+          6,
+          6,
+          6,
+          6
+        ]
+      },
+      "resource_aware_canonical_key": {
+        "duration": {
+          "numerator": 746610965394611,
+          "denominator": 35184372088832,
+          "value": 21.219959915999056
+        },
+        "indices": [
+          0,
+          3,
+          5,
+          6,
+          6,
+          6,
+          6,
+          6
+        ]
+      },
+      "would_prune_integer_rounding_only": false,
+      "would_prune_lattice_rounding_only": false,
+      "would_prune_resource_key_only": false,
+      "would_prune_integer_and_resource_key": false,
+      "would_prune_lattice_and_resource_key": false,
+      "eligible_requirements": [
+        [
+          1,
+          0,
+          1
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          3,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          3
+        ],
+        [
+          0,
+          0,
+          8
+        ]
+      ],
+      "implied_integer_count_upper": [
+        1,
+        0,
+        1,
+        0,
+        1,
+        6,
+        6,
+        4
+      ],
+      "primal_exceeds_implied_integer_count_upper_positions": [
+        7
+      ],
+      "count_upper_tightened_without_lp": true
+    },
+    {
+      "region": 13,
+      "threshold": {
+        "numerator": 2875835812567,
+        "denominator": 137438953472,
+        "value": 20.924459477588243
+      },
+      "eligible_groups": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "eligible_original_representatives": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "lower": [
+        2,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "upper": [
+        8,
+        0,
+        1,
+        0,
+        8,
+        8,
+        8
+      ],
+      "primal": [
+        2.375,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        4.625
+      ],
+      "solved": true,
+      "classification": "score_slack",
+      "numerator_upper": {
+        "numerator": 5557,
+        "denominator": 4,
+        "value": 1389.25
+      },
+      "incumbent_score_at_threshold_numerator": {
+        "numerator": 1387,
+        "denominator": 1,
+        "value": 1387.0
+      },
+      "integer_numerator_upper": 1389,
+      "lower_objective": 18,
+      "open_weight_gcd": 1,
+      "lattice_numerator_upper": 1389,
+      "old_canonical_key": {
+        "duration": {
+          "numerator": 2875835812567,
+          "denominator": 137438953472,
+          "value": 20.924459477588243
+        },
+        "indices": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          4
+        ]
+      },
+      "resource_aware_canonical_key": {
+        "duration": {
+          "numerator": 2875835812567,
+          "denominator": 137438953472,
+          "value": 20.924459477588243
+        },
+        "indices": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          4,
+          6
+        ]
+      },
+      "would_prune_integer_rounding_only": false,
+      "would_prune_lattice_rounding_only": false,
+      "would_prune_resource_key_only": false,
+      "would_prune_integer_and_resource_key": false,
+      "would_prune_lattice_and_resource_key": false,
+      "eligible_requirements": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          3,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          3
+        ],
+        [
+          0,
+          0,
+          8
+        ]
+      ],
+      "implied_integer_count_upper": [
+        6,
+        0,
+        1,
+        0,
+        5,
+        5,
+        4
+      ],
+      "primal_exceeds_implied_integer_count_upper_positions": [
+        6
+      ],
+      "count_upper_tightened_without_lp": true
+    },
+    {
+      "region": 14,
+      "threshold": {
+        "numerator": 2875835812567,
+        "denominator": 137438953472,
+        "value": 20.924459477588243
+      },
+      "eligible_groups": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "eligible_original_representatives": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "lower": [
+        3,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "upper": [
+        8,
+        0,
+        0,
+        0,
+        8,
+        0,
+        8
+      ],
+      "primal": [
+        3.375,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        4.625
+      ],
+      "solved": true,
+      "classification": "score_slack",
+      "numerator_upper": {
+        "numerator": 5557,
+        "denominator": 4,
+        "value": 1389.25
+      },
+      "incumbent_score_at_threshold_numerator": {
+        "numerator": 1387,
+        "denominator": 1,
+        "value": 1387.0
+      },
+      "integer_numerator_upper": 1389,
+      "lower_objective": 18,
+      "open_weight_gcd": 1,
+      "lattice_numerator_upper": 1389,
+      "old_canonical_key": {
+        "duration": {
+          "numerator": 2875835812567,
+          "denominator": 137438953472,
+          "value": 20.924459477588243
+        },
+        "indices": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      },
+      "resource_aware_canonical_key": {
+        "duration": {
+          "numerator": 2875835812567,
+          "denominator": 137438953472,
+          "value": 20.924459477588243
+        },
+        "indices": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          6,
+          6
+        ]
+      },
+      "would_prune_integer_rounding_only": false,
+      "would_prune_lattice_rounding_only": false,
+      "would_prune_resource_key_only": false,
+      "would_prune_integer_and_resource_key": false,
+      "would_prune_lattice_and_resource_key": false,
+      "eligible_requirements": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          3,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          3
+        ],
+        [
+          0,
+          0,
+          8
+        ]
+      ],
+      "implied_integer_count_upper": [
+        6,
+        0,
+        0,
+        0,
+        5,
+        0,
+        4
+      ],
+      "primal_exceeds_implied_integer_count_upper_positions": [
+        6
+      ],
+      "count_upper_tightened_without_lp": true
+    },
+    {
+      "region": 15,
+      "threshold": {
+        "numerator": 746610965394611,
+        "denominator": 35184372088832,
+        "value": 21.219959915999056
+      },
+      "eligible_groups": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "eligible_original_representatives": [
+        0,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "lower": [
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "upper": [
+        1,
+        8,
+        0,
+        8,
+        8,
+        8,
+        8,
+        8
+      ],
+      "primal": [
+        1.0,
+        1.0,
+        0.0,
+        0.0,
+        1.5,
+        0.0,
+        0.0,
+        4.5
+      ],
+      "solved": true,
+      "classification": "score_slack",
+      "numerator_upper": {
+        "numerator": 1408,
+        "denominator": 1,
+        "value": 1408.0
+      },
+      "incumbent_score_at_threshold_numerator": {
+        "numerator": 1035549409002325457,
+        "denominator": 736213968017152,
+        "value": 1406.587560123825
+      },
+      "integer_numerator_upper": 1408,
+      "lower_objective": 49,
+      "open_weight_gcd": 1,
+      "lattice_numerator_upper": 1408,
+      "old_canonical_key": {
+        "duration": {
+          "numerator": 746610965394611,
+          "denominator": 35184372088832,
+          "value": 21.219959915999056
+        },
+        "indices": [
+          0,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      },
+      "resource_aware_canonical_key": {
+        "duration": {
+          "numerator": 746610965394611,
+          "denominator": 35184372088832,
+          "value": 21.219959915999056
+        },
+        "indices": [
+          0,
+          2,
+          2,
+          2,
+          2,
+          2,
+          4,
+          4
+        ]
+      },
+      "would_prune_integer_rounding_only": false,
+      "would_prune_lattice_rounding_only": false,
+      "would_prune_resource_key_only": false,
+      "would_prune_integer_and_resource_key": false,
+      "would_prune_lattice_and_resource_key": false,
+      "eligible_requirements": [
+        [
+          1,
+          0,
+          1
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          3,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          3
+        ],
+        [
+          0,
+          0,
+          8
+        ]
+      ],
+      "implied_integer_count_upper": [
+        1,
+        5,
+        0,
+        6,
+        2,
+        6,
+        6,
+        4
+      ],
+      "primal_exceeds_implied_integer_count_upper_positions": [
+        7
+      ],
+      "count_upper_tightened_without_lp": true
+    },
+    {
+      "region": 16,
+      "threshold": {
+        "numerator": 2875835812567,
+        "denominator": 137438953472,
+        "value": 20.924459477588243
+      },
+      "eligible_groups": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "eligible_original_representatives": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "lower": [
+        0,
+        1,
+        0,
+        0,
+        2,
+        0,
+        0
+      ],
+      "upper": [
+        0,
+        1,
+        0,
+        0,
+        8,
+        0,
+        8
+      ],
+      "primal": [
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        2.7142857142857144,
+        0.0,
+        4.285714285714286
+      ],
+      "solved": true,
+      "classification": "canonical_slack",
+      "numerator_upper": {
+        "numerator": 1387,
+        "denominator": 1,
+        "value": 1387.0
+      },
+      "incumbent_score_at_threshold_numerator": {
+        "numerator": 1387,
+        "denominator": 1,
+        "value": 1387.0
+      },
+      "integer_numerator_upper": 1387,
+      "lower_objective": 92,
+      "open_weight_gcd": 37,
+      "lattice_numerator_upper": 1387,
+      "old_canonical_key": {
+        "duration": {
+          "numerator": 2875835812567,
+          "denominator": 137438953472,
+          "value": 20.924459477588243
+        },
+        "indices": [
+          3,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6
+        ]
+      },
+      "resource_aware_canonical_key": {
+        "duration": {
+          "numerator": 2875835812567,
+          "denominator": 137438953472,
+          "value": 20.924459477588243
+        },
+        "indices": [
+          3,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6
+        ]
+      },
+      "would_prune_integer_rounding_only": false,
+      "would_prune_lattice_rounding_only": false,
+      "would_prune_resource_key_only": false,
+      "would_prune_integer_and_resource_key": false,
+      "would_prune_lattice_and_resource_key": false,
+      "eligible_requirements": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          3,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          3
+        ],
+        [
+          0,
+          0,
+          8
+        ]
+      ],
+      "implied_integer_count_upper": [
+        0,
+        1,
+        0,
+        0,
+        7,
+        0,
+        4
+      ],
+      "primal_exceeds_implied_integer_count_upper_positions": [
+        6
+      ],
+      "count_upper_tightened_without_lp": true
+    },
+    {
+      "region": 17,
+      "threshold": {
+        "numerator": 746610965394611,
+        "denominator": 35184372088832,
+        "value": 21.219959915999056
+      },
+      "eligible_groups": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "eligible_original_representatives": [
+        0,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "lower": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "upper": [
+        1,
+        8,
+        1,
+        8,
+        1,
+        8,
+        8,
+        8
+      ],
+      "primal": [
+        1.0,
+        1.0,
+        1.0,
+        0.0,
+        0.5,
+        0.0,
+        0.0,
+        4.5
+      ],
+      "solved": true,
+      "classification": "score_slack",
+      "numerator_upper": {
+        "numerator": 1408,
+        "denominator": 1,
+        "value": 1408.0
+      },
+      "incumbent_score_at_threshold_numerator": {
+        "numerator": 1035549409002325457,
+        "denominator": 736213968017152,
+        "value": 1406.587560123825
+      },
+      "integer_numerator_upper": 1408,
+      "lower_objective": 67,
+      "open_weight_gcd": 1,
+      "lattice_numerator_upper": 1408,
+      "old_canonical_key": {
+        "duration": {
+          "numerator": 746610965394611,
+          "denominator": 35184372088832,
+          "value": 21.219959915999056
+        },
+        "indices": [
+          0,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          3
+        ]
+      },
+      "resource_aware_canonical_key": {
+        "duration": {
+          "numerator": 746610965394611,
+          "denominator": 35184372088832,
+          "value": 21.219959915999056
+        },
+        "indices": [
+          0,
+          2,
+          2,
+          3,
+          4,
+          4,
+          4,
+          4
+        ]
+      },
+      "would_prune_integer_rounding_only": false,
+      "would_prune_lattice_rounding_only": false,
+      "would_prune_resource_key_only": false,
+      "would_prune_integer_and_resource_key": false,
+      "would_prune_lattice_and_resource_key": false,
+      "eligible_requirements": [
+        [
+          1,
+          0,
+          1
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          3,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          3
+        ],
+        [
+          0,
+          0,
+          8
+        ]
+      ],
+      "implied_integer_count_upper": [
+        1,
+        2,
+        1,
+        5,
+        1,
+        5,
+        5,
+        4
+      ],
+      "primal_exceeds_implied_integer_count_upper_positions": [
+        7
+      ],
+      "count_upper_tightened_without_lp": true
+    },
+    {
+      "region": 18,
+      "threshold": {
+        "numerator": 746610965394611,
+        "denominator": 35184372088832,
+        "value": 21.219959915999056
+      },
+      "eligible_groups": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "eligible_original_representatives": [
+        0,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "lower": [
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "upper": [
+        8,
+        8,
+        0,
+        8,
+        8,
+        8,
+        8,
+        8
+      ],
+      "primal": [
+        2.0,
+        0.0,
+        0.0,
+        0.0,
+        1.625,
+        0.0,
+        0.0,
+        4.375
+      ],
+      "solved": true,
+      "classification": "score_slack",
+      "numerator_upper": {
+        "numerator": 5641,
+        "denominator": 4,
+        "value": 1410.25
+      },
+      "incumbent_score_at_threshold_numerator": {
+        "numerator": 1035549409002325457,
+        "denominator": 736213968017152,
+        "value": 1406.587560123825
+      },
+      "integer_numerator_upper": 1410,
+      "lower_objective": 86,
+      "open_weight_gcd": 1,
+      "lattice_numerator_upper": 1410,
+      "old_canonical_key": {
+        "duration": {
+          "numerator": 746610965394611,
+          "denominator": 35184372088832,
+          "value": 21.219959915999056
+        },
+        "indices": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "resource_aware_canonical_key": {
+        "duration": {
+          "numerator": 746610965394611,
+          "denominator": 35184372088832,
+          "value": 21.219959915999056
+        },
+        "indices": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          4,
+          4
+        ]
+      },
+      "would_prune_integer_rounding_only": false,
+      "would_prune_lattice_rounding_only": false,
+      "would_prune_resource_key_only": false,
+      "would_prune_integer_and_resource_key": false,
+      "would_prune_lattice_and_resource_key": false,
+      "eligible_requirements": [
+        [
+          1,
+          0,
+          1
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          3,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          3
+        ],
+        [
+          0,
+          0,
+          8
+        ]
+      ],
+      "implied_integer_count_upper": [
+        6,
+        4,
+        0,
+        6,
+        2,
+        6,
+        6,
+        4
+      ],
+      "primal_exceeds_implied_integer_count_upper_positions": [
+        7
+      ],
+      "count_upper_tightened_without_lp": true
+    },
+    {
+      "region": 19,
+      "threshold": {
+        "numerator": 746610965394611,
+        "denominator": 35184372088832,
+        "value": 21.219959915999056
+      },
+      "eligible_groups": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "eligible_original_representatives": [
+        0,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "lower": [
+        2,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "upper": [
+        8,
+        8,
+        1,
+        8,
+        1,
+        8,
+        8,
+        8
+      ],
+      "primal": [
+        2.0,
+        0.0,
+        1.0,
+        0.0,
+        0.625,
+        0.0,
+        0.0,
+        4.375
+      ],
+      "solved": true,
+      "classification": "score_slack",
+      "numerator_upper": {
+        "numerator": 5641,
+        "denominator": 4,
+        "value": 1410.25
+      },
+      "incumbent_score_at_threshold_numerator": {
+        "numerator": 1035549409002325457,
+        "denominator": 736213968017152,
+        "value": 1406.587560123825
+      },
+      "integer_numerator_upper": 1410,
+      "lower_objective": 104,
+      "open_weight_gcd": 1,
+      "lattice_numerator_upper": 1410,
+      "old_canonical_key": {
+        "duration": {
+          "numerator": 746610965394611,
+          "denominator": 35184372088832,
+          "value": 21.219959915999056
+        },
+        "indices": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          3
+        ]
+      },
+      "resource_aware_canonical_key": {
+        "duration": {
+          "numerator": 746610965394611,
+          "denominator": 35184372088832,
+          "value": 21.219959915999056
+        },
+        "indices": [
+          0,
+          0,
+          0,
+          3,
+          4,
+          4,
+          4,
+          4
+        ]
+      },
+      "would_prune_integer_rounding_only": false,
+      "would_prune_lattice_rounding_only": false,
+      "would_prune_resource_key_only": false,
+      "would_prune_integer_and_resource_key": false,
+      "would_prune_lattice_and_resource_key": false,
+      "eligible_requirements": [
+        [
+          1,
+          0,
+          1
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          3,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          3
+        ],
+        [
+          0,
+          0,
+          8
+        ]
+      ],
+      "implied_integer_count_upper": [
+        3,
+        1,
+        1,
+        5,
+        1,
+        5,
+        5,
+        4
+      ],
+      "primal_exceeds_implied_integer_count_upper_positions": [
+        7
+      ],
+      "count_upper_tightened_without_lp": true
+    }
+  ],
+  "interpretation_limit": "Immediate pruning of this fixed frontier does not predict total work after rerunning a changed search; no algorithm source, cap, reference budget, or formal experiment result was modified.",
+  "next_development_hypothesis": "Use exact integer count capacity bounds from the queue and mandatory lower counts before LP solving. Every solved live-region primal violates such an implied bound here; no modified LP was solved, so proof/work benefits remain untested."
+}

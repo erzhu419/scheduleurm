@@ -43,6 +43,20 @@ def test_claim_race_requeues_without_releasing_claims():
     assert events[0]["type"] == "claim_race"
 
 
+def test_transport_wait_does_not_consume_retry_or_blacklist_node():
+    task = {"id": "t1", "status": "launching", "node": "node001",
+            "launch_fail_count": 2, "launch_token": "tok"}
+    calls, events = [], []
+    apply_launch_result_to_task(task, False, "launch exception: TRANSPORT_WAIT: gpu2",
+                               events, deps=_deps(calls))
+    assert task["status"] == "queued"
+    assert task["launch_fail_count"] == 2
+    assert "launch_failed_nodes" not in task
+    assert "launch_token" not in task
+    assert events[0]["type"] == "transport_waiting"
+    assert calls == []
+
+
 def test_launch_failure_records_failed_node_and_retries_before_cap():
     calls = []
     events = []

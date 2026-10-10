@@ -1,0 +1,245 @@
+{
+  "schema_version": 1,
+  "experiment": "physical_catalogue_canonical_dominance_development_v1",
+  "registered_at_utc": "2026-09-27T07:55:15.922118+00:00",
+  "hardware_catalogue_count": 4,
+  "requirement_topology_count": 3,
+  "canonically_liftable_requirement_topology_count": 1,
+  "queue_count": 500,
+  "oracle_checks_passed": true,
+  "decision": "CANONICAL_RESTORATION_REQUIRED",
+  "catalogues": [
+    {
+      "node": "cpu_a",
+      "lanes": 2,
+      "original_option_count": 8,
+      "retained_option_count": 7,
+      "retained_original_indices": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "removed_original_indices": [
+        0
+      ],
+      "canonical_lift_valid": false,
+      "canonical_lift_rejection": "full-catalogue canonical lifting requires every removed option to have an earlier retained strict-duration dominator",
+      "queue_count": 125,
+      "support_mismatches": 0,
+      "canonical_action_mismatches": 0,
+      "selector_oracle_failures": [],
+      "first_canonical_mismatch": null,
+      "full_search_work": {
+        "lp_calls": 1237,
+        "lp_matrix_coefficients": 52109,
+        "candidate_evaluations": 1362
+      },
+      "reduced_search_work": {
+        "lp_calls": 1112,
+        "lp_matrix_coefficients": 40109,
+        "candidate_evaluations": 1237
+      },
+      "preprocessing": {
+        "reduction_option_probes": 8,
+        "reduction_requirement_coordinate_reads": 24,
+        "reduction_duration_comparisons": 9
+      }
+    },
+    {
+      "node": "node007",
+      "lanes": 4,
+      "original_option_count": 9,
+      "retained_option_count": 8,
+      "retained_original_indices": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "removed_original_indices": [
+        0
+      ],
+      "canonical_lift_valid": false,
+      "canonical_lift_rejection": "full-catalogue canonical lifting requires every removed option to have an earlier retained strict-duration dominator",
+      "queue_count": 125,
+      "support_mismatches": 0,
+      "canonical_action_mismatches": 15,
+      "selector_oracle_failures": [],
+      "first_canonical_mismatch": {
+        "queues": [
+          1,
+          0,
+          10
+        ],
+        "lanes": 4,
+        "full_option_indices": [
+          0,
+          8,
+          8,
+          8
+        ],
+        "reduced_mapped_option_indices": [
+          1,
+          8,
+          8,
+          8
+        ],
+        "full_action_ids": [
+          "gpu_loaded:node007:cnn_after_llm",
+          "profile:gpu_llm_distilgpt2:gpu_2080ti_11gb_quad_node007:empty:none:w1:p3",
+          "profile:gpu_llm_distilgpt2:gpu_2080ti_11gb_quad_node007:empty:none:w1:p3",
+          "profile:gpu_llm_distilgpt2:gpu_2080ti_11gb_quad_node007:empty:none:w1:p3"
+        ],
+        "reduced_action_ids": [
+          "gpu_loaded:node007:llm_after_cnn",
+          "profile:gpu_llm_distilgpt2:gpu_2080ti_11gb_quad_node007:empty:none:w1:p3",
+          "profile:gpu_llm_distilgpt2:gpu_2080ti_11gb_quad_node007:empty:none:w1:p3",
+          "profile:gpu_llm_distilgpt2:gpu_2080ti_11gb_quad_node007:empty:none:w1:p3"
+        ],
+        "full_score": 4.1913379795735795,
+        "reduced_score": 4.1913379795735795,
+        "full_score_fraction": "28428972647776256/6782791744861525",
+        "reduced_score_fraction": "28428972647776256/6782791744861525",
+        "full_duration": 24.097317012424657,
+        "reduced_duration": 24.097317012424657
+      },
+      "full_search_work": {
+        "lp_calls": 1649,
+        "lp_matrix_coefficients": 87609,
+        "candidate_evaluations": 1774
+      },
+      "reduced_search_work": {
+        "lp_calls": 1466,
+        "lp_matrix_coefficients": 64540,
+        "candidate_evaluations": 1591
+      },
+      "preprocessing": {
+        "reduction_option_probes": 9,
+        "reduction_requirement_coordinate_reads": 27,
+        "reduction_duration_comparisons": 10
+      }
+    },
+    {
+      "node": "gpu_a",
+      "lanes": 2,
+      "original_option_count": 9,
+      "retained_option_count": 8,
+      "retained_original_indices": [
+        0,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "removed_original_indices": [
+        1
+      ],
+      "canonical_lift_valid": true,
+      "canonical_lift_rejection": null,
+      "queue_count": 125,
+      "support_mismatches": 0,
+      "canonical_action_mismatches": 0,
+      "selector_oracle_failures": [],
+      "first_canonical_mismatch": null,
+      "full_search_work": {
+        "lp_calls": 1963,
+        "lp_matrix_coefficients": 121320,
+        "candidate_evaluations": 2088
+      },
+      "reduced_search_work": {
+        "lp_calls": 1773,
+        "lp_matrix_coefficients": 99090,
+        "candidate_evaluations": 1898
+      },
+      "preprocessing": {
+        "reduction_option_probes": 9,
+        "reduction_requirement_coordinate_reads": 27,
+        "reduction_duration_comparisons": 10
+      }
+    },
+    {
+      "node": "gpu_b",
+      "lanes": 2,
+      "original_option_count": 9,
+      "retained_option_count": 8,
+      "retained_original_indices": [
+        0,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "removed_original_indices": [
+        1
+      ],
+      "canonical_lift_valid": true,
+      "canonical_lift_rejection": null,
+      "queue_count": 125,
+      "support_mismatches": 0,
+      "canonical_action_mismatches": 0,
+      "selector_oracle_failures": [],
+      "first_canonical_mismatch": null,
+      "full_search_work": {
+        "lp_calls": 2019,
+        "lp_matrix_coefficients": 138446,
+        "candidate_evaluations": 2144
+      },
+      "reduced_search_work": {
+        "lp_calls": 1754,
+        "lp_matrix_coefficients": 97990,
+        "candidate_evaluations": 1879
+      },
+      "preprocessing": {
+        "reduction_option_probes": 9,
+        "reduction_requirement_coordinate_reads": 27,
+        "reduction_duration_comparisons": 10
+      }
+    }
+  ],
+  "known_r2_diagnostic": {
+    "queues": [
+      1,
+      0,
+      4
+    ],
+    "lanes": 2,
+    "full_option_indices": [
+      0,
+      8
+    ],
+    "reduced_mapped_option_indices": [
+      1,
+      8
+    ],
+    "full_action_ids": [
+      "gpu_loaded:node007:cnn_after_llm",
+      "profile:gpu_llm_distilgpt2:gpu_2080ti_11gb_quad_node007:empty:none:w1:p3"
+    ],
+    "reduced_action_ids": [
+      "gpu_loaded:node007:llm_after_cnn",
+      "profile:gpu_llm_distilgpt2:gpu_2080ti_11gb_quad_node007:empty:none:w1:p3"
+    ],
+    "full_score": 0.7054727292351569,
+    "reduced_score": 0.7054727292351569,
+    "full_score_fraction": "4785074604081152/6782791744861525",
+    "reduced_score_fraction": "4785074604081152/6782791744861525",
+    "full_duration": 24.097317012424657,
+    "reduced_duration": 24.097317012424657
+  },
+  "limitations": "Cached phase point models only. No joint95 transfer, trajectory, flow-time, wall-time, or independent confirmation claim. No R8/R16 scaling before the advance gate.",
+  "protocol_path": "md/experiment_artifacts/aligned_hardware_physical_catalogue_screen_development_20260927_protocol.json"
+}

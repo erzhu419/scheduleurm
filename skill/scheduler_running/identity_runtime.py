@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from scheduler_transport.budget import control_transport
+
 import os
 import socket
 import time
@@ -112,10 +114,12 @@ def build_running_identity_runtime_exports(namespace: dict[str, Any]) -> dict[st
         return f"{user}:{tag}"
 
     def _kill_task_processes(task, timeout=15):
-        return _ns(namespace, "_BACKEND").kill(task, timeout=timeout)
+        with control_transport():
+            return _ns(namespace, "_BACKEND").kill(task, timeout=timeout)
 
     def _kill_task_processes_batch(tasks, timeout=15):
-        return _ns(namespace, "_BACKEND").kill_many(tasks, timeout=timeout)
+        with control_transport():
+            return _ns(namespace, "_BACKEND").kill_many(tasks, timeout=timeout)
 
     def check_running(task):
         fake_state = {"tasks": [task]}

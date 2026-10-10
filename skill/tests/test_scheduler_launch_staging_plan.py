@@ -185,6 +185,24 @@ def test_collect_launch_staging_plan_honors_task_level_skip_launch_staging():
     assert plan.candidates == set()
 
 
+def test_wait_file_gate_does_not_create_input_staging_candidates():
+    task = {
+        "id": "gate-only",
+        "status": "queued",
+        "cwd": "/work/provisioned",
+        "allowed_nodes": ["node001", "node002"],
+        "skip_launch_staging": True,
+        "wait_for_files": ["/work/provisioned/gates/first.json"],
+        "stage_input_target": "node001",
+    }
+    for wait_ids in ({"gate-only"}, set()):
+        plan = collect_launch_staging_plan(
+            {"tasks": [task]}, None, deps=_deps(wait_ids=wait_ids),
+        )
+        assert plan.candidates == set()
+        assert plan.input_candidates == []
+
+
 def test_collect_launch_staging_plan_stages_code_while_waiting_for_prerequisites():
     state = {
         "tasks": [{

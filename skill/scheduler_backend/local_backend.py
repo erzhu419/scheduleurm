@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import shlex
+from collections import defaultdict
+from threading import Lock
 from dataclasses import dataclass
 from typing import Any, Callable, Optional
 
@@ -117,6 +119,8 @@ class LocalBackend:
 
     def __init__(self, deps: LocalBackendRuntimeDeps | Callable[[], LocalBackendRuntimeDeps]):
         self._deps_source = deps
+        self._cwd_probe_cache = {}
+        self._cwd_probe_locks = defaultdict(Lock)
 
     @property
     def deps(self) -> LocalBackendRuntimeDeps:
@@ -147,6 +151,8 @@ class LocalBackend:
             set_current_usage=deps.set_current_usage,
             now=deps.now,
             sleep=deps.sleep,
+            cwd_probe_cache=self._cwd_probe_cache,
+            cwd_probe_locks=self._cwd_probe_locks,
         )
 
     def _batch_probe_deps(self) -> LocalBatchProbeDeps:
@@ -157,6 +163,7 @@ class LocalBackend:
             descendants_of=deps.descendants_of,
             max_workers=deps.running_probe_max_workers,
             timeout_s=deps.running_probe_timeout_s,
+            node_configs=deps.node_configs,
         )
 
     def launch(self, task: dict, node_state: Optional[dict] = None) -> tuple[bool, str]:

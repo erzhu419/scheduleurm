@@ -11,6 +11,11 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterable, Optional
 
+try:
+    from scheduler_transport.budget import transport_state_lock
+except ModuleNotFoundError:
+    from ..scheduler_transport.budget import transport_state_lock
+
 
 class SchedulerLockTimeout(TimeoutError):
     pass
@@ -102,7 +107,11 @@ def file_lock(
     waited = acquired_at - start
     exc_raised = False
     try:
-        yield
+        if timeout_label == "scheduler state lock":
+            with transport_state_lock():
+                yield
+        else:
+            yield
     except Exception:
         exc_raised = True
         raise

@@ -109,6 +109,19 @@ def test_no_cwd_and_source_target_short_circuit():
     assert msg == "source==target; nothing to stage"
 
 
+def test_windows_migration_is_rejected_before_transferring_files():
+    calls = []
+    subprocess_calls = []
+    ok, reason = migration_stage.stage_for_migration(
+        _task(), "win", max_ckpt_mb=2048,
+        deps=_deps(nodes={"src": {}, "win": {"host": "win", "os": "windows"}},
+                   run_on_calls=calls, subprocess_calls=subprocess_calls),
+    )
+    assert not ok
+    assert "windows-node-disabled" in reason
+    assert calls == subprocess_calls == []
+
+
 def test_cwd_cache_miss_always_rsyncs_and_marks_cache():
     success_marks = []
     subprocess_calls = []

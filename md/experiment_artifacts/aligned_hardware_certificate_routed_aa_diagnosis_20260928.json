@@ -1,0 +1,1369 @@
+{
+  "decision": "AA_DIAGNOSIS_COMPLETE",
+  "execution_checks_passed": true,
+  "execution_failures": [],
+  "prior_decision": "CERTIFICATE_ROUTED_CONFIRMATION_TIMING_HOLD",
+  "prior_hold_retained": true,
+  "executed_selector_calls": 476,
+  "call_counts": {
+    "aa": {
+      "warmup": 12,
+      "timed": 432
+    },
+    "phase": {
+      "warmup": 8,
+      "timed": 24
+    }
+  },
+  "selector_calls_by_implementation": {
+    "candidate": 460,
+    "probe": 16
+  },
+  "executed_reference_calls": 0,
+  "executed_oracle_calls": 0,
+  "borrowed_reference_count": 2,
+  "states": [
+    {
+      "name": "tail_88",
+      "node": "node007",
+      "lanes": 64,
+      "queue": [
+        88,
+        19,
+        118
+      ],
+      "aa": {
+        "aggregate_arms": {
+          "a": {
+            "calls": 72,
+            "wall_ns": 24423562.0,
+            "cpu_ns": 24137318.5,
+            "wall_ms": 24.423562,
+            "cpu_ms": 24.1373185
+          },
+          "b": {
+            "calls": 72,
+            "wall_ns": 24442204.0,
+            "cpu_ns": 24164976.5,
+            "wall_ms": 24.442204,
+            "cpu_ms": 24.1649765
+          },
+          "c": {
+            "calls": 72,
+            "wall_ns": 24433774.5,
+            "cpu_ns": 24145559.5,
+            "wall_ms": 24.4337745,
+            "cpu_ms": 24.1455595
+          }
+        },
+        "windows": [
+          {
+            "window": 0,
+            "arms": {
+              "a": {
+                "calls": 6,
+                "wall_ns": 25397510.5,
+                "cpu_ns": 25056307.0,
+                "wall_ms": 25.3975105,
+                "cpu_ms": 25.056307
+              },
+              "b": {
+                "calls": 6,
+                "wall_ns": 26840973.0,
+                "cpu_ns": 25345160.5,
+                "wall_ms": 26.840973,
+                "cpu_ms": 25.3451605
+              },
+              "c": {
+                "calls": 6,
+                "wall_ns": 25445965.5,
+                "cpu_ns": 25067388.0,
+                "wall_ms": 25.4459655,
+                "cpu_ms": 25.067388
+              }
+            },
+            "a_over_control_wall_ratio": {
+              "b": 0.9462216775822546,
+              "c": 0.998095768855774
+            },
+            "a_over_control_cpu_ratio": {
+              "b": 0.9886032088847889,
+              "c": 0.9995579515504368
+            },
+            "apparent_slowdown_over_5pct": {
+              "b": false,
+              "c": false
+            },
+            "any_apparent_slowdown_over_5pct": false,
+            "symmetric_wall_max_min_ratio": 1.0568348027654129
+          },
+          {
+            "window": 1,
+            "arms": {
+              "a": {
+                "calls": 6,
+                "wall_ns": 24439998.0,
+                "cpu_ns": 24106991.5,
+                "wall_ms": 24.439998,
+                "cpu_ms": 24.1069915
+              },
+              "b": {
+                "calls": 6,
+                "wall_ns": 24592194.0,
+                "cpu_ns": 24255984.5,
+                "wall_ms": 24.592194,
+                "cpu_ms": 24.2559845
+              },
+              "c": {
+                "calls": 6,
+                "wall_ns": 24453976.0,
+                "cpu_ns": 24121539.0,
+                "wall_ms": 24.453976,
+                "cpu_ms": 24.121539
+              }
+            },
+            "a_over_control_wall_ratio": {
+              "b": 0.9938112069220013,
+              "c": 0.9994283956114131
+            },
+            "a_over_control_cpu_ratio": {
+              "b": 0.9938574746368263,
+              "c": 0.9993969082984299
+            },
+            "apparent_slowdown_over_5pct": {
+              "b": false,
+              "c": false
+            },
+            "any_apparent_slowdown_over_5pct": false,
+            "symmetric_wall_max_min_ratio": 1.0062273327518276
+          },
+          {
+            "window": 2,
+            "arms": {
+              "a": {
+                "calls": 6,
+                "wall_ns": 24613275.5,
+                "cpu_ns": 24272880.5,
+                "wall_ms": 24.6132755,
+                "cpu_ms": 24.2728805
+              },
+              "b": {
+                "calls": 6,
+                "wall_ns": 24429565.0,
+                "cpu_ns": 24091988.0,
+                "wall_ms": 24.429565,
+                "cpu_ms": 24.091988
+              },
+              "c": {
+                "calls": 6,
+                "wall_ns": 24393489.0,
+                "cpu_ns": 24056630.5,
+                "wall_ms": 24.393489,
+                "cpu_ms": 24.0566305
+              }
+            },
+            "a_over_control_wall_ratio": {
+              "b": 1.007520007007902,
+              "c": 1.0090100477221606
+            },
+            "a_over_control_cpu_ratio": {
+              "b": 1.0075084090196293,
+              "c": 1.0089892056994432
+            },
+            "apparent_slowdown_over_5pct": {
+              "b": false,
+              "c": false
+            },
+            "any_apparent_slowdown_over_5pct": false,
+            "symmetric_wall_max_min_ratio": 1.0090100477221606
+          },
+          {
+            "window": 3,
+            "arms": {
+              "a": {
+                "calls": 6,
+                "wall_ns": 24253094.5,
+                "cpu_ns": 23959496.5,
+                "wall_ms": 24.2530945,
+                "cpu_ms": 23.9594965
+              },
+              "b": {
+                "calls": 6,
+                "wall_ns": 24377271.0,
+                "cpu_ns": 24048731.0,
+                "wall_ms": 24.377271,
+                "cpu_ms": 24.048731
+              },
+              "c": {
+                "calls": 6,
+                "wall_ns": 24274219.5,
+                "cpu_ns": 23982375.5,
+                "wall_ms": 24.2742195,
+                "cpu_ms": 23.9823755
+              }
+            },
+            "a_over_control_wall_ratio": {
+              "b": 0.9949060540862018,
+              "c": 0.9991297351496718
+            },
+            "a_over_control_cpu_ratio": {
+              "b": 0.9962894299911292,
+              "c": 0.9990460077651607
+            },
+            "apparent_slowdown_over_5pct": {
+              "b": false,
+              "c": false
+            },
+            "any_apparent_slowdown_over_5pct": false,
+            "symmetric_wall_max_min_ratio": 1.0051200270546918
+          },
+          {
+            "window": 4,
+            "arms": {
+              "a": {
+                "calls": 6,
+                "wall_ns": 24285825.0,
+                "cpu_ns": 24030647.0,
+                "wall_ms": 24.285825,
+                "cpu_ms": 24.030647
+              },
+              "b": {
+                "calls": 6,
+                "wall_ns": 24371611.0,
+                "cpu_ns": 24114616.5,
+                "wall_ms": 24.371611,
+                "cpu_ms": 24.1146165
+              },
+              "c": {
+                "calls": 6,
+                "wall_ns": 24341759.5,
+                "cpu_ns": 24091316.5,
+                "wall_ms": 24.3417595,
+                "cpu_ms": 24.0913165
+              }
+            },
+            "a_over_control_wall_ratio": {
+              "b": 0.9964800849644285,
+              "c": 0.9977021176304038
+            },
+            "a_over_control_cpu_ratio": {
+              "b": 0.9965179002535661,
+              "c": 0.9974816859842425
+            },
+            "apparent_slowdown_over_5pct": {
+              "b": false,
+              "c": false
+            },
+            "any_apparent_slowdown_over_5pct": false,
+            "symmetric_wall_max_min_ratio": 1.0035323486025285
+          },
+          {
+            "window": 5,
+            "arms": {
+              "a": {
+                "calls": 6,
+                "wall_ns": 24240252.0,
+                "cpu_ns": 23987841.0,
+                "wall_ms": 24.240252,
+                "cpu_ms": 23.987841
+              },
+              "b": {
+                "calls": 6,
+                "wall_ns": 24317461.0,
+                "cpu_ns": 24048170.5,
+                "wall_ms": 24.317461,
+                "cpu_ms": 24.0481705
+              },
+              "c": {
+                "calls": 6,
+                "wall_ns": 24243512.0,
+                "cpu_ns": 23991562.5,
+                "wall_ms": 24.243512,
+                "cpu_ms": 23.9915625
+              }
+            },
+            "a_over_control_wall_ratio": {
+              "b": 0.9968249563554353,
+              "c": 0.9998655310336225
+            },
+            "a_over_control_cpu_ratio": {
+              "b": 0.9974913060434265,
+              "c": 0.999844882966668
+            },
+            "apparent_slowdown_over_5pct": {
+              "b": false,
+              "c": false
+            },
+            "any_apparent_slowdown_over_5pct": false,
+            "symmetric_wall_max_min_ratio": 1.0031851566559622
+          },
+          {
+            "window": 6,
+            "arms": {
+              "a": {
+                "calls": 6,
+                "wall_ns": 24472945.0,
+                "cpu_ns": 24210142.5,
+                "wall_ms": 24.472945,
+                "cpu_ms": 24.2101425
+              },
+              "b": {
+                "calls": 6,
+                "wall_ns": 24565815.5,
+                "cpu_ns": 24284132.0,
+                "wall_ms": 24.5658155,
+                "cpu_ms": 24.284132
+              },
+              "c": {
+                "calls": 6,
+                "wall_ns": 24582438.5,
+                "cpu_ns": 24292649.0,
+                "wall_ms": 24.5824385,
+                "cpu_ms": 24.292649
+              }
+            },
+            "a_over_control_wall_ratio": {
+              "b": 0.996219523019702,
+              "c": 0.9955458649881296
+            },
+            "a_over_control_cpu_ratio": {
+              "b": 0.9969531750198031,
+              "c": 0.9966036433490641
+            },
+            "apparent_slowdown_over_5pct": {
+              "b": false,
+              "c": false
+            },
+            "any_apparent_slowdown_over_5pct": false,
+            "symmetric_wall_max_min_ratio": 1.0044740630929379
+          },
+          {
+            "window": 7,
+            "arms": {
+              "a": {
+                "calls": 6,
+                "wall_ns": 24548612.5,
+                "cpu_ns": 24286617.5,
+                "wall_ms": 24.5486125,
+                "cpu_ms": 24.2866175
+              },
+              "b": {
+                "calls": 6,
+                "wall_ns": 24451090.0,
+                "cpu_ns": 24191161.0,
+                "wall_ms": 24.45109,
+                "cpu_ms": 24.191161
+              },
+              "c": {
+                "calls": 6,
+                "wall_ns": 24455659.5,
+                "cpu_ns": 24194412.5,
+                "wall_ms": 24.4556595,
+                "cpu_ms": 24.1944125
+              }
+            },
+            "a_over_control_wall_ratio": {
+              "b": 1.0039884724975452,
+              "c": 1.003800878892675
+            },
+            "a_over_control_cpu_ratio": {
+              "b": 1.0039459247119227,
+              "c": 1.0038110038836445
+            },
+            "apparent_slowdown_over_5pct": {
+              "b": false,
+              "c": false
+            },
+            "any_apparent_slowdown_over_5pct": false,
+            "symmetric_wall_max_min_ratio": 1.0039884724975452
+          },
+          {
+            "window": 8,
+            "arms": {
+              "a": {
+                "calls": 6,
+                "wall_ns": 24537959.5,
+                "cpu_ns": 24275351.0,
+                "wall_ms": 24.5379595,
+                "cpu_ms": 24.275351
+              },
+              "b": {
+                "calls": 6,
+                "wall_ns": 24474694.5,
+                "cpu_ns": 24202417.5,
+                "wall_ms": 24.4746945,
+                "cpu_ms": 24.2024175
+              },
+              "c": {
+                "calls": 6,
+                "wall_ns": 25021313.5,
+                "cpu_ns": 24726153.0,
+                "wall_ms": 25.0213135,
+                "cpu_ms": 24.726153
+              }
+            },
+            "a_over_control_wall_ratio": {
+              "b": 1.0025849147984258,
+              "c": 0.9806823091041963
+            },
+            "a_over_control_cpu_ratio": {
+              "b": 1.0030134799550499,
+              "c": 0.9817682111730037
+            },
+            "apparent_slowdown_over_5pct": {
+              "b": false,
+              "c": false
+            },
+            "any_apparent_slowdown_over_5pct": false,
+            "symmetric_wall_max_min_ratio": 1.0223340479285656
+          },
+          {
+            "window": 9,
+            "arms": {
+              "a": {
+                "calls": 6,
+                "wall_ns": 24423094.0,
+                "cpu_ns": 24117571.5,
+                "wall_ms": 24.423094,
+                "cpu_ms": 24.1175715
+              },
+              "b": {
+                "calls": 6,
+                "wall_ns": 24359539.0,
+                "cpu_ns": 24087234.0,
+                "wall_ms": 24.359539,
+                "cpu_ms": 24.087234
+              },
+              "c": {
+                "calls": 6,
+                "wall_ns": 24616983.0,
+                "cpu_ns": 24337639.0,
+                "wall_ms": 24.616983,
+                "cpu_ms": 24.337639
+              }
+            },
+            "a_over_control_wall_ratio": {
+              "b": 1.0026090395224638,
+              "c": 0.9921237708130196
+            },
+            "a_over_control_cpu_ratio": {
+              "b": 1.0012594845883924,
+              "c": 0.9909577301232876
+            },
+            "apparent_slowdown_over_5pct": {
+              "b": false,
+              "c": false
+            },
+            "any_apparent_slowdown_over_5pct": false,
+            "symmetric_wall_max_min_ratio": 1.0105685087061786
+          },
+          {
+            "window": 10,
+            "arms": {
+              "a": {
+                "calls": 6,
+                "wall_ns": 24401280.0,
+                "cpu_ns": 24107747.5,
+                "wall_ms": 24.40128,
+                "cpu_ms": 24.1077475
+              },
+              "b": {
+                "calls": 6,
+                "wall_ns": 24389003.5,
+                "cpu_ns": 24107582.5,
+                "wall_ms": 24.3890035,
+                "cpu_ms": 24.1075825
+              },
+              "c": {
+                "calls": 6,
+                "wall_ns": 24377092.5,
+                "cpu_ns": 24095890.0,
+                "wall_ms": 24.3770925,
+                "cpu_ms": 24.09589
+              }
+            },
+            "a_over_control_wall_ratio": {
+              "b": 1.0005033620992345,
+              "c": 1.000992222513821
+            },
+            "a_over_control_cpu_ratio": {
+              "b": 1.0000068443196244,
+              "c": 1.000492096369962
+            },
+            "apparent_slowdown_over_5pct": {
+              "b": false,
+              "c": false
+            },
+            "any_apparent_slowdown_over_5pct": false,
+            "symmetric_wall_max_min_ratio": 1.000992222513821
+          },
+          {
+            "window": 11,
+            "arms": {
+              "a": {
+                "calls": 6,
+                "wall_ns": 24320997.5,
+                "cpu_ns": 24037043.5,
+                "wall_ms": 24.3209975,
+                "cpu_ms": 24.0370435
+              },
+              "b": {
+                "calls": 6,
+                "wall_ns": 24268739.5,
+                "cpu_ns": 23987685.0,
+                "wall_ms": 24.2687395,
+                "cpu_ms": 23.987685
+              },
+              "c": {
+                "calls": 6,
+                "wall_ns": 24257006.0,
+                "cpu_ns": 23972486.5,
+                "wall_ms": 24.257006,
+                "cpu_ms": 23.9724865
+              }
+            },
+            "a_over_control_wall_ratio": {
+              "b": 1.0021533050779172,
+              "c": 1.002638062586949
+            },
+            "a_over_control_cpu_ratio": {
+              "b": 1.0020576600034559,
+              "c": 1.0026929622006462
+            },
+            "apparent_slowdown_over_5pct": {
+              "b": false,
+              "c": false
+            },
+            "any_apparent_slowdown_over_5pct": false,
+            "symmetric_wall_max_min_ratio": 1.002638062586949
+          }
+        ],
+        "windows_with_apparent_slowdown": 0,
+        "windows_with_symmetric_spread_over_5pct": 1
+      },
+      "phase": {
+        "candidate": {
+          "calls": 6,
+          "wall_ns": 34322980.5,
+          "cpu_ns": 28804174.0,
+          "wall_ms": 34.3229805,
+          "cpu_ms": 28.804174,
+          "phases": {
+            "initial_lp": {
+              "wall_ns": 34295225.0,
+              "cpu_ns": 28772634.5,
+              "total_calls": 6
+            },
+            "initial_lp_linprog": {
+              "wall_ns": 21014608.0,
+              "cpu_ns": 17647783.5,
+              "total_calls": 126
+            },
+            "linprog": {
+              "wall_ns": 21014608.0,
+              "cpu_ns": 17647783.5,
+              "total_calls": 126
+            }
+          },
+          "primary_phase_wall_ns": 34295225.0,
+          "residual_wall_ns": 29681.5,
+          "initial_lp_less_linprog_wall_ns": 13199272.0,
+          "primary_phase_cpu_ns": 28772634.5,
+          "residual_cpu_ns": 28899.5,
+          "initial_lp_less_linprog_cpu_ns": 11096342.0,
+          "gc_events": 0,
+          "gc_pause_wall_ns": 0,
+          "gc_pause_fraction_of_whole": 0.0
+        },
+        "probe": {
+          "calls": 6,
+          "wall_ns": 34462363.0,
+          "cpu_ns": 28882148.5,
+          "wall_ms": 34.462363,
+          "cpu_ms": 28.8821485,
+          "phases": {
+            "initial_lp": {
+              "wall_ns": 34418003.0,
+              "cpu_ns": 28848976.0,
+              "total_calls": 6
+            },
+            "initial_lp_linprog": {
+              "wall_ns": 21247040.5,
+              "cpu_ns": 17754492.0,
+              "total_calls": 126
+            },
+            "linprog": {
+              "wall_ns": 21247040.5,
+              "cpu_ns": 17754492.0,
+              "total_calls": 126
+            }
+          },
+          "primary_phase_wall_ns": 34418003.0,
+          "residual_wall_ns": 44360.0,
+          "initial_lp_less_linprog_wall_ns": 13173209.5,
+          "primary_phase_cpu_ns": 28848976.0,
+          "residual_cpu_ns": 33172.5,
+          "initial_lp_less_linprog_cpu_ns": 11094484.0,
+          "gc_events": 1,
+          "gc_pause_wall_ns": 88032,
+          "gc_pause_fraction_of_whole": 0.0004265696384844119
+        }
+      }
+    },
+    {
+      "name": "tail_184",
+      "node": "node007",
+      "lanes": 64,
+      "queue": [
+        184,
+        78,
+        235
+      ],
+      "aa": {
+        "aggregate_arms": {
+          "a": {
+            "calls": 72,
+            "wall_ns": 16755305.5,
+            "cpu_ns": 16568770.5,
+            "wall_ms": 16.7553055,
+            "cpu_ms": 16.5687705
+          },
+          "b": {
+            "calls": 72,
+            "wall_ns": 16705962.0,
+            "cpu_ns": 16521947.0,
+            "wall_ms": 16.705962,
+            "cpu_ms": 16.521947
+          },
+          "c": {
+            "calls": 72,
+            "wall_ns": 16745048.0,
+            "cpu_ns": 16549895.5,
+            "wall_ms": 16.745048,
+            "cpu_ms": 16.5498955
+          }
+        },
+        "windows": [
+          {
+            "window": 0,
+            "arms": {
+              "a": {
+                "calls": 6,
+                "wall_ns": 16946370.5,
+                "cpu_ns": 16718750.5,
+                "wall_ms": 16.9463705,
+                "cpu_ms": 16.7187505
+              },
+              "b": {
+                "calls": 6,
+                "wall_ns": 19594814.5,
+                "cpu_ns": 18280732.5,
+                "wall_ms": 19.5948145,
+                "cpu_ms": 18.2807325
+              },
+              "c": {
+                "calls": 6,
+                "wall_ns": 17146980.5,
+                "cpu_ns": 16879420.5,
+                "wall_ms": 17.1469805,
+                "cpu_ms": 16.8794205
+              }
+            },
+            "a_over_control_wall_ratio": {
+              "b": 0.8648395472179642,
+              "c": 0.9883005640555782
+            },
+            "a_over_control_cpu_ratio": {
+              "b": 0.9145558308453997,
+              "c": 0.9904813082889902
+            },
+            "apparent_slowdown_over_5pct": {
+              "b": false,
+              "c": false
+            },
+            "any_apparent_slowdown_over_5pct": false,
+            "symmetric_wall_max_min_ratio": 1.156283848509036
+          },
+          {
+            "window": 1,
+            "arms": {
+              "a": {
+                "calls": 6,
+                "wall_ns": 16675102.5,
+                "cpu_ns": 16442501.5,
+                "wall_ms": 16.6751025,
+                "cpu_ms": 16.4425015
+              },
+              "b": {
+                "calls": 6,
+                "wall_ns": 16885418.5,
+                "cpu_ns": 16660084.0,
+                "wall_ms": 16.8854185,
+                "cpu_ms": 16.660084
+              },
+              "c": {
+                "calls": 6,
+                "wall_ns": 16641210.0,
+                "cpu_ns": 16408061.0,
+                "wall_ms": 16.64121,
+                "cpu_ms": 16.408061
+              }
+            },
+            "a_over_control_wall_ratio": {
+              "b": 0.987544519550996,
+              "c": 1.0020366607956994
+            },
+            "a_over_control_cpu_ratio": {
+              "b": 0.9869398917796572,
+              "c": 1.0020989987787101
+            },
+            "apparent_slowdown_over_5pct": {
+              "b": false,
+              "c": false
+            },
+            "any_apparent_slowdown_over_5pct": false,
+            "symmetric_wall_max_min_ratio": 1.0146749244796502
+          },
+          {
+            "window": 2,
+            "arms": {
+              "a": {
+                "calls": 6,
+                "wall_ns": 16721984.0,
+                "cpu_ns": 16492000.0,
+                "wall_ms": 16.721984,
+                "cpu_ms": 16.492
+              },
+              "b": {
+                "calls": 6,
+                "wall_ns": 16732597.0,
+                "cpu_ns": 16497776.5,
+                "wall_ms": 16.732597,
+                "cpu_ms": 16.4977765
+              },
+              "c": {
+                "calls": 6,
+                "wall_ns": 16691049.5,
+                "cpu_ns": 16460856.5,
+                "wall_ms": 16.6910495,
+                "cpu_ms": 16.4608565
+              }
+            },
+            "a_over_control_wall_ratio": {
+              "b": 0.9993657290616633,
+              "c": 1.0018533585919807
+            },
+            "a_over_control_cpu_ratio": {
+              "b": 0.9996498619071486,
+              "c": 1.0018919732396672
+            },
+            "apparent_slowdown_over_5pct": {
+              "b": false,
+              "c": false
+            },
+            "any_apparent_slowdown_over_5pct": false,
+            "symmetric_wall_max_min_ratio": 1.0024892083628414
+          },
+          {
+            "window": 3,
+            "arms": {
+              "a": {
+                "calls": 6,
+                "wall_ns": 16602640.0,
+                "cpu_ns": 16403267.5,
+                "wall_ms": 16.60264,
+                "cpu_ms": 16.4032675
+              },
+              "b": {
+                "calls": 6,
+                "wall_ns": 16749902.5,
+                "cpu_ns": 16526365.5,
+                "wall_ms": 16.7499025,
+                "cpu_ms": 16.5263655
+              },
+              "c": {
+                "calls": 6,
+                "wall_ns": 16569557.0,
+                "cpu_ns": 16339992.5,
+                "wall_ms": 16.569557,
+                "cpu_ms": 16.3399925
+              }
+            },
+            "a_over_control_wall_ratio": {
+              "b": 0.9912081577788289,
+              "c": 1.0019966134278666
+            },
+            "a_over_control_cpu_ratio": {
+              "b": 0.9925514173095107,
+              "c": 1.0038724007982256
+            },
+            "apparent_slowdown_over_5pct": {
+              "b": false,
+              "c": false
+            },
+            "any_apparent_slowdown_over_5pct": false,
+            "symmetric_wall_max_min_ratio": 1.0108841473552974
+          },
+          {
+            "window": 4,
+            "arms": {
+              "a": {
+                "calls": 6,
+                "wall_ns": 16825499.5,
+                "cpu_ns": 16653346.0,
+                "wall_ms": 16.8254995,
+                "cpu_ms": 16.653346
+              },
+              "b": {
+                "calls": 6,
+                "wall_ns": 16633674.5,
+                "cpu_ns": 16463411.5,
+                "wall_ms": 16.6336745,
+                "cpu_ms": 16.4634115
+              },
+              "c": {
+                "calls": 6,
+                "wall_ns": 16625707.5,
+                "cpu_ns": 16455075.5,
+                "wall_ms": 16.6257075,
+                "cpu_ms": 16.4550755
+              }
+            },
+            "a_over_control_wall_ratio": {
+              "b": 1.0115323285904145,
+              "c": 1.0120170525073895
+            },
+            "a_over_control_cpu_ratio": {
+              "b": 1.0115367644184803,
+              "c": 1.0120492002604302
+            },
+            "apparent_slowdown_over_5pct": {
+              "b": false,
+              "c": false
+            },
+            "any_apparent_slowdown_over_5pct": false,
+            "symmetric_wall_max_min_ratio": 1.0120170525073895
+          },
+          {
+            "window": 5,
+            "arms": {
+              "a": {
+                "calls": 6,
+                "wall_ns": 16652650.0,
+                "cpu_ns": 16481090.0,
+                "wall_ms": 16.65265,
+                "cpu_ms": 16.48109
+              },
+              "b": {
+                "calls": 6,
+                "wall_ns": 16684510.5,
+                "cpu_ns": 16511858.0,
+                "wall_ms": 16.6845105,
+                "cpu_ms": 16.511858
+              },
+              "c": {
+                "calls": 6,
+                "wall_ns": 16702214.5,
+                "cpu_ns": 16523716.0,
+                "wall_ms": 16.7022145,
+                "cpu_ms": 16.523716
+              }
+            },
+            "a_over_control_wall_ratio": {
+              "b": 0.9980904144595671,
+              "c": 0.9970324593783657
+            },
+            "a_over_control_cpu_ratio": {
+              "b": 0.9981366118822,
+              "c": 0.9974203139293849
+            },
+            "apparent_slowdown_over_5pct": {
+              "b": false,
+              "c": false
+            },
+            "any_apparent_slowdown_over_5pct": false,
+            "symmetric_wall_max_min_ratio": 1.0029763731298023
+          },
+          {
+            "window": 6,
+            "arms": {
+              "a": {
+                "calls": 6,
+                "wall_ns": 16872840.0,
+                "cpu_ns": 16695937.5,
+                "wall_ms": 16.87284,
+                "cpu_ms": 16.6959375
+              },
+              "b": {
+                "calls": 6,
+                "wall_ns": 17184116.5,
+                "cpu_ns": 16870292.5,
+                "wall_ms": 17.1841165,
+                "cpu_ms": 16.8702925
+              },
+              "c": {
+                "calls": 6,
+                "wall_ns": 16922569.5,
+                "cpu_ns": 16745977.0,
+                "wall_ms": 16.9225695,
+                "cpu_ms": 16.745977
+              }
+            },
+            "a_over_control_wall_ratio": {
+              "b": 0.9818858013445149,
+              "c": 0.9970613505236305
+            },
+            "a_over_control_cpu_ratio": {
+              "b": 0.989664968760915,
+              "c": 0.9970118494728615
+            },
+            "apparent_slowdown_over_5pct": {
+              "b": false,
+              "c": false
+            },
+            "any_apparent_slowdown_over_5pct": false,
+            "symmetric_wall_max_min_ratio": 1.0184483762069694
+          },
+          {
+            "window": 7,
+            "arms": {
+              "a": {
+                "calls": 6,
+                "wall_ns": 16756589.0,
+                "cpu_ns": 16578389.0,
+                "wall_ms": 16.756589,
+                "cpu_ms": 16.578389
+              },
+              "b": {
+                "calls": 6,
+                "wall_ns": 16672466.5,
+                "cpu_ns": 16496348.5,
+                "wall_ms": 16.6724665,
+                "cpu_ms": 16.4963485
+              },
+              "c": {
+                "calls": 6,
+                "wall_ns": 16778597.5,
+                "cpu_ns": 16594249.5,
+                "wall_ms": 16.7785975,
+                "cpu_ms": 16.5942495
+              }
+            },
+            "a_over_control_wall_ratio": {
+              "b": 1.00504559418368,
+              "c": 0.9986882991859123
+            },
+            "a_over_control_cpu_ratio": {
+              "b": 1.004973252110914,
+              "c": 0.9990442170946026
+            },
+            "apparent_slowdown_over_5pct": {
+              "b": false,
+              "c": false
+            },
+            "any_apparent_slowdown_over_5pct": false,
+            "symmetric_wall_max_min_ratio": 1.0063656448192593
+          },
+          {
+            "window": 8,
+            "arms": {
+              "a": {
+                "calls": 6,
+                "wall_ns": 16654361.0,
+                "cpu_ns": 16475859.5,
+                "wall_ms": 16.654361,
+                "cpu_ms": 16.4758595
+              },
+              "b": {
+                "calls": 6,
+                "wall_ns": 16654771.5,
+                "cpu_ns": 16476912.0,
+                "wall_ms": 16.6547715,
+                "cpu_ms": 16.476912
+              },
+              "c": {
+                "calls": 6,
+                "wall_ns": 16841791.0,
+                "cpu_ns": 16662689.0,
+                "wall_ms": 16.841791,
+                "cpu_ms": 16.662689
+              }
+            },
+            "a_over_control_wall_ratio": {
+              "b": 0.9999753524087677,
+              "c": 0.988871136092355
+            },
+            "a_over_control_cpu_ratio": {
+              "b": 0.9999361227395036,
+              "c": 0.9887875540376466
+            },
+            "apparent_slowdown_over_5pct": {
+              "b": false,
+              "c": false
+            },
+            "any_apparent_slowdown_over_5pct": false,
+            "symmetric_wall_max_min_ratio": 1.011254109359104
+          },
+          {
+            "window": 9,
+            "arms": {
+              "a": {
+                "calls": 6,
+                "wall_ns": 16755530.5,
+                "cpu_ns": 16571460.5,
+                "wall_ms": 16.7555305,
+                "cpu_ms": 16.5714605
+              },
+              "b": {
+                "calls": 6,
+                "wall_ns": 16773658.5,
+                "cpu_ns": 16594400.0,
+                "wall_ms": 16.7736585,
+                "cpu_ms": 16.5944
+              },
+              "c": {
+                "calls": 6,
+                "wall_ns": 16763939.0,
+                "cpu_ns": 16584055.0,
+                "wall_ms": 16.763939,
+                "cpu_ms": 16.584055
+              }
+            },
+            "a_over_control_wall_ratio": {
+              "b": 0.9989192578351348,
+              "c": 0.9994984174065534
+            },
+            "a_over_control_cpu_ratio": {
+              "b": 0.9986176360699995,
+              "c": 0.999240565712065
+            },
+            "apparent_slowdown_over_5pct": {
+              "b": false,
+              "c": false
+            },
+            "any_apparent_slowdown_over_5pct": false,
+            "symmetric_wall_max_min_ratio": 1.0010819114321685
+          },
+          {
+            "window": 10,
+            "arms": {
+              "a": {
+                "calls": 6,
+                "wall_ns": 16770258.0,
+                "cpu_ns": 16578023.5,
+                "wall_ms": 16.770258,
+                "cpu_ms": 16.5780235
+              },
+              "b": {
+                "calls": 6,
+                "wall_ns": 16675844.5,
+                "cpu_ns": 16479812.0,
+                "wall_ms": 16.6758445,
+                "cpu_ms": 16.479812
+              },
+              "c": {
+                "calls": 6,
+                "wall_ns": 16713920.0,
+                "cpu_ns": 16521426.5,
+                "wall_ms": 16.71392,
+                "cpu_ms": 16.5214265
+              }
+            },
+            "a_over_control_wall_ratio": {
+              "b": 1.0056616922759145,
+              "c": 1.0033707233252283
+            },
+            "a_over_control_cpu_ratio": {
+              "b": 1.0059595036642408,
+              "c": 1.003425672716578
+            },
+            "apparent_slowdown_over_5pct": {
+              "b": false,
+              "c": false
+            },
+            "any_apparent_slowdown_over_5pct": false,
+            "symmetric_wall_max_min_ratio": 1.0056616922759145
+          },
+          {
+            "window": 11,
+            "arms": {
+              "a": {
+                "calls": 6,
+                "wall_ns": 16659422.0,
+                "cpu_ns": 16467489.0,
+                "wall_ms": 16.659422,
+                "cpu_ms": 16.467489
+              },
+              "b": {
+                "calls": 6,
+                "wall_ns": 16505547.5,
+                "cpu_ns": 16315711.5,
+                "wall_ms": 16.5055475,
+                "cpu_ms": 16.3157115
+              },
+              "c": {
+                "calls": 6,
+                "wall_ns": 16557561.5,
+                "cpu_ns": 16366953.0,
+                "wall_ms": 16.5575615,
+                "cpu_ms": 16.366953
+              }
+            },
+            "a_over_control_wall_ratio": {
+              "b": 1.0093225929039917,
+              "c": 1.0061519022592789
+            },
+            "a_over_control_cpu_ratio": {
+              "b": 1.0093025363926054,
+              "c": 1.0061426216596332
+            },
+            "apparent_slowdown_over_5pct": {
+              "b": false,
+              "c": false
+            },
+            "any_apparent_slowdown_over_5pct": false,
+            "symmetric_wall_max_min_ratio": 1.0093225929039917
+          }
+        ],
+        "windows_with_apparent_slowdown": 0,
+        "windows_with_symmetric_spread_over_5pct": 1
+      },
+      "phase": {
+        "candidate": {
+          "calls": 6,
+          "wall_ns": 23882133.0,
+          "cpu_ns": 19976319.0,
+          "wall_ms": 23.882133,
+          "cpu_ms": 19.976319,
+          "phases": {
+            "initial_lp": {
+              "wall_ns": 23852785.0,
+              "cpu_ns": 19946998.5,
+              "total_calls": 6
+            },
+            "initial_lp_linprog": {
+              "wall_ns": 15524661.0,
+              "cpu_ns": 12969694.5,
+              "total_calls": 96
+            },
+            "linprog": {
+              "wall_ns": 15524661.0,
+              "cpu_ns": 12969694.5,
+              "total_calls": 96
+            }
+          },
+          "primary_phase_wall_ns": 23852785.0,
+          "residual_wall_ns": 27705.5,
+          "initial_lp_less_linprog_wall_ns": 8376815.0,
+          "primary_phase_cpu_ns": 19946998.5,
+          "residual_cpu_ns": 27712.5,
+          "initial_lp_less_linprog_cpu_ns": 7006683.0,
+          "gc_events": 1,
+          "gc_pause_wall_ns": 116052,
+          "gc_pause_fraction_of_whole": 0.0007938882670603683
+        },
+        "probe": {
+          "calls": 6,
+          "wall_ns": 23555123.0,
+          "cpu_ns": 19802888.5,
+          "wall_ms": 23.555123,
+          "cpu_ms": 19.8028885,
+          "phases": {
+            "initial_lp": {
+              "wall_ns": 23526865.5,
+              "cpu_ns": 19775667.5,
+              "total_calls": 6
+            },
+            "initial_lp_linprog": {
+              "wall_ns": 15249252.5,
+              "cpu_ns": 12848140.0,
+              "total_calls": 96
+            },
+            "linprog": {
+              "wall_ns": 15249252.5,
+              "cpu_ns": 12848140.0,
+              "total_calls": 96
+            }
+          },
+          "primary_phase_wall_ns": 23526865.5,
+          "residual_wall_ns": 27639.0,
+          "initial_lp_less_linprog_wall_ns": 8358546.0,
+          "primary_phase_cpu_ns": 19775667.5,
+          "residual_cpu_ns": 27221.0,
+          "initial_lp_less_linprog_cpu_ns": 6960672.0,
+          "gc_events": 0,
+          "gc_pause_wall_ns": 0,
+          "gc_pause_fraction_of_whole": 0.0
+        }
+      }
+    }
+  ],
+  "work": {
+    "candidate": {
+      "calls": 460,
+      "statuses": {
+        "LP_INITIAL_COMPLETE": 460
+      },
+      "resumed_calls": 0,
+      "search_work": {
+        "lp_calls": 8510,
+        "lp_matrix_coefficients": 398360,
+        "candidate_evaluations": 8970,
+        "duration_root_count": 3680,
+        "dual_column_checks": 41860,
+        "branch_splits": 3680,
+        "bound_pruned_regions": 7360,
+        "safe_fallback_lp_calls": 0,
+        "residual_fill_option_probes": 41860
+      },
+      "initial_lp_calls_embedded": 8510,
+      "additional_lp_calls": 0,
+      "preprocessing": {
+        "original_option_count": 4140,
+        "requirement_group_count": 3680,
+        "duration_threshold_count": 3680,
+        "reduction_option_probes": 4140,
+        "reduction_requirement_coordinate_reads": 12420,
+        "reduction_duration_comparisons": 4600,
+        "grouping_option_probes": 4140,
+        "representative_option_probes": 17020,
+        "proxy_option_count": 16560,
+        "lift_option_probes": 18170
+      },
+      "capacity_propagation": {
+        "region_visits": 11040,
+        "requirement_coordinate_reads": 325680,
+        "tightened_bounds": 11730,
+        "removed_count_values": 241270
+      },
+      "score_proof": {
+        "attempted_count": 0,
+        "completed_count": 0,
+        "exhausted_count": 0,
+        "work": {
+          "states_visited": 0,
+          "memo_hits": 0,
+          "count_branches": 0,
+          "bound_prunes": 0,
+          "duration_prunes": 0,
+          "gcd_prunes": 0,
+          "failed_states_cached": 0,
+          "thresholds_checked": 0,
+          "suffix_coordinate_reads": 0,
+          "resource_coordinate_reads": 0
+        }
+      },
+      "completion": {
+        "attempted_count": 0,
+        "completed_count": 0,
+        "exhausted_count": 0,
+        "work": {
+          "states_visited": 0,
+          "memo_hits": 0,
+          "count_branches": 0,
+          "bound_prunes": 0,
+          "gcd_prunes": 0,
+          "duration_prunes": 0,
+          "failed_states_cached": 0,
+          "thresholds_checked": 0,
+          "noninteger_thresholds": 0,
+          "suffix_coordinate_reads": 0,
+          "resource_coordinate_reads": 0
+        }
+      },
+      "shared_integer_states": 0,
+      "max_shared_integer_states": 0
+    },
+    "probe": {
+      "calls": 16,
+      "statuses": {
+        "LP_INITIAL_COMPLETE": 16
+      },
+      "resumed_calls": 0,
+      "search_work": {
+        "lp_calls": 296,
+        "lp_matrix_coefficients": 13856,
+        "candidate_evaluations": 312,
+        "duration_root_count": 128,
+        "dual_column_checks": 1456,
+        "branch_splits": 128,
+        "bound_pruned_regions": 256,
+        "safe_fallback_lp_calls": 0,
+        "residual_fill_option_probes": 1456
+      },
+      "initial_lp_calls_embedded": 296,
+      "additional_lp_calls": 0,
+      "preprocessing": {
+        "original_option_count": 144,
+        "requirement_group_count": 128,
+        "duration_threshold_count": 128,
+        "reduction_option_probes": 144,
+        "reduction_requirement_coordinate_reads": 432,
+        "reduction_duration_comparisons": 160,
+        "grouping_option_probes": 144,
+        "representative_option_probes": 592,
+        "proxy_option_count": 576,
+        "lift_option_probes": 632
+      },
+      "capacity_propagation": {
+        "region_visits": 384,
+        "requirement_coordinate_reads": 11328,
+        "tightened_bounds": 408,
+        "removed_count_values": 8392
+      },
+      "score_proof": {
+        "attempted_count": 0,
+        "completed_count": 0,
+        "exhausted_count": 0,
+        "work": {
+          "states_visited": 0,
+          "memo_hits": 0,
+          "count_branches": 0,
+          "bound_prunes": 0,
+          "duration_prunes": 0,
+          "gcd_prunes": 0,
+          "failed_states_cached": 0,
+          "thresholds_checked": 0,
+          "suffix_coordinate_reads": 0,
+          "resource_coordinate_reads": 0
+        }
+      },
+      "completion": {
+        "attempted_count": 0,
+        "completed_count": 0,
+        "exhausted_count": 0,
+        "work": {
+          "states_visited": 0,
+          "memo_hits": 0,
+          "count_branches": 0,
+          "bound_prunes": 0,
+          "gcd_prunes": 0,
+          "duration_prunes": 0,
+          "failed_states_cached": 0,
+          "thresholds_checked": 0,
+          "noninteger_thresholds": 0,
+          "suffix_coordinate_reads": 0,
+          "resource_coordinate_reads": 0
+        }
+      },
+      "shared_integer_states": 0,
+      "max_shared_integer_states": 0
+    }
+  },
+  "elapsed_s": 10.4895120220026,
+  "limitations": "Two selected previously inspected tail states,24 dependent state-windows on one host. The two-state short cadence has much shorter between-round intervals than the original1058-state confirmation workload; it cannot estimate that workload's false-positive rate. This descriptive diagnostic neither estimates an independent false-positive rate nor proves universal five-percent resolution, including when there are zero threshold crossings. Instrumented phase results are not confirmation timings; LP less linprog and whole-call less primary phases are remainders. The previous TIMING_HOLD remains unchanged regardless of this outcome; no reruns or retuning to pass it.",
+  "aa_readout": {
+    "state_windows": 24,
+    "windows_with_apparent_slowdown": 0,
+    "apparent_slowdown_counts_by_control": {
+      "b": 0,
+      "c": 0
+    },
+    "windows_with_symmetric_spread_over_5pct": 2,
+    "max_a_over_control_wall_ratio": 1.0120170525073895,
+    "max_symmetric_wall_max_min_ratio": 1.156283848509036,
+    "interpretation": "Fixed label a versus b/c uses the prior >5% direction. Symmetric spread is a separate descriptive measure. State-windows share states and one process; counts are not independent error-rate estimates. Instrumented phases are not confirmation latency."
+  },
+  "protocol_path": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/aligned_hardware_certificate_routed_aa_diagnosis_20260928_protocol.json",
+  "raw_path": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/aligned_hardware_certificate_routed_aa_diagnosis_20260928_raw.json.gz"
+}

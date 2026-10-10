@@ -1,0 +1,177 @@
+{
+  "registered_at_utc": "2026-10-03T23:30:29.309041+00:00",
+  "unit": {
+    "unit_index": 462,
+    "fixture_file": "aligned_hardware_BG_bursty_arrivals_20261004_fixture_154.json.gz",
+    "policy": "BG",
+    "planning_replication": 1,
+    "planning_seed": "arrival-plan-sensitivity-v1:gpu_b:0.8:online:replicate1",
+    "profile": "steady",
+    "tape_id": "steady:gpu_b:R2:load0.8:seed200006",
+    "node": "gpu_b",
+    "lanes": 2,
+    "load": 0.8,
+    "seed": 200006,
+    "cached_MW_unit": {
+      "unit_index": 617,
+      "tape_index": 154,
+      "fixture_file": "aligned_hardware_BG_bursty_arrivals_20261004_fixture_154.json.gz",
+      "profile": "steady",
+      "policy": "maxweight",
+      "tape_id": "steady:gpu_b:R2:load0.8:seed200006",
+      "node": "gpu_b",
+      "lanes": 2,
+      "load": 0.8,
+      "seed": 200006
+    },
+    "cached_MW_row_file": "aligned_hardware_BG_bursty_arrivals_20261004_unit_617.json",
+    "cached_MW_trajectory_file": "aligned_hardware_BG_bursty_arrivals_20261004_unit_617_trajectory.json.gz"
+  },
+  "trajectory_epoch_and_unit_match": true,
+  "checker_passed": false,
+  "first_false_return_context": {
+    "line": 118,
+    "source_context": [
+      {
+        "line": 114,
+        "text": "                or info[\"chosen_predicted_completion_s\"] > info[\"baseline_predicted_completion_s\"]"
+      },
+      {
+        "line": 115,
+        "text": "                or info[\"chosen_predicted_squared_flow_s2\"] > info[\"baseline_predicted_squared_flow_s2\"]):"
+      },
+      {
+        "line": 116,
+        "text": "            return False"
+      },
+      {
+        "line": 117,
+        "text": "        if info[\"changed\"] and not info[\"chosen_predicted_completion_s\"] < info[\"baseline_predicted_completion_s\"]:"
+      },
+      {
+        "line": 118,
+        "text": "            return False"
+      },
+      {
+        "line": 119,
+        "text": "    return True"
+      },
+      {
+        "line": 120,
+        "text": ""
+      },
+      {
+        "line": 121,
+        "text": ""
+      },
+      {
+        "line": 122,
+        "text": "def background_work(result, planner, horizon):"
+      }
+    ],
+    "scalar_locals": {
+      "m": 9,
+      "r": 2,
+      "cap": 128,
+      "samples": 8,
+      "now": 19.79592588210709,
+      "n": 5,
+      "k": 5,
+      "rescheduled": 91,
+      "positive_rates": 3,
+      "calls_bound": 6560
+    },
+    "frame_index": 16,
+    "frame_stub": {
+      "start": 19.79592588210709,
+      "queue": [
+        2,
+        0,
+        3
+      ],
+      "observed_arrival_counts": [
+        2,
+        6,
+        5
+      ]
+    },
+    "rollout": {
+      "eligible": true,
+      "candidate_count": 5,
+      "rollout_calls": 325,
+      "rollout_option_probes": 2925,
+      "root_option_probes": 18,
+      "baseline_predicted_completion_s": 213.25471249155547,
+      "chosen_predicted_completion_s": 213.25471249155547,
+      "changed": true,
+      "queue_limit": 16,
+      "planning_events": 163,
+      "planning_random_draws": 211,
+      "planning_rate_reads": 139,
+      "planning_overflow": false,
+      "window_s": 14.972417070959636,
+      "sample_count": 8,
+      "configured_sample_count": 8,
+      "rollout_idle_calls": 0,
+      "preprocessing_option_probes": 0,
+      "baseline_predicted_squared_flow_s2": 4407.062343061921,
+      "chosen_predicted_squared_flow_s2": 4407.062343061921,
+      "risk_filtered_candidates": 3,
+      "risk_feasible_candidates": 2,
+      "waiting_age_reads": 5,
+      "flow_evaluations": 560,
+      "unconstrained_root_index": 2,
+      "risk_changed_unconstrained_root": false,
+      "estimated_arrival_rates": [
+        0.10103088948255443,
+        0.3030926684476633,
+        0.2525772237063861
+      ],
+      "observed_arrival_counts": [
+        2,
+        6,
+        5
+      ],
+      "rate_exposure_s": 19.79592588210709,
+      "rate_estimation_coordinate_reads": 3,
+      "rate_estimation_divisions": 3,
+      "tagged_planning_events": 72,
+      "background_planning_events": 91,
+      "background_planning_random_draws": 115,
+      "background_planning_rate_reads": 115,
+      "background_seed_initializations": 8,
+      "admitted_job_reads": 840,
+      "tag_flag_reads": 840,
+      "background_admissions": 280,
+      "background_rollout_overflow": false
+    },
+    "waiting_ages": [
+      {
+        "count": 2,
+        "minimum": 2.7590887175873675,
+        "maximum": 4.029906000307026,
+        "nonnegative": true,
+        "sorted_descending": true
+      },
+      {
+        "count": 0,
+        "minimum": null,
+        "maximum": null,
+        "nonnegative": true,
+        "sorted_descending": true
+      },
+      {
+        "count": 3,
+        "minimum": 0.22732673369617018,
+        "maximum": 4.112603452323423,
+        "nonnegative": true,
+        "sorted_descending": true
+      }
+    ]
+  },
+  "new_simulations": 0,
+  "policy_calls": 0,
+  "at_utc": "2026-10-03T23:50:53.971217+00:00",
+  "metadata_downloaded_bytes": 3787,
+  "full_frames_jobs_or_trajectories_downloaded": false
+}

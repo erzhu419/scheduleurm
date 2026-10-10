@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import subprocess
+from dataclasses import replace
 
 from skill.scheduler_local_probe import (
     MAX_LOCAL_PROBE_SHELL_BYTES,
@@ -61,6 +62,22 @@ def test_no_running_tasks_returns_empty_without_ssh():
 
     assert local_backend_batch_probe(state, deps=_deps(calls=calls)) == {}
     assert calls == []
+
+
+def test_batch_probe_uses_configured_nvidia_smi_path():
+    calls = []
+    path = "/cm/local/apps/cuda-driver/libs/535.261.03/bin/nvidia-smi"
+    probe = "A100\n===VRAM===\n101, 252\n===PSALL===\n100 1 1024 0 S\n101 100 2048 99 R\n"
+    deps = replace(
+        _deps(calls=calls, outputs={"node007": (0, probe, "")}),
+        node_configs={"node007": {"nvidia_smi_path": path}},
+    )
+    result = local_backend_batch_probe(
+        {"tasks": [_task("cs", node="node007", pids=[100])]}, deps=deps,
+    )
+    assert f"{path} --query-compute-apps" in calls[0][1]
+    assert result["cs"]["vram_mb"] == 252
+    assert result["cs"]["alive_pids"] == [100, 101]
 
 
 def test_ssh_failure_marks_node_tasks_unknown():

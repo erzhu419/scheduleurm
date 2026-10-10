@@ -1,0 +1,66 @@
+{
+  "experiment": "aligned_hardware_BG_bursty_arrivals_20261004",
+  "source_execution_epochs": {
+    "BG": "2026-09-30T05:57:23.785226+00:00",
+    "S1_supplemental": "2026-10-03T16:26:08.359966+00:00"
+  },
+  "population": {
+    "catalogue_lanes": [["cpu_a", 2], ["node007", 4], ["gpu_a", 2], ["gpu_b", 2]],
+    "loads": [0.8, 0.95],
+    "arrival_seeds": [200001, 200002, 200003, 200004, 200005, 200006, 200007, 200008, 200009, 200010, 200011, 200012],
+    "profiles": ["steady", "bursty"],
+    "tapes_per_profile": 96,
+    "policies": ["BG", "maxweight", "no_background", "S1_only"],
+    "birth_cohort": [300, 900],
+    "cohort_checkpoint": 900,
+    "environment_arrival_end": 1200,
+    "observation_end": 1200
+  },
+  "arrival_intervention": {
+    "factor": "Synchronized periodic intensity modulation; unchanged total arrivals, average load and task identities",
+    "base_tape": "Existing poisson_arrivals with original catalogue/load rates and new200001..200012 seeds",
+    "period_s": 100,
+    "half_period_s": 50,
+    "high_rate_multiplier": 1.5,
+    "low_rate_multiplier": 0.5,
+    "phase_seed_rule": "arrival-modulation-v1:{seed}",
+    "phase_coupling": "Independent phase stream, same high/low-first bit for all classes and cells within each seed",
+    "transformation": "Inverse cumulative intensity multiplier applied to the same steady tape; no new birth draws and no task deletion",
+    "matched_exposure": "Integrated clock equals identity at300/900/1200; same counts per class, same cohort job IDs and class FIFO identities",
+    "rationale": "Equal50-second segments yield a3:1 rate contrast while preserving average load.100-second period exactly divides all registered evaluation endpoints, isolating temporal clustering from cohort-population changes. These fixed levels were chosen before any new outcome."
+  },
+  "frozen_algorithms": {
+    "planning_samples": 8,
+    "planning_event_cap": 128,
+    "planning_window": "tau_max without evaluation stop-time input",
+    "planning_seed_rule": "arrival-plan-v1:{node}:{load}:online",
+    "rate_estimator": "Causally released cumulative births / now; zero exposure gives zero rates",
+    "information": "Original catalogue, queues, FIFO ages, loaded commitments, now/lane and released counts only; true rates, phase, period, future literal tape and stop time remain in the harness",
+    "clock": "Unchanged asynchronous physical service clock and1-second idle polls; computation separately charged",
+    "changes": "None to BG/MW/no-background/S1-only policies, service catalogue, queue envelope, S2 threshold, overflow or tie rules"
+  },
+  "execution": {
+    "expected_new_trajectories": 768,
+    "reused_trajectory_arms": 0,
+    "new_shadow_references": 0,
+    "placement": "OneCPU1/BLAS1 task per independent trajectory on node001-node006, livephysical-core planning; registeredunit0 validates integration, remaining767 submitted together without duplicating unit0",
+    "validation": "Same frozen feasible-support/FIFO engine and actual literal-birth checks; existing full causal/risk/budget checks for each rollout policy. No independently rerun MW-shadow claim",
+    "data_motion": "Literal fixtures, full trajectories and full server summary remain on server; local receipts/logs/compact statistics only"
+  },
+  "outcomes": {
+    "primary": "BG minus MW within each profile:1200 cohort restrictedmean and equal-tape same-pair common-completed-ID P90;900/1200 unfinished counts",
+    "mechanism": ["no-background minus BG", "S1-only minus no-background"],
+    "profile_interaction": "Bursty policy contrast minus matched steady policy contrast; mean/P90 equal-tape differences and unfinished total-count differences",
+    "populations": "Compute shared completed IDs separately for every profile/policy pair. Cross-profile P90 interaction compares defined profile contrasts, not individual job causal effects",
+    "preserve": "All8 cells,12 seed blocks,24 class groups and individual tape signs; queued/inflight/unfinished tails and actual work",
+    "performance_screen": "Original1% mean gain, loadmean nonregression,5% per-group P90/unfinished tolerance and pooledtail nonincrease, separately perprofile; no newautomaticadoption"
+  },
+  "bootstrap": {
+    "replicates": 20000,
+    "seed": 20261004,
+    "unit": "12 whole new actual-arrival seed blocks, bothprofiles,all8cells and allpolicycontrasts retained together",
+    "interval": "Pointwise percentile95%; ratios of resampled equal-tape means; unfinished count differences only"
+  },
+  "statistics": "Pre-execution frozen new-seed matched-profile performance experiment.12 paired seed blocks conditional on fixed planning streams; pointwise intervals without multiplicity adjustment.192 tapes are not independent samples. No policy tuning or replacement of original BG confirmation.",
+  "limitations": "Tests synchronized periodic nonhomogeneous-Poisson intensity only, not irregular heavy-tailed bursts or full-period count overdispersion. Services remain deterministic measured catalogue models; compute delays excluded. Original homogeneous-Poisson stability proof and sampled S2 do not imply a P90 or deployment guarantee here. Retain class/group tradeoffs and HOLD outcomes."
+}

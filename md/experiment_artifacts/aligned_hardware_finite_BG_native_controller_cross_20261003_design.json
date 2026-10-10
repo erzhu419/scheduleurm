@@ -1,0 +1,201 @@
+{
+  "registered_at_utc": "2026-10-03T12:56:19.362344+00:00",
+  "experiment": "Same physical prefix, conditional first root by each native continuation controller",
+  "source_summary": "aligned_hardware_finite_BG_first_action_cross_20261003_summary.json",
+  "source_execution_epoch": "2026-10-03T12:21:46.618326+00:00",
+  "original_target_design_epoch": "2026-10-03T11:53:19.711392+00:00",
+  "finite_scientific_epoch": "2026-10-01T03:00:01.222638+00:00",
+  "BG_epoch": "2026-09-30T05:45:18.017710+00:00",
+  "selection": "Retain all three Linux/.95 original seeds and the same natural first-divergence states; no outcome filtering or anchor replacement.",
+  "targets": [
+    {
+      "tape_id": "cpu_a:R2:load0.95:seed41",
+      "seed": 41,
+      "frame_index": 53,
+      "context": {
+        "start": 120.20813764717337,
+        "queue": [
+          1,
+          1,
+          2
+        ],
+        "waiting_ages": [
+          [
+            9.193988809291866
+          ],
+          [
+            23.642576969203787
+          ],
+          [
+            2.552847604137682,
+            1.0457077498825669
+          ]
+        ],
+        "available_before": [
+          120.20813764717337,
+          128.356257342363
+        ],
+        "observed_arrival_counts": [
+          7,
+          4,
+          22
+        ],
+        "lane_ids": [
+          0
+        ]
+      },
+      "factual_finite_root": 1,
+      "replacement_BG_root": 3,
+      "BG_requirements": [
+        0,
+        1,
+        0
+      ],
+      "finite_requirements": [
+        1,
+        0,
+        1
+      ]
+    },
+    {
+      "tape_id": "cpu_a:R2:load0.95:seed42",
+      "seed": 42,
+      "frame_index": 153,
+      "context": {
+        "start": 916.3159755953957,
+        "queue": [
+          1,
+          3,
+          3
+        ],
+        "waiting_ages": [
+          [
+            13.376353056639914
+          ],
+          [
+            180.57177947609193,
+            44.09066480841466,
+            31.60463172162497
+          ],
+          [
+            13.996574377637103,
+            5.2898259111372,
+            4.590036688033479
+          ]
+        ],
+        "available_before": [
+          916.3159755953957,
+          926.3079820766703
+        ],
+        "observed_arrival_counts": [
+          69,
+          34,
+          185
+        ],
+        "lane_ids": [
+          0
+        ]
+      },
+      "factual_finite_root": 6,
+      "replacement_BG_root": 1,
+      "BG_requirements": [
+        1,
+        0,
+        1
+      ],
+      "finite_requirements": [
+        0,
+        0,
+        3
+      ]
+    },
+    {
+      "tape_id": "cpu_a:R2:load0.95:seed43",
+      "seed": 43,
+      "frame_index": 36,
+      "context": {
+        "start": 73.32430574573043,
+        "queue": [
+          2,
+          0,
+          1
+        ],
+        "waiting_ages": [
+          [
+            14.949423323787435,
+            1.8810473957548908
+          ],
+          [],
+          [
+            9.55281357728731
+          ]
+        ],
+        "available_before": [
+          73.32430574573043,
+          75.98254996744495
+        ],
+        "observed_arrival_counts": [
+          7,
+          1,
+          14
+        ],
+        "lane_ids": [
+          0
+        ]
+      },
+      "factual_finite_root": 5,
+      "replacement_BG_root": 1,
+      "BG_requirements": [
+        1,
+        0,
+        1
+      ],
+      "finite_requirements": [
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "planning_samples": 8,
+  "event_cap": 128,
+  "birth_cohort": [
+    300,
+    900
+  ],
+  "snapshot_cutoffs": [
+    900,
+    1200
+  ],
+  "environment_arrival_end": 1200,
+  "new_arm": "Consume the full ordinary BG native anchor proposal from its own original BG prefix state, force only the registered finite first physical root, then freely replan using unchanged ordinary BG.",
+  "cached_arms": {
+    "F_root_F_controller": "original complete finite factual",
+    "B_root_F_controller": "completed source forced BG first root then finite",
+    "B_root_B_controller": "original complete BG factual"
+  },
+  "expected_new_scientific_suffixes": 3,
+  "expected_reused_complete_arms": 9,
+  "expected_new_validation_suffixes": 1,
+  "null_validation": "Fixed seed42 ordinary BG null suffix reproduces complete cached frames/native logical fees/jobs/raw snapshots/lane events/end. All three science native anchor proposals/context/fees reproduce their cached BG anchor.",
+  "restore": "Reconstruct BG own outer RNG/counter from its cached causal FIFO/counts and original eligible planning samples; retain its own post-proposal state. Restore complete waiting FIFO and all existing lane commitments from its own physical checkpoint. Never transplant finite planner state into BG.",
+  "snapshot_semantics": "Raw trajectory snapshots retain original all-birth1200 semantics. Independently recompute both arms actual900 state from jobs for the after900 intervention. Performance outcomes retain original cohort900/1200 semantics.",
+  "integrity": "Committed prefix jobs unchanged; canonical births identical across all four arms; exactly one first-action override; no replanning after selecting the forced action at the anchor; all later actions ordinary BG. Preserve all outcomes and class tails.",
+  "fee_scope": "Separate three scientific suffixes, one validation suffix and prefix RNG reconstruction. Charge native BG anchor/suffix logical work, extra MW support scan, constructors/state/FIFO reads and actual CPU. Reuse the three completed finite counterfactual suffixes without rerunning them. All complete trajectories remain server-side; transfer only small JSON.",
+  "root_effect_orientation": {
+    "finite_controller": "B_root_F_controller minus F_root_F_controller",
+    "BG_controller": "B_root_B_controller minus F_root_B_controller",
+    "interaction": "finite_controller root effect minus BG_controller root effect"
+  },
+  "outcomes": [
+    "restricted cohort mean",
+    "same-pair common-completed-ID P90",
+    "per-class metrics",
+    "unfinished/queued/inflight900 and1200",
+    "waiting/inflight decomposition"
+  ],
+  "interaction_population": "Mean and unfinished contrasts use the identical birth cohort. P90 interaction is available only when all four arms finish the identical cohort at the cutoff; otherwise retain pairwise common-ID P90 outcomes and leave interaction unavailable.",
+  "interpretation": "Each within-controller root contrast is a conditional causal effect. Cross-controller differences include each native prefix memory, full anchor proposal consumption and later decisions; they do not isolate a pure suffix-type switch. No additive whole-policy benefit, independent confirmation or new adoption gate.",
+  "decision_boundary": "Compare all three root-effect signs across the two native controllers. A sign reversal points to controller interaction; stable signs support examining root ranking. Preserve class-tail costs. No coefficient scan, general class/oldest/loaded guard, full24 rerun or paper edit.",
+  "launch_status": "design_frozen_not_submitted"
+}

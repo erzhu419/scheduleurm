@@ -13,6 +13,11 @@ from dataclasses import dataclass
 from typing import Any, Callable
 
 try:
+    from scheduler_transport.budget import TransportBusy, control_transport
+except ModuleNotFoundError:
+    from ..scheduler_transport.budget import TransportBusy, control_transport
+
+try:
     from .task_probe import (
         collect_windows_probe_targets,
         normalize_windows_json_rows,
@@ -169,6 +174,8 @@ def cheap_windows_host_capacity(
         )
         if rc == 0:
             return _parse_cheap_capacity_output(out)
+    except TransportBusy:
+        raise
     except Exception:
         pass
     return {}
@@ -223,6 +230,8 @@ def _queue_accounting_fallback(name: str, reason: str, *, deps: WindowsNodeProbe
                 "alive": False,
                 "error": deps.windows_probe_error_hint(name, reason),
             }
+    except TransportBusy:
+        raise
     except Exception:
         return {
             "name": name,
@@ -286,7 +295,7 @@ def _parse_full_probe_output(raw: str) -> tuple[int, int, int, float]:
     )
 
 
-def probe_windows_node(name: str, *, deps: WindowsNodeProbeDeps) -> dict:
+def _probe_windows_node(name: str, *, deps: WindowsNodeProbeDeps) -> dict:
     """Probe a Windows CPU-only node."""
     info = deps.node_configs.get(name, {})
     cpu_load_source = str(
@@ -340,6 +349,8 @@ def probe_windows_node(name: str, *, deps: WindowsNodeProbeDeps) -> dict:
                 ),
             }
         free_ram, probed_total_ram, logical_cores, load_pct = _parse_full_probe_output(out)
+    except TransportBusy:
+        raise
     except Exception as exc:
         return _queue_accounting_fallback(name, str(exc), deps=deps)
 
@@ -370,3 +381,12 @@ def probe_windows_node(name: str, *, deps: WindowsNodeProbeDeps) -> dict:
         "physical_cpu": total_cpu,
         "os": "windows",
     }
+
+
+@control_transport()
+def probe_windows_node(name: str, *, deps: WindowsNodeProbeDeps) -> dict:
+    try:
+        return _probe_windows_node(name, deps=deps)
+    except TransportBusy as exc:
+        return {"name": name, "alive": None, "transport_waiting": True,
+                "error": str(exc)}

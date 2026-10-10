@@ -1,0 +1,1473 @@
+{
+  "decision": "DEVELOPMENT_DIAGNOSIS_COMPLETE",
+  "execution_checks_passed": true,
+  "executed_selector_calls": 392,
+  "timed_calls": 336,
+  "warmup_calls": 56,
+  "executed_reference_calls": 0,
+  "executed_oracle_calls": 0,
+  "borrowed_reference_count": 7,
+  "explicit_collection": {
+    "calls": 196,
+    "wall_ns": 3243138668,
+    "cpu_ns": 3215758555,
+    "collected": 230063
+  },
+  "states": [
+    {
+      "name": "failed_39",
+      "node": "gpu_a",
+      "lanes": 64,
+      "queue": [
+        39,
+        3,
+        313
+      ],
+      "conditions": {
+        "enabled": {
+          "arms": {
+            "candidate": {
+              "calls": 12,
+              "wall_ns": 188089785.0,
+              "cpu_ns": 187709822.0,
+              "residual_wall_ns": 34613.5,
+              "residual_cpu_ns": 33688.5,
+              "phases": {
+                "completion": {
+                  "wall_ns": 734905.0,
+                  "cpu_ns": 742689.0,
+                  "wall_ms": 0.734905,
+                  "cpu_ms": 0.742689
+                },
+                "initial_lp": {
+                  "wall_ns": 187278757.5,
+                  "cpu_ns": 186907847.0,
+                  "wall_ms": 187.2787575,
+                  "cpu_ms": 186.907847
+                },
+                "initial_lp_linprog": {
+                  "wall_ns": 105152619.0,
+                  "cpu_ns": 104982619.5,
+                  "wall_ms": 105.152619,
+                  "cpu_ms": 104.9826195
+                },
+                "linprog": {
+                  "wall_ns": 105152619.0,
+                  "cpu_ns": 104982619.5,
+                  "wall_ms": 105.152619,
+                  "cpu_ms": 104.9826195
+                },
+                "probe": {
+                  "wall_ns": 748000.5,
+                  "cpu_ns": 756239.0,
+                  "wall_ms": 0.7480005,
+                  "cpu_ms": 0.756239
+                }
+              },
+              "initial_lp_less_linprog_wall_ns": 82915291.0,
+              "gc_events": 36,
+              "gc_pause_wall_ns": 792432,
+              "gc_pause_fraction_of_whole": 0.00033836912265850633
+            },
+            "legacy": {
+              "calls": 12,
+              "wall_ns": 189290084.0,
+              "cpu_ns": 189052945.5,
+              "residual_wall_ns": 29439.0,
+              "residual_cpu_ns": 27833.0,
+              "phases": {
+                "completion": {
+                  "wall_ns": 761631.0,
+                  "cpu_ns": 762882.0,
+                  "wall_ms": 0.761631,
+                  "cpu_ms": 0.762882
+                },
+                "initial_lp": {
+                  "wall_ns": 188452476.0,
+                  "cpu_ns": 188264350.0,
+                  "wall_ms": 188.452476,
+                  "cpu_ms": 188.26435
+                },
+                "initial_lp_linprog": {
+                  "wall_ns": 105228419.5,
+                  "cpu_ns": 105248496.5,
+                  "wall_ms": 105.2284195,
+                  "cpu_ms": 105.2484965
+                },
+                "linprog": {
+                  "wall_ns": 105228419.5,
+                  "cpu_ns": 105248496.5,
+                  "wall_ms": 105.2284195,
+                  "cpu_ms": 105.2484965
+                }
+              },
+              "initial_lp_less_linprog_wall_ns": 83339534.5,
+              "gc_events": 36,
+              "gc_pause_wall_ns": 820028,
+              "gc_pause_fraction_of_whole": 0.0003580939893655673
+            }
+          },
+          "candidate_legacy_wall_ratio": 0.9936589441209187,
+          "candidate_legacy_cpu_ratio": 0.9928955166689005,
+          "candidate_legacy_initial_lp_wall_ratio": 0.9937718064261464,
+          "candidate_legacy_linprog_wall_ratio": 0.9992796575263586
+        },
+        "disabled": {
+          "arms": {
+            "candidate": {
+              "calls": 12,
+              "wall_ns": 189185806.5,
+              "cpu_ns": 188416573.0,
+              "residual_wall_ns": 34059.0,
+              "residual_cpu_ns": 32982.5,
+              "phases": {
+                "completion": {
+                  "wall_ns": 732793.0,
+                  "cpu_ns": 728657.5,
+                  "wall_ms": 0.732793,
+                  "cpu_ms": 0.7286575
+                },
+                "initial_lp": {
+                  "wall_ns": 188401523.5,
+                  "cpu_ns": 187621585.0,
+                  "wall_ms": 188.4015235,
+                  "cpu_ms": 187.621585
+                },
+                "initial_lp_linprog": {
+                  "wall_ns": 105221521.5,
+                  "cpu_ns": 105163938.0,
+                  "wall_ms": 105.2215215,
+                  "cpu_ms": 105.163938
+                },
+                "linprog": {
+                  "wall_ns": 105221521.5,
+                  "cpu_ns": 105163938.0,
+                  "wall_ms": 105.2215215,
+                  "cpu_ms": 105.163938
+                },
+                "probe": {
+                  "wall_ns": 745787.0,
+                  "cpu_ns": 743875.5,
+                  "wall_ms": 0.745787,
+                  "cpu_ms": 0.7438755
+                }
+              },
+              "initial_lp_less_linprog_wall_ns": 82890128.0,
+              "gc_events": 0,
+              "gc_pause_wall_ns": 0,
+              "gc_pause_fraction_of_whole": 0.0
+            },
+            "legacy": {
+              "calls": 12,
+              "wall_ns": 189225741.0,
+              "cpu_ns": 187974755.0,
+              "residual_wall_ns": 27822.0,
+              "residual_cpu_ns": 26355.5,
+              "phases": {
+                "completion": {
+                  "wall_ns": 740302.0,
+                  "cpu_ns": 743219.5,
+                  "wall_ms": 0.740302,
+                  "cpu_ms": 0.7432195
+                },
+                "initial_lp": {
+                  "wall_ns": 188432711.5,
+                  "cpu_ns": 187171286.5,
+                  "wall_ms": 188.4327115,
+                  "cpu_ms": 187.1712865
+                },
+                "initial_lp_linprog": {
+                  "wall_ns": 105487513.5,
+                  "cpu_ns": 105167143.5,
+                  "wall_ms": 105.4875135,
+                  "cpu_ms": 105.1671435
+                },
+                "linprog": {
+                  "wall_ns": 105487513.5,
+                  "cpu_ns": 105167143.5,
+                  "wall_ms": 105.4875135,
+                  "cpu_ms": 105.1671435
+                }
+              },
+              "initial_lp_less_linprog_wall_ns": 83019660.5,
+              "gc_events": 0,
+              "gc_pause_wall_ns": 0,
+              "gc_pause_fraction_of_whole": 0.0
+            }
+          },
+          "candidate_legacy_wall_ratio": 0.9997889584166035,
+          "candidate_legacy_cpu_ratio": 1.0023504113624193,
+          "candidate_legacy_initial_lp_wall_ratio": 0.9998344873363455,
+          "candidate_legacy_linprog_wall_ratio": 0.9974784503760248
+        }
+      }
+    },
+    {
+      "name": "failed_88",
+      "node": "gpu_a",
+      "lanes": 64,
+      "queue": [
+        88,
+        8,
+        23
+      ],
+      "conditions": {
+        "enabled": {
+          "arms": {
+            "candidate": {
+              "calls": 12,
+              "wall_ns": 176612799.0,
+              "cpu_ns": 175892753.0,
+              "residual_wall_ns": 32852.5,
+              "residual_cpu_ns": 32111.0,
+              "phases": {
+                "completion": {
+                  "wall_ns": 1381204.5,
+                  "cpu_ns": 1382652.5,
+                  "wall_ms": 1.3812045,
+                  "cpu_ms": 1.3826525
+                },
+                "initial_lp": {
+                  "wall_ns": 175129438.0,
+                  "cpu_ns": 174419855.0,
+                  "wall_ms": 175.129438,
+                  "cpu_ms": 174.419855
+                },
+                "initial_lp_linprog": {
+                  "wall_ns": 102652320.5,
+                  "cpu_ns": 102922999.0,
+                  "wall_ms": 102.6523205,
+                  "cpu_ms": 102.922999
+                },
+                "linprog": {
+                  "wall_ns": 102652320.5,
+                  "cpu_ns": 102922999.0,
+                  "wall_ms": 102.6523205,
+                  "cpu_ms": 102.922999
+                },
+                "probe": {
+                  "wall_ns": 1394610.5,
+                  "cpu_ns": 1396008.0,
+                  "wall_ms": 1.3946105,
+                  "cpu_ms": 1.396008
+                }
+              },
+              "initial_lp_less_linprog_wall_ns": 72273000.5,
+              "gc_events": 48,
+              "gc_pause_wall_ns": 1059061,
+              "gc_pause_fraction_of_whole": 0.0004871296398612245
+            },
+            "legacy": {
+              "calls": 12,
+              "wall_ns": 176118150.0,
+              "cpu_ns": 176513805.5,
+              "residual_wall_ns": 28293.0,
+              "residual_cpu_ns": 26816.0,
+              "phases": {
+                "completion": {
+                  "wall_ns": 1366275.5,
+                  "cpu_ns": 1371861.5,
+                  "wall_ms": 1.3662755,
+                  "cpu_ms": 1.3718615
+                },
+                "initial_lp": {
+                  "wall_ns": 174691726.5,
+                  "cpu_ns": 175113129.5,
+                  "wall_ms": 174.6917265,
+                  "cpu_ms": 175.1131295
+                },
+                "initial_lp_linprog": {
+                  "wall_ns": 102730678.5,
+                  "cpu_ns": 103187461.5,
+                  "wall_ms": 102.7306785,
+                  "cpu_ms": 103.1874615
+                },
+                "linprog": {
+                  "wall_ns": 102730678.5,
+                  "cpu_ns": 103187461.5,
+                  "wall_ms": 102.7306785,
+                  "cpu_ms": 103.1874615
+                }
+              },
+              "initial_lp_less_linprog_wall_ns": 72070273.0,
+              "gc_events": 42,
+              "gc_pause_wall_ns": 915434,
+              "gc_pause_fraction_of_whole": 0.00041986577537393005
+            }
+          },
+          "candidate_legacy_wall_ratio": 1.0028086202359041,
+          "candidate_legacy_cpu_ratio": 0.9964815641573146,
+          "candidate_legacy_initial_lp_wall_ratio": 1.002505622382752,
+          "candidate_legacy_linprog_wall_ratio": 0.9992372482967685
+        },
+        "disabled": {
+          "arms": {
+            "candidate": {
+              "calls": 12,
+              "wall_ns": 177272864.5,
+              "cpu_ns": 175810853.5,
+              "residual_wall_ns": 34156.5,
+              "residual_cpu_ns": 33352.5,
+              "phases": {
+                "completion": {
+                  "wall_ns": 1329332.5,
+                  "cpu_ns": 1324536.5,
+                  "wall_ms": 1.3293325,
+                  "cpu_ms": 1.3245365
+                },
+                "initial_lp": {
+                  "wall_ns": 175886303.5,
+                  "cpu_ns": 174407938.0,
+                  "wall_ms": 175.8863035,
+                  "cpu_ms": 174.407938
+                },
+                "initial_lp_linprog": {
+                  "wall_ns": 103137680.0,
+                  "cpu_ns": 102930578.5,
+                  "wall_ms": 103.13768,
+                  "cpu_ms": 102.9305785
+                },
+                "linprog": {
+                  "wall_ns": 103137680.0,
+                  "cpu_ns": 102930578.5,
+                  "wall_ms": 103.13768,
+                  "cpu_ms": 102.9305785
+                },
+                "probe": {
+                  "wall_ns": 1347495.0,
+                  "cpu_ns": 1342236.0,
+                  "wall_ms": 1.347495,
+                  "cpu_ms": 1.342236
+                }
+              },
+              "initial_lp_less_linprog_wall_ns": 72232756.0,
+              "gc_events": 0,
+              "gc_pause_wall_ns": 0,
+              "gc_pause_fraction_of_whole": 0.0
+            },
+            "legacy": {
+              "calls": 12,
+              "wall_ns": 178598993.0,
+              "cpu_ns": 176418994.5,
+              "residual_wall_ns": 27843.0,
+              "residual_cpu_ns": 25734.0,
+              "phases": {
+                "completion": {
+                  "wall_ns": 1326191.0,
+                  "cpu_ns": 1331109.0,
+                  "wall_ms": 1.326191,
+                  "cpu_ms": 1.331109
+                },
+                "initial_lp": {
+                  "wall_ns": 177235890.0,
+                  "cpu_ns": 175056145.5,
+                  "wall_ms": 177.23589,
+                  "cpu_ms": 175.0561455
+                },
+                "initial_lp_linprog": {
+                  "wall_ns": 104286590.5,
+                  "cpu_ns": 103500615.5,
+                  "wall_ms": 104.2865905,
+                  "cpu_ms": 103.5006155
+                },
+                "linprog": {
+                  "wall_ns": 104286590.5,
+                  "cpu_ns": 103500615.5,
+                  "wall_ms": 104.2865905,
+                  "cpu_ms": 103.5006155
+                }
+              },
+              "initial_lp_less_linprog_wall_ns": 72545080.5,
+              "gc_events": 0,
+              "gc_pause_wall_ns": 0,
+              "gc_pause_fraction_of_whole": 0.0
+            }
+          },
+          "candidate_legacy_wall_ratio": 0.992574826555713,
+          "candidate_legacy_cpu_ratio": 0.9965528598452589,
+          "candidate_legacy_initial_lp_wall_ratio": 0.9923853656276954,
+          "candidate_legacy_linprog_wall_ratio": 0.9889831425642398
+        }
+      }
+    },
+    {
+      "name": "probe_control",
+      "node": "gpu_a",
+      "lanes": 64,
+      "queue": [
+        81,
+        31,
+        48
+      ],
+      "conditions": {
+        "enabled": {
+          "arms": {
+            "candidate": {
+              "calls": 12,
+              "wall_ns": 178856960.0,
+              "cpu_ns": 177877722.5,
+              "residual_wall_ns": 33719.5,
+              "residual_cpu_ns": 32301.5,
+              "phases": {
+                "completion": {
+                  "wall_ns": 1796793.0,
+                  "cpu_ns": 1812457.0,
+                  "wall_ms": 1.796793,
+                  "cpu_ms": 1.812457
+                },
+                "initial_lp": {
+                  "wall_ns": 177025012.0,
+                  "cpu_ns": 176029558.0,
+                  "wall_ms": 177.025012,
+                  "cpu_ms": 176.029558
+                },
+                "initial_lp_linprog": {
+                  "wall_ns": 103795113.5,
+                  "cpu_ns": 103654293.0,
+                  "wall_ms": 103.7951135,
+                  "cpu_ms": 103.654293
+                },
+                "linprog": {
+                  "wall_ns": 103795113.5,
+                  "cpu_ns": 103654293.0,
+                  "wall_ms": 103.7951135,
+                  "cpu_ms": 103.654293
+                },
+                "probe": {
+                  "wall_ns": 1809696.0,
+                  "cpu_ns": 1826474.0,
+                  "wall_ms": 1.809696,
+                  "cpu_ms": 1.826474
+                }
+              },
+              "initial_lp_less_linprog_wall_ns": 72637322.0,
+              "gc_events": 54,
+              "gc_pause_wall_ns": 1191562,
+              "gc_pause_fraction_of_whole": 0.0005570998441794968
+            },
+            "legacy": {
+              "calls": 12,
+              "wall_ns": 179906547.0,
+              "cpu_ns": 178962753.5,
+              "residual_wall_ns": 28022.5,
+              "residual_cpu_ns": 26390.0,
+              "phases": {
+                "completion": {
+                  "wall_ns": 1820401.5,
+                  "cpu_ns": 1809371.0,
+                  "wall_ms": 1.8204015,
+                  "cpu_ms": 1.809371
+                },
+                "initial_lp": {
+                  "wall_ns": 178006969.0,
+                  "cpu_ns": 177107635.0,
+                  "wall_ms": 178.006969,
+                  "cpu_ms": 177.107635
+                },
+                "initial_lp_linprog": {
+                  "wall_ns": 104737336.5,
+                  "cpu_ns": 104714003.0,
+                  "wall_ms": 104.7373365,
+                  "cpu_ms": 104.714003
+                },
+                "linprog": {
+                  "wall_ns": 104737336.5,
+                  "cpu_ns": 104714003.0,
+                  "wall_ms": 104.7373365,
+                  "cpu_ms": 104.714003
+                }
+              },
+              "initial_lp_less_linprog_wall_ns": 73321129.5,
+              "gc_events": 48,
+              "gc_pause_wall_ns": 1177993,
+              "gc_pause_fraction_of_whole": 0.0005479304025923253
+            }
+          },
+          "candidate_legacy_wall_ratio": 0.9941659321603232,
+          "candidate_legacy_cpu_ratio": 0.9939371127299961,
+          "candidate_legacy_initial_lp_wall_ratio": 0.9944836036166651,
+          "candidate_legacy_linprog_wall_ratio": 0.9910039434695764
+        },
+        "disabled": {
+          "arms": {
+            "candidate": {
+              "calls": 12,
+              "wall_ns": 179153887.5,
+              "cpu_ns": 179214612.5,
+              "residual_wall_ns": 34594.0,
+              "residual_cpu_ns": 33263.0,
+              "phases": {
+                "completion": {
+                  "wall_ns": 1779440.0,
+                  "cpu_ns": 1778603.0,
+                  "wall_ms": 1.77944,
+                  "cpu_ms": 1.778603
+                },
+                "initial_lp": {
+                  "wall_ns": 177338025.0,
+                  "cpu_ns": 177415090.5,
+                  "wall_ms": 177.338025,
+                  "cpu_ms": 177.4150905
+                },
+                "initial_lp_linprog": {
+                  "wall_ns": 104321208.5,
+                  "cpu_ns": 104587948.5,
+                  "wall_ms": 104.3212085,
+                  "cpu_ms": 104.5879485
+                },
+                "linprog": {
+                  "wall_ns": 104321208.5,
+                  "cpu_ns": 104587948.5,
+                  "wall_ms": 104.3212085,
+                  "cpu_ms": 104.5879485
+                },
+                "probe": {
+                  "wall_ns": 1793867.5,
+                  "cpu_ns": 1792218.5,
+                  "wall_ms": 1.7938675,
+                  "cpu_ms": 1.7922185
+                }
+              },
+              "initial_lp_less_linprog_wall_ns": 73276696.0,
+              "gc_events": 0,
+              "gc_pause_wall_ns": 0,
+              "gc_pause_fraction_of_whole": 0.0
+            },
+            "legacy": {
+              "calls": 12,
+              "wall_ns": 178801938.0,
+              "cpu_ns": 178254597.0,
+              "residual_wall_ns": 28163.0,
+              "residual_cpu_ns": 26631.0,
+              "phases": {
+                "completion": {
+                  "wall_ns": 1782621.0,
+                  "cpu_ns": 1780576.5,
+                  "wall_ms": 1.782621,
+                  "cpu_ms": 1.7805765
+                },
+                "initial_lp": {
+                  "wall_ns": 176981686.0,
+                  "cpu_ns": 176429781.5,
+                  "wall_ms": 176.981686,
+                  "cpu_ms": 176.4297815
+                },
+                "initial_lp_linprog": {
+                  "wall_ns": 104224678.0,
+                  "cpu_ns": 104376622.5,
+                  "wall_ms": 104.224678,
+                  "cpu_ms": 104.3766225
+                },
+                "linprog": {
+                  "wall_ns": 104224678.0,
+                  "cpu_ns": 104376622.5,
+                  "wall_ms": 104.224678,
+                  "cpu_ms": 104.3766225
+                }
+              },
+              "initial_lp_less_linprog_wall_ns": 72811378.0,
+              "gc_events": 0,
+              "gc_pause_wall_ns": 0,
+              "gc_pause_fraction_of_whole": 0.0
+            }
+          },
+          "candidate_legacy_wall_ratio": 1.001968376315921,
+          "candidate_legacy_cpu_ratio": 1.0053856423124954,
+          "candidate_legacy_initial_lp_wall_ratio": 1.0020134230159836,
+          "candidate_legacy_linprog_wall_ratio": 1.0009261770038762
+        }
+      }
+    },
+    {
+      "name": "resume_control",
+      "node": "gpu_a",
+      "lanes": 64,
+      "queue": [
+        153,
+        147,
+        290
+      ],
+      "conditions": {
+        "enabled": {
+          "arms": {
+            "candidate": {
+              "calls": 12,
+              "wall_ns": 218744597.5,
+              "cpu_ns": 217532900.0,
+              "residual_wall_ns": 58134.5,
+              "residual_cpu_ns": 54713.5,
+              "phases": {
+                "completion": {
+                  "wall_ns": 27290900.5,
+                  "cpu_ns": 27407285.5,
+                  "wall_ms": 27.2909005,
+                  "cpu_ms": 27.4072855
+                },
+                "initial_lp": {
+                  "wall_ns": 184556677.0,
+                  "cpu_ns": 183521775.5,
+                  "wall_ms": 184.556677,
+                  "cpu_ms": 183.5217755
+                },
+                "initial_lp_linprog": {
+                  "wall_ns": 106871183.5,
+                  "cpu_ns": 106957735.0,
+                  "wall_ms": 106.8711835,
+                  "cpu_ms": 106.957735
+                },
+                "linprog": {
+                  "wall_ns": 111205673.5,
+                  "cpu_ns": 111283479.0,
+                  "wall_ms": 111.2056735,
+                  "cpu_ms": 111.283479
+                },
+                "probe": {
+                  "wall_ns": 27308710.0,
+                  "cpu_ns": 27428370.5,
+                  "wall_ms": 27.30871,
+                  "cpu_ms": 27.4283705
+                },
+                "resume_lp": {
+                  "wall_ns": 6951604.0,
+                  "cpu_ns": 6921646.0,
+                  "wall_ms": 6.951604,
+                  "cpu_ms": 6.921646
+                },
+                "resume_lp_linprog": {
+                  "wall_ns": 4292646.0,
+                  "cpu_ns": 4278339.0,
+                  "wall_ms": 4.292646,
+                  "cpu_ms": 4.278339
+                }
+              },
+              "initial_lp_less_linprog_wall_ns": 77512153.0,
+              "gc_events": 324,
+              "gc_pause_wall_ns": 10340426,
+              "gc_pause_fraction_of_whole": 0.0038410848459899056
+            },
+            "legacy": {
+              "calls": 12,
+              "wall_ns": 520332397.0,
+              "cpu_ns": 516976508.5,
+              "residual_wall_ns": 35777.0,
+              "residual_cpu_ns": 34600.5,
+              "phases": {
+                "completion": {
+                  "wall_ns": 334526904.5,
+                  "cpu_ns": 332370683.0,
+                  "wall_ms": 334.5269045,
+                  "cpu_ms": 332.370683
+                },
+                "initial_lp": {
+                  "wall_ns": 184672061.5,
+                  "cpu_ns": 183525988.5,
+                  "wall_ms": 184.6720615,
+                  "cpu_ms": 183.5259885
+                },
+                "initial_lp_linprog": {
+                  "wall_ns": 107208424.5,
+                  "cpu_ns": 106775857.0,
+                  "wall_ms": 107.2084245,
+                  "cpu_ms": 106.775857
+                },
+                "linprog": {
+                  "wall_ns": 107208424.5,
+                  "cpu_ns": 106775857.0,
+                  "wall_ms": 107.2084245,
+                  "cpu_ms": 106.775857
+                }
+              },
+              "initial_lp_less_linprog_wall_ns": 77646862.0,
+              "gc_events": 2460,
+              "gc_pause_wall_ns": 83246923,
+              "gc_pause_fraction_of_whole": 0.013080349520297728
+            }
+          },
+          "candidate_legacy_wall_ratio": 0.42039396117017097,
+          "candidate_legacy_cpu_ratio": 0.42077908071910003,
+          "candidate_legacy_initial_lp_wall_ratio": 0.9993751924407905,
+          "candidate_legacy_linprog_wall_ratio": 1.0372848404278154
+        },
+        "disabled": {
+          "arms": {
+            "candidate": {
+              "calls": 12,
+              "wall_ns": 218157773.5,
+              "cpu_ns": 216773533.5,
+              "residual_wall_ns": 61776.5,
+              "residual_cpu_ns": 58827.5,
+              "phases": {
+                "completion": {
+                  "wall_ns": 26458817.0,
+                  "cpu_ns": 26279902.0,
+                  "wall_ms": 26.458817,
+                  "cpu_ms": 26.279902
+                },
+                "initial_lp": {
+                  "wall_ns": 184787459.5,
+                  "cpu_ns": 183328758.5,
+                  "wall_ms": 184.7874595,
+                  "cpu_ms": 183.3287585
+                },
+                "initial_lp_linprog": {
+                  "wall_ns": 106529541.0,
+                  "cpu_ns": 106946443.5,
+                  "wall_ms": 106.529541,
+                  "cpu_ms": 106.9464435
+                },
+                "linprog": {
+                  "wall_ns": 111229373.0,
+                  "cpu_ns": 110968941.0,
+                  "wall_ms": 111.229373,
+                  "cpu_ms": 110.968941
+                },
+                "probe": {
+                  "wall_ns": 26478110.5,
+                  "cpu_ns": 26300911.5,
+                  "wall_ms": 26.4781105,
+                  "cpu_ms": 26.3009115
+                },
+                "resume_lp": {
+                  "wall_ns": 6837475.0,
+                  "cpu_ns": 6805040.5,
+                  "wall_ms": 6.837475,
+                  "cpu_ms": 6.8050405
+                },
+                "resume_lp_linprog": {
+                  "wall_ns": 4130921.5,
+                  "cpu_ns": 4126550.0,
+                  "wall_ms": 4.1309215,
+                  "cpu_ms": 4.12655
+                }
+              },
+              "initial_lp_less_linprog_wall_ns": 77465026.0,
+              "gc_events": 0,
+              "gc_pause_wall_ns": 0,
+              "gc_pause_fraction_of_whole": 0.0
+            },
+            "legacy": {
+              "calls": 12,
+              "wall_ns": 515268616.0,
+              "cpu_ns": 510078759.0,
+              "residual_wall_ns": 43549.5,
+              "residual_cpu_ns": 39895.5,
+              "phases": {
+                "completion": {
+                  "wall_ns": 324896063.0,
+                  "cpu_ns": 324067694.5,
+                  "wall_ms": 324.896063,
+                  "cpu_ms": 324.0676945
+                },
+                "initial_lp": {
+                  "wall_ns": 186717894.5,
+                  "cpu_ns": 184639997.5,
+                  "wall_ms": 186.7178945,
+                  "cpu_ms": 184.6399975
+                },
+                "initial_lp_linprog": {
+                  "wall_ns": 108855148.0,
+                  "cpu_ns": 107911390.0,
+                  "wall_ms": 108.855148,
+                  "cpu_ms": 107.91139
+                },
+                "linprog": {
+                  "wall_ns": 108855148.0,
+                  "cpu_ns": 107911390.0,
+                  "wall_ms": 108.855148,
+                  "cpu_ms": 107.91139
+                }
+              },
+              "initial_lp_less_linprog_wall_ns": 78855123.5,
+              "gc_events": 0,
+              "gc_pause_wall_ns": 0,
+              "gc_pause_fraction_of_whole": 0.0
+            }
+          },
+          "candidate_legacy_wall_ratio": 0.42338649536536105,
+          "candidate_legacy_cpu_ratio": 0.4249805146267618,
+          "candidate_legacy_initial_lp_wall_ratio": 0.9896612212494716,
+          "candidate_legacy_linprog_wall_ratio": 1.0218108655733948
+        }
+      }
+    },
+    {
+      "name": "score_proof_control",
+      "node": "gpu_a",
+      "lanes": 32,
+      "queue": [
+        85,
+        86,
+        146
+      ],
+      "conditions": {
+        "enabled": {
+          "arms": {
+            "candidate": {
+              "calls": 12,
+              "wall_ns": 259000868.0,
+              "cpu_ns": 257598789.5,
+              "residual_wall_ns": 46146.5,
+              "residual_cpu_ns": 43727.5,
+              "phases": {
+                "initial_lp": {
+                  "wall_ns": 184722162.0,
+                  "cpu_ns": 183861039.5,
+                  "wall_ms": 184.722162,
+                  "cpu_ms": 183.8610395
+                },
+                "initial_lp_linprog": {
+                  "wall_ns": 107208471.0,
+                  "cpu_ns": 107077751.5,
+                  "wall_ms": 107.208471,
+                  "cpu_ms": 107.0777515
+                },
+                "linprog": {
+                  "wall_ns": 133155145.0,
+                  "cpu_ns": 133148545.0,
+                  "wall_ms": 133.155145,
+                  "cpu_ms": 133.148545
+                },
+                "probe": {
+                  "wall_ns": 28806515.5,
+                  "cpu_ns": 28654375.5,
+                  "wall_ms": 28.8065155,
+                  "cpu_ms": 28.6543755
+                },
+                "proof": {
+                  "wall_ns": 28788607.0,
+                  "cpu_ns": 28635844.5,
+                  "wall_ms": 28.788607,
+                  "cpu_ms": 28.6358445
+                },
+                "resume_lp": {
+                  "wall_ns": 45287895.0,
+                  "cpu_ns": 45178987.0,
+                  "wall_ms": 45.287895,
+                  "cpu_ms": 45.178987
+                },
+                "resume_lp_linprog": {
+                  "wall_ns": 26053127.0,
+                  "cpu_ns": 26101178.5,
+                  "wall_ms": 26.053127,
+                  "cpu_ms": 26.1011785
+                }
+              },
+              "initial_lp_less_linprog_wall_ns": 77396613.5,
+              "gc_events": 330,
+              "gc_pause_wall_ns": 10953574,
+              "gc_pause_fraction_of_whole": 0.003427403121685209
+            },
+            "legacy": {
+              "calls": 12,
+              "wall_ns": 401782406.0,
+              "cpu_ns": 398271512.0,
+              "residual_wall_ns": 70145.5,
+              "residual_cpu_ns": 67522.5,
+              "phases": {
+                "completion": {
+                  "wall_ns": 18420990.5,
+                  "cpu_ns": 18331654.0,
+                  "wall_ms": 18.4209905,
+                  "cpu_ms": 18.331654
+                },
+                "initial_lp": {
+                  "wall_ns": 185087852.0,
+                  "cpu_ns": 183978747.0,
+                  "wall_ms": 185.087852,
+                  "cpu_ms": 183.978747
+                },
+                "initial_lp_linprog": {
+                  "wall_ns": 107681154.0,
+                  "cpu_ns": 107411969.5,
+                  "wall_ms": 107.681154,
+                  "cpu_ms": 107.4119695
+                },
+                "linprog": {
+                  "wall_ns": 107681154.0,
+                  "cpu_ns": 107411969.5,
+                  "wall_ms": 107.681154,
+                  "cpu_ms": 107.4119695
+                },
+                "proof": {
+                  "wall_ns": 198043197.0,
+                  "cpu_ns": 195368767.5,
+                  "wall_ms": 198.043197,
+                  "cpu_ms": 195.3687675
+                }
+              },
+              "initial_lp_less_linprog_wall_ns": 77802846.0,
+              "gc_events": 2370,
+              "gc_pause_wall_ns": 79351443,
+              "gc_pause_fraction_of_whole": 0.01556889542885275
+            }
+          },
+          "candidate_legacy_wall_ratio": 0.6446296904299986,
+          "candidate_legacy_cpu_ratio": 0.6467919038608013,
+          "candidate_legacy_initial_lp_wall_ratio": 0.9980242355397804,
+          "candidate_legacy_linprog_wall_ratio": 1.2365687035634851
+        },
+        "disabled": {
+          "arms": {
+            "candidate": {
+              "calls": 12,
+              "wall_ns": 257477808.0,
+              "cpu_ns": 255956941.5,
+              "residual_wall_ns": 44365.5,
+              "residual_cpu_ns": 42035.0,
+              "phases": {
+                "initial_lp": {
+                  "wall_ns": 183927660.0,
+                  "cpu_ns": 183594300.0,
+                  "wall_ms": 183.92766,
+                  "cpu_ms": 183.5943
+                },
+                "initial_lp_linprog": {
+                  "wall_ns": 106694411.0,
+                  "cpu_ns": 106909886.0,
+                  "wall_ms": 106.694411,
+                  "cpu_ms": 106.909886
+                },
+                "linprog": {
+                  "wall_ns": 132801910.5,
+                  "cpu_ns": 132828924.5,
+                  "wall_ms": 132.8019105,
+                  "cpu_ms": 132.8289245
+                },
+                "probe": {
+                  "wall_ns": 27564668.5,
+                  "cpu_ns": 27423731.5,
+                  "wall_ms": 27.5646685,
+                  "cpu_ms": 27.4237315
+                },
+                "proof": {
+                  "wall_ns": 27538825.5,
+                  "cpu_ns": 27404925.5,
+                  "wall_ms": 27.5388255,
+                  "cpu_ms": 27.4049255
+                },
+                "resume_lp": {
+                  "wall_ns": 45244954.5,
+                  "cpu_ns": 45018563.5,
+                  "wall_ms": 45.2449545,
+                  "cpu_ms": 45.0185635
+                },
+                "resume_lp_linprog": {
+                  "wall_ns": 26053830.5,
+                  "cpu_ns": 26059137.5,
+                  "wall_ms": 26.0538305,
+                  "cpu_ms": 26.0591375
+                }
+              },
+              "initial_lp_less_linprog_wall_ns": 77134882.5,
+              "gc_events": 0,
+              "gc_pause_wall_ns": 0,
+              "gc_pause_fraction_of_whole": 0.0
+            },
+            "legacy": {
+              "calls": 12,
+              "wall_ns": 388647984.0,
+              "cpu_ns": 387014206.0,
+              "residual_wall_ns": 82807.5,
+              "residual_cpu_ns": 76029.0,
+              "phases": {
+                "completion": {
+                  "wall_ns": 17877500.5,
+                  "cpu_ns": 17795978.0,
+                  "wall_ms": 17.8775005,
+                  "cpu_ms": 17.795978
+                },
+                "initial_lp": {
+                  "wall_ns": 184937903.0,
+                  "cpu_ns": 183640591.0,
+                  "wall_ms": 184.937903,
+                  "cpu_ms": 183.640591
+                },
+                "initial_lp_linprog": {
+                  "wall_ns": 107221531.0,
+                  "cpu_ns": 107052570.5,
+                  "wall_ms": 107.221531,
+                  "cpu_ms": 107.0525705
+                },
+                "linprog": {
+                  "wall_ns": 107221531.0,
+                  "cpu_ns": 107052570.5,
+                  "wall_ms": 107.221531,
+                  "cpu_ms": 107.0525705
+                },
+                "proof": {
+                  "wall_ns": 186574361.5,
+                  "cpu_ns": 184740638.5,
+                  "wall_ms": 186.5743615,
+                  "cpu_ms": 184.7406385
+                }
+              },
+              "initial_lp_less_linprog_wall_ns": 77346489.0,
+              "gc_events": 0,
+              "gc_pause_wall_ns": 0,
+              "gc_pause_fraction_of_whole": 0.0
+            }
+          },
+          "candidate_legacy_wall_ratio": 0.6624961883244967,
+          "candidate_legacy_cpu_ratio": 0.6613631684104123,
+          "candidate_legacy_initial_lp_wall_ratio": 0.9945373934514657,
+          "candidate_legacy_linprog_wall_ratio": 1.2385750255701908
+        }
+      }
+    },
+    {
+      "name": "ordinary_tail",
+      "node": "gpu_b",
+      "lanes": 32,
+      "queue": [
+        96,
+        15,
+        13
+      ],
+      "conditions": {
+        "enabled": {
+          "arms": {
+            "candidate": {
+              "calls": 12,
+              "wall_ns": 13047542.0,
+              "cpu_ns": 12993186.0,
+              "residual_wall_ns": 28102.5,
+              "residual_cpu_ns": 27492.0,
+              "phases": {
+                "initial_lp": {
+                  "wall_ns": 13019149.5,
+                  "cpu_ns": 12963249.0,
+                  "wall_ms": 13.0191495,
+                  "cpu_ms": 12.963249
+                },
+                "initial_lp_linprog": {
+                  "wall_ns": 7959760.0,
+                  "cpu_ns": 7953191.0,
+                  "wall_ms": 7.95976,
+                  "cpu_ms": 7.953191
+                },
+                "linprog": {
+                  "wall_ns": 7959760.0,
+                  "cpu_ns": 7953191.0,
+                  "wall_ms": 7.95976,
+                  "cpu_ms": 7.953191
+                }
+              },
+              "initial_lp_less_linprog_wall_ns": 5034343.5,
+              "gc_events": 0,
+              "gc_pause_wall_ns": 0,
+              "gc_pause_fraction_of_whole": 0.0
+            },
+            "legacy": {
+              "calls": 12,
+              "wall_ns": 13204340.0,
+              "cpu_ns": 13131112.0,
+              "residual_wall_ns": 24071.5,
+              "residual_cpu_ns": 23950.5,
+              "phases": {
+                "initial_lp": {
+                  "wall_ns": 13179758.0,
+                  "cpu_ns": 13106686.0,
+                  "wall_ms": 13.179758,
+                  "cpu_ms": 13.106686
+                },
+                "initial_lp_linprog": {
+                  "wall_ns": 8049632.0,
+                  "cpu_ns": 7999817.0,
+                  "wall_ms": 8.049632,
+                  "cpu_ms": 7.999817
+                },
+                "linprog": {
+                  "wall_ns": 8049632.0,
+                  "cpu_ns": 7999817.0,
+                  "wall_ms": 8.049632,
+                  "cpu_ms": 7.999817
+                }
+              },
+              "initial_lp_less_linprog_wall_ns": 5108383.0,
+              "gc_events": 0,
+              "gc_pause_wall_ns": 0,
+              "gc_pause_fraction_of_whole": 0.0
+            }
+          },
+          "candidate_legacy_wall_ratio": 0.9881252679043405,
+          "candidate_legacy_cpu_ratio": 0.9894962437301578,
+          "candidate_legacy_initial_lp_wall_ratio": 0.9878140023511812,
+          "candidate_legacy_linprog_wall_ratio": 0.988835266009676
+        },
+        "disabled": {
+          "arms": {
+            "candidate": {
+              "calls": 12,
+              "wall_ns": 13000077.5,
+              "cpu_ns": 12956135.0,
+              "residual_wall_ns": 27944.0,
+              "residual_cpu_ns": 27512.5,
+              "phases": {
+                "initial_lp": {
+                  "wall_ns": 12971324.5,
+                  "cpu_ns": 12928818.0,
+                  "wall_ms": 12.9713245,
+                  "cpu_ms": 12.928818
+                },
+                "initial_lp_linprog": {
+                  "wall_ns": 7977357.5,
+                  "cpu_ns": 7995743.0,
+                  "wall_ms": 7.9773575,
+                  "cpu_ms": 7.995743
+                },
+                "linprog": {
+                  "wall_ns": 7977357.5,
+                  "cpu_ns": 7995743.0,
+                  "wall_ms": 7.9773575,
+                  "cpu_ms": 7.995743
+                }
+              },
+              "initial_lp_less_linprog_wall_ns": 4992239.0,
+              "gc_events": 0,
+              "gc_pause_wall_ns": 0,
+              "gc_pause_fraction_of_whole": 0.0
+            },
+            "legacy": {
+              "calls": 12,
+              "wall_ns": 13162528.5,
+              "cpu_ns": 13100238.5,
+              "residual_wall_ns": 27198.5,
+              "residual_cpu_ns": 26906.0,
+              "phases": {
+                "initial_lp": {
+                  "wall_ns": 13137565.0,
+                  "cpu_ns": 13076078.0,
+                  "wall_ms": 13.137565,
+                  "cpu_ms": 13.076078
+                },
+                "initial_lp_linprog": {
+                  "wall_ns": 8009227.0,
+                  "cpu_ns": 8000397.0,
+                  "wall_ms": 8.009227,
+                  "cpu_ms": 8.000397
+                },
+                "linprog": {
+                  "wall_ns": 8009227.0,
+                  "cpu_ns": 8000397.0,
+                  "wall_ms": 8.009227,
+                  "cpu_ms": 8.000397
+                }
+              },
+              "initial_lp_less_linprog_wall_ns": 5062319.0,
+              "gc_events": 0,
+              "gc_pause_wall_ns": 0,
+              "gc_pause_fraction_of_whole": 0.0
+            }
+          },
+          "candidate_legacy_wall_ratio": 0.9876580704079767,
+          "candidate_legacy_cpu_ratio": 0.9889999330928212,
+          "candidate_legacy_initial_lp_wall_ratio": 0.9873461710750813,
+          "candidate_legacy_linprog_wall_ratio": 0.99602090189228
+        }
+      }
+    },
+    {
+      "name": "fresh_worst",
+      "node": "gpu_b",
+      "lanes": 64,
+      "queue": [
+        184,
+        78,
+        235
+      ],
+      "conditions": {
+        "enabled": {
+          "arms": {
+            "candidate": {
+              "calls": 12,
+              "wall_ns": 34537498.0,
+              "cpu_ns": 34417986.0,
+              "residual_wall_ns": 30734.5,
+              "residual_cpu_ns": 30398.0,
+              "phases": {
+                "initial_lp": {
+                  "wall_ns": 34506675.5,
+                  "cpu_ns": 34386746.0,
+                  "wall_ms": 34.5066755,
+                  "cpu_ms": 34.386746
+                },
+                "initial_lp_linprog": {
+                  "wall_ns": 19060197.0,
+                  "cpu_ns": 19121891.5,
+                  "wall_ms": 19.060197,
+                  "cpu_ms": 19.1218915
+                },
+                "linprog": {
+                  "wall_ns": 19060197.0,
+                  "cpu_ns": 19121891.5,
+                  "wall_ms": 19.060197,
+                  "cpu_ms": 19.1218915
+                }
+              },
+              "initial_lp_less_linprog_wall_ns": 15205722.5,
+              "gc_events": 6,
+              "gc_pause_wall_ns": 149766,
+              "gc_pause_fraction_of_whole": 0.00036402740253303387
+            },
+            "legacy": {
+              "calls": 12,
+              "wall_ns": 34403861.5,
+              "cpu_ns": 34411478.0,
+              "residual_wall_ns": 26234.5,
+              "residual_cpu_ns": 26349.5,
+              "phases": {
+                "initial_lp": {
+                  "wall_ns": 34371876.0,
+                  "cpu_ns": 34377648.5,
+                  "wall_ms": 34.371876,
+                  "cpu_ms": 34.3776485
+                },
+                "initial_lp_linprog": {
+                  "wall_ns": 19256795.5,
+                  "cpu_ns": 19297496.5,
+                  "wall_ms": 19.2567955,
+                  "cpu_ms": 19.2974965
+                },
+                "linprog": {
+                  "wall_ns": 19256795.5,
+                  "cpu_ns": 19297496.5,
+                  "wall_ms": 19.2567955,
+                  "cpu_ms": 19.2974965
+                }
+              },
+              "initial_lp_less_linprog_wall_ns": 15197150.0,
+              "gc_events": 6,
+              "gc_pause_wall_ns": 137726,
+              "gc_pause_fraction_of_whole": 0.0003316379263584844
+            }
+          },
+          "candidate_legacy_wall_ratio": 1.0038843459476199,
+          "candidate_legacy_cpu_ratio": 1.0001891229432227,
+          "candidate_legacy_initial_lp_wall_ratio": 1.003921796412858,
+          "candidate_legacy_linprog_wall_ratio": 0.9897906949263703
+        },
+        "disabled": {
+          "arms": {
+            "candidate": {
+              "calls": 12,
+              "wall_ns": 34671369.5,
+              "cpu_ns": 34659614.0,
+              "residual_wall_ns": 32481.5,
+              "residual_cpu_ns": 34400.0,
+              "phases": {
+                "initial_lp": {
+                  "wall_ns": 34626707.5,
+                  "cpu_ns": 34624929.0,
+                  "wall_ms": 34.6267075,
+                  "cpu_ms": 34.624929
+                },
+                "initial_lp_linprog": {
+                  "wall_ns": 19262743.5,
+                  "cpu_ns": 19236340.5,
+                  "wall_ms": 19.2627435,
+                  "cpu_ms": 19.2363405
+                },
+                "linprog": {
+                  "wall_ns": 19262743.5,
+                  "cpu_ns": 19236340.5,
+                  "wall_ms": 19.2627435,
+                  "cpu_ms": 19.2363405
+                }
+              },
+              "initial_lp_less_linprog_wall_ns": 15402602.0,
+              "gc_events": 0,
+              "gc_pause_wall_ns": 0,
+              "gc_pause_fraction_of_whole": 0.0
+            },
+            "legacy": {
+              "calls": 12,
+              "wall_ns": 34733444.5,
+              "cpu_ns": 34551708.5,
+              "residual_wall_ns": 25692.5,
+              "residual_cpu_ns": 25463.5,
+              "phases": {
+                "initial_lp": {
+                  "wall_ns": 34704861.0,
+                  "cpu_ns": 34523826.0,
+                  "wall_ms": 34.704861,
+                  "cpu_ms": 34.523826
+                },
+                "initial_lp_linprog": {
+                  "wall_ns": 19303823.5,
+                  "cpu_ns": 19282743.0,
+                  "wall_ms": 19.3038235,
+                  "cpu_ms": 19.282743
+                },
+                "linprog": {
+                  "wall_ns": 19303823.5,
+                  "cpu_ns": 19282743.0,
+                  "wall_ms": 19.3038235,
+                  "cpu_ms": 19.282743
+                }
+              },
+              "initial_lp_less_linprog_wall_ns": 15351201.5,
+              "gc_events": 0,
+              "gc_pause_wall_ns": 0,
+              "gc_pause_fraction_of_whole": 0.0
+            }
+          },
+          "candidate_legacy_wall_ratio": 0.9982128176202046,
+          "candidate_legacy_cpu_ratio": 1.0031230148865142,
+          "candidate_legacy_initial_lp_wall_ratio": 0.9977480532194035,
+          "candidate_legacy_linprog_wall_ratio": 0.9978719241812379
+        }
+      }
+    }
+  ],
+  "work": {
+    "candidate": {
+      "calls": 196,
+      "statuses": {
+        "LP_INITIAL_COMPLETE": 56,
+        "LP_RESUME_COMPLETE": 56,
+        "INTEGER_PROBE_COMPLETE": 84
+      },
+      "resumed_calls": 56,
+      "search_work": {
+        "lp_calls": 22316,
+        "lp_matrix_coefficients": 1547504,
+        "candidate_evaluations": 22512,
+        "duration_root_count": 1568,
+        "dual_column_checks": 145264,
+        "branch_splits": 13916,
+        "bound_pruned_regions": 15316,
+        "safe_fallback_lp_calls": 0,
+        "residual_fill_option_probes": 145264
+      },
+      "initial_lp_calls_embedded": 21196,
+      "additional_lp_calls": 1120,
+      "preprocessing": {
+        "original_option_count": 1764,
+        "requirement_group_count": 1568,
+        "duration_threshold_count": 1568,
+        "reduction_option_probes": 1764,
+        "reduction_requirement_coordinate_reads": 5292,
+        "reduction_duration_comparisons": 1960,
+        "grouping_option_probes": 1764,
+        "representative_option_probes": 7056,
+        "proxy_option_count": 7056,
+        "lift_option_probes": 99876
+      },
+      "capacity_propagation": {
+        "region_visits": 29400,
+        "requirement_coordinate_reads": 1139712,
+        "tightened_bounds": 27860,
+        "removed_count_values": 265944
+      },
+      "score_proof": {
+        "attempted_count": 28,
+        "completed_count": 0,
+        "exhausted_count": 28,
+        "work": {
+          "states_visited": 229376,
+          "memo_hits": 73416,
+          "count_branches": 302596,
+          "bound_prunes": 216664,
+          "duration_prunes": 0,
+          "gcd_prunes": 0,
+          "failed_states_cached": 229264,
+          "thresholds_checked": 224,
+          "suffix_coordinate_reads": 4704,
+          "resource_coordinate_reads": 3902136
+        }
+      },
+      "completion": {
+        "attempted_count": 112,
+        "completed_count": 84,
+        "exhausted_count": 28,
+        "work": {
+          "states_visited": 260288,
+          "memo_hits": 41692,
+          "count_branches": 301896,
+          "bound_prunes": 250096,
+          "gcd_prunes": 224,
+          "duration_prunes": 1036,
+          "failed_states_cached": 259336,
+          "thresholds_checked": 728,
+          "noninteger_thresholds": 616,
+          "suffix_coordinate_reads": 4368,
+          "resource_coordinate_reads": 4166064
+        }
+      },
+      "shared_integer_states": 489664,
+      "max_shared_integer_states": 8192
+    },
+    "legacy": {
+      "calls": 196,
+      "search_work": {
+        "lp_calls": 21196,
+        "lp_matrix_coefficients": 1461264,
+        "candidate_evaluations": 21392,
+        "duration_root_count": 1568,
+        "dual_column_checks": 137424,
+        "branch_splits": 13412,
+        "bound_pruned_regions": 14476,
+        "safe_fallback_lp_calls": 0,
+        "residual_fill_option_probes": 137424
+      },
+      "preprocessing": {
+        "original_option_count": 1764,
+        "requirement_group_count": 1568,
+        "duration_threshold_count": 1568,
+        "reduction_option_probes": 1764,
+        "reduction_requirement_coordinate_reads": 5292,
+        "reduction_duration_comparisons": 1960,
+        "grouping_option_probes": 1764,
+        "representative_option_probes": 7056,
+        "proxy_option_count": 7056,
+        "lift_option_probes": 95704
+      },
+      "capacity_propagation": {
+        "region_visits": 28392,
+        "requirement_coordinate_reads": 1097376,
+        "tightened_bounds": 26684,
+        "removed_count_values": 261156
+      },
+      "score_proof": {
+        "attempted_count": 28,
+        "completed_count": 28,
+        "exhausted_count": 0,
+        "work": {
+          "states_visited": 1802528,
+          "memo_hits": 354368,
+          "count_branches": 2156616,
+          "bound_prunes": 1711164,
+          "duration_prunes": 336,
+          "gcd_prunes": 672,
+          "failed_states_cached": 1802528,
+          "thresholds_checked": 280,
+          "suffix_coordinate_reads": 7560,
+          "resource_coordinate_reads": 29267952
+        }
+      },
+      "completion": {
+        "attempted_count": 140,
+        "completed_count": 140,
+        "exhausted_count": 0,
+        "work": {
+          "states_visited": 2133516,
+          "memo_hits": 2160368,
+          "count_branches": 4293744,
+          "bound_prunes": 2029720,
+          "gcd_prunes": 1708,
+          "duration_prunes": 1036,
+          "failed_states_cached": 2132172,
+          "thresholds_checked": 924,
+          "noninteger_thresholds": 784,
+          "suffix_coordinate_reads": 5544,
+          "resource_coordinate_reads": 45345972
+        }
+      },
+      "shared_integer_states": 3936044,
+      "max_shared_integer_states": 69953
+    }
+  },
+  "limitations": "Seven selected previously inspected states; instrumented development attribution, not repeated confirmation. Explicit collection and disabled GC change runtime conditions and their cost is excluded from selectors but separately charged. Phase instrumentation adds overhead; residual includes wrapper construction, cleanup and measurement bookkeeping, not pure teardown. Initial LP less nested linprog is a remainder, not a strict Python profile. Prior independent references are reused with zero new reference/oracle calls. No ADVANCE gate or claim that the prior TIMING_HOLD is overturned.",
+  "protocol_path": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/aligned_hardware_resumable_probe_diagnosis_20260927_protocol.json",
+  "raw_path": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/aligned_hardware_resumable_probe_diagnosis_20260927_raw.json.gz"
+}

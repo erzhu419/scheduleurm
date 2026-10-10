@@ -1,0 +1,361 @@
+{
+  "source_result": "md/experiment_artifacts/aligned_hardware_parallel_root_sharded_20261001.json",
+  "scientific_registered_at_utc": "2026-10-01T03:00:01.222638+00:00",
+  "distribution_registered_at_utc": "2026-10-01T14:21:50.919419+00:00",
+  "decision": "TWO_STEP_CURRENT_POLICY_BG_INCUMBENT_DEVELOPMENT_HOLD",
+  "tapes": 24,
+  "trajectories": 48,
+  "independent_seed_replicates": 3,
+  "completed_origin_counts": {
+    "original": 7,
+    "parallel": 16,
+    "optimized": 1
+  },
+  "original_performance_protocol": {
+    "min_gain": 0.01,
+    "group_secondary_tolerance": 0.05
+  },
+  "comparisons": {
+    "MW": {
+      "performance_gate_applied": true,
+      "execution_checks_passed": true,
+      "mean_flow_improvement": 0.09818927959514956,
+      "baseline_mean_flow_s": 33.80509323092727,
+      "candidate_mean_flow_s": 30.485795479935653,
+      "baseline_tape_p90_mean_s": 67.34868993268078,
+      "candidate_tape_p90_mean_s": 55.9850004461554,
+      "gates": {
+        "performance_gain_established": false,
+        "flow_gain_threshold_passed": true,
+        "load_mean_nonregression_passed": true,
+        "group_secondary_passed": false,
+        "pooled_unfinished_checks": {
+          "arrival_horizon": true,
+          "observation_end": true
+        }
+      },
+      "pooled_unfinished": {
+        "arrival_horizon": {
+          "maxweight": 457,
+          "arrival_rollout": 417
+        },
+        "observation_end": {
+          "maxweight": 0,
+          "arrival_rollout": 0
+        }
+      },
+      "failed_groups": [
+        {
+          "node": "gpu_a",
+          "load": 0.8,
+          "cutoff": "arrival_horizon",
+          "checks": {
+            "common_p90_flow_s": true,
+            "unfinished_jobs": false
+          },
+          "p90": {
+            "maxweight": 61.09316828940578,
+            "arrival_rollout": 47.497519644593474
+          },
+          "unfinished": {
+            "maxweight": 35,
+            "arrival_rollout": 40
+          }
+        }
+      ],
+      "loads": [
+        {
+          "load": 0.8,
+          "mean_ratio": 0.8880284832812305
+        },
+        {
+          "load": 0.95,
+          "mean_ratio": 0.9100551550012537
+        }
+      ],
+      "seeds": [
+        {
+          "seed": 41,
+          "mean_ratio": 0.8894224138660365
+        },
+        {
+          "seed": 42,
+          "mean_ratio": 0.8987274606827953
+        },
+        {
+          "seed": 43,
+          "mean_ratio": 0.9157164725493898
+        }
+      ]
+    },
+    "BG": {
+      "performance_gate_applied": true,
+      "execution_checks_passed": true,
+      "mean_flow_improvement": 0.021681871632098337,
+      "baseline_mean_flow_s": 31.161433684965214,
+      "candidate_mean_flow_s": 30.485795479935653,
+      "baseline_tape_p90_mean_s": 58.274082928466896,
+      "candidate_tape_p90_mean_s": 55.9850004461554,
+      "gates": {
+        "performance_gain_established": false,
+        "flow_gain_threshold_passed": true,
+        "load_mean_nonregression_passed": true,
+        "group_secondary_passed": false,
+        "pooled_unfinished_checks": {
+          "arrival_horizon": true,
+          "observation_end": true
+        }
+      },
+      "pooled_unfinished": {
+        "arrival_horizon": {
+          "maxweight": 427,
+          "arrival_rollout": 417
+        },
+        "observation_end": {
+          "maxweight": 0,
+          "arrival_rollout": 0
+        }
+      },
+      "failed_groups": [
+        {
+          "node": "gpu_a",
+          "load": 0.8,
+          "cutoff": "arrival_horizon",
+          "checks": {
+            "common_p90_flow_s": true,
+            "unfinished_jobs": false
+          },
+          "p90": {
+            "maxweight": 50.95067646661321,
+            "arrival_rollout": 47.59260240694149
+          },
+          "unfinished": {
+            "maxweight": 35,
+            "arrival_rollout": 40
+          }
+        },
+        {
+          "node": "gpu_a",
+          "load": 0.95,
+          "cutoff": "arrival_horizon",
+          "checks": {
+            "common_p90_flow_s": true,
+            "unfinished_jobs": false
+          },
+          "p90": {
+            "maxweight": 76.33900459779183,
+            "arrival_rollout": 76.48821996314963
+          },
+          "unfinished": {
+            "maxweight": 68,
+            "arrival_rollout": 75
+          }
+        },
+        {
+          "node": "cpu_a",
+          "load": 0.95,
+          "cutoff": "arrival_horizon",
+          "checks": {
+            "common_p90_flow_s": false,
+            "unfinished_jobs": false
+          },
+          "p90": {
+            "maxweight": 52.834304019453754,
+            "arrival_rollout": 56.07405378057829
+          },
+          "unfinished": {
+            "maxweight": 29,
+            "arrival_rollout": 31
+          }
+        },
+        {
+          "node": "cpu_a",
+          "load": 0.95,
+          "cutoff": "observation_end",
+          "checks": {
+            "common_p90_flow_s": false,
+            "unfinished_jobs": true
+          },
+          "p90": {
+            "maxweight": 56.00227001294777,
+            "arrival_rollout": 59.602714165574255
+          },
+          "unfinished": {
+            "maxweight": 0,
+            "arrival_rollout": 0
+          }
+        }
+      ],
+      "loads": [
+        {
+          "load": 0.8,
+          "mean_ratio": 0.973623145522077
+        },
+        {
+          "load": 0.95,
+          "mean_ratio": 0.9810796454042402
+        }
+      ],
+      "seeds": [
+        {
+          "seed": 41,
+          "mean_ratio": 0.9864724964734468
+        },
+        {
+          "seed": 42,
+          "mean_ratio": 0.974025268982898
+        },
+        {
+          "seed": 43,
+          "mean_ratio": 0.9764220796104401
+        }
+      ]
+    },
+    "parent": {
+      "performance_gate_applied": false,
+      "execution_checks_passed": true,
+      "mean_flow_improvement": 0.0003251486368893719,
+      "baseline_mean_flow_s": 30.495711118836915,
+      "candidate_mean_flow_s": 30.485795479935653,
+      "baseline_tape_p90_mean_s": 56.45716034086898,
+      "candidate_tape_p90_mean_s": 55.9850004461554,
+      "gates": {
+        "performance_gain_established": false,
+        "flow_gain_threshold_passed": false,
+        "load_mean_nonregression_passed": false,
+        "group_secondary_passed": false,
+        "pooled_unfinished_checks": {
+          "arrival_horizon": true,
+          "observation_end": true
+        }
+      },
+      "pooled_unfinished": {
+        "arrival_horizon": {
+          "maxweight": 425,
+          "arrival_rollout": 417
+        },
+        "observation_end": {
+          "maxweight": 0,
+          "arrival_rollout": 0
+        }
+      },
+      "failed_groups": [
+        {
+          "node": "gpu_a",
+          "load": 0.8,
+          "cutoff": "arrival_horizon",
+          "checks": {
+            "common_p90_flow_s": true,
+            "unfinished_jobs": false
+          },
+          "p90": {
+            "maxweight": 46.405595934156686,
+            "arrival_rollout": 47.58877168391924
+          },
+          "unfinished": {
+            "maxweight": 37,
+            "arrival_rollout": 40
+          }
+        },
+        {
+          "node": "cpu_a",
+          "load": 0.95,
+          "cutoff": "arrival_horizon",
+          "checks": {
+            "common_p90_flow_s": true,
+            "unfinished_jobs": false
+          },
+          "p90": {
+            "maxweight": 54.04608627359984,
+            "arrival_rollout": 56.07315539577686
+          },
+          "unfinished": {
+            "maxweight": 27,
+            "arrival_rollout": 31
+          }
+        },
+        {
+          "node": "cpu_a",
+          "load": 0.95,
+          "cutoff": "observation_end",
+          "checks": {
+            "common_p90_flow_s": false,
+            "unfinished_jobs": true
+          },
+          "p90": {
+            "maxweight": 56.63259756469695,
+            "arrival_rollout": 59.602714165574255
+          },
+          "unfinished": {
+            "maxweight": 0,
+            "arrival_rollout": 0
+          }
+        },
+        {
+          "node": "node007",
+          "load": 0.95,
+          "cutoff": "arrival_horizon",
+          "checks": {
+            "common_p90_flow_s": true,
+            "unfinished_jobs": false
+          },
+          "p90": {
+            "maxweight": 96.74404955847459,
+            "arrival_rollout": 97.33490952512204
+          },
+          "unfinished": {
+            "maxweight": 95,
+            "arrival_rollout": 103
+          }
+        }
+      ],
+      "loads": [
+        {
+          "load": 0.8,
+          "mean_ratio": 0.9890580473360405
+        },
+        {
+          "load": 0.95,
+          "mean_ratio": 1.0059780481361031
+        }
+      ],
+      "seeds": [
+        {
+          "seed": 41,
+          "mean_ratio": 0.9928599808594044
+        },
+        {
+          "seed": 42,
+          "mean_ratio": 0.9871095956759107
+        },
+        {
+          "seed": 43,
+          "mean_ratio": 1.0196564850254681
+        }
+      ]
+    }
+  },
+  "parent_class_decomposition": {
+    "gpu_cnn_torch_resnet50": {
+      "mean_contribution_s": 0.13289619109166717,
+      "parent_unfinished_900": 128,
+      "candidate_unfinished_900": 133,
+      "BG_unfinished_900": 129
+    },
+    "gpu_heavy_jax_matmul": {
+      "mean_contribution_s": -0.15286361365887538,
+      "parent_unfinished_900": 115,
+      "candidate_unfinished_900": 117,
+      "BG_unfinished_900": 125
+    },
+    "gpu_llm_distilgpt2": {
+      "mean_contribution_s": 0.010051783665946078,
+      "parent_unfinished_900": 182,
+      "candidate_unfinished_900": 167,
+      "BG_unfinished_900": 173
+    }
+  },
+  "decomposition_scope": "For each tape weight class mean difference by its fraction of cohort jobs, then average24 tapes, matching the frozen equal-tape mean. The P90 statistic is the average of tape P90s, not a global job-level percentile.",
+  "completion_evidence": "md/experiment_artifacts/aligned_hardware_parallel_root_sharded_20261001_completion.json",
+  "next_step": "Retain HOLD. On the previously fixed22 states decompose the same A/B roots and same8/cap128 samples into visible FIFO versus sampled prefix by CNN/JAX/LLM; compare with cached full-cohort effects. No new risk threshold, seed, continuation depth or selection rule is selected from this summary."
+}

@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+try:
+    from scheduler_transport.budget import TransportBusy, control_transport
+except ModuleNotFoundError:
+    from ..scheduler_transport.budget import TransportBusy, control_transport
+
 import re
 import shlex
 import subprocess
@@ -137,11 +142,16 @@ def _select_proxy_jump(names: list[str], deps: SudoCpuBatchProbeDeps) -> str:
     return ""
 
 
+@control_transport()
 def probe_sudo_cpu_nodes_batch(names: list[str], *, deps: SudoCpuBatchProbeDeps) -> dict:
     names = _eligible_sudo_cpu_names(names, deps)
     if not names or "login_hpc" not in deps.node_configs:
         return {}
-    selected_jump = _select_proxy_jump(names, deps)
+    try:
+        selected_jump = _select_proxy_jump(names, deps)
+    except TransportBusy as exc:
+        return {name: {"name": name, "alive": None, "transport_waiting": True,
+                       "error": str(exc)} for name in names}
     if not selected_jump:
         return {
             name: {"name": name, "alive": False, "error": "batch cpu probe found no working sudo-hop jump"}
@@ -167,6 +177,9 @@ def probe_sudo_cpu_nodes_batch(names: list[str], *, deps: SudoCpuBatchProbeDeps)
             text=True,
         )
         rc, out, err = proc.returncode, proc.stdout, proc.stderr
+    except TransportBusy as exc:
+        return {name: {"name": name, "alive": None, "transport_waiting": True,
+                       "error": str(exc)} for name in names}
     except subprocess.TimeoutExpired as exc:
         rc = 124
         out = exc.output or ""

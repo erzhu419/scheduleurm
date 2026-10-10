@@ -1,0 +1,10 @@
+[Unit]
+Description=Independent public SSH observations for GPU gateway recovery
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/mine_code/scheduleurm
+ExecStart=/usr/bin/python3 %h/mine_code/scheduleurm/ops/frp_observer.py --config %h/mine_code/scheduleurm/ops/frp-observer.json
+TimeoutStartSec=120
+UMask=0077
+Nice=10

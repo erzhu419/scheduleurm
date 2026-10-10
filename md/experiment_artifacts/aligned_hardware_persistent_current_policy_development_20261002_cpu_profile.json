@@ -1,0 +1,446 @@
+{
+  "at_utc": "2026-10-02T05:29:30.394937+00:00",
+  "profile_time_limit_s": 90,
+  "completed_root_sample_pair": true,
+  "profile_wall_s": 46.093009636737406,
+  "profile_cpu_s": 45.984276721,
+  "tape_id": "node007:R4:load0.8:seed43",
+  "frame_index": 471,
+  "frame_start_s": 1197.5229537338994,
+  "queue": [
+    1,
+    2,
+    1
+  ],
+  "option_count": 9,
+  "profile_root": 4,
+  "global_sample_indices": [
+    0,
+    1
+  ],
+  "sample_budget": 8,
+  "event_cap": 128,
+  "all_frame_late_calls": 619,
+  "frame_selection": "median late-call count among positive-late, non-overflow frames of completed heavy tape08",
+  "prefix_population_matches_saved_frame": true,
+  "profile_current_calls": 35,
+  "profile_late_calls": 31,
+  "score_overflow": false,
+  "self_cpu_by_file": [
+    [
+      "/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/lib/python3.10/fractions.py",
+      13.722697511
+    ],
+    [
+      "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/dyadic_background_rollout.py",
+      12.1964544
+    ],
+    [
+      "~",
+      11.674377453
+    ],
+    [
+      "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/background_competition_continuous_lane_rollout.py",
+      3.280283689999998
+    ],
+    [
+      "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/exact_reuse_lane_rollout.py",
+      2.0792753439999996
+    ],
+    [
+      "/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/lib/python3.10/abc.py",
+      1.156028336
+    ],
+    [
+      "/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/lib/python3.10/random.py",
+      0.505486274
+    ],
+    [
+      "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/two_step_bg_incumbent_background_redecision_lane_rollout.py",
+      0.45774680000000006
+    ],
+    [
+      "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/arrival_aware_lane_rollout.py",
+      0.35390731999999997
+    ],
+    [
+      "/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/lib/python3.10/dataclasses.py",
+      0.22277783300000004
+    ],
+    [
+      "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/exact_reuse_inner_decision.py",
+      0.09970122000000001
+    ],
+    [
+      "/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/lib/python3.10/numbers.py",
+      0.025621897
+    ]
+  ],
+  "top_cumulative_cpu": [
+    {
+      "file": "<parallel-persistent-worker>",
+      "line": 1,
+      "function": "_run_root",
+      "primitive_calls": 1,
+      "calls": 1,
+      "self_cpu_s": 4.6864000000000004e-05,
+      "cumulative_cpu_s": 46.092982081
+    },
+    {
+      "file": "<parallel-persistent-chunk>",
+      "line": 1,
+      "function": "score_single_root",
+      "primitive_calls": 1,
+      "calls": 1,
+      "self_cpu_s": 0.0020755260000000003,
+      "cumulative_cpu_s": 46.090657755
+    },
+    {
+      "file": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/one_step_background_redecision_lane_rollout.py",
+      "line": 97,
+      "function": "__call__",
+      "primitive_calls": 35,
+      "calls": 35,
+      "self_cpu_s": 8.799900000000001e-05,
+      "cumulative_cpu_s": 46.081898675000005
+    },
+    {
+      "file": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/background_competition_continuous_lane_rollout.py",
+      "line": 273,
+      "function": "__call__",
+      "primitive_calls": 35,
+      "calls": 2435,
+      "self_cpu_s": 0.011344056,
+      "cumulative_cpu_s": 46.081810676
+    },
+    {
+      "file": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/exact_reuse_inner_decision.py",
+      "line": 133,
+      "function": "choose",
+      "primitive_calls": 35,
+      "calls": 2435,
+      "self_cpu_s": 0.050304583,
+      "cumulative_cpu_s": 46.079244267
+    },
+    {
+      "file": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/two_step_bg_incumbent_original_risk_lane_rollout.py",
+      "line": 29,
+      "function": "_choose",
+      "primitive_calls": 35,
+      "calls": 35,
+      "self_cpu_s": 0.004388635,
+      "cumulative_cpu_s": 46.055232943
+    },
+    {
+      "file": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/two_step_bg_incumbent_background_redecision_lane_rollout.py",
+      "line": 54,
+      "function": "score_background_roots",
+      "primitive_calls": 35,
+      "calls": 35,
+      "self_cpu_s": 0.274141193,
+      "cumulative_cpu_s": 43.530722424000004
+    },
+    {
+      "file": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/background_competition_continuous_lane_rollout.py",
+      "line": 200,
+      "function": "_choose",
+      "primitive_calls": 2055,
+      "calls": 2055,
+      "self_cpu_s": 0.07048554900000001,
+      "cumulative_cpu_s": 40.496468615000005
+    },
+    {
+      "file": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/exact_reuse_lane_rollout.py",
+      "line": 91,
+      "function": "score_background_roots",
+      "primitive_calls": 2055,
+      "calls": 2055,
+      "self_cpu_s": 0.048991669,
+      "cumulative_cpu_s": 39.131273079
+    },
+    {
+      "file": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/dyadic_background_rollout.py",
+      "line": 11,
+      "function": "score_background_roots",
+      "primitive_calls": 2055,
+      "calls": 2055,
+      "self_cpu_s": 7.867022660000001,
+      "cumulative_cpu_s": 39.08228141
+    },
+    {
+      "file": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/background_competition_continuous_lane_rollout.py",
+      "line": 58,
+      "function": "release_through",
+      "primitive_calls": 1692986,
+      "calls": 1692986,
+      "self_cpu_s": 2.488987566,
+      "cumulative_cpu_s": 17.219714122000003
+    },
+    {
+      "file": "/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/lib/python3.10/fractions.py",
+      "line": 167,
+      "function": "from_float",
+      "primitive_calls": 2905548,
+      "calls": 2905548,
+      "self_cpu_s": 2.573993278,
+      "cumulative_cpu_s": 9.887862967
+    },
+    {
+      "file": "/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/lib/python3.10/fractions.py",
+      "line": 62,
+      "function": "__new__",
+      "primitive_calls": 5246387,
+      "calls": 5246387,
+      "self_cpu_s": 5.303568352,
+      "cumulative_cpu_s": 7.996724908000001
+    },
+    {
+      "file": "/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/lib/python3.10/fractions.py",
+      "line": 691,
+      "function": "_richcmp",
+      "primitive_calls": 2609884,
+      "calls": 2609884,
+      "self_cpu_s": 2.476682808,
+      "cumulative_cpu_s": 4.938127765
+    },
+    {
+      "file": "/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/lib/python3.10/fractions.py",
+      "line": 721,
+      "function": "__le__",
+      "primitive_calls": 1815762,
+      "calls": 1815762,
+      "self_cpu_s": 0.680064203,
+      "cumulative_cpu_s": 4.146913758
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method builtins.isinstance>",
+      "primitive_calls": 9263482,
+      "calls": 9263482,
+      "self_cpu_s": 1.7742005740000002,
+      "cumulative_cpu_s": 3.922417357
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method builtins.min>",
+      "primitive_calls": 2241869,
+      "calls": 2241869,
+      "self_cpu_s": 2.211786378,
+      "cumulative_cpu_s": 3.806762818
+    },
+    {
+      "file": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/dyadic_background_rollout.py",
+      "line": 89,
+      "function": "admit",
+      "primitive_calls": 1597997,
+      "calls": 1597997,
+      "self_cpu_s": 2.620715182,
+      "cumulative_cpu_s": 2.8577144220000004
+    },
+    {
+      "file": "/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/lib/python3.10/fractions.py",
+      "line": 356,
+      "function": "forward",
+      "primitive_calls": 609452,
+      "calls": 609452,
+      "self_cpu_s": 0.284361757,
+      "cumulative_cpu_s": 2.546551676
+    },
+    {
+      "file": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/exact_reuse_lane_rollout.py",
+      "line": 77,
+      "function": "_best_index",
+      "primitive_calls": 1695076,
+      "calls": 1695076,
+      "self_cpu_s": 0.62105829,
+      "cumulative_cpu_s": 2.5119075360000003
+    },
+    {
+      "file": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/background_competition_continuous_lane_rollout.py",
+      "line": 106,
+      "function": "score_background_roots",
+      "primitive_calls": 35,
+      "calls": 35,
+      "self_cpu_s": 0.199102673,
+      "cumulative_cpu_s": 2.4782707100000003
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method math.gcd>",
+      "primitive_calls": 5659187,
+      "calls": 5659187,
+      "self_cpu_s": 2.435109177,
+      "cumulative_cpu_s": 2.435109177
+    }
+  ],
+  "top_self_cpu": [
+    {
+      "file": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/dyadic_background_rollout.py",
+      "line": 11,
+      "function": "score_background_roots",
+      "primitive_calls": 2055,
+      "calls": 2055,
+      "self_cpu_s": 7.867022660000001,
+      "cumulative_cpu_s": 39.08228141
+    },
+    {
+      "file": "/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/lib/python3.10/fractions.py",
+      "line": 62,
+      "function": "__new__",
+      "primitive_calls": 5246387,
+      "calls": 5246387,
+      "self_cpu_s": 5.303568352,
+      "cumulative_cpu_s": 7.996724908000001
+    },
+    {
+      "file": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/dyadic_background_rollout.py",
+      "line": 89,
+      "function": "admit",
+      "primitive_calls": 1597997,
+      "calls": 1597997,
+      "self_cpu_s": 2.620715182,
+      "cumulative_cpu_s": 2.8577144220000004
+    },
+    {
+      "file": "/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/lib/python3.10/fractions.py",
+      "line": 167,
+      "function": "from_float",
+      "primitive_calls": 2905548,
+      "calls": 2905548,
+      "self_cpu_s": 2.573993278,
+      "cumulative_cpu_s": 9.887862967
+    },
+    {
+      "file": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/background_competition_continuous_lane_rollout.py",
+      "line": 58,
+      "function": "release_through",
+      "primitive_calls": 1692986,
+      "calls": 1692986,
+      "self_cpu_s": 2.488987566,
+      "cumulative_cpu_s": 17.219714122000003
+    },
+    {
+      "file": "/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/lib/python3.10/fractions.py",
+      "line": 691,
+      "function": "_richcmp",
+      "primitive_calls": 2609884,
+      "calls": 2609884,
+      "self_cpu_s": 2.476682808,
+      "cumulative_cpu_s": 4.938127765
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method math.gcd>",
+      "primitive_calls": 5659187,
+      "calls": 5659187,
+      "self_cpu_s": 2.435109177,
+      "cumulative_cpu_s": 2.435109177
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method builtins.min>",
+      "primitive_calls": 2241869,
+      "calls": 2241869,
+      "self_cpu_s": 2.211786378,
+      "cumulative_cpu_s": 3.806762818
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method builtins.isinstance>",
+      "primitive_calls": 9263482,
+      "calls": 9263482,
+      "self_cpu_s": 1.7742005740000002,
+      "cumulative_cpu_s": 3.922417357
+    },
+    {
+      "file": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/exact_reuse_lane_rollout.py",
+      "line": 46,
+      "function": "best_index",
+      "primitive_calls": 1695076,
+      "calls": 1695076,
+      "self_cpu_s": 1.409184057,
+      "cumulative_cpu_s": 1.8908492460000002
+    },
+    {
+      "file": "/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/lib/python3.10/abc.py",
+      "line": 117,
+      "function": "__instancecheck__",
+      "primitive_calls": 5698796,
+      "calls": 5698796,
+      "self_cpu_s": 1.156028336,
+      "cumulative_cpu_s": 2.148216783
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method builtins.len>",
+      "primitive_calls": 12697736,
+      "calls": 12697736,
+      "self_cpu_s": 1.019584378,
+      "cumulative_cpu_s": 1.019584378
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method _abc._abc_instancecheck>",
+      "primitive_calls": 5698796,
+      "calls": 5698796,
+      "self_cpu_s": 0.9921884470000001,
+      "cumulative_cpu_s": 0.9921884470000001
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<method 'as_integer_ratio' of 'float' objects>",
+      "primitive_calls": 2905548,
+      "calls": 2905548,
+      "self_cpu_s": 0.778417417,
+      "cumulative_cpu_s": 0.778417417
+    },
+    {
+      "file": "/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/lib/python3.10/fractions.py",
+      "line": 451,
+      "function": "_add",
+      "primitive_calls": 417404,
+      "calls": 417404,
+      "self_cpu_s": 0.7685098560000001,
+      "cumulative_cpu_s": 1.485426238
+    },
+    {
+      "file": "/home/hpcuser/scheduleurm_work/exact_reuse_benchmark_20261001/algorithm/dyadic_background_rollout.py",
+      "line": 115,
+      "function": "<lambda>",
+      "primitive_calls": 6540380,
+      "calls": 6540380,
+      "self_cpu_s": 0.7001475460000001,
+      "cumulative_cpu_s": 0.7001475460000001
+    },
+    {
+      "file": "/home/hpcuser/scheduleurm_work/conda_envs/scomp-py310/lib/python3.10/fractions.py",
+      "line": 721,
+      "function": "__le__",
+      "primitive_calls": 1815762,
+      "calls": 1815762,
+      "self_cpu_s": 0.680064203,
+      "cumulative_cpu_s": 4.146913758
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method __new__ of type object at 0x744500>",
+      "primitive_calls": 5246387,
+      "calls": 5246387,
+      "self_cpu_s": 0.6311815900000001,
+      "cumulative_cpu_s": 0.6311815900000001
+    }
+  ],
+  "limitations": "One cold single-worker chunk, not a trajectory runtime estimate. True recorded queue/ages/reservations/counts and reconstructed prefix RNG/counter; child entry states use constructors, first nonempty call restores current state as native. cProfile adds overhead; any partial result is interrupted only at90s in this new process. Existing two runs and registered source files untouched.",
+  "function_timing": "cProfile default elapsed times; approximate CPU attribution for this single process with process_time/wall=0.997641",
+  "profile_task_id": "t122939"
+}

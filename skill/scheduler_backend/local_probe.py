@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+try:
+    from scheduler_transport.budget import control_transport
+except ModuleNotFoundError:
+    from ..scheduler_transport.budget import control_transport
+
 import shlex
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Callable
 
 
@@ -17,6 +22,7 @@ class LocalBatchProbeDeps:
     descendants_of: Callable[[set[int], dict[int, int]], set[int]]
     max_workers: int = 2
     timeout_s: int = 30
+    node_configs: dict = field(default_factory=dict)
 
 
 def _expected_start_ticks(task: dict, pid: int) -> int | None:
@@ -79,6 +85,7 @@ def _build_control_checks(
     )
 
 
+@control_transport()
 def _probe_node(
     node: str,
     task_specs: list[tuple[dict, list[int]]],
@@ -86,9 +93,11 @@ def _probe_node(
     deps: LocalBatchProbeDeps,
 ):
     control_checks = _build_control_checks(task_specs, all_pids)
+    info = deps.node_configs.get(node, {})
+    nvidia_smi = shlex.quote(str(info.get("nvidia_smi_path") or info.get("nvidia_smi") or "nvidia-smi"))
     cmd = (
         f"({control_checks}; true); echo '===VRAM==='; "
-        "nvidia-smi --query-compute-apps=pid,used_memory --format=csv,noheader,nounits 2>/dev/null; "
+        f"{nvidia_smi} --query-compute-apps=pid,used_memory --format=csv,noheader,nounits 2>/dev/null; "
         "echo '===PSALL==='; "
         "ps -eo pid= -o ppid= -o rss= -o pcpu= -o stat= 2>/dev/null; true"
     )

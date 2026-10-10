@@ -1,0 +1,4384 @@
+{
+  "schema_version": 1,
+  "experiment": "integer_capacity_whole_selector_timing_v1",
+  "registered_at_utc": "2026-09-27T09:16:11.499283+00:00",
+  "decision": "INTEGER_CAPACITY_LOCAL_TIMING_ADVANCE",
+  "execution_checks_passed": true,
+  "certificate_checks_passed": true,
+  "repeat_paths_stable": true,
+  "cpu_affinity_preserved": true,
+  "references_complete": true,
+  "action_gate_passed": true,
+  "local_timing_gate_passed": true,
+  "timing_gates_by_control": {
+    "old_shared": {
+      "pooled_at_least_five_percent_faster": true,
+      "no_node_lane_cell_regression": true
+    },
+    "fractional_shared": {
+      "pooled_at_least_five_percent_faster": true,
+      "no_node_lane_cell_regression": true
+    }
+  },
+  "queue_count": 3072,
+  "distinct_lane_queue_count": 768,
+  "timed_selector_calls": 55296,
+  "untimed_reference_calls": 3072,
+  "warmup_calls": 72,
+  "latency": {
+    "old_shared": {
+      "sum_state_median_wall_ns": 63221265348.0,
+      "mean_state_median_wall_ms": 20.57983898046875,
+      "median_state_median_wall_ms": 9.9209095,
+      "p95_state_median_wall_ms": 61.108443,
+      "p95_raw_call_wall_ms": 61.742332,
+      "sum_raw_wall_ns": 386050432117,
+      "sum_state_median_cpu_ns": 57452796681.0,
+      "mean_state_median_cpu_ms": 18.70208225292969
+    },
+    "fractional_shared": {
+      "sum_state_median_wall_ns": 60417753449.5,
+      "mean_state_median_wall_ms": 19.667237451009115,
+      "median_state_median_wall_ms": 9.9087755,
+      "p95_state_median_wall_ms": 54.7291225,
+      "p95_raw_call_wall_ms": 55.850306,
+      "sum_raw_wall_ns": 369077169895,
+      "sum_state_median_cpu_ns": 54905885432.5,
+      "mean_state_median_cpu_ms": 17.873009580891924
+    },
+    "integer_capacity": {
+      "sum_state_median_wall_ns": 41348099289.5,
+      "mean_state_median_wall_ms": 13.459667737467447,
+      "median_state_median_wall_ms": 9.98244175,
+      "p95_state_median_wall_ms": 29.7495635,
+      "p95_raw_call_wall_ms": 30.000873,
+      "sum_raw_wall_ns": 252948546961,
+      "sum_state_median_cpu_ns": 37582684396.5,
+      "mean_state_median_cpu_ms": 12.233946743652345
+    }
+  },
+  "comparison": {
+    "old_shared": {
+      "wall_ratio": 0.6540220139837496,
+      "cpu_ratio": 0.6541489112387949,
+      "p95_state_median_ratio": 0.48683229418887336,
+      "p95_raw_call_ratio": 0.48590443587391546
+    },
+    "fractional_shared": {
+      "wall_ratio": 0.6843700225308889,
+      "cpu_ratio": 0.684492820768791,
+      "p95_state_median_ratio": 0.543578302392844,
+      "p95_raw_call_ratio": 0.537165776674527
+    }
+  },
+  "cells": [
+    {
+      "node": "cpu_a",
+      "lanes": 4,
+      "queue_count": 256,
+      "latency": {
+        "old_shared": {
+          "sum_state_median_wall_ns": 2443978929.0,
+          "mean_state_median_wall_ms": 9.54679269140625,
+          "median_state_median_wall_ms": 8.4171355,
+          "p95_state_median_wall_ms": 16.5613595,
+          "p95_raw_call_wall_ms": 16.754501,
+          "sum_raw_wall_ns": 14929181636,
+          "sum_state_median_cpu_ns": 2221773435.5,
+          "mean_state_median_cpu_ms": 8.678802482421874
+        },
+        "fractional_shared": {
+          "sum_state_median_wall_ns": 2406323582.0,
+          "mean_state_median_wall_ms": 9.3997014921875,
+          "median_state_median_wall_ms": 8.40246625,
+          "p95_state_median_wall_ms": 15.621773,
+          "p95_raw_call_wall_ms": 15.617442,
+          "sum_raw_wall_ns": 14673501417,
+          "sum_state_median_cpu_ns": 2186933694.5,
+          "mean_state_median_cpu_ms": 8.542709744140625
+        },
+        "integer_capacity": {
+          "sum_state_median_wall_ns": 2305645450.0,
+          "mean_state_median_wall_ms": 9.0064275390625,
+          "median_state_median_wall_ms": 8.5083165,
+          "p95_state_median_wall_ms": 13.2332135,
+          "p95_raw_call_wall_ms": 13.846141,
+          "sum_raw_wall_ns": 14066370405,
+          "sum_state_median_cpu_ns": 2096017772.5,
+          "mean_state_median_cpu_ms": 8.187569423828124
+        }
+      },
+      "comparison": {
+        "old_shared": {
+          "wall_ratio": 0.9433982521868134,
+          "cpu_ratio": 0.9433985207534452,
+          "p95_state_median_ratio": 0.7990414977707597,
+          "p95_raw_call_ratio": 0.8264132127838363
+        },
+        "fractional_shared": {
+          "wall_ratio": 0.9581610167671956,
+          "cpu_ratio": 0.9584276733086843,
+          "p95_state_median_ratio": 0.8471006139956073,
+          "p95_raw_call_ratio": 0.8865818742915773
+        }
+      },
+      "correctness": {
+        "reference": {
+          "calls": 256,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 256,
+          "canonical_exact_count": 256,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 256,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 256,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 2581,
+            "lp_matrix_coefficients": 103468,
+            "candidate_evaluations": 2837,
+            "duration_root_count": 2048,
+            "dual_column_checks": 11020,
+            "branch_splits": 415,
+            "bound_pruned_regions": 2380,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 11020
+          },
+          "preprocessing": {},
+          "operational_elapsed_s": 0.0
+        },
+        "old_shared": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 13950,
+            "lp_matrix_coefficients": 473352,
+            "candidate_evaluations": 15486,
+            "duration_root_count": 10752,
+            "dual_column_checks": 53832,
+            "branch_splits": 2490,
+            "bound_pruned_regions": 12744,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 53832
+          },
+          "preprocessing": {
+            "original_option_count": 12288,
+            "requirement_group_count": 10752,
+            "duration_threshold_count": 10752,
+            "reduction_option_probes": 12288,
+            "reduction_requirement_coordinate_reads": 36864,
+            "reduction_duration_comparisons": 13824,
+            "grouping_option_probes": 12288,
+            "representative_option_probes": 47616,
+            "proxy_option_count": 43008,
+            "lift_option_probes": 21996
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        },
+        "fractional_shared": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 13758,
+            "lp_matrix_coefficients": 464292,
+            "candidate_evaluations": 15294,
+            "duration_root_count": 10752,
+            "dual_column_checks": 52860,
+            "branch_splits": 2370,
+            "bound_pruned_regions": 12660,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 52860
+          },
+          "preprocessing": {
+            "original_option_count": 12288,
+            "requirement_group_count": 10752,
+            "duration_threshold_count": 10752,
+            "reduction_option_probes": 12288,
+            "reduction_requirement_coordinate_reads": 36864,
+            "reduction_duration_comparisons": 13824,
+            "grouping_option_probes": 12288,
+            "representative_option_probes": 47616,
+            "proxy_option_count": 43008,
+            "lift_option_probes": 21540
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        },
+        "integer_capacity": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 12954,
+            "lp_matrix_coefficients": 440640,
+            "candidate_evaluations": 14490,
+            "duration_root_count": 10752,
+            "dual_column_checks": 50004,
+            "branch_splits": 1800,
+            "bound_pruned_regions": 11124,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 50004
+          },
+          "preprocessing": {
+            "original_option_count": 12288,
+            "requirement_group_count": 10752,
+            "duration_threshold_count": 10752,
+            "reduction_option_probes": 12288,
+            "reduction_requirement_coordinate_reads": 36864,
+            "reduction_duration_comparisons": 13824,
+            "grouping_option_probes": 12288,
+            "representative_option_probes": 47616,
+            "proxy_option_count": 43008,
+            "lift_option_probes": 20010
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        }
+      },
+      "uncertified_reference_count": 0,
+      "runtime_before_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_after_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_end": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      }
+    },
+    {
+      "node": "cpu_a",
+      "lanes": 8,
+      "queue_count": 256,
+      "latency": {
+        "old_shared": {
+          "sum_state_median_wall_ns": 2545200947.0,
+          "mean_state_median_wall_ms": 9.94219119921875,
+          "median_state_median_wall_ms": 8.457973,
+          "p95_state_median_wall_ms": 17.3276485,
+          "p95_raw_call_wall_ms": 17.916159,
+          "sum_raw_wall_ns": 15643079792,
+          "sum_state_median_cpu_ns": 2313725656.5,
+          "mean_state_median_cpu_ms": 9.037990845703124
+        },
+        "fractional_shared": {
+          "sum_state_median_wall_ns": 2499088482.0,
+          "mean_state_median_wall_ms": 9.7620643828125,
+          "median_state_median_wall_ms": 8.4339115,
+          "p95_state_median_wall_ms": 16.77468,
+          "p95_raw_call_wall_ms": 17.034674,
+          "sum_raw_wall_ns": 15360397958,
+          "sum_state_median_cpu_ns": 2271466894.0,
+          "mean_state_median_cpu_ms": 8.8729175546875
+        },
+        "integer_capacity": {
+          "sum_state_median_wall_ns": 2406697346.5,
+          "mean_state_median_wall_ms": 9.401161509765625,
+          "median_state_median_wall_ms": 8.54933075,
+          "p95_state_median_wall_ms": 16.115994,
+          "p95_raw_call_wall_ms": 16.076957,
+          "sum_raw_wall_ns": 14785599693,
+          "sum_state_median_cpu_ns": 2187911888.0,
+          "mean_state_median_cpu_ms": 8.5465308125
+        }
+      },
+      "comparison": {
+        "old_shared": {
+          "wall_ratio": 0.9455824497223873,
+          "cpu_ratio": 0.9456228666754208,
+          "p95_state_median_ratio": 0.9300739220327561,
+          "p95_raw_call_ratio": 0.8973439563692195
+        },
+        "fractional_shared": {
+          "wall_ratio": 0.963030066295988,
+          "cpu_ratio": 0.9632153978467801,
+          "p95_state_median_ratio": 0.9607333195029653,
+          "p95_raw_call_ratio": 0.9437783781480057
+        }
+      },
+      "correctness": {
+        "reference": {
+          "calls": 256,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 256,
+          "canonical_exact_count": 256,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 256,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 256,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 2680,
+            "lp_matrix_coefficients": 105953,
+            "candidate_evaluations": 2936,
+            "duration_root_count": 2048,
+            "dual_column_checks": 11355,
+            "branch_splits": 470,
+            "bound_pruned_regions": 2452,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 11355
+          },
+          "preprocessing": {},
+          "operational_elapsed_s": 0.0
+        },
+        "old_shared": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 14544,
+            "lp_matrix_coefficients": 488262,
+            "candidate_evaluations": 16080,
+            "duration_root_count": 10752,
+            "dual_column_checks": 55842,
+            "branch_splits": 2820,
+            "bound_pruned_regions": 13176,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 55842
+          },
+          "preprocessing": {
+            "original_option_count": 12288,
+            "requirement_group_count": 10752,
+            "duration_threshold_count": 10752,
+            "reduction_option_probes": 12288,
+            "reduction_requirement_coordinate_reads": 36864,
+            "reduction_duration_comparisons": 13824,
+            "grouping_option_probes": 12288,
+            "representative_option_probes": 47616,
+            "proxy_option_count": 43008,
+            "lift_option_probes": 24714
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        },
+        "fractional_shared": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 14250,
+            "lp_matrix_coefficients": 482730,
+            "candidate_evaluations": 15786,
+            "duration_root_count": 10752,
+            "dual_column_checks": 55026,
+            "branch_splits": 2640,
+            "bound_pruned_regions": 13074,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 55026
+          },
+          "preprocessing": {
+            "original_option_count": 12288,
+            "requirement_group_count": 10752,
+            "duration_threshold_count": 10752,
+            "reduction_option_probes": 12288,
+            "reduction_requirement_coordinate_reads": 36864,
+            "reduction_duration_comparisons": 13824,
+            "grouping_option_probes": 12288,
+            "representative_option_probes": 47616,
+            "proxy_option_count": 43008,
+            "lift_option_probes": 23976
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        },
+        "integer_capacity": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 13458,
+            "lp_matrix_coefficients": 461826,
+            "candidate_evaluations": 14994,
+            "duration_root_count": 10752,
+            "dual_column_checks": 52374,
+            "branch_splits": 2160,
+            "bound_pruned_regions": 12288,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 52374
+          },
+          "preprocessing": {
+            "original_option_count": 12288,
+            "requirement_group_count": 10752,
+            "duration_threshold_count": 10752,
+            "reduction_option_probes": 12288,
+            "reduction_requirement_coordinate_reads": 36864,
+            "reduction_duration_comparisons": 13824,
+            "grouping_option_probes": 12288,
+            "representative_option_probes": 47616,
+            "proxy_option_count": 43008,
+            "lift_option_probes": 22278
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        }
+      },
+      "uncertified_reference_count": 0,
+      "runtime_before_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_after_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_end": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      }
+    },
+    {
+      "node": "cpu_a",
+      "lanes": 16,
+      "queue_count": 256,
+      "latency": {
+        "old_shared": {
+          "sum_state_median_wall_ns": 2731219629.0,
+          "mean_state_median_wall_ms": 10.66882667578125,
+          "median_state_median_wall_ms": 8.48866975,
+          "p95_state_median_wall_ms": 22.0110015,
+          "p95_raw_call_wall_ms": 22.182305,
+          "sum_raw_wall_ns": 16608321784,
+          "sum_state_median_cpu_ns": 2483969573.0,
+          "mean_state_median_cpu_ms": 9.70300614453125
+        },
+        "fractional_shared": {
+          "sum_state_median_wall_ns": 2621340819.5,
+          "mean_state_median_wall_ms": 10.239612576171876,
+          "median_state_median_wall_ms": 8.47484075,
+          "p95_state_median_wall_ms": 21.12227,
+          "p95_raw_call_wall_ms": 21.106853,
+          "sum_raw_wall_ns": 15918051771,
+          "sum_state_median_cpu_ns": 2384241607.0,
+          "mean_state_median_cpu_ms": 9.31344377734375
+        },
+        "integer_capacity": {
+          "sum_state_median_wall_ns": 2529702554.0,
+          "mean_state_median_wall_ms": 9.8816506015625,
+          "median_state_median_wall_ms": 8.6112325,
+          "p95_state_median_wall_ms": 20.2622935,
+          "p95_raw_call_wall_ms": 20.111545,
+          "sum_raw_wall_ns": 15365574857,
+          "sum_state_median_cpu_ns": 2300907090.5,
+          "mean_state_median_cpu_ms": 8.987918322265624
+        }
+      },
+      "comparison": {
+        "old_shared": {
+          "wall_ratio": 0.9262171841252537,
+          "cpu_ratio": 0.9263024456942492,
+          "p95_state_median_ratio": 0.9205530016432919,
+          "p95_raw_call_ratio": 0.906648114341589
+        },
+        "fractional_shared": {
+          "wall_ratio": 0.965041453282874,
+          "cpu_ratio": 0.9650477886740444,
+          "p95_state_median_ratio": 0.9592857917259839,
+          "p95_raw_call_ratio": 0.9528443202783474
+        }
+      },
+      "correctness": {
+        "reference": {
+          "calls": 256,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 256,
+          "canonical_exact_count": 256,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 256,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 256,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 2827,
+            "lp_matrix_coefficients": 113575,
+            "candidate_evaluations": 3083,
+            "duration_root_count": 2048,
+            "dual_column_checks": 12107,
+            "branch_splits": 569,
+            "bound_pruned_regions": 2529,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 12107
+          },
+          "preprocessing": {},
+          "operational_elapsed_s": 0.0
+        },
+        "old_shared": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 15426,
+            "lp_matrix_coefficients": 533994,
+            "candidate_evaluations": 16962,
+            "duration_root_count": 10752,
+            "dual_column_checks": 60354,
+            "branch_splits": 3414,
+            "bound_pruned_regions": 13638,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 60354
+          },
+          "preprocessing": {
+            "original_option_count": 12288,
+            "requirement_group_count": 10752,
+            "duration_threshold_count": 10752,
+            "reduction_option_probes": 12288,
+            "reduction_requirement_coordinate_reads": 36864,
+            "reduction_duration_comparisons": 13824,
+            "grouping_option_probes": 12288,
+            "representative_option_probes": 47616,
+            "proxy_option_count": 43008,
+            "lift_option_probes": 27954
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        },
+        "fractional_shared": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 14748,
+            "lp_matrix_coefficients": 516570,
+            "candidate_evaluations": 16284,
+            "duration_root_count": 10752,
+            "dual_column_checks": 58182,
+            "branch_splits": 2976,
+            "bound_pruned_regions": 13320,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 58182
+          },
+          "preprocessing": {
+            "original_option_count": 12288,
+            "requirement_group_count": 10752,
+            "duration_threshold_count": 10752,
+            "reduction_option_probes": 12288,
+            "reduction_requirement_coordinate_reads": 36864,
+            "reduction_duration_comparisons": 13824,
+            "grouping_option_probes": 12288,
+            "representative_option_probes": 47616,
+            "proxy_option_count": 43008,
+            "lift_option_probes": 26274
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        },
+        "integer_capacity": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 14016,
+            "lp_matrix_coefficients": 489900,
+            "candidate_evaluations": 15552,
+            "duration_root_count": 10752,
+            "dual_column_checks": 55200,
+            "branch_splits": 2424,
+            "bound_pruned_regions": 12780,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 55200
+          },
+          "preprocessing": {
+            "original_option_count": 12288,
+            "requirement_group_count": 10752,
+            "duration_threshold_count": 10752,
+            "reduction_option_probes": 12288,
+            "reduction_requirement_coordinate_reads": 36864,
+            "reduction_duration_comparisons": 13824,
+            "grouping_option_probes": 12288,
+            "representative_option_probes": 47616,
+            "proxy_option_count": 43008,
+            "lift_option_probes": 24654
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        }
+      },
+      "uncertified_reference_count": 0,
+      "runtime_before_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_after_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_end": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      }
+    },
+    {
+      "node": "node007",
+      "lanes": 4,
+      "queue_count": 256,
+      "latency": {
+        "old_shared": {
+          "sum_state_median_wall_ns": 3535528518.5,
+          "mean_state_median_wall_ms": 13.810658275390624,
+          "median_state_median_wall_ms": 10.88473075,
+          "p95_state_median_wall_ms": 20.3764645,
+          "p95_raw_call_wall_ms": 23.537897,
+          "sum_raw_wall_ns": 21671923388,
+          "sum_state_median_cpu_ns": 3213685060.0,
+          "mean_state_median_cpu_ms": 12.553457265625
+        },
+        "fractional_shared": {
+          "sum_state_median_wall_ns": 3433887364.5,
+          "mean_state_median_wall_ms": 13.413622517578125,
+          "median_state_median_wall_ms": 10.59111225,
+          "p95_state_median_wall_ms": 20.1467225,
+          "p95_raw_call_wall_ms": 21.804134,
+          "sum_raw_wall_ns": 21007337819,
+          "sum_state_median_cpu_ns": 3120746462.0,
+          "mean_state_median_cpu_ms": 12.1904158671875
+        },
+        "integer_capacity": {
+          "sum_state_median_wall_ns": 3269613105.0,
+          "mean_state_median_wall_ms": 12.77192619140625,
+          "median_state_median_wall_ms": 10.06755075,
+          "p95_state_median_wall_ms": 19.969463,
+          "p95_raw_call_wall_ms": 20.544643,
+          "sum_raw_wall_ns": 20007360840,
+          "sum_state_median_cpu_ns": 2971895002.5,
+          "mean_state_median_cpu_ms": 11.608964853515625
+        }
+      },
+      "comparison": {
+        "old_shared": {
+          "wall_ratio": 0.9247876485485631,
+          "cpu_ratio": 0.9247623668823354,
+          "p95_state_median_ratio": 0.9800259019419193,
+          "p95_raw_call_ratio": 0.8728325644385307
+        },
+        "fractional_shared": {
+          "wall_ratio": 0.9521608480236452,
+          "cpu_ratio": 0.952302610509216,
+          "p95_state_median_ratio": 0.9912015713722171,
+          "p95_raw_call_ratio": 0.9422361374223805
+        }
+      },
+      "correctness": {
+        "reference": {
+          "calls": 256,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 256,
+          "canonical_exact_count": 256,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 256,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 256,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 3647,
+            "lp_matrix_coefficients": 208466,
+            "candidate_evaluations": 3903,
+            "duration_root_count": 2304,
+            "dual_column_checks": 19980,
+            "branch_splits": 876,
+            "bound_pruned_regions": 3011,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 19980
+          },
+          "preprocessing": {},
+          "operational_elapsed_s": 0.0
+        },
+        "old_shared": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 19056,
+            "lp_matrix_coefficients": 888012,
+            "candidate_evaluations": 20592,
+            "duration_root_count": 12288,
+            "dual_column_checks": 92100,
+            "branch_splits": 4530,
+            "bound_pruned_regions": 15966,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 92100
+          },
+          "preprocessing": {
+            "original_option_count": 13824,
+            "requirement_group_count": 12288,
+            "duration_threshold_count": 12288,
+            "reduction_option_probes": 13824,
+            "reduction_requirement_coordinate_reads": 41472,
+            "reduction_duration_comparisons": 15360,
+            "grouping_option_probes": 13824,
+            "representative_option_probes": 56832,
+            "proxy_option_count": 55296,
+            "lift_option_probes": 29286
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        },
+        "fractional_shared": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 18474,
+            "lp_matrix_coefficients": 865098,
+            "candidate_evaluations": 20010,
+            "duration_root_count": 12288,
+            "dual_column_checks": 89466,
+            "branch_splits": 4242,
+            "bound_pruned_regions": 15828,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 89466
+          },
+          "preprocessing": {
+            "original_option_count": 13824,
+            "requirement_group_count": 12288,
+            "duration_threshold_count": 12288,
+            "reduction_option_probes": 13824,
+            "reduction_requirement_coordinate_reads": 41472,
+            "reduction_duration_comparisons": 15360,
+            "grouping_option_probes": 13824,
+            "representative_option_probes": 56832,
+            "proxy_option_count": 55296,
+            "lift_option_probes": 27984
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        },
+        "integer_capacity": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 17388,
+            "lp_matrix_coefficients": 809100,
+            "candidate_evaluations": 18924,
+            "duration_root_count": 12288,
+            "dual_column_checks": 83604,
+            "branch_splits": 3378,
+            "bound_pruned_regions": 13830,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 83604
+          },
+          "preprocessing": {
+            "original_option_count": 13824,
+            "requirement_group_count": 12288,
+            "duration_threshold_count": 12288,
+            "reduction_option_probes": 13824,
+            "reduction_requirement_coordinate_reads": 41472,
+            "reduction_duration_comparisons": 15360,
+            "grouping_option_probes": 13824,
+            "representative_option_probes": 56832,
+            "proxy_option_count": 55296,
+            "lift_option_probes": 24930
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        }
+      },
+      "uncertified_reference_count": 0,
+      "runtime_before_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_after_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_end": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      }
+    },
+    {
+      "node": "node007",
+      "lanes": 8,
+      "queue_count": 256,
+      "latency": {
+        "old_shared": {
+          "sum_state_median_wall_ns": 3517764884.5,
+          "mean_state_median_wall_ms": 13.741269080078125,
+          "median_state_median_wall_ms": 10.1265375,
+          "p95_state_median_wall_ms": 20.315784,
+          "p95_raw_call_wall_ms": 22.319053,
+          "sum_raw_wall_ns": 21558131177,
+          "sum_state_median_cpu_ns": 3195970879.5,
+          "mean_state_median_cpu_ms": 12.484261248046876
+        },
+        "fractional_shared": {
+          "sum_state_median_wall_ns": 3410593706.5,
+          "mean_state_median_wall_ms": 13.322631666015624,
+          "median_state_median_wall_ms": 10.104118,
+          "p95_state_median_wall_ms": 19.8855665,
+          "p95_raw_call_wall_ms": 21.887673,
+          "sum_raw_wall_ns": 20901719460,
+          "sum_state_median_cpu_ns": 3099810103.0,
+          "mean_state_median_cpu_ms": 12.10863321484375
+        },
+        "integer_capacity": {
+          "sum_state_median_wall_ns": 3245903859.0,
+          "mean_state_median_wall_ms": 12.67931194921875,
+          "median_state_median_wall_ms": 10.04727525,
+          "p95_state_median_wall_ms": 20.178728,
+          "p95_raw_call_wall_ms": 20.513917,
+          "sum_raw_wall_ns": 19869499526,
+          "sum_state_median_cpu_ns": 2949271622.5,
+          "mean_state_median_cpu_ms": 11.520592275390625
+        }
+      },
+      "comparison": {
+        "old_shared": {
+          "wall_ratio": 0.922717681702414,
+          "cpu_ratio": 0.922809291354183,
+          "p95_state_median_ratio": 0.9932537183896029,
+          "p95_raw_call_ratio": 0.9191212996357865
+        },
+        "fractional_shared": {
+          "wall_ratio": 0.9517122642940056,
+          "cpu_ratio": 0.9514362249628425,
+          "p95_state_median_ratio": 1.0147424263724143,
+          "p95_raw_call_ratio": 0.9372360871802132
+        }
+      },
+      "correctness": {
+        "reference": {
+          "calls": 256,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 256,
+          "canonical_exact_count": 256,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 256,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 256,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 3602,
+            "lp_matrix_coefficients": 201742,
+            "candidate_evaluations": 3858,
+            "duration_root_count": 2304,
+            "dual_column_checks": 19448,
+            "branch_splits": 835,
+            "bound_pruned_regions": 3029,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 19448
+          },
+          "preprocessing": {},
+          "operational_elapsed_s": 0.0
+        },
+        "old_shared": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 18996,
+            "lp_matrix_coefficients": 872304,
+            "candidate_evaluations": 20532,
+            "duration_root_count": 12288,
+            "dual_column_checks": 90876,
+            "branch_splits": 4458,
+            "bound_pruned_regions": 16110,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 90876
+          },
+          "preprocessing": {
+            "original_option_count": 13824,
+            "requirement_group_count": 12288,
+            "duration_threshold_count": 12288,
+            "reduction_option_probes": 13824,
+            "reduction_requirement_coordinate_reads": 41472,
+            "reduction_duration_comparisons": 15360,
+            "grouping_option_probes": 13824,
+            "representative_option_probes": 56832,
+            "proxy_option_count": 55296,
+            "lift_option_probes": 30822
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        },
+        "fractional_shared": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 18396,
+            "lp_matrix_coefficients": 846048,
+            "candidate_evaluations": 19932,
+            "duration_root_count": 12288,
+            "dual_column_checks": 87972,
+            "branch_splits": 4200,
+            "bound_pruned_regions": 15948,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 87972
+          },
+          "preprocessing": {
+            "original_option_count": 13824,
+            "requirement_group_count": 12288,
+            "duration_threshold_count": 12288,
+            "reduction_option_probes": 13824,
+            "reduction_requirement_coordinate_reads": 41472,
+            "reduction_duration_comparisons": 15360,
+            "grouping_option_probes": 13824,
+            "representative_option_probes": 56832,
+            "proxy_option_count": 55296,
+            "lift_option_probes": 29226
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        },
+        "integer_capacity": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 17268,
+            "lp_matrix_coefficients": 789996,
+            "candidate_evaluations": 18804,
+            "duration_root_count": 12288,
+            "dual_column_checks": 82032,
+            "branch_splits": 3414,
+            "bound_pruned_regions": 14904,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 82032
+          },
+          "preprocessing": {
+            "original_option_count": 13824,
+            "requirement_group_count": 12288,
+            "duration_threshold_count": 12288,
+            "reduction_option_probes": 13824,
+            "reduction_requirement_coordinate_reads": 41472,
+            "reduction_duration_comparisons": 15360,
+            "grouping_option_probes": 13824,
+            "representative_option_probes": 56832,
+            "proxy_option_count": 55296,
+            "lift_option_probes": 25668
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        }
+      },
+      "uncertified_reference_count": 0,
+      "runtime_before_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_after_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_end": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      }
+    },
+    {
+      "node": "node007",
+      "lanes": 16,
+      "queue_count": 256,
+      "latency": {
+        "old_shared": {
+          "sum_state_median_wall_ns": 3535657443.0,
+          "mean_state_median_wall_ms": 13.81116188671875,
+          "median_state_median_wall_ms": 10.69485775,
+          "p95_state_median_wall_ms": 20.5479885,
+          "p95_raw_call_wall_ms": 21.488264,
+          "sum_raw_wall_ns": 21647976882,
+          "sum_state_median_cpu_ns": 3212932458.0,
+          "mean_state_median_cpu_ms": 12.5505174140625
+        },
+        "fractional_shared": {
+          "sum_state_median_wall_ns": 3405182031.5,
+          "mean_state_median_wall_ms": 13.301492310546875,
+          "median_state_median_wall_ms": 10.54683075,
+          "p95_state_median_wall_ms": 19.9603925,
+          "p95_raw_call_wall_ms": 20.921029,
+          "sum_raw_wall_ns": 20866350727,
+          "sum_state_median_cpu_ns": 3094958934.0,
+          "mean_state_median_cpu_ms": 12.0896833359375
+        },
+        "integer_capacity": {
+          "sum_state_median_wall_ns": 3285045603.5,
+          "mean_state_median_wall_ms": 12.832209388671876,
+          "median_state_median_wall_ms": 10.06472925,
+          "p95_state_median_wall_ms": 20.21621,
+          "p95_raw_call_wall_ms": 21.307676,
+          "sum_raw_wall_ns": 20146740129,
+          "sum_state_median_cpu_ns": 2985837589.5,
+          "mean_state_median_cpu_ms": 11.663428083984375
+        }
+      },
+      "comparison": {
+        "old_shared": {
+          "wall_ratio": 0.9291187442391602,
+          "cpu_ratio": 0.9293185053004933,
+          "p95_state_median_ratio": 0.9838534803540503,
+          "p95_raw_call_ratio": 0.991595970712199
+        },
+        "fractional_shared": {
+          "wall_ratio": 0.9647195283868336,
+          "cpu_ratio": 0.9647422318592871,
+          "p95_state_median_ratio": 1.012816255992962,
+          "p95_raw_call_ratio": 1.018481261127261
+        }
+      },
+      "correctness": {
+        "reference": {
+          "calls": 256,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 256,
+          "canonical_exact_count": 256,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 256,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 256,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 3611,
+            "lp_matrix_coefficients": 198785,
+            "candidate_evaluations": 3867,
+            "duration_root_count": 2304,
+            "dual_column_checks": 19261,
+            "branch_splits": 868,
+            "bound_pruned_regions": 3046,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 19261
+          },
+          "preprocessing": {},
+          "operational_elapsed_s": 0.0
+        },
+        "old_shared": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 19122,
+            "lp_matrix_coefficients": 865512,
+            "candidate_evaluations": 20658,
+            "duration_root_count": 12288,
+            "dual_column_checks": 90576,
+            "branch_splits": 4686,
+            "bound_pruned_regions": 16254,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 90576
+          },
+          "preprocessing": {
+            "original_option_count": 13824,
+            "requirement_group_count": 12288,
+            "duration_threshold_count": 12288,
+            "reduction_option_probes": 13824,
+            "reduction_requirement_coordinate_reads": 41472,
+            "reduction_duration_comparisons": 15360,
+            "grouping_option_probes": 13824,
+            "representative_option_probes": 56832,
+            "proxy_option_count": 55296,
+            "lift_option_probes": 32724
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        },
+        "fractional_shared": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 18378,
+            "lp_matrix_coefficients": 835824,
+            "candidate_evaluations": 19914,
+            "duration_root_count": 12288,
+            "dual_column_checks": 87180,
+            "branch_splits": 4344,
+            "bound_pruned_regions": 16038,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 87180
+          },
+          "preprocessing": {
+            "original_option_count": 13824,
+            "requirement_group_count": 12288,
+            "duration_threshold_count": 12288,
+            "reduction_option_probes": 13824,
+            "reduction_requirement_coordinate_reads": 41472,
+            "reduction_duration_comparisons": 15360,
+            "grouping_option_probes": 13824,
+            "representative_option_probes": 56832,
+            "proxy_option_count": 55296,
+            "lift_option_probes": 30594
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        },
+        "integer_capacity": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 17460,
+            "lp_matrix_coefficients": 793944,
+            "candidate_evaluations": 18996,
+            "duration_root_count": 12288,
+            "dual_column_checks": 82620,
+            "branch_splits": 3612,
+            "bound_pruned_regions": 15318,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 82620
+          },
+          "preprocessing": {
+            "original_option_count": 13824,
+            "requirement_group_count": 12288,
+            "duration_threshold_count": 12288,
+            "reduction_option_probes": 13824,
+            "reduction_requirement_coordinate_reads": 41472,
+            "reduction_duration_comparisons": 15360,
+            "grouping_option_probes": 13824,
+            "representative_option_probes": 56832,
+            "proxy_option_count": 55296,
+            "lift_option_probes": 27426
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        }
+      },
+      "uncertified_reference_count": 0,
+      "runtime_before_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_after_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_end": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      }
+    },
+    {
+      "node": "gpu_a",
+      "lanes": 4,
+      "queue_count": 256,
+      "latency": {
+        "old_shared": {
+          "sum_state_median_wall_ns": 5088188959.0,
+          "mean_state_median_wall_ms": 19.87573812109375,
+          "median_state_median_wall_ms": 9.9290125,
+          "p95_state_median_wall_ms": 56.0216255,
+          "p95_raw_call_wall_ms": 56.512717,
+          "sum_raw_wall_ns": 31168665793,
+          "sum_state_median_cpu_ns": 4622647080.0,
+          "mean_state_median_cpu_ms": 18.05721515625
+        },
+        "fractional_shared": {
+          "sum_state_median_wall_ns": 5250333324.0,
+          "mean_state_median_wall_ms": 20.509114546875,
+          "median_state_median_wall_ms": 9.94462625,
+          "p95_state_median_wall_ms": 61.3307895,
+          "p95_raw_call_wall_ms": 61.607127,
+          "sum_raw_wall_ns": 32172819341,
+          "sum_state_median_cpu_ns": 4770441113.0,
+          "mean_state_median_cpu_ms": 18.63453559765625
+        },
+        "integer_capacity": {
+          "sum_state_median_wall_ns": 3520430875.0,
+          "mean_state_median_wall_ms": 13.75168310546875,
+          "median_state_median_wall_ms": 10.01258675,
+          "p95_state_median_wall_ms": 26.261256,
+          "p95_raw_call_wall_ms": 27.448422,
+          "sum_raw_wall_ns": 21561299117,
+          "sum_state_median_cpu_ns": 3199681618.5,
+          "mean_state_median_cpu_ms": 12.498756322265624
+        }
+      },
+      "comparison": {
+        "old_shared": {
+          "wall_ratio": 0.6918828886598353,
+          "cpu_ratio": 0.6921751894803961,
+          "p95_state_median_ratio": 0.46876997526606934,
+          "p95_raw_call_ratio": 0.48570345679893606
+        },
+        "fractional_shared": {
+          "wall_ratio": 0.6705156906719852,
+          "cpu_ratio": 0.67073076529139,
+          "p95_state_median_ratio": 0.4281904116039465,
+          "p95_raw_call_ratio": 0.4455397181563101
+        }
+      },
+      "correctness": {
+        "reference": {
+          "calls": 256,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 256,
+          "canonical_exact_count": 256,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 256,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 256,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 4604,
+            "lp_matrix_coefficients": 282436,
+            "candidate_evaluations": 4860,
+            "duration_root_count": 2304,
+            "dual_column_checks": 26492,
+            "branch_splits": 1447,
+            "bound_pruned_regions": 3425,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 26492
+          },
+          "preprocessing": {},
+          "operational_elapsed_s": 0.0
+        },
+        "old_shared": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 25878,
+            "lp_matrix_coefficients": 1490334,
+            "candidate_evaluations": 27414,
+            "duration_root_count": 12288,
+            "dual_column_checks": 143238,
+            "branch_splits": 8544,
+            "bound_pruned_regions": 18942,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 143238
+          },
+          "preprocessing": {
+            "original_option_count": 13824,
+            "requirement_group_count": 12288,
+            "duration_threshold_count": 12288,
+            "reduction_option_probes": 13824,
+            "reduction_requirement_coordinate_reads": 41472,
+            "reduction_duration_comparisons": 15360,
+            "grouping_option_probes": 13824,
+            "representative_option_probes": 55296,
+            "proxy_option_count": 55296,
+            "lift_option_probes": 53604
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        },
+        "fractional_shared": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 26436,
+            "lp_matrix_coefficients": 1555176,
+            "candidate_evaluations": 27972,
+            "duration_root_count": 12288,
+            "dual_column_checks": 148332,
+            "branch_splits": 8742,
+            "bound_pruned_regions": 19350,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 148332
+          },
+          "preprocessing": {
+            "original_option_count": 13824,
+            "requirement_group_count": 12288,
+            "duration_threshold_count": 12288,
+            "reduction_option_probes": 13824,
+            "reduction_requirement_coordinate_reads": 41472,
+            "reduction_duration_comparisons": 15360,
+            "grouping_option_probes": 13824,
+            "representative_option_probes": 55296,
+            "proxy_option_count": 55296,
+            "lift_option_probes": 55200
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        },
+        "integer_capacity": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 18276,
+            "lp_matrix_coefficients": 916914,
+            "candidate_evaluations": 19812,
+            "duration_root_count": 12288,
+            "dual_column_checks": 91290,
+            "branch_splits": 4194,
+            "bound_pruned_regions": 14280,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 91290
+          },
+          "preprocessing": {
+            "original_option_count": 13824,
+            "requirement_group_count": 12288,
+            "duration_threshold_count": 12288,
+            "reduction_option_probes": 13824,
+            "reduction_requirement_coordinate_reads": 41472,
+            "reduction_duration_comparisons": 15360,
+            "grouping_option_probes": 13824,
+            "representative_option_probes": 55296,
+            "proxy_option_count": 55296,
+            "lift_option_probes": 32688
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        }
+      },
+      "uncertified_reference_count": 0,
+      "runtime_before_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_after_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_end": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      }
+    },
+    {
+      "node": "gpu_a",
+      "lanes": 8,
+      "queue_count": 256,
+      "latency": {
+        "old_shared": {
+          "sum_state_median_wall_ns": 7653020600.0,
+          "mean_state_median_wall_ms": 29.89461171875,
+          "median_state_median_wall_ms": 9.8803605,
+          "p95_state_median_wall_ms": 135.0128225,
+          "p95_raw_call_wall_ms": 137.692226,
+          "sum_raw_wall_ns": 46784841394,
+          "sum_state_median_cpu_ns": 6954160546.0,
+          "mean_state_median_cpu_ms": 27.1646896328125
+        },
+        "fractional_shared": {
+          "sum_state_median_wall_ns": 7706925192.5,
+          "mean_state_median_wall_ms": 30.105176533203124,
+          "median_state_median_wall_ms": 9.8894195,
+          "p95_state_median_wall_ms": 131.3435355,
+          "p95_raw_call_wall_ms": 134.38017,
+          "sum_raw_wall_ns": 47195231505,
+          "sum_state_median_cpu_ns": 7000300954.0,
+          "mean_state_median_cpu_ms": 27.3449256015625
+        },
+        "integer_capacity": {
+          "sum_state_median_wall_ns": 3889157326.5,
+          "mean_state_median_wall_ms": 15.192020806640626,
+          "median_state_median_wall_ms": 10.0247155,
+          "p95_state_median_wall_ms": 26.647996,
+          "p95_raw_call_wall_ms": 28.987932,
+          "sum_raw_wall_ns": 23759789676,
+          "sum_state_median_cpu_ns": 3534792481.0,
+          "mean_state_median_cpu_ms": 13.80778312890625
+        }
+      },
+      "comparison": {
+        "old_shared": {
+          "wall_ratio": 0.508185921582388,
+          "cpu_ratio": 0.508298946741055,
+          "p95_state_median_ratio": 0.1973738161055036,
+          "p95_raw_call_ratio": 0.21052700535177635
+        },
+        "fractional_shared": {
+          "wall_ratio": 0.5046315137825311,
+          "cpu_ratio": 0.5049486449550723,
+          "p95_state_median_ratio": 0.20288776222260288,
+          "p95_raw_call_ratio": 0.2157158455745368
+        }
+      },
+      "correctness": {
+        "reference": {
+          "calls": 256,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 256,
+          "canonical_exact_count": 256,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 256,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 256,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 6530,
+            "lp_matrix_coefficients": 437312,
+            "candidate_evaluations": 6786,
+            "duration_root_count": 2304,
+            "dual_column_checks": 40382,
+            "branch_splits": 2436,
+            "bound_pruned_regions": 4376,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 40382
+          },
+          "preprocessing": {},
+          "operational_elapsed_s": 0.0
+        },
+        "old_shared": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1530,
+          "canonical_exact_count": 1530,
+          "cap_reached_count": 6,
+          "uncertified_cap_reached_count": 6,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 1.720474549823365,
+          "max_gap": 0.28674575830389415,
+          "search_work": {
+            "lp_calls": 37398,
+            "lp_matrix_coefficients": 2424762,
+            "candidate_evaluations": 38934,
+            "duration_root_count": 12288,
+            "dual_column_checks": 226722,
+            "branch_splits": 14472,
+            "bound_pruned_regions": 24564,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 226722
+          },
+          "preprocessing": {
+            "original_option_count": 13824,
+            "requirement_group_count": 12288,
+            "duration_threshold_count": 12288,
+            "reduction_option_probes": 13824,
+            "reduction_requirement_coordinate_reads": 41472,
+            "reduction_duration_comparisons": 15360,
+            "grouping_option_probes": 13824,
+            "representative_option_probes": 55296,
+            "proxy_option_count": 55296,
+            "lift_option_probes": 102480
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        },
+        "fractional_shared": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1530,
+          "canonical_exact_count": 1530,
+          "cap_reached_count": 6,
+          "uncertified_cap_reached_count": 6,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 1.720474549823365,
+          "max_gap": 0.28674575830389415,
+          "search_work": {
+            "lp_calls": 37332,
+            "lp_matrix_coefficients": 2450706,
+            "candidate_evaluations": 38868,
+            "duration_root_count": 12288,
+            "dual_column_checks": 227970,
+            "branch_splits": 14412,
+            "bound_pruned_regions": 24624,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 227970
+          },
+          "preprocessing": {
+            "original_option_count": 13824,
+            "requirement_group_count": 12288,
+            "duration_threshold_count": 12288,
+            "reduction_option_probes": 13824,
+            "reduction_requirement_coordinate_reads": 41472,
+            "reduction_duration_comparisons": 15360,
+            "grouping_option_probes": 13824,
+            "representative_option_probes": 55296,
+            "proxy_option_count": 55296,
+            "lift_option_probes": 101700
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        },
+        "integer_capacity": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 19908,
+            "lp_matrix_coefficients": 1042038,
+            "candidate_evaluations": 21444,
+            "duration_root_count": 12288,
+            "dual_column_checks": 102774,
+            "branch_splits": 4962,
+            "bound_pruned_regions": 16380,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 102774
+          },
+          "preprocessing": {
+            "original_option_count": 13824,
+            "requirement_group_count": 12288,
+            "duration_threshold_count": 12288,
+            "reduction_option_probes": 13824,
+            "reduction_requirement_coordinate_reads": 41472,
+            "reduction_duration_comparisons": 15360,
+            "grouping_option_probes": 13824,
+            "representative_option_probes": 55296,
+            "proxy_option_count": 55296,
+            "lift_option_probes": 39132
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        }
+      },
+      "uncertified_reference_count": 0,
+      "runtime_before_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_after_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_end": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      }
+    },
+    {
+      "node": "gpu_a",
+      "lanes": 16,
+      "queue_count": 256,
+      "latency": {
+        "old_shared": {
+          "sum_state_median_wall_ns": 8229374649.0,
+          "mean_state_median_wall_ms": 32.14599472265625,
+          "median_state_median_wall_ms": 9.99646025,
+          "p95_state_median_wall_ms": 116.474408,
+          "p95_raw_call_wall_ms": 117.187179,
+          "sum_raw_wall_ns": 50062470150,
+          "sum_state_median_cpu_ns": 7479724861.0,
+          "mean_state_median_cpu_ms": 29.21767523828125
+        },
+        "fractional_shared": {
+          "sum_state_median_wall_ns": 7830322899.0,
+          "mean_state_median_wall_ms": 30.58719882421875,
+          "median_state_median_wall_ms": 9.97558425,
+          "p95_state_median_wall_ms": 121.848507,
+          "p95_raw_call_wall_ms": 121.965686,
+          "sum_raw_wall_ns": 47784763075,
+          "sum_state_median_cpu_ns": 7116609549.5,
+          "mean_state_median_cpu_ms": 27.799256052734375
+        },
+        "integer_capacity": {
+          "sum_state_median_wall_ns": 4114204552.5,
+          "mean_state_median_wall_ms": 16.071111533203126,
+          "median_state_median_wall_ms": 10.097131,
+          "p95_state_median_wall_ms": 28.049028,
+          "p95_raw_call_wall_ms": 31.536306,
+          "sum_raw_wall_ns": 25203611810,
+          "sum_state_median_cpu_ns": 3739576391.0,
+          "mean_state_median_cpu_ms": 14.60772027734375
+        }
+      },
+      "comparison": {
+        "old_shared": {
+          "wall_ratio": 0.4999413355181176,
+          "cpu_ratio": 0.4999617580184678,
+          "p95_state_median_ratio": 0.24081709005123256,
+          "p95_raw_call_ratio": 0.26911054834761405
+        },
+        "fractional_shared": {
+          "wall_ratio": 0.5254195268276126,
+          "cpu_ratio": 0.525471625918094,
+          "p95_state_median_ratio": 0.23019591040208642,
+          "p95_raw_call_ratio": 0.25856703663356595
+        }
+      },
+      "correctness": {
+        "reference": {
+          "calls": 256,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 256,
+          "canonical_exact_count": 256,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 256,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 256,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 7024,
+            "lp_matrix_coefficients": 460036,
+            "candidate_evaluations": 7280,
+            "duration_root_count": 2304,
+            "dual_column_checks": 42820,
+            "branch_splits": 2741,
+            "bound_pruned_regions": 4599,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 42820
+          },
+          "preprocessing": {},
+          "operational_elapsed_s": 0.0
+        },
+        "old_shared": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1530,
+          "canonical_exact_count": 1530,
+          "cap_reached_count": 6,
+          "uncertified_cap_reached_count": 6,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 6,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 6,
+          "first_mismatch": {
+            "queues": [
+              18,
+              22,
+              79
+            ],
+            "indices": [
+              5,
+              5,
+              5,
+              5,
+              5,
+              7,
+              7,
+              8,
+              8,
+              8,
+              8,
+              8,
+              8,
+              8,
+              8,
+              8
+            ],
+            "expected_indices": [
+              5,
+              5,
+              5,
+              5,
+              6,
+              7,
+              7,
+              8,
+              8,
+              8,
+              8,
+              8,
+              8,
+              8,
+              8,
+              8
+            ],
+            "score_fraction": "892253685940224/2875835812567",
+            "expected_score_fraction": "894040392335360/2875835812567",
+            "score_exact": false,
+            "canonical_exact": false
+          },
+          "max_relative_score_deficit": 0.0019984627209838584,
+          "relative_score_deficit_sum": 0.011990776325903152,
+          "gap_sum": 3.799381297526679,
+          "max_gap": 0.6332302162544465,
+          "search_work": {
+            "lp_calls": 40374,
+            "lp_matrix_coefficients": 2562486,
+            "candidate_evaluations": 41910,
+            "duration_root_count": 12288,
+            "dual_column_checks": 241458,
+            "branch_splits": 16308,
+            "bound_pruned_regions": 25848,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 241458
+          },
+          "preprocessing": {
+            "original_option_count": 13824,
+            "requirement_group_count": 12288,
+            "duration_threshold_count": 12288,
+            "reduction_option_probes": 13824,
+            "reduction_requirement_coordinate_reads": 41472,
+            "reduction_duration_comparisons": 15360,
+            "grouping_option_probes": 13824,
+            "representative_option_probes": 55296,
+            "proxy_option_count": 55296,
+            "lift_option_probes": 117342
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        },
+        "fractional_shared": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 38154,
+            "lp_matrix_coefficients": 2445354,
+            "candidate_evaluations": 39690,
+            "duration_root_count": 12288,
+            "dual_column_checks": 229506,
+            "branch_splits": 15018,
+            "bound_pruned_regions": 25164,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 229506
+          },
+          "preprocessing": {
+            "original_option_count": 13824,
+            "requirement_group_count": 12288,
+            "duration_threshold_count": 12288,
+            "reduction_option_probes": 13824,
+            "reduction_requirement_coordinate_reads": 41472,
+            "reduction_duration_comparisons": 15360,
+            "grouping_option_probes": 13824,
+            "representative_option_probes": 55296,
+            "proxy_option_count": 55296,
+            "lift_option_probes": 108372
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        },
+        "integer_capacity": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 20934,
+            "lp_matrix_coefficients": 1099986,
+            "candidate_evaluations": 22470,
+            "duration_root_count": 12288,
+            "dual_column_checks": 108462,
+            "branch_splits": 5604,
+            "bound_pruned_regions": 17340,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 108462
+          },
+          "preprocessing": {
+            "original_option_count": 13824,
+            "requirement_group_count": 12288,
+            "duration_threshold_count": 12288,
+            "reduction_option_probes": 13824,
+            "reduction_requirement_coordinate_reads": 41472,
+            "reduction_duration_comparisons": 15360,
+            "grouping_option_probes": 13824,
+            "representative_option_probes": 55296,
+            "proxy_option_count": 55296,
+            "lift_option_probes": 44112
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        }
+      },
+      "uncertified_reference_count": 0,
+      "runtime_before_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_after_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_end": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      }
+    },
+    {
+      "node": "gpu_b",
+      "lanes": 4,
+      "queue_count": 256,
+      "latency": {
+        "old_shared": {
+          "sum_state_median_wall_ns": 5515283615.0,
+          "mean_state_median_wall_ms": 21.54407662109375,
+          "median_state_median_wall_ms": 12.813364,
+          "p95_state_median_wall_ms": 61.108443,
+          "p95_raw_call_wall_ms": 61.679778,
+          "sum_raw_wall_ns": 33656504218,
+          "sum_state_median_cpu_ns": 5012547963.5,
+          "mean_state_median_cpu_ms": 19.580265482421876
+        },
+        "fractional_shared": {
+          "sum_state_median_wall_ns": 5072815816.0,
+          "mean_state_median_wall_ms": 19.81568678125,
+          "median_state_median_wall_ms": 12.77295025,
+          "p95_state_median_wall_ms": 58.288344,
+          "p95_raw_call_wall_ms": 58.266253,
+          "sum_raw_wall_ns": 30963212036,
+          "sum_state_median_cpu_ns": 4611267158.5,
+          "mean_state_median_cpu_ms": 18.012762337890624
+        },
+        "integer_capacity": {
+          "sum_state_median_wall_ns": 3829164751.5,
+          "mean_state_median_wall_ms": 14.957674810546875,
+          "median_state_median_wall_ms": 10.0112915,
+          "p95_state_median_wall_ms": 29.828567,
+          "p95_raw_call_wall_ms": 29.903581,
+          "sum_raw_wall_ns": 23374509666,
+          "sum_state_median_cpu_ns": 3480659913.5,
+          "mean_state_median_cpu_ms": 13.596327787109376
+        }
+      },
+      "comparison": {
+        "old_shared": {
+          "wall_ratio": 0.6942824737218886,
+          "cpu_ratio": 0.6943893482606474,
+          "p95_state_median_ratio": 0.4881251351797656,
+          "p95_raw_call_ratio": 0.4848198545721095
+        },
+        "fractional_shared": {
+          "wall_ratio": 0.7548400908668039,
+          "cpu_ratio": 0.7548163647564988,
+          "p95_state_median_ratio": 0.5117415413277138,
+          "p95_raw_call_ratio": 0.5132229971953062
+        }
+      },
+      "correctness": {
+        "reference": {
+          "calls": 256,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 256,
+          "canonical_exact_count": 256,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 256,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 256,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 5485,
+            "lp_matrix_coefficients": 434116,
+            "candidate_evaluations": 5741,
+            "duration_root_count": 2304,
+            "dual_column_checks": 36940,
+            "branch_splits": 1879,
+            "bound_pruned_regions": 3855,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 36940
+          },
+          "preprocessing": {},
+          "operational_elapsed_s": 0.0
+        },
+        "old_shared": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 27432,
+            "lp_matrix_coefficients": 1740522,
+            "candidate_evaluations": 28968,
+            "duration_root_count": 12288,
+            "dual_column_checks": 161358,
+            "branch_splits": 9150,
+            "bound_pruned_regions": 19776,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 161358
+          },
+          "preprocessing": {
+            "original_option_count": 13824,
+            "requirement_group_count": 12288,
+            "duration_threshold_count": 12288,
+            "reduction_option_probes": 13824,
+            "reduction_requirement_coordinate_reads": 41472,
+            "reduction_duration_comparisons": 15360,
+            "grouping_option_probes": 13824,
+            "representative_option_probes": 55296,
+            "proxy_option_count": 55296,
+            "lift_option_probes": 56526
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        },
+        "fractional_shared": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 25392,
+            "lp_matrix_coefficients": 1567728,
+            "candidate_evaluations": 26928,
+            "duration_root_count": 12288,
+            "dual_column_checks": 146364,
+            "branch_splits": 7944,
+            "bound_pruned_regions": 18960,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 146364
+          },
+          "preprocessing": {
+            "original_option_count": 13824,
+            "requirement_group_count": 12288,
+            "duration_threshold_count": 12288,
+            "reduction_option_probes": 13824,
+            "reduction_requirement_coordinate_reads": 41472,
+            "reduction_duration_comparisons": 15360,
+            "grouping_option_probes": 13824,
+            "representative_option_probes": 55296,
+            "proxy_option_count": 55296,
+            "lift_option_probes": 50892
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        },
+        "integer_capacity": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 19608,
+            "lp_matrix_coefficients": 1071414,
+            "candidate_evaluations": 21144,
+            "duration_root_count": 12288,
+            "dual_column_checks": 103614,
+            "branch_splits": 4632,
+            "bound_pruned_regions": 15144,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 103614
+          },
+          "preprocessing": {
+            "original_option_count": 13824,
+            "requirement_group_count": 12288,
+            "duration_threshold_count": 12288,
+            "reduction_option_probes": 13824,
+            "reduction_requirement_coordinate_reads": 41472,
+            "reduction_duration_comparisons": 15360,
+            "grouping_option_probes": 13824,
+            "representative_option_probes": 55296,
+            "proxy_option_count": 55296,
+            "lift_option_probes": 34920
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        }
+      },
+      "uncertified_reference_count": 0,
+      "runtime_before_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_after_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_end": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      }
+    },
+    {
+      "node": "gpu_b",
+      "lanes": 8,
+      "queue_count": 256,
+      "latency": {
+        "old_shared": {
+          "sum_state_median_wall_ns": 9335447535.5,
+          "mean_state_median_wall_ms": 36.46659193554687,
+          "median_state_median_wall_ms": 12.425205,
+          "p95_state_median_wall_ms": 164.0725455,
+          "p95_raw_call_wall_ms": 163.484205,
+          "sum_raw_wall_ns": 56840151635,
+          "sum_state_median_cpu_ns": 8481276450.5,
+          "mean_state_median_cpu_ms": 33.12998613476562
+        },
+        "fractional_shared": {
+          "sum_state_median_wall_ns": 8759482049.5,
+          "mean_state_median_wall_ms": 34.216726755859376,
+          "median_state_median_wall_ms": 12.3832015,
+          "p95_state_median_wall_ms": 137.0668535,
+          "p95_raw_call_wall_ms": 136.769852,
+          "sum_raw_wall_ns": 53291474505,
+          "sum_state_median_cpu_ns": 7960980976.5,
+          "mean_state_median_cpu_ms": 31.097581939453125
+        },
+        "integer_capacity": {
+          "sum_state_median_wall_ns": 4351447826.0,
+          "mean_state_median_wall_ms": 16.9978430703125,
+          "median_state_median_wall_ms": 10.0712925,
+          "p95_state_median_wall_ms": 30.7836165,
+          "p95_raw_call_wall_ms": 31.363024,
+          "sum_raw_wall_ns": 26678712751,
+          "sum_state_median_cpu_ns": 3955325222.5,
+          "mean_state_median_cpu_ms": 15.450489150390625
+        }
+      },
+      "comparison": {
+        "old_shared": {
+          "wall_ratio": 0.46612096629033645,
+          "cpu_ratio": 0.4663596624381723,
+          "p95_state_median_ratio": 0.18762198395952845,
+          "p95_raw_call_ratio": 0.19184130968493254
+        },
+        "fractional_shared": {
+          "wall_ratio": 0.4967699918111465,
+          "cpu_ratio": 0.49683892401900154,
+          "p95_state_median_ratio": 0.22458833564746564,
+          "p95_raw_call_ratio": 0.229312407240157
+        }
+      },
+      "correctness": {
+        "reference": {
+          "calls": 256,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 256,
+          "canonical_exact_count": 256,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 256,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 256,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 9412,
+            "lp_matrix_coefficients": 875157,
+            "candidate_evaluations": 9668,
+            "duration_root_count": 2304,
+            "dual_column_checks": 71489,
+            "branch_splits": 3922,
+            "bound_pruned_regions": 5762,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 71489
+          },
+          "preprocessing": {},
+          "operational_elapsed_s": 0.0
+        },
+        "old_shared": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1518,
+          "canonical_exact_count": 1518,
+          "cap_reached_count": 18,
+          "uncertified_cap_reached_count": 18,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 5.252776315368067,
+          "max_gap": 0.4714030026612335,
+          "search_work": {
+            "lp_calls": 43692,
+            "lp_matrix_coefficients": 3248562,
+            "candidate_evaluations": 45228,
+            "duration_root_count": 12288,
+            "dual_column_checks": 288990,
+            "branch_splits": 17610,
+            "bound_pruned_regions": 27606,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 288990
+          },
+          "preprocessing": {
+            "original_option_count": 13824,
+            "requirement_group_count": 12288,
+            "duration_threshold_count": 12288,
+            "reduction_option_probes": 13824,
+            "reduction_requirement_coordinate_reads": 41472,
+            "reduction_duration_comparisons": 15360,
+            "grouping_option_probes": 13824,
+            "representative_option_probes": 55296,
+            "proxy_option_count": 55296,
+            "lift_option_probes": 122436
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        },
+        "fractional_shared": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1524,
+          "canonical_exact_count": 1524,
+          "cap_reached_count": 12,
+          "uncertified_cap_reached_count": 12,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 4.819538230180569,
+          "max_gap": 0.4714030026612335,
+          "search_work": {
+            "lp_calls": 41058,
+            "lp_matrix_coefficients": 3019668,
+            "candidate_evaluations": 42594,
+            "duration_root_count": 12288,
+            "dual_column_checks": 269232,
+            "branch_splits": 16266,
+            "bound_pruned_regions": 26406,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 269232
+          },
+          "preprocessing": {
+            "original_option_count": 13824,
+            "requirement_group_count": 12288,
+            "duration_threshold_count": 12288,
+            "reduction_option_probes": 13824,
+            "reduction_requirement_coordinate_reads": 41472,
+            "reduction_duration_comparisons": 15360,
+            "grouping_option_probes": 13824,
+            "representative_option_probes": 55296,
+            "proxy_option_count": 55296,
+            "lift_option_probes": 112380
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        },
+        "integer_capacity": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 21582,
+            "lp_matrix_coefficients": 1279896,
+            "candidate_evaluations": 23118,
+            "duration_root_count": 12288,
+            "dual_column_checks": 120456,
+            "branch_splits": 5754,
+            "bound_pruned_regions": 17286,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 120456
+          },
+          "preprocessing": {
+            "original_option_count": 13824,
+            "requirement_group_count": 12288,
+            "duration_threshold_count": 12288,
+            "reduction_option_probes": 13824,
+            "reduction_requirement_coordinate_reads": 41472,
+            "reduction_duration_comparisons": 15360,
+            "grouping_option_probes": 13824,
+            "representative_option_probes": 55296,
+            "proxy_option_count": 55296,
+            "lift_option_probes": 42462
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        }
+      },
+      "uncertified_reference_count": 0,
+      "runtime_before_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_after_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_end": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      }
+    },
+    {
+      "node": "gpu_b",
+      "lanes": 16,
+      "queue_count": 256,
+      "latency": {
+        "old_shared": {
+          "sum_state_median_wall_ns": 9090599638.5,
+          "mean_state_median_wall_ms": 35.510154837890624,
+          "median_state_median_wall_ms": 13.12190525,
+          "p95_state_median_wall_ms": 145.345793,
+          "p95_raw_call_wall_ms": 150.869981,
+          "sum_raw_wall_ns": 55479184268,
+          "sum_state_median_cpu_ns": 8260382717.5,
+          "mean_state_median_cpu_ms": 32.26711999023438
+        },
+        "fractional_shared": {
+          "sum_state_median_wall_ns": 8021458182.5,
+          "mean_state_median_wall_ms": 31.333821025390623,
+          "median_state_median_wall_ms": 13.06778675,
+          "p95_state_median_wall_ms": 126.8866235,
+          "p95_raw_call_wall_ms": 128.109002,
+          "sum_raw_wall_ns": 48942310281,
+          "sum_state_median_cpu_ns": 7288127986.5,
+          "mean_state_median_cpu_ms": 28.469249947265624
+        },
+        "integer_capacity": {
+          "sum_state_median_wall_ns": 4601086040.0,
+          "mean_state_median_wall_ms": 17.97299234375,
+          "median_state_median_wall_ms": 12.43535825,
+          "p95_state_median_wall_ms": 32.472982,
+          "p95_raw_call_wall_ms": 32.859243,
+          "sum_raw_wall_ns": 28129478491,
+          "sum_state_median_cpu_ns": 4180807804.5,
+          "mean_state_median_cpu_ms": 16.331280486328126
+        }
+      },
+      "comparison": {
+        "old_shared": {
+          "wall_ratio": 0.5061366931740935,
+          "cpu_ratio": 0.5061276150852874,
+          "p95_state_median_ratio": 0.22341879547899957,
+          "p95_raw_call_ratio": 0.21779841677053038
+        },
+        "fractional_shared": {
+          "wall_ratio": 0.5735972107961557,
+          "cpu_ratio": 0.5736463207347929,
+          "p95_state_median_ratio": 0.255921239798772,
+          "p95_raw_call_ratio": 0.25649441090798597
+        }
+      },
+      "correctness": {
+        "reference": {
+          "calls": 256,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 256,
+          "canonical_exact_count": 256,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 256,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 256,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 9227,
+            "lp_matrix_coefficients": 851100,
+            "candidate_evaluations": 9483,
+            "duration_root_count": 2304,
+            "dual_column_checks": 69618,
+            "branch_splits": 3913,
+            "bound_pruned_regions": 5699,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 69618
+          },
+          "preprocessing": {},
+          "operational_elapsed_s": 0.0
+        },
+        "old_shared": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 42474,
+            "lp_matrix_coefficients": 3110706,
+            "candidate_evaluations": 44010,
+            "duration_root_count": 12288,
+            "dual_column_checks": 277746,
+            "branch_splits": 17208,
+            "bound_pruned_regions": 27258,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 277746
+          },
+          "preprocessing": {
+            "original_option_count": 13824,
+            "requirement_group_count": 12288,
+            "duration_threshold_count": 12288,
+            "reduction_option_probes": 13824,
+            "reduction_requirement_coordinate_reads": 41472,
+            "reduction_duration_comparisons": 15360,
+            "grouping_option_probes": 13824,
+            "representative_option_probes": 55296,
+            "proxy_option_count": 55296,
+            "lift_option_probes": 121290
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        },
+        "fractional_shared": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 37674,
+            "lp_matrix_coefficients": 2689320,
+            "candidate_evaluations": 39210,
+            "duration_root_count": 12288,
+            "dual_column_checks": 241572,
+            "branch_splits": 14640,
+            "bound_pruned_regions": 25128,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 241572
+          },
+          "preprocessing": {
+            "original_option_count": 13824,
+            "requirement_group_count": 12288,
+            "duration_threshold_count": 12288,
+            "reduction_option_probes": 13824,
+            "reduction_requirement_coordinate_reads": 41472,
+            "reduction_duration_comparisons": 15360,
+            "grouping_option_probes": 13824,
+            "representative_option_probes": 55296,
+            "proxy_option_count": 55296,
+            "lift_option_probes": 102180
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        },
+        "integer_capacity": {
+          "calls": 1536,
+          "failures": 0,
+          "first_failure": null,
+          "score_exact_count": 1536,
+          "canonical_exact_count": 1536,
+          "cap_reached_count": 0,
+          "uncertified_cap_reached_count": 0,
+          "reference_comparable_count": 1536,
+          "score_mismatch_count": 0,
+          "score_reference_comparable_count": 1536,
+          "canonical_action_mismatch_count": 0,
+          "first_mismatch": null,
+          "max_relative_score_deficit": 0.0,
+          "relative_score_deficit_sum": 0.0,
+          "gap_sum": 0.0,
+          "max_gap": 0.0,
+          "search_work": {
+            "lp_calls": 22476,
+            "lp_matrix_coefficients": 1348842,
+            "candidate_evaluations": 24012,
+            "duration_root_count": 12288,
+            "dual_column_checks": 126606,
+            "branch_splits": 6456,
+            "bound_pruned_regions": 18222,
+            "safe_fallback_lp_calls": 0,
+            "residual_fill_option_probes": 126606
+          },
+          "preprocessing": {
+            "original_option_count": 13824,
+            "requirement_group_count": 12288,
+            "duration_threshold_count": 12288,
+            "reduction_option_probes": 13824,
+            "reduction_requirement_coordinate_reads": 41472,
+            "reduction_duration_comparisons": 15360,
+            "grouping_option_probes": 13824,
+            "representative_option_probes": 55296,
+            "proxy_option_count": 55296,
+            "lift_option_probes": 47220
+          },
+          "operational_elapsed_s": 0.0,
+          "deterministic_repeat_mismatch_count": 0,
+          "first_repeat_mismatch": null
+        }
+      },
+      "uncertified_reference_count": 0,
+      "runtime_before_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_after_warmup": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      },
+      "runtime_end": {
+        "hostname": "controller",
+        "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.10.12",
+        "scipy": "1.15.3",
+        "cpu_model": "AMD Ryzen 9 7945HX with Radeon Graphics",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_environment": {
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "BLIS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1"
+        },
+        "threadpool_info": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-56d6093b.so",
+            "version": "0.3.29",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "/home/researcher/.local/lib/python3.10/site-packages/scipy.libs/libscipy_openblas-68440149.so",
+            "version": "0.3.28",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          }
+        ],
+        "native_thread_count": 16,
+        "gc_enabled": true,
+        "gc_threshold": [
+          700,
+          10,
+          10
+        ]
+      }
+    }
+  ],
+  "limitations": "Latency reuses the successful queue confirmation roster and fixed cached point models. All four catalogues run on one local host; virtual lanes are not new physical nodes. Six timing repeats and catalogue comparisons are paired, not independent queue samples. No new queue generalization or trajectory/flow-time claim.",
+  "protocol_path": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/aligned_hardware_integer_capacity_timing_20260927_protocol.json"
+}

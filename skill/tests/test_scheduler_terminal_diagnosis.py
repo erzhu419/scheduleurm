@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime
+from dataclasses import replace
 from pathlib import Path
 
 from skill.scheduler_failure.terminal_diagnosis import (
@@ -98,6 +99,27 @@ def test_success_marker_classifies_normal_even_when_lifetime_short(tmp_path: Pat
     assert diag["success_marker"] == "DONE"
 
 
+def test_component_calibration_terminal_marker_is_normal_before_early_death_cutoff(tmp_path: Path):
+    from skill.scheduler_failure.analysis import success_patterns_for_task
+
+    log = tmp_path / "calibration.log"
+    log.write_text("Component calibration completed successfully seed=8401 arm=bundle day=1\n")
+    task = _task(
+        log_path=str(log),
+        cmd="python -m jax_experiments.experiments.bus_component_calibration --seed 8401 --arm bundle --day 1",
+        started_at=10.0,
+        finished_at=122.0,
+        exit_code=0,
+    )
+    deps = _deps(success_patterns=success_patterns_for_task(task))
+    deps = replace(deps, early_death_seconds=120)
+
+    diag = diagnose_terminal(task, deps=deps)
+
+    assert diag["is_crash"] is False
+    assert diag["success_marker"] == "Component calibration completed successfully"
+
+
 def test_batched_terminal_evidence_is_decisive_without_remote_io():
     run_calls = []
     task = _task(
@@ -163,6 +185,24 @@ def test_batched_ambiguous_evidence_defers_to_bounded_deep_diagnosis():
 
     assert diag["needs_deep_terminal_diagnosis"] is True
     assert run_calls == []
+
+
+def test_backend_exit0_completes_without_a_recognized_text_marker():
+    run_calls = []
+    task = _task(
+        node="remote", exit_code=0, started_at=10.0, finished_at=20.0,
+        _terminal_batch_probe_only=True,
+        _terminal_evidence={"log_path": "/tmp/t.log",
+                            "tail": "NATIVE_MEAN_COVERAGE_DRAW_COMPLETE\n",
+                            "log_size": 34, "artifact_checked": True},
+    )
+    diag = diagnose_terminal(task, deps=_deps(run_calls=run_calls))
+    assert diag["is_crash"] is False
+    assert diag["success_marker"] == "BACKEND_EXIT_0"
+    assert not diag.get("needs_deep_terminal_diagnosis")
+    assert run_calls == []
+    task["_terminal_evidence"]["tail"] = "Traceback\n"
+    assert diagnose_terminal(task, deps=_deps(run_calls=run_calls))["is_crash"] is True
 
 
 def test_error_pattern_overrides_success_marker(tmp_path: Path):

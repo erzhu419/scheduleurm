@@ -436,6 +436,10 @@ def test_incomplete_terminal_snapshot_defers_without_lock_inner_log_scan():
         "signature": "sig",
         "started_at": 80.0,
         "log_path": "/tmp/log",
+        "current_vram_mb": 12,
+        "current_ram_mb": 682,
+        "current_pcpu": 99.6,
+        "peak_ram_mb": 733,
     }
 
     handle_dead_probe_result(
@@ -455,7 +459,24 @@ def test_incomplete_terminal_snapshot_defers_without_lock_inner_log_scan():
     assert task["status"] == "running"
     assert task["terminal_transition_deferred"] is True
     assert "outside state lock" in task["last_block_reason"]
+    assert (task["current_vram_mb"], task["current_ram_mb"], task["current_pcpu"]) == (0, 0, 0.0)
+    assert task["peak_ram_mb"] == 733
     assert "release" not in calls
+
+
+def test_backend_finish_time_excludes_terminal_accounting_delay():
+    deps, calls = _deps(now=1000.0)
+    task = {"id": "t-delayed", "status": "running", "started_at": 80.0,
+            "signature": "sig", "log_path": "/tmp/log"}
+    handle_dead_probe_result(
+        task, {"tasks": [task]},
+        {"state": "dead", "terminal_ok": True, "exit_code": 0,
+         "backend_finished_at": 100.0},
+        None, {"t-delayed": {"completed_log_crash": (False, "")}}, deps=deps,
+    )
+    assert task["status"] == "done"
+    assert task["finished_at"] == 100.0
+    assert calls["runtime"][0][1]["duration_s"] == 20.0
 
 
 def test_handle_dead_probe_result_deferred_local_pid_dead_avoids_inline_log_diagnosis():

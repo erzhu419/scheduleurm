@@ -299,11 +299,11 @@ def handle_dead_probe_result(task: dict, state: dict, res: dict,
             {"error": "backend reported dead but local launch transport is still alive"},
         )
         return
+    deps.set_current_usage(task, 0, 0, 0.0)
     cancel_request_token = str(task.get("cancel_request_token") or "")
     if cancel_request_token:
         request_actor = copy.deepcopy(task.get("cancel_request_actor") or {})
         reason = str(task.get("cancel_request_reason") or "user batch force-cancel")
-        deps.set_current_usage(task, 0, 0, 0.0)
         try:
             deps.release_task_claims_and_intents(task)
         except Exception:
@@ -385,9 +385,8 @@ def handle_dead_probe_result(task: dict, state: dict, res: dict,
     # messages. Keep failure reasons below, where a crash transition rewrites
     # this field with the final diagnosis.
     task.pop("last_block_reason", None)
-    deps.set_current_usage(task, 0, 0, 0.0)
     task["status"] = "done"
-    task["finished_at"] = deps.now()
+    task["finished_at"] = task.get("backend_finished_at") or deps.now()
     try:
         deps.release_task_claims_and_intents(task)
     except Exception:

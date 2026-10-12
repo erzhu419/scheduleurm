@@ -341,6 +341,36 @@ def test_collect_terminal_evidence_returns_at_deadline_when_remote_call_blocks(t
     assert time.monotonic() - started_at < 0.5
 
 
+def test_collect_terminal_evidence_retains_completed_chunk_when_next_chunk_times_out(tmp_path):
+    entered = threading.Event()
+    release = threading.Event()
+    marker = base64.b64encode(b"_SUCCESS.json").decode("ascii")
+
+    def run_on(_node, cmd, **_kwargs):
+        if "tid=fast" in cmd:
+            return 0, f"E\tfast\t0\t\t{marker}\t100\t\t0\t\n", ""
+        entered.set()
+        release.wait(timeout=2.0)
+        return 1, "", "blocked"
+
+    deps = replace(_artifact_deps(tmp_path), run_on=run_on)
+    tasks = [
+        {"id": tid, "status": "running", "node": "node001", "started_at": 90,
+         "log_path": f"/tmp/{tid}.log", "cmd": f"python eval.py --out-dir results/{tid}"}
+        for tid in ("fast", "slow")
+    ]
+    try:
+        evidence = collect_terminal_evidence(
+            tasks, deps=deps, batch_size=1, max_workers=1, timeout_s=0.1,
+        )
+    finally:
+        release.set()
+
+    assert entered.wait(timeout=0.5)
+    assert set(evidence) == {"fast"}
+    assert evidence["fast"]["success_marker"] == "result_artifact:_SUCCESS.json"
+
+
 def test_terminal_result_artifact_success_uses_completed_iteration_npy(tmp_path):
     out_dir = tmp_path / "results" / "run0"
     log_dir = out_dir / "logs"

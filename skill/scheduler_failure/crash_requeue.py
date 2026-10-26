@@ -75,6 +75,8 @@ RETRY_CLEAR_KEYS = (
     "remote_pid_start_ticks",
     "exit_code",
     "backend_finished_at",
+    "remote_started_at",
+    "remote_clock_offset_s",
     "last_launch_pre_snapshot",
     "last_launch_post_snapshot",
     "last_node",
@@ -144,6 +146,10 @@ def requeue_after_crash(parent: dict, state: dict, *, deps: CrashRequeueDeps):
     """
     cmd = parent.get("cmd") or ""
     if cmd.startswith("(auto-adopted"):
+        return None
+
+    if parent.get("no_auto_requeue"):
+        parent["last_block_reason"] = "not auto-requeued: disabled for this task by --no-auto-requeue"
         return None
 
     launch_state, launch_reason = deps.recorded_launch_safety_state(parent)

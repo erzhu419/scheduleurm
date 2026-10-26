@@ -127,6 +127,14 @@ def spec_int(spec: dict, key: str, default=None):
     return int(val)
 
 
+def _active_identity_index(state: dict, deps: BulkSubmitDeps) -> dict:
+    index = {}
+    for task in state.get("tasks", []):
+        if task.get("status") in ("queued", "running", "launching"):
+            index.setdefault(deps.task_run_identity(task), task)
+    return index
+
+
 def build_bulk_submit_task(
     state: dict,
     spec: dict,
@@ -136,6 +144,7 @@ def build_bulk_submit_task(
     resource_history: dict | None = None,
     runtime_history: dict | None = None,
     runtime_closest_index: list[dict] | None = None,
+    active_identity_index: dict | None = None,
 ) -> dict:
     missing = [k for k in ("description", "cmd", "cwd", "signature") if not spec.get(k)]
     if missing:
@@ -225,14 +234,14 @@ def build_bulk_submit_task(
             "preferred_node": preferred_node,
             "require_gpu_idx": require_gpu_idx,
         })
-        for existing in state["tasks"]:
-            if deps.task_run_identity(existing) != submit_identity:
-                continue
-            if existing.get("status") in ("queued", "running", "launching"):
-                raise ValueError(
-                    f"duplicate active task {existing['id']} for signature {sig!r}; "
-                    "set allow_duplicate=true to override"
-                )
+        if active_identity_index is None:
+            active_identity_index = _active_identity_index(state, deps)
+        existing = active_identity_index.get(submit_identity)
+        if existing is not None:
+            raise ValueError(
+                f"duplicate active task {existing['id']} for signature {sig!r}; "
+                "set allow_duplicate=true to override"
+            )
 
     if resource_history is not None:
         hist = resource_history.get(sig) or {}
@@ -308,6 +317,7 @@ def build_bulk_submit_task(
         "stage_excludes": stage_excludes or None,
         "stage_input_paths": stage_input_paths or None,
         "skip_launch_staging": spec_bool(spec, "skip_launch_staging", False),
+        "no_auto_requeue": spec_bool(spec, "no_auto_requeue", False),
         "reroute_on_node_down": spec_bool(spec, "reroute_on_node_down", False),
         "node_down_requeue_s": spec_int(spec, "node_down_requeue_s", 0) or None,
         "git_repo": spec.get("git_repo"),
@@ -409,6 +419,7 @@ def build_bulk_submit_tasks(
         )
     working_state = dict(state)
     working_state["tasks"] = list(state.get("tasks", []))
+    active_identity_index = _active_identity_index(state, deps)
     submitted: list[dict] = []
     for idx, (spec, task_id) in enumerate(zip(specs, task_ids)):
         try:
@@ -420,10 +431,12 @@ def build_bulk_submit_tasks(
                 resource_history=resource_history,
                 runtime_history=runtime_history,
                 runtime_closest_index=runtime_closest_index,
+                active_identity_index=active_identity_index,
             )
         except Exception as e:
             raise RuntimeError(f"bulk spec #{idx} failed: {e}") from e
         working_state["tasks"].append(task)
+        active_identity_index.setdefault(deps.task_run_identity(task), task)
         submitted.append(task)
     state.setdefault("tasks", []).extend(submitted)
     return submitted

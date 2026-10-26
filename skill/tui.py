@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -44,9 +45,13 @@ except ImportError:
 
 sys.path.insert(0, str(Path(__file__).parent))
 import scheduler as sch  # noqa: E402
+from scheduler_probe.processes import external_display_tasks  # noqa: E402
 
 _SCHED_SOURCE = Path(getattr(sch, "__file__", Path(__file__).with_name("scheduler.py"))).resolve()
 _TUI_SOURCE = Path(__file__).resolve()
+_OWNER_SOURCE = Path(sch._format_task_owner.__code__.co_filename).resolve()
+_PROCESS_SOURCE = Path(external_display_tasks.__code__.co_filename).resolve()
+_DISPLAY_READER_SOURCE = _TUI_SOURCE.with_name("scheduler_tui_snapshot.py")
 _NODE_INVENTORY_MODULE = sys.modules.get("scheduler_node.inventory")
 _NODE_INVENTORY_SOURCE = Path(
     getattr(_NODE_INVENTORY_MODULE, "__file__", _SCHED_SOURCE)
@@ -56,7 +61,8 @@ _DISPLAY_FILE_CACHE = {}
 _DISPLAY_CACHE_LOCK = Lock()
 PROBE_UNKNOWN_WARN_S = max(0, int(os.environ.get("SCHEDULEURM_TUI_PROBE_UNKNOWN_WARN_S", "180")))
 TERMINAL_TASK_STATUSES = frozenset({"done", "failed", "cancelled"})
-for _src in (_SCHED_SOURCE, _TUI_SOURCE, _NODE_INVENTORY_SOURCE):
+for _src in (_SCHED_SOURCE, _TUI_SOURCE, _NODE_INVENTORY_SOURCE, _OWNER_SOURCE,
+             _PROCESS_SOURCE, _DISPLAY_READER_SOURCE):
     try:
         _SOURCE_MTIMES[_src] = _src.stat().st_mtime_ns
     except OSError:
@@ -80,6 +86,24 @@ def _fmt_min(secs):
     return f"{secs/3600:.1f}h"
 
 
+def _task_ram_mb(task):
+    if task.get("status") == "running":
+        return int(task.get("current_ram_mb") or 0)
+    if task.get("status") in TERMINAL_TASK_STATUSES:
+        return int(task.get("peak_ram_mb") or 0)
+    return int(task.get("ram_mb") or 0)
+
+
+def _format_task_ram(task):
+    value = _task_ram_mb(task)
+    if task.get("status") == "running":
+        measured = task.get("current_ram_measurement")
+        if not value and not measured:
+            return "?"
+        return sch._format_mem_gb(value, approx=measured == "rss")
+    return sch._format_mem_gb(value, approx=task.get("status") not in TERMINAL_TASK_STATUSES) if value else "-"
+
+
 def _probe_unknown_age(task, now=None):
     if not task or not task.get("probe_unknown_since"):
         return None
@@ -100,6 +124,8 @@ def _display_status(task, now=None):
 
 def _display_node(task, now=None):
     node = sch._format_task_location(task)
+    if len(task.get("gpu_indices") or []) > 1:
+        node = f"{task['node']}:GPU" + ",".join(str(idx) for idx in task["gpu_indices"])
     age = _probe_unknown_age(task, now)
     if age is not None and age >= PROBE_UNKNOWN_WARN_S:
         return f"{node} probe?{_fmt_min(age)}"
@@ -114,7 +140,7 @@ def _int_or_default(value, default=-1):
 
 
 def _fmt_eta(t, hist):
-    if t.get("status") in TERMINAL_TASK_STATUSES:
+    if t.get("observed_only") or t.get("status") in TERMINAL_TASK_STATUSES:
         return "-"
     eta = _int_or_default(t.get("eta_seconds"), 0)
     source = sch._eta_source_base(t.get("eta_source"))
@@ -593,27 +619,54 @@ def _node_probe_cache_snapshot(max_age_s: int):
     }
 
 
+def _read_active_display_state():
+    result = subprocess.run(
+        [sys.executable, str(_DISPLAY_READER_SOURCE), str(sch.QUEUE_FILE)],
+        capture_output=True, text=True, check=True, timeout=60, cwd=Path.home(),
+    )
+    return json.loads(result.stdout)
+
+
 def _load_display_state():
     """Read atomically-written display state without taking the scheduler lock."""
     def cached_load(path, loader, default):
         path = Path(path)
+        previous = _DISPLAY_FILE_CACHE.get(path)
         try:
             st = path.stat()
             version = (st.st_mtime_ns, st.st_size)
-            previous = _DISPLAY_FILE_CACHE.get(path)
             if previous and previous[0] == version:
                 return previous[1]
             value = loader()
             _DISPLAY_FILE_CACHE[path] = (version, value)
             return value
         except Exception:
-            return default
+            return previous[1] if previous else default
 
     with _DISPLAY_CACHE_LOCK:
         return (
-            cached_load(sch.QUEUE_FILE, sch.load_state, {"tasks": []}),
+            cached_load(sch.QUEUE_FILE, _read_active_display_state, {"tasks": []}),
             cached_load(sch.VRAM_FILE, sch.load_history, {}),
         )
+
+
+def _prepare_display_snapshot(snap):
+    """Prepare process classification and search text once in the refresh worker."""
+    active = [task for task in snap["state"].get("tasks", [])
+              if task.get("status") in ("running", "launching", "queued")]
+    tasks = active + external_display_tasks(
+        {"tasks": active}, snap.get("nodes", []),
+        is_control_process=sch._is_scheduler_control_process,
+    )
+    search = {}
+    for task in tasks:
+        fields = [sch._format_task_location(task), _display_status(task), sch._format_task_owner(task)]
+        fields.extend(str(task.get(key) or "") for key in (
+            "id", "project", "node", "signature", "description", "origin", "submitted_by",
+            "process_owner", "node_probe_state", "last_probe_unknown_reason", "last_status_sync_reason",
+        ))
+        search[task["id"]] = "\n".join(fields).lower()
+    return {**snap, "display_tasks": tasks, "display_search": search}
 
 
 def _probe_snapshot():
@@ -645,13 +698,13 @@ def _probe_snapshot():
         sch._apply_cpu_slot_accounting_to_nodes(state, node_snap["nodes"])
     except Exception:
         pass
-    return {
+    return _prepare_display_snapshot({
         "state": state,
         "hist": hist,
         "nodes": node_snap["nodes"],
         "ts": node_snap["ts"],
         "node_source": node_snap["source"],
-    }
+    })
 
 
 def _fast_snapshot():
@@ -662,13 +715,13 @@ def _fast_snapshot():
         sch._apply_cpu_slot_accounting_to_nodes(state, node_snap["nodes"])
     except Exception:
         pass
-    return {
+    return _prepare_display_snapshot({
         "state": state,
         "hist": hist,
         "nodes": node_snap["nodes"],
         "ts": node_snap["ts"],
         "node_source": node_snap["source"],
-    }
+    })
 
 
 def _merge_fast_snapshot(previous: dict, fast: dict) -> dict:
@@ -682,6 +735,7 @@ def _merge_fast_snapshot(previous: dict, fast: dict) -> dict:
         fast["nodes"] = previous_nodes
         fast["ts"] = previous_ts
         fast["node_source"] = previous.get("node_source", "live-probe")
+        fast = _prepare_display_snapshot(fast)
     return fast
 
 
@@ -727,6 +781,7 @@ class SchedulerTUI(App):
         self._probing = False
         self._fast_refreshing = False
         self._rendered_rows = {}
+        self._summary_text = None
         self.column_order, self.column_widths = _load_tui_layout()
         self._table_layout_sig = None
         self._column_drag = None
@@ -1045,6 +1100,8 @@ class SchedulerTUI(App):
             fcntl.flock(lf, fcntl.LOCK_UN)
         # Update cache immediately so render reflects new order.
         self._snap["state"] = state
+        self._snap.pop("display_tasks", None)
+        self._snap.pop("display_search", None)
         self._render_from_cache()
 
     def action_view_log(self):
@@ -1144,8 +1201,12 @@ class SchedulerTUI(App):
             summary = _node_summary_line(nodes) + stale_tag
             if watcher_line:
                 summary = watcher_line + "\n" + summary
-            self.query_one("#node_summary", Static).update(summary)
-            tasks = list(state.get("tasks", []))
+            if summary != self._summary_text:
+                self.query_one("#node_summary", Static).update(summary)
+                self._summary_text = summary
+            if "display_tasks" not in snap:
+                snap = _prepare_display_snapshot(snap)
+            tasks = list(snap["display_tasks"])
             if self.state_filter == "running":
                 tasks = [t for t in tasks if t.get("status") == "running"]
             elif self.state_filter == "queued":
@@ -1154,18 +1215,7 @@ class SchedulerTUI(App):
                 tasks = [t for t in tasks if t.get("status") in ("running", "launching", "queued")]
             tf = (self.text_filter or "").lower().strip()
             if tf:
-                def match(t):
-                    fields = [sch._format_task_location(t), _display_status(t)]
-                    fields.extend(
-                        "" if t.get(k) is None else str(t.get(k))
-                        for k in ("id", "project", "node", "signature", "description",
-                                  "origin", "submitted_by", "process_owner",
-                                  "node_probe_state",
-                                  "last_probe_unknown_reason", "last_status_sync_reason")
-                    )
-                    fields.append(sch._format_task_owner(t))
-                    return any(tf in f.lower() for f in fields)
-                tasks = [t for t in tasks if match(t)]
+                tasks = [t for t in tasks if tf in snap["display_search"][t["id"]]]
 
             now = time.time()
             prio_rank = {"high": 0, "normal": 1, "low": 2}
@@ -1209,8 +1259,7 @@ class SchedulerTUI(App):
                 "runtime": lambda t: -runtime_of(t),
                 "vram": lambda t: -int((t.get("current_vram_mb") if t.get("status") == "running" else 0)
                                        or t.get("peak_vram_mb") or t.get("est_vram_mb") or 0),
-                "ram": lambda t: -int((t.get("current_ram_mb") if t.get("status") == "running" else 0)
-                                      or t.get("peak_ram_mb") or t.get("ram_mb") or 0),
+                "ram": lambda t: -_task_ram_mb(t),
                 "eta": lambda t: eta_secs(t),
             }
             keyfn = sortmap.get(self.sort_key, sortmap["id"])
@@ -1224,7 +1273,7 @@ class SchedulerTUI(App):
                 current_id_order = []
             else:
                 try:
-                    current_id_order = [k.value for k in table.rows.keys()]
+                    current_id_order = [row.key.value for row in table.ordered_rows]
                 except Exception:
                     current_id_order = []
 
@@ -1236,14 +1285,9 @@ class SchedulerTUI(App):
                 else:
                     vram = sch._format_mem_gb(t.get("peak_vram_mb", 0)) if t.get("peak_vram_mb") else (
                         sch._format_mem_gb(t.get("est_vram_mb", 0), approx=True) if t.get("est_vram_mb") else "-")
-                # Mirror VRAM column logic for RAM: running=current, terminal=peak, queued=declared.
-                if t.get("status") == "running" and t.get("current_ram_mb"):
-                    ram = sch._format_mem_gb(t.get("current_ram_mb", 0))
-                else:
-                    ram = sch._format_mem_gb(t.get("peak_ram_mb", 0)) if t.get("peak_ram_mb") else (
-                        sch._format_mem_gb(t.get("ram_mb", 0), approx=True) if t.get("ram_mb") else "-")
+                ram = _format_task_ram(t)
                 return {
-                    "id": t.get("id", "?"),
+                    "id": f"p{t['process_group']}" if t.get("observed_only") else t.get("id", "?"),
                     "status": _display_status(t, now),
                     "node": node_str,
                     "project": t.get("project") or "-",
@@ -1256,53 +1300,29 @@ class SchedulerTUI(App):
                     "desc": (t.get("description") or "")[:60],
                 }
 
-            if current_id_order == new_id_order and current_id_order:
-                # Fast path: same tasks in same order -> update cells in place.
-                # Avoids clear() + add_row() which interrupts scroll/cursor.
-                for t in tasks:
-                    cells = _row_for(t)
-                    previous = self._rendered_rows.get(t["id"], {})
-                    if cells == previous:
-                        continue
-                    status = cells.get("status", "-")
-                    for col_key in self.column_order:
-                        if (cells.get(col_key) == previous.get(col_key)
-                                and status == previous.get("status")):
-                            continue
-                        try:
-                            table.update_cell(
-                                t["id"],
-                                col_key,
-                                self._cell_renderable(col_key, cells.get(col_key, ""), status),
-                                update_width=False,
-                            )
-                        except Exception:
-                            pass
-                    self._rendered_rows[t["id"]] = cells
-            else:
-                # Structural change (sort/filter/task set) → full rebuild with cursor+scroll restore.
-                saved_task_id = None
-                try:
-                    cur_row = table.cursor_row
-                    if cur_row is not None and 0 <= cur_row < table.row_count:
-                        keys = list(table.rows.keys())
-                        if cur_row < len(keys):
-                            saved_task_id = keys[cur_row].value
-                except Exception:
-                    pass
-                try:
-                    saved_scroll_y = table.scroll_offset.y
-                except Exception:
-                    saved_scroll_y = 0
-
-                if layout_changed:
-                    self._apply_table_columns(table)
-                else:
-                    table.clear()
+            structure_changed = layout_changed or current_id_order != new_id_order
+            saved_task_id = self._selected_task_id() if structure_changed else None
+            saved_scroll = table.scroll_offset
+            current_ids, new_ids = set(current_id_order), set(new_id_order)
+            if layout_changed:
+                self._apply_table_columns(table)
+                current_ids = set()
                 self._rendered_rows = {}
-                for t in tasks:
-                    cells = _row_for(t)
-                    status = cells.get("status", "-")
+            elif len(current_ids - new_ids) > len(new_ids):
+                # A narrow/disjoint filter is cheaper to rebuild than to remove most rows.
+                table.clear()
+                current_ids = set()
+                self._rendered_rows = {}
+            for task_id in current_ids - new_ids:
+                table.remove_row(task_id)
+                self._rendered_rows.pop(task_id, None)
+            for t in tasks:
+                cells = _row_for(t)
+                previous = self._rendered_rows.get(t["id"], {})
+                if cells == previous:
+                    continue
+                status = cells.get("status", "-")
+                if t["id"] not in current_ids:
                     table.add_row(
                         *[
                             self._cell_renderable(col_key, cells.get(col_key, ""), status)
@@ -1311,15 +1331,30 @@ class SchedulerTUI(App):
                         key=t["id"],
                         height=None,
                     )
-                    self._rendered_rows[t["id"]] = cells
-
+                else:
+                    for col_key in self.column_order:
+                        if (cells.get(col_key) != previous.get(col_key)
+                                or status != previous.get("status")):
+                            table.update_cell(
+                                t["id"], col_key,
+                                self._cell_renderable(col_key, cells.get(col_key, ""), status),
+                                update_width=False,
+                            )
+                self._rendered_rows[t["id"]] = cells
+            if structure_changed:
+                if [row.key.value for row in table.ordered_rows] != new_id_order:
+                    ranks = {
+                        tuple(self._rendered_rows[task_id][key] for key in ("id", "node", "owner")): index
+                        for index, task_id in enumerate(new_id_order)
+                    }
+                    table.sort("id", "node", "owner", key=lambda cells: ranks[tuple(str(cell) for cell in cells)])
                 if saved_task_id and saved_task_id in new_id_order:
                     try:
                         table.move_cursor(row=new_id_order.index(saved_task_id), animate=False)
                     except Exception:
                         pass
                 try:
-                    table.scroll_to(y=saved_scroll_y, animate=False, force=True)
+                    table.scroll_to(x=saved_scroll.x, y=saved_scroll.y, animate=False, force=True)
                 except Exception:
                     pass
             arrow = "↓" if self.sort_reverse else "↑"
@@ -1328,6 +1363,7 @@ class SchedulerTUI(App):
                           + f" sort={self.sort_key}{arrow} | {len(tasks)} tasks"
                           + (" probing..." if self._probing else ""))
         except Exception as e:
+            self._summary_text = None
             self.query_one("#node_summary", Static).update(f"render error: {e}")
 
 

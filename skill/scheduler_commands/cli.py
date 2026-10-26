@@ -196,6 +196,7 @@ def _add_submit_parser(sub, deps: SchedulerCliDeps) -> None:
     parser.add_argument("--allow-shared-result-dir", dest="allow_shared_result_dir", action="store_true", help="Override the local result destination conflict refusal.")
     parser.add_argument("--allow-remote-large-data", dest="allow_remote_large_data", action="store_true", help="Override SimpleSAC large external-data local pin.")
     parser.add_argument("--allow-duplicate", dest="allow_duplicate", action="store_true", help="Allow submission even when run identity matches an existing queued/launching/running task")
+    parser.add_argument("--no-auto-requeue", action="store_true", help="Keep this task's failure record without automatically submitting a retry.")
     parser.add_argument("--allow-seed-batch", dest="allow_seed_batch", action="store_true", help="Do not auto-split simple BAPR `for seed in ...` shell loops at submit time.")
     parser.add_argument(
         "--skip-launch-staging",
@@ -260,6 +261,7 @@ def _add_bulk_submit_parsers(sub, deps: SchedulerCliDeps) -> None:
     parser.add_argument("--allow-shared-result-dir", dest="allow_shared_result_dir", action="store_true")
     parser.add_argument("--allow-remote-large-data", dest="allow_remote_large_data", action="store_true")
     parser.add_argument("--allow-duplicate", dest="allow_duplicate", action="store_true")
+    parser.add_argument("--no-auto-requeue", action="store_true", help="Keep failed shard records without automatically submitting retries.")
     parser.add_argument(
         "--skip-launch-staging",
         dest="skip_launch_staging",

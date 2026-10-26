@@ -33,6 +33,7 @@ class EtaBackgroundRefreshDeps:
     notify: Callable[..., Any]
     now: Callable[[], float] = _time.time
     record_eta_analysis_tasks: Callable[..., Any] = lambda *_args, **_kwargs: {}
+    seed_pending_eta_from_history: Callable[[dict], Any] = lambda _state: None
 
 
 _ETA_FIELDS = tuple(dict.fromkeys((*ETA_AUDIT_FIELDS, *RUNTIME_PROJECTION_FIELDS)))
@@ -71,7 +72,16 @@ def _merge_eta_fields(latest: dict, parsed: dict, task_ids: set[str]) -> int:
         if task_id not in task_ids:
             continue
         source = parsed_by_id.get(task_id)
-        if source is None or not _same_running_attempt(source, target):
+        if source is None:
+            continue
+        same_pending = (
+            source.get("status") in ("queued", "launching")
+            and source.get("status") == target.get("status")
+            and source.get("started_at") == target.get("started_at")
+            and source.get("node") == target.get("node")
+            and source.get("cmd") == target.get("cmd")
+        )
+        if not same_pending and not _same_running_attempt(source, target):
             continue
         changed = False
         for key in _ETA_FIELDS:
@@ -102,7 +112,12 @@ def refresh_eta_snapshot(*, deps: EtaBackgroundRefreshDeps, force: bool = False)
                 for task in snapshot.get("tasks", [])
                 if task.get("status") == "running" and task.get("id")
             }
-        if not task_ids:
+            pending_ids = {
+                str(task["id"]) for task in snapshot.get("tasks", [])
+                if task.get("id") and task.get("status") in ("queued", "launching")
+                and int(task.get("eta_seconds") or 0) <= 0
+            }
+        if not task_ids and not pending_ids:
             return {"status": "no_running_tasks", "updated": 0}
 
         probe_started_at = deps.now()
@@ -110,17 +125,20 @@ def refresh_eta_snapshot(*, deps: EtaBackgroundRefreshDeps, force: bool = False)
         probe_s = max(0.0, deps.now() - probe_started_at)
 
         parse_started_at = deps.now()
-        deps.refresh_eta_from_logs(
-            snapshot,
-            tail_outputs=tail_outputs,
-            probed_task_ids=task_ids,
-        )
+        if task_ids:
+            deps.refresh_eta_from_logs(
+                snapshot,
+                tail_outputs=tail_outputs,
+                probed_task_ids=task_ids,
+            )
+        if pending_ids:
+            deps.seed_pending_eta_from_history(snapshot)
         parse_s = max(0.0, deps.now() - parse_started_at)
 
         commit_started_at = deps.now()
         with deps.state_lock(purpose="watch:eta-background-commit"):
             latest = deps.load_state()
-            updated = _merge_eta_fields(latest, snapshot, task_ids)
+            updated = _merge_eta_fields(latest, snapshot, task_ids | pending_ids)
             latest["_last_eta_refresh_at"] = deps.now()
             deps.save_state(latest)
             analysis_tasks = [

@@ -271,7 +271,7 @@ def run(check, sch):
         gpu = {"total_mb": 12000, "used_mb": 0, "free_mb": 1000, "util_pct": 0}
         return not sch._gpu_fits(task, gpu, {"max_vram_per_task": None})
 
-    def case_remote_gpu_task_ignores_cpu_pressure():
+    def case_remote_gpu_task_checks_cpu_pressure():
         task = _base_task(est_vram_mb=1000, cpu_cores=8, ram_mb=1000)
         node = {"name": "remote-gpu", "alive": True, "free_cpu": 0,
                 "total_cpu": 12, "free_ram_mb": 100000, "running_count": 0,
@@ -280,7 +280,7 @@ def run(check, sch):
         info = {"host": "remote-gpu", "cpu_cores": 12, "ram_mb": 0,
                 "max_vram_per_task": None}
         ok, why = sch._node_resources_ok(task, node, info)
-        return ok and why == "ok"
+        return (not ok) and "cpu:" in why
 
     def case_local_gpu_task_still_checks_cpu_pressure():
         task = _base_task(est_vram_mb=1000, cpu_cores=2, ram_mb=1000)
@@ -302,7 +302,7 @@ def run(check, sch):
         ok, why = sch._node_resources_ok(task, node, info)
         return (not ok) and "cpu:" in why
 
-    def case_remote_gpu_claim_omits_cpu_capacity():
+    def case_remote_gpu_claim_reserves_cpu_capacity():
         saved_nodes = dict(sch.NODES)
         saved_claim_op = sch._claims_remote_op
         captured = {}
@@ -329,10 +329,10 @@ def run(check, sch):
             )
             return (
                 ok is True and kind == "ok"
-                and rec.get("cpu_cores") == 0
-                and rec.get("ignore_cpu_capacity") is True
+                and rec.get("cpu_cores") == 8
+                and rec.get("ignore_cpu_capacity") is False
                 and rec.get("ignore_one_third_pack_rule") is False
-                and captured.get("record", {}).get("ignore_cpu_capacity") is True
+                and captured.get("record", {}).get("ignore_cpu_capacity") is False
             )
         finally:
             sch._claims_remote_op = saved_claim_op
@@ -1281,10 +1281,10 @@ def run(check, sch):
         ("gpu fits allows slight one-third crossing", case_gpu_fits_allows_slight_one_third_crossing),
         ("gpu fits rejects crossing freeze line from below", case_gpu_fits_rejects_crossing_freeze_line_from_below),
         ("gpu fits rejects margin shortfall", case_gpu_fits_rejects_vram_margin_shortfall),
-        ("remote GPU task ignores CPU pressure", case_remote_gpu_task_ignores_cpu_pressure),
+        ("remote GPU task checks CPU pressure", case_remote_gpu_task_checks_cpu_pressure),
         ("local GPU task still checks CPU pressure", case_local_gpu_task_still_checks_cpu_pressure),
         ("remote CPU-only still checks CPU pressure", case_remote_cpu_only_still_checks_cpu_pressure),
-        ("remote GPU claim omits CPU capacity", case_remote_gpu_claim_omits_cpu_capacity),
+        ("remote GPU claim reserves CPU capacity", case_remote_gpu_claim_reserves_cpu_capacity),
         ("require_gpu_idx limits placement", case_require_gpu_idx_limits_placement),
         ("allowed_nodes limits candidate family", case_allowed_nodes_limits_candidate_family),
         ("one-third override allows manual GPU packing", case_one_third_override_allows_manual_gpu_packing),

@@ -74,6 +74,46 @@ def test_gpu_placement_spreads_tracked_tiny_jobs_across_cards(sch, monkeypatch):
     assert sch.pick_placement(_cpu_task(cpu_cores=1, est_vram_mb=32), [node]) == ("gpu-node", 1)
 
 
+@pytest.mark.parametrize("pressure", ["memory", "compute"])
+def test_gpu_pressure_beats_host_cpu_headroom_and_tracked_task_count(sch, monkeypatch, pressure):
+    busy = _gpu_node("node007", total_cpu=64, free_cpu=62,
+                     observed_free_cpu=62, cpu_hard_free=62)
+    idle = _gpu_node("gpu_a", free_cpu=8,
+                     observed_free_cpu=8, cpu_hard_free=8)
+    busy["gpus"][0].update(used_mb=8500 if pressure == "memory" else 512,
+                           free_mb=3500 if pressure == "memory" else 11488,
+                           util_pct=80 if pressure == "compute" else 10)
+    idle["gpus"][0].update(used_mb=512, free_mb=11488,
+                           util_pct=10, running_task_count=1)
+    nodes = [busy, idle]
+    monkeypatch.setattr(sch, "NODES", _gpu_configs(nodes))
+    monkeypatch.setattr(sch, "_candidate_runtime_seconds", lambda *args: 0)
+
+    assert sch.pick_placement(_cpu_task(cpu_cores=2, est_vram_mb=512), nodes) == ("gpu_a", 0)
+
+
+@pytest.mark.parametrize("pin", ["allowed_nodes", "preferred_node", "require_node"])
+def test_gpu_saturation_blocks_additional_launches_even_for_small_pinned_jobs(sch, monkeypatch, pin):
+    node = _gpu_node("node007")
+    node["gpus"][0].update(used_mb=8500, free_mb=3500, util_pct=90)
+    config = _gpu_configs([node])
+    config["node007"]["gpu_util_saturation_pct"] = 85
+    monkeypatch.setattr(sch, "NODES", config)
+    task = _cpu_task(cpu_cores=2, est_vram_mb=293,
+                     **{pin: ["node007"] if pin == "allowed_nodes" else "node007"})
+
+    assert sch.pick_placement(task, [node]) is None
+    assert "util 90%" in sch._build_no_fit_reason(task, [node])
+
+
+def test_gpu_node_allowlist_does_not_expand_to_idle_servers(sch, monkeypatch):
+    nodes = [_gpu_node("node007"), _gpu_node("gpu_a")]
+    monkeypatch.setattr(sch, "NODES", _gpu_configs(nodes))
+    task = _cpu_task(cpu_cores=2, est_vram_mb=512, allowed_nodes=["node007"])
+
+    assert sch.pick_placement(task, nodes) == ("node007", 0)
+
+
 def test_input_staging_affinity_only_breaks_equal_cpu_pressure(sch, monkeypatch):
     nodes = [_cpu_node("node001", 96), _cpu_node("node006", 96)]
     monkeypatch.setattr(sch, "NODES", _cpu_configs(nodes))
@@ -205,6 +245,49 @@ def test_311_gpu_wave_debits_cpu_before_placing_next_task(sch):
     assert nodes[0]["gpus"][0]["free_mb"] > 7000
     assert sch.pick_placement(_cpu_task(cpu_cores=2, est_vram_mb=401,
                                       allowed_nodes=["cpu_a"]), nodes) is None
+
+
+@pytest.mark.parametrize("name", ["node007", "gpu_a", "gpu_b"])
+@pytest.mark.parametrize("pressure", ["cpu", "ram", "vram", "gpu_util"])
+def test_external_usage_blocks_gpu_placement_without_any_adopted_tasks(sch, name, pressure):
+    node = _gpu_node(name, user_threads=64, user_thread_limit=4096)
+    if pressure == "cpu":
+        node.update(free_cpu=0, observed_free_cpu=0, cpu_hard_free=0)
+    elif pressure == "ram":
+        node["free_ram_mb"] = 1
+    elif pressure == "vram":
+        node["gpus"][0].update(used_mb=12000, free_mb=0)
+    else:
+        node["gpus"][0].update(used_mb=4000, free_mb=8000, util_pct=100)
+
+    # External users do not need queue records for their measured load to gate placement.
+    sch._apply_cpu_slot_accounting_to_nodes({"tasks": []}, [node])
+    task = _cpu_task(cpu_cores=1, ram_mb=1024, est_vram_mb=768, allowed_nodes=[name])
+
+    ok, reason = sch._node_resources_ok(task, node, sch.NODES[name])
+    if pressure in ("cpu", "ram"):
+        assert not ok and f"{pressure}:" in reason
+    else:
+        assert ok, reason
+        assert not sch._gpu_fits(task, node["gpus"][0], sch.NODES[name])
+    assert sch.pick_placement(task, [node]) is None
+
+
+@pytest.mark.parametrize("name", ["node007", "gpu_a", "gpu_b"])
+def test_gpu_launch_batch_debits_cpu_on_every_remote_gpu_node(sch, name):
+    reserve = int(sch.NODES[name].get("reserved_cpu_cores") or 0)
+    free = reserve + 1
+    node = _gpu_node(name, free_cpu=free, observed_free_cpu=free, cpu_hard_free=free,
+                     user_threads=64, user_thread_limit=4096)
+    task = _cpu_task(cpu_cores=1, est_vram_mb=128, allowed_nodes=[name])
+    placement = sch.pick_placement(task, [node])
+    assert placement is not None, sch._build_no_fit_reason(task, [node])
+    task["node"], task["gpu_idx"] = placement
+
+    sch._debit_node_resources_for_launch([node], task)
+
+    assert node["free_cpu"] == reserve
+    assert sch.pick_placement(_cpu_task(cpu_cores=1, est_vram_mb=128, allowed_nodes=[name]), [node]) is None
 
 
 @pytest.mark.parametrize("est_vram", [0, 1000])

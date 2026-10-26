@@ -187,6 +187,24 @@ def test_batched_ambiguous_evidence_defers_to_bounded_deep_diagnosis():
     assert run_calls == []
 
 
+def test_backend_exit0_completes_without_a_recognized_text_marker():
+    run_calls = []
+    task = _task(
+        node="remote", exit_code=0, started_at=10.0, finished_at=20.0,
+        _terminal_batch_probe_only=True,
+        _terminal_evidence={"log_path": "/tmp/t.log",
+                            "tail": "NATIVE_MEAN_COVERAGE_DRAW_COMPLETE\n",
+                            "log_size": 34, "artifact_checked": True},
+    )
+    diag = diagnose_terminal(task, deps=_deps(run_calls=run_calls))
+    assert diag["is_crash"] is False
+    assert diag["success_marker"] == "BACKEND_EXIT_0"
+    assert not diag.get("needs_deep_terminal_diagnosis")
+    assert run_calls == []
+    task["_terminal_evidence"]["tail"] = "Traceback\n"
+    assert diagnose_terminal(task, deps=_deps(run_calls=run_calls))["is_crash"] is True
+
+
 def test_error_pattern_overrides_success_marker(tmp_path: Path):
     log = tmp_path / "task.log"
     log.write_text("DONE\nTraceback\n", encoding="utf-8")

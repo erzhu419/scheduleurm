@@ -194,6 +194,7 @@ def _build_task_record(
             getattr(args, "stage_input_paths", None) or []
         ) or None,
         "skip_launch_staging": bool(getattr(args, "skip_launch_staging", False)),
+        "no_auto_requeue": bool(getattr(args, "no_auto_requeue", False)),
         "reroute_on_node_down": bool(getattr(args, "reroute_on_node_down", False)),
         "node_down_requeue_s": _int_arg(args, "node_down_requeue_s") or None,
         "git_repo": args.git_repo,

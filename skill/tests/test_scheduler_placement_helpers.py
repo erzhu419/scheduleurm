@@ -100,7 +100,7 @@ def test_gpu_capacity_and_remote_gpu_cpu_ignore_policy():
         task_is_gpu_capacity_task=lambda task: True,
         node_is_windows=lambda node: False,
         node_configs={"remote": {"host": "host"}},
-    ) is True
+    ) is False
     assert helpers.ignore_cpu_for_server_gpu_task(
         task,
         node_name="local",

@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import time
 import threading
+from concurrent.futures import Future
 from contextlib import contextmanager
 
+from skill.scheduler_launch import executor as launch_executor
 from skill.scheduler_launch_executor import execute_launch_intents
 
 
@@ -120,6 +122,47 @@ def test_execute_launch_intents_uses_batch_commit_when_provided():
     assert batch_calls == [[(1, "t0001", True, "ok t0001"), (2, "t0002", True, "ok t0002")]]
     assert progress == [{"completed": 2, "total": 2}]
     assert [ev["task_id"] for ev in out] == ["before", "t0001", "t0002"]
+
+
+def test_ready_launch_results_are_not_split_into_multiple_full_state_writes(monkeypatch):
+    class CompletedPool:
+        def __init__(self, **kwargs):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            pass
+
+        def submit(self, fn, *args):
+            future = Future()
+            future.set_result(fn(*args))
+            return future
+
+    monkeypatch.setattr(launch_executor, "ThreadPoolExecutor", CompletedPool)
+    batches = []
+
+    def commit(records):
+        batches.append([record["task"]["id"] for record in records])
+        return {
+            record["idx"]: [{"type": "launched", "task_id": record["task"]["id"]}]
+            for record in records
+        }
+
+    out = execute_launch_intents(
+        [_intent(f"t{i}", "node001") for i in range(6)],
+        max_workers=6,
+        launch_fn=lambda task, **kwargs: (True, "ok"),
+        commit_fn=lambda *args: [],
+        batch_commit_fn=commit,
+        slot_lock_factory=lambda node: _null_lock(),
+        notify_fn=lambda *args, **kwargs: None,
+        commit_batch_size=2,
+    )
+
+    assert batches == [[f"t{i}" for i in range(6)]]
+    assert [event["task_id"] for event in out] == [f"t{i}" for i in range(6)]
 
 
 def test_execute_launch_intents_converts_commit_exception_to_error_event():

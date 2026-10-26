@@ -1,5 +1,13 @@
 from __future__ import annotations
 
+from collections import Counter
+from dataclasses import replace
+import subprocess
+import time
+
+from skill.scheduler_launch import staging_plan
+from skill.scheduler_staging.launch_cwd import _du_args, _rsync_args
+from skill.scheduler_staging.runtime import build_staging_runtime_exports
 from skill.scheduler_launch_staging_plan import (
     LaunchStagingPlanDeps,
     build_protected_under_cwd,
@@ -78,6 +86,160 @@ def test_build_protected_under_cwd_includes_stage_excludes_and_output_dirs():
         "results/run1/",
         "collected/run1/",
     }
+
+
+def test_protected_history_checks_safety_once_per_cwd(monkeypatch):
+    calls = Counter()
+    original = staging_plan.unsafe_staging_cwd_reason
+
+    def check(cwd):
+        calls[cwd] += 1
+        return original(cwd)
+
+    monkeypatch.setattr(staging_plan, "unsafe_staging_cwd_reason", check)
+    tasks = [
+        {"cwd": cwd, "result_dir": f"{cwd}/results/run{index}"}
+        for index in range(500)
+        for cwd in ("/work/proj", "/tmp")
+    ]
+
+    protected = build_protected_under_cwd(tasks)
+
+    assert calls == {"/work/proj": 1, "/tmp": 1}
+    assert "/tmp" not in protected
+    assert len(protected["/work/proj"]) == 500
+
+
+def test_collect_checks_shared_cwd_receipts_once_per_node_per_pass():
+    nodes = {"node001": {"host": "n1"}, "node002": {"host": "n2"}}
+    state = {"tasks": [
+        {"id": f"t{index}", "status": "queued", "cwd": f"/work/{index % 2}"}
+        for index in range(500)
+    ]}
+    hits = set()
+    caps = set()
+    cache_calls = Counter()
+    cap_calls = Counter()
+
+    def cached(key):
+        cache_calls[key] += 1
+        return key in hits
+
+    def capped(key):
+        cap_calls[key] += 1
+        return key in caps
+
+    deps = replace(_deps(nodes=nodes), staging_cache_hit=cached, staging_cap_recent=capped)
+    expected = {(node, f"/work/{index}") for node in nodes for index in range(2)}
+    plan = collect_launch_staging_plan(state, None, deps=deps)
+    assert plan.candidates == expected
+    assert cache_calls == {("local", node, cwd): 1 for node, cwd in expected}
+    assert cap_calls == cache_calls
+
+    hits.add(("local", "node001", "/work/0"))
+    caps.add(("local", "node002", "/work/1"))
+    plan = collect_launch_staging_plan(state, None, deps=deps)
+    assert plan.candidates == expected - {("node001", "/work/0"), ("node002", "/work/1")}
+    assert cache_calls == {("local", node, cwd): 2 for node, cwd in expected}
+    assert cap_calls[("local", "node001", "/work/0")] == 1
+    assert cap_calls[("local", "node002", "/work/1")] == 2
+
+
+def test_collect_rechecks_source_changes_in_the_next_plan(tmp_path):
+    source = tmp_path / "project" / "src"
+    source.mkdir(parents=True)
+    main = source / "main.py"
+    main.write_text("old code\n")
+    cwd = str(source.parent)
+    nodes = {"node001": {"host": "n1", "launch_stage_include_paths": ["src"]}}
+    runtime = build_staging_runtime_exports({
+        "time": time, "STATE_DIR": tmp_path / "state", "NODES": nodes,
+        "STAGING_TTL_S": 3600,
+    })
+    runtime["_mark_launch_stage_success"](("local", "node001", cwd))
+    deps = replace(_deps(nodes=nodes), staging_cache_hit=runtime["_staging_cache_hit"])
+    state = {"tasks": [
+        {"id": f"t{index}", "status": "queued", "cwd": cwd}
+        for index in range(5)
+    ]}
+
+    assert not collect_launch_staging_plan(state, None, deps=deps).candidates
+    main.write_text("updated training code\n")
+    assert collect_launch_staging_plan(state, None, deps=deps).candidates == {("node001", cwd)}
+
+
+def test_protected_paths_compact_large_history_under_excluded_parent():
+    tasks = [
+        {
+            "cwd": "/work/proj",
+            "stage_excludes": ["results", "**/__pycache__"],
+            "result_dir": f"/work/proj/results/experiment_{index:06d}/cells/seed_0",
+            "ckpt_dir": f"/work/proj/results/experiment_{index:06d}/checkpoints",
+        }
+        for index in range(20_000)
+    ]
+
+    protected = build_protected_under_cwd(tasks)["/work/proj"]
+
+    assert protected == {"results", "**/__pycache__"}
+    assert len(_rsync_args(sorted(protected))) < 20
+    assert len(_du_args("/work/proj", sorted(protected))) < 20
+
+
+def test_protected_paths_preserve_siblings_and_do_not_treat_globs_as_literals():
+    tasks = [
+        {
+            "cwd": "/work/proj",
+            "stage_excludes": ["runs/[ab]", "runs/ab", "nested/cache/"],
+            "result_dir": "/work/proj/runs/ab/covered",
+            "ckpt_dir": "/work/proj/runs/[ab]/checkpoints",
+            "local_result_dir": "/work/proj/nested/cache/covered",
+        },
+        {
+            "cwd": "/work/proj",
+            "result_dir": "/work/proj/runs/abc/output",
+            "ckpt_dir": "/work/proj/nested/cache_backup/checkpoints",
+        },
+    ]
+
+    assert build_protected_under_cwd(tasks)["/work/proj"] == {
+        "runs/[ab]", "runs/ab", "nested/cache",
+        "runs/[ab]/checkpoints/", "runs/abc/output/",
+        "nested/cache_backup/checkpoints/",
+    }
+
+
+def test_compact_protection_keeps_remote_outputs_during_rsync_delete(tmp_path):
+    source = tmp_path / "source"
+    target = tmp_path / "target"
+    source.mkdir()
+    target.mkdir()
+    (source / "train.py").write_text("new training code\n")
+    (target / "train.py").write_text("old code\n")
+    (target / "obsolete.py").write_text("obsolete code\n")
+    outputs = target / "results" / "run1"
+    outputs.mkdir(parents=True)
+    (outputs / "done.json").write_text("{}\n")
+    checkpoints = target / "checkpoints" / "run1"
+    checkpoints.mkdir(parents=True)
+    (checkpoints / "state.pt").write_text("checkpoint\n")
+    tasks = [{
+        "cwd": str(source),
+        "stage_excludes": ["results"],
+        "result_dir": str(source / "results" / "run1"),
+        "ckpt_dir": str(source / "checkpoints" / "run1"),
+    }]
+    protected = build_protected_under_cwd(tasks)[str(source)]
+
+    subprocess.run(
+        [*_rsync_args(sorted(protected)), f"{source}/", f"{target}/"],
+        check=True, capture_output=True, timeout=10,
+    )
+
+    assert (target / "train.py").read_text() == "new training code\n"
+    assert not (target / "obsolete.py").exists()
+    assert (outputs / "done.json").read_text() == "{}\n"
+    assert (checkpoints / "state.pt").read_text() == "checkpoint\n"
 
 
 def test_collect_launch_staging_plan_stages_preferred_to_all_fallback_nodes():

@@ -50,6 +50,7 @@ def execute_launch_intents(
             "ok": ok,
             "msg": msg,
             "node": node,
+            "completed_at": time.monotonic(),
         }
 
     def _commit_one(record: dict):
@@ -149,15 +150,19 @@ def execute_launch_intents(
                     timeout=wait_timeout,
                     return_when=FIRST_COMPLETED,
                 )
-                if done and not buffered:
-                    buffered_since_at = time.monotonic()
-                buffered.extend(future.result() for future in done)
-                while len(buffered) >= batch_size:
-                    _commit_records(buffered[:batch_size])
-                    del buffered[:batch_size]
-                    buffered_since_at = time.monotonic() if buffered else None
+                ready = [future.result() for future in done]
+                if ready:
+                    earliest = min(record["completed_at"] for record in ready)
+                    buffered_since_at = (
+                        earliest if buffered_since_at is None
+                        else min(buffered_since_at, earliest)
+                    )
+                    buffered.extend(ready)
+                # A commit rewrites the entire queue. Flush everything already
+                # ready together instead of splitting an accumulated backlog.
                 if buffered and (
-                    not pending
+                    len(buffered) >= batch_size
+                    or not pending
                     or (
                         buffered_since_at is not None
                         and time.monotonic() - buffered_since_at >= max_delay

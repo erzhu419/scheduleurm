@@ -174,6 +174,19 @@ def _parse_launch_start_ticks(output: str) -> Optional[int]:
     return None
 
 
+def _parse_launch_timestamp(output: str, field: str) -> Optional[float]:
+    for line in output.splitlines():
+        if not line.strip().startswith(field + "="):
+            continue
+        try:
+            value = float(line.strip().split("=", 1)[1])
+        except ValueError:
+            continue
+        if value > 0:
+            return value
+    return None
+
+
 def runtime_exit_status_path(task_id: Any, launch_token: Any) -> str:
     safe_id = re.sub(r"[^A-Za-z0-9_.-]+", "_", str(task_id or "task"))
     token = str(launch_token or "")
@@ -193,7 +206,7 @@ def _completion_wrapper(inner: str, status_path: str, status_token: str) -> str:
         "set +e; "
         f"bash -c {shlex.quote(inner)}; rc=$?; "
         f"tmp={status_arg}.tmp.$$; umask 077; "
-        f"printf '%s\\t%s\\t%s\\n' \"$rc\" \"$(date +%s)\" {token_arg} > \"$tmp\"; "
+        f"printf '%s\\t%s\\t%s\\n' \"$rc\" \"$(date +%s.%N)\" {token_arg} > \"$tmp\"; "
         f"mv -f -- \"$tmp\" {status_arg}; exit \"$rc\""
     )
 
@@ -258,16 +271,19 @@ def local_backend_launch(
     full_cmd = (
         f"mkdir -p {shlex.quote(os.path.dirname(log_path))}; "
         f"exec 9>{receipt_lock}; flock -x 9; "
-        f"if test -s {receipt_path}; then cat {receipt_path}; exit 0; fi; "
+        f"if test -s {receipt_path}; then cat {receipt_path}; "
+        "date '+REMOTE_NOW=%s.%N'; exit 0; fi; "
         f"rm -f -- {shlex.quote(status_path)}; "
+        "_scheduleurm_started_at=$(date +%s.%N); "
         f"cd {shlex.quote(remote_cwd)} && {env_prefix} "
         f"setsid bash -c {shlex.quote(wrapped_inner)} > {shlex.quote(log_path)} 2>&1 < /dev/null 9>&- & "
-        "pid=$!; { echo PID=$pid; "
+        "pid=$!; { echo PID=$pid; echo STARTED_AT=$_scheduleurm_started_at; "
         "awk '{print \"START_TICKS=\" $22}' /proc/$pid/stat 2>/dev/null || true; "
-        f"}} > {receipt_path}; cat {receipt_path}"
+        f"}} > {receipt_path}; cat {receipt_path}; date '+REMOTE_NOW=%s.%N'"
     )
     try:
         rc, out, err = deps.run_on(task["node"], full_cmd, timeout=20, check=False)
+        received_at = deps.now()
         if rc != 0:
             return release_and_fail(f"launch rc={rc}: {err.strip()[:200]}")
         pid = _parse_launch_pid(out)
@@ -285,7 +301,18 @@ def local_backend_launch(
             task.pop("remote_pid_start_ticks", None)
         task["log_path"] = log_path
         task["status"] = "running"
-        task["started_at"] = deps.now()
+        remote_started_at = _parse_launch_timestamp(out, "STARTED_AT")
+        remote_now = _parse_launch_timestamp(out, "REMOTE_NOW")
+        task.pop("remote_started_at", None)
+        task.pop("remote_clock_offset_s", None)
+        task["started_at"] = received_at
+        if remote_started_at is not None and remote_now is not None:
+            # Use one reply to account for both delayed acknowledgements and
+            # the node's clock offset without changing any machine's clock.
+            offset = received_at - remote_now
+            task["remote_started_at"] = remote_started_at
+            task["remote_clock_offset_s"] = offset
+            task["started_at"] = remote_started_at + offset
         deps.remember_last_placement(task)
         task["peak_vram_mb"] = 0
         task["peak_ram_mb"] = 0

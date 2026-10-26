@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+from dataclasses import replace
 import threading
 import time
 from contextlib import contextmanager
@@ -170,6 +171,42 @@ def test_eta_background_does_not_overwrite_a_completed_attempt():
     assert result["updated"] == 0
     assert latest["tasks"][0]["status"] == "done"
     assert latest["tasks"][0]["eta_seconds"] == 7
+
+
+def test_pending_eta_is_computed_outside_lock_and_not_merged_into_launched_task():
+    initial = {"tasks": [
+        {"id": "t1", "status": "queued", "cmd": "train", "eta_seconds": 0},
+        {"id": "t2", "status": "queued", "cmd": "other", "eta_seconds": 0},
+    ]}
+    latest = copy.deepcopy(initial)
+    latest["tasks"][1].update(status="running", started_at=10, eta_seconds=77)
+    lock_stack = []
+
+    @contextmanager
+    def state_lock(**kwargs):
+        lock_stack.append(kwargs)
+        try:
+            yield
+        finally:
+            lock_stack.pop()
+
+    def seed(state):
+        assert not lock_stack
+        for task in state["tasks"]:
+            task.update(eta_seconds=123, eta_source="history")
+
+    deps = _deps(
+        state_lock=state_lock,
+        load_state=lambda: copy.deepcopy(initial) if lock_stack[-1].get("shared") else latest,
+        save_state=lambda _state: None,
+        tail_outputs=lambda _: {},
+        refresh=lambda *args, **kwargs: None,
+    )
+    result = refresh_eta_snapshot(deps=replace(deps, seed_pending_eta_from_history=seed))
+
+    assert result["updated"] == 1
+    assert latest["tasks"][0]["eta_seconds"] == 123
+    assert latest["tasks"][1]["eta_seconds"] == 77
 
 
 def test_eta_background_start_is_single_flight():

@@ -84,6 +84,7 @@ def build_cpu_batch_submit_spec(
         "allow_remote_large_data": bool(getattr(args, "allow_remote_large_data", False)),
         "allow_duplicate": bool(getattr(args, "allow_duplicate", False)),
         "skip_launch_staging": bool(getattr(args, "skip_launch_staging", False)),
+        "no_auto_requeue": bool(getattr(args, "no_auto_requeue", False)),
         "env_spec": getattr(args, "env_spec", None) or "none",
         "image": getattr(args, "image", None) or "",
         "cpu_parallel_items": int(plan_row["items"]),

@@ -99,6 +99,8 @@ def build_running_identity_runtime_exports(namespace: dict[str, Any]) -> dict[st
             or task.get("owner")
             or _ns(namespace, "_local_user")()
         )
+        if (task.get("node") or task.get("assigned_node")) == "local":
+            return f"{user}:this"
         origin = task.get("origin") or ""
         sid = task.get("scheduler_id") or task.get("submitted_scheduler_id") or ""
         try:

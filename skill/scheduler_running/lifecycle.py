@@ -60,10 +60,25 @@ def check_running_probe_result(
     )
     if res["vram_mb"] > 0:
         task["peak_vram_mb"] = max(task.get("peak_vram_mb", 0), res["vram_mb"])
-    if res["ram_mb"] > 0:
-        task["peak_ram_mb"] = max(task.get("peak_ram_mb", 0), res["ram_mb"])
+    _update_ram_measurement(task, res)
     task["alive_pids"] = res["alive_pids"]
     return "alive"
+
+
+def _update_ram_measurement(task: dict, res: dict) -> None:
+    total = int(res.get("ram_mb") or 0)
+    measurement = res.get("ram_measurement")
+    if measurement:
+        task["current_ram_measurement"] = measurement
+    if measurement == "pss":
+        # RSS peaks include duplicate fork/shared pages and are not PSS peaks.
+        previous = task.get("peak_ram_mb", 0) if task.get("peak_ram_measurement") == "pss" else 0
+        task["peak_ram_mb"] = max(previous, total)
+        task["peak_ram_measurement"] = "pss"
+        if task.get("auto_adopted"):
+            task["ram_mb"] = task["peak_ram_mb"]
+    elif total > 0 and task.get("peak_ram_measurement") != "pss":
+        task["peak_ram_mb"] = max(task.get("peak_ram_mb", 0), total)
 
 
 def _clear_unknown_terminal_diagnosis_deferred(task: dict) -> None:
@@ -299,11 +314,11 @@ def handle_dead_probe_result(task: dict, state: dict, res: dict,
             {"error": "backend reported dead but local launch transport is still alive"},
         )
         return
+    deps.set_current_usage(task, 0, 0, 0.0)
     cancel_request_token = str(task.get("cancel_request_token") or "")
     if cancel_request_token:
         request_actor = copy.deepcopy(task.get("cancel_request_actor") or {})
         reason = str(task.get("cancel_request_reason") or "user batch force-cancel")
-        deps.set_current_usage(task, 0, 0, 0.0)
         try:
             deps.release_task_claims_and_intents(task)
         except Exception:
@@ -385,9 +400,8 @@ def handle_dead_probe_result(task: dict, state: dict, res: dict,
     # messages. Keep failure reasons below, where a crash transition rewrites
     # this field with the final diagnosis.
     task.pop("last_block_reason", None)
-    deps.set_current_usage(task, 0, 0, 0.0)
     task["status"] = "done"
-    task["finished_at"] = deps.now()
+    task["finished_at"] = task.get("backend_finished_at") or deps.now()
     try:
         deps.release_task_claims_and_intents(task)
     except Exception:
@@ -584,8 +598,8 @@ def apply_alive_probe_result(task: dict, res: dict, reconnect_sync: Optional[dic
     if total_vram > 0:
         task["peak_vram_mb"] = max(task.get("peak_vram_mb", 0), total_vram)
     total_ram = res["ram_mb"]
+    _update_ram_measurement(task, res)
     if total_ram > 0:
-        task["peak_ram_mb"] = max(task.get("peak_ram_mb", 0), total_ram)
         declared_ram = task.get("ram_mb", deps.default_ram_mb)
         if total_ram > declared_ram * 1.1:
             task["ram_mb"] = total_ram

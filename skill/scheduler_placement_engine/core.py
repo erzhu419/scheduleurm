@@ -311,16 +311,18 @@ def pick_placement(task, nodes, runtime: PlacementRuntime, extra_allowed_nodes=N
                 if not gpu_fits(task, g, node_info_with_state, runtime):
                     continue
                 # A tracked launch occupies a card even before VRAM grows.
-                # Balance projected host/card pressure before historical speed.
+                # GPU pressure precedes host headroom, including other users' work.
                 used = int(g.get("used_mb") or 0)
                 total = max(1, int(g.get("total_mb") or 1))
                 need = int(task.get("est_vram_mb") or 0)
                 gpu_task_count = int(g.get("running_task_count") or 0)
                 occupied = int(used >= runtime.gpu_empty_used_mb or gpu_task_count > 0)
+                post_vram_pressure = float(used + need) / float(total)
+                gpu_pressure = max(post_vram_pressure, float(g.get("util_pct") or 0) / 100)
                 rt = runtime.candidate_runtime_seconds(task, n["name"], g["idx"])
                 rt_unknown = 1 if rt <= 0 else 0
-                score = (occupied, post_cpu_pressure, gpu_task_count + 1,
-                         float(used + need) / float(total), staging_penalty,
+                score = (occupied, gpu_pressure, gpu_task_count + 1,
+                         post_cpu_pressure, post_vram_pressure, staging_penalty,
                          rt_unknown, rt, used + need)
                 score = runtime.algorithm_gpu_score(task, n, g, score)
                 out.append((score, n["name"], g["idx"]))

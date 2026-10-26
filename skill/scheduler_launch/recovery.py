@@ -93,7 +93,10 @@ def _promote_exit_sentinel(
         task.get("exit_status_path") or runtime_exit_status_path(task_id, token)
     )
     task["exit_code"] = int(exit_status["exit_code"])
-    task["backend_finished_at"] = float(exit_status["finished_at"])
+    task["backend_finished_at"] = (
+        float(exit_status["finished_at"])
+        + float(task.get("remote_clock_offset_s") or 0)
+    )
     task["orphan_recovered_at"] = deps.now()
     task["orphan_recovered_from_status"] = "launching_exit_sentinel"
     task["last_block_reason"] = (

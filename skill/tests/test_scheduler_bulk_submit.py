@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from dataclasses import replace
 
 import pytest
 
@@ -116,6 +117,7 @@ def test_build_cpu_batch_submit_spec_materializes_templates_and_env():
         allow_remote_large_data=True,
         allow_duplicate=True,
         skip_launch_staging=True,
+        no_auto_requeue=True,
         env_spec="none",
         image="",
     )
@@ -175,6 +177,9 @@ def test_build_cpu_batch_submit_spec_materializes_templates_and_env():
     assert "SCHEDULEURM_CPU_SHARD_START=3" in spec["env"]
     assert "SCHEDULEURM_CPU_TOTAL_WORK_ITEMS=10" in spec["env"]
     assert spec["skip_launch_staging"] is True
+    assert spec["no_auto_requeue"] is True
+    task = build_bulk_submit_task({"tasks": []}, spec, deps=_deps())
+    assert task["no_auto_requeue"] is True
 
 
 def test_bulk_submit_result_conflict_message_detects_existing_destination():
@@ -426,6 +431,41 @@ def test_build_bulk_submit_tasks_detects_duplicates_between_new_specs():
             task_ids=["t00001", "t00002"],
         )
 
+    assert state["tasks"] == []
+
+
+def test_bulk_submit_indexes_active_identities_once_and_skips_terminal_history():
+    calls = []
+    deps = _deps()
+
+    def identity(task):
+        assert task.get("status") not in ("done", "failed", "cancelled")
+        calls.append(task.get("id"))
+        return deps.task_run_identity(task)
+
+    history = [dict(_spec(signature=f"old/{i}"), id=f"old{i}", status="done")
+               for i in range(1000)]
+    active = dict(_spec(signature="active/existing"), id="active", status="running")
+    state = {"tasks": [*history, active]}
+    specs = [_spec(signature=f"new/{i}") for i in range(100)]
+
+    submitted = build_bulk_submit_tasks(
+        state, specs, deps=replace(deps, task_run_identity=identity),
+        task_ids=[f"new{i}" for i in range(len(specs))],
+    )
+
+    assert len(submitted) == 100
+    assert calls.count("active") == 1
+    assert len(calls) <= 1 + 2 * len(specs)
+
+
+def test_bulk_submit_indexes_explicit_duplicates_for_later_default_specs():
+    state = {"tasks": []}
+    with pytest.raises(RuntimeError, match="duplicate active task t00001"):
+        build_bulk_submit_tasks(
+            state, [_spec(allow_duplicate=True), _spec()], deps=_deps(),
+            task_ids=["t00001", "t00002"],
+        )
     assert state["tasks"] == []
 
 

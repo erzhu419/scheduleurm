@@ -14,6 +14,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor, wait
 from dataclasses import dataclass
 from pathlib import Path
+from queue import Empty, SimpleQueue
 from typing import Callable
 
 
@@ -842,14 +843,16 @@ def collect_terminal_evidence(
             })
         return records
 
-    def _probe_remote_node(job: tuple[str, list[list[dict]]]) -> list[dict]:
+    completed_chunks = SimpleQueue()
+
+    def _probe_remote_node(job: tuple[str, list[list[dict]]]) -> None:
         node, chunks = job
-        records = []
         for chunk in chunks:
             if deadline is not None and _remaining_timeout(1.0) <= 0.0:
                 break
-            records.extend(_probe_remote_chunk(node, chunk))
-        return records
+            # Retain each completed chunk even if this node's later chunks
+            # exceed the cycle deadline.
+            completed_chunks.put(_probe_remote_chunk(node, chunk))
 
     if jobs:
         workers = max(1, min(len(jobs), int(max_workers or 1)))
@@ -864,17 +867,24 @@ def collect_terminal_evidence(
                     futures,
                     timeout=max(0.0, deadline - time.monotonic()),
                 )
-            for future in done:
-                try:
-                    records = future.result()
-                except Exception:
-                    records = []
-                for rec in records:
-                    raw_records[str(rec.get("id") or "")] = rec
+            if deadline is None:
+                for future in done:
+                    try:
+                        future.result()
+                    except Exception:
+                        pass
         finally:
             for future in pending:
                 future.cancel()
             executor.shutdown(wait=not pending, cancel_futures=True)
+
+    while True:
+        try:
+            records = completed_chunks.get_nowait()
+        except Empty:
+            break
+        for rec in records:
+            raw_records[str(rec.get("id") or "")] = rec
 
     evidence = {}
     for tid, rec in raw_records.items():
@@ -1055,11 +1065,16 @@ def cmd_results(args, *, deps: ResultsCommandDeps) -> None:
     task_ids = set(args.task_ids or [])
     include_archive = not args.no_archive
     scan_logs = (bool(task_ids) or bool(args.scan_logs)) and not args.no_log_scan
-    with deps.state_lock():
+    with deps.state_lock(shared=True, purpose="results:snapshot"):
         state = deps.load_state()
         records = [("queue", task) for task in state.get("tasks", [])]
-        if include_archive:
-            records.extend(("archive", task) for task in deps.load_archive_tasks())
+    if include_archive:
+        queue_ids = {task.get("id") for _, task in records}
+        # A task can move to the archive after the queue snapshot was read.
+        records.extend(
+            ("archive", task) for task in deps.load_archive_tasks()
+            if task.get("id") not in queue_ids
+        )
 
     statuses = set(args.status or [])
     candidates = []

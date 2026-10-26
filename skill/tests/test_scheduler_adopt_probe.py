@@ -59,6 +59,17 @@ def test_node_processes_parses_gpu_metadata_slurm_and_pipe_cmdline():
     }]
 
 
+def test_gpu_adopt_probe_uses_configured_driver_path_for_all_queries():
+    from dataclasses import replace
+
+    calls = []
+    deps = replace(_deps(run_on=lambda node, cmd, **kwargs: calls.append(cmd) or (0, "", "")),
+                   node_configs={"node007": {"nvidia_smi_path": "/driver/bin/nvidia-smi"}})
+
+    assert node_processes("node007", deps=deps) == []
+    assert calls[0].count("/driver/bin/nvidia-smi --query-") == 3
+
+
 def test_node_cpu_processes_parses_cpu_only_processes():
     def run_on(node, cmd, **kwargs):
         assert "${cwd}|${sl}|${cl}" in cmd
@@ -118,3 +129,25 @@ def test_refresh_adopted_resources_updates_cpu_and_downward_ram():
     assert task["cpu_cores"] == 2
     assert task["ram_mb"] == 300
     assert task["process_group"] == 9
+
+
+def test_cpu_adopt_is_reclassified_when_group_parent_creates_cuda_context():
+    task = {
+        "id": "t1", "status": "running", "node": "local", "auto_adopted": True,
+        "remote_pids": [11], "process_group": 9, "gpu_idx": None,
+        "est_vram_mb": 0, "description": "auto-adopted: Train on local:CPU-only",
+    }
+    state = {"tasks": [task]}
+    gpu = {"node": "local", "pid": 10, "pgid": 9, "gpu_idx": 2,
+           "used_mb": 4096, "rss_mb": 500, "pcpu": 5}
+    cpu = {"node": "local", "pid": 11, "pgid": 9, "rss_mb": 100, "pcpu": 95}
+
+    refresh_adopted_resources(state, [[gpu]], [[cpu]], deps=_deps())
+
+    assert task["gpu_idx"] == 2
+    assert task["gpu_indices"] == [2]
+    assert task["current_vram_mb"] == task["peak_vram_mb"] == 4096
+    assert task["remote_pids"] == [10, 11]
+    assert "local:GPU2" in task["description"]
+    refresh_adopted_resources(state, [[]], [[cpu]], deps=_deps())
+    assert task["gpu_idx"] == 2

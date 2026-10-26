@@ -2,6 +2,8 @@ import json
 import os
 from types import SimpleNamespace
 
+import pytest
+
 from skill import tui
 
 
@@ -155,6 +157,41 @@ def test_terminal_task_does_not_display_stale_eta():
     }
 
     assert tui._fmt_eta(task, {}) == "-"
+
+
+def test_observed_process_rows_show_owner_and_all_gpus_without_inventing_eta():
+    task = {
+        "observed_only": True, "status": "running", "node": "node007",
+        "gpu_idx": 1, "gpu_indices": [1, 3], "process_owner": "aiyw08",
+        "origin": "external", "started_at": 1000,
+    }
+
+    assert tui._display_node(task) == "node007:GPU1,3"
+    assert tui.sch._format_task_owner(task).startswith("aiyw08:external")
+    assert tui._fmt_eta(task, {}) == "-"
+
+
+@pytest.mark.parametrize("metadata", [
+    {"origin": "external", "auto_adopted": True},
+    {"origin": "external", "observed_only": True},
+    {"origin": "manual-adopt"},
+    {"origin": "scheduleurm", "scheduler_id": "another-scheduler"},
+])
+@pytest.mark.parametrize("location", [{"node": "local"}, {"assigned_node": "local"}])
+def test_local_tasks_always_display_this_without_rewriting_provenance(metadata, location):
+    task = {"process_owner": "researcher", **location, **metadata}
+    original = dict(task)
+
+    assert tui.sch._format_task_owner(task) == "researcher:this"
+    assert task == original
+
+
+def test_tui_reloads_when_owner_formatting_module_changes(monkeypatch):
+    assert tui._OWNER_SOURCE in tui._SOURCE_MTIMES
+    monkeypatch.setitem(tui._SOURCE_MTIMES, tui._OWNER_SOURCE,
+                        tui._OWNER_SOURCE.stat().st_mtime_ns - 1)
+
+    assert tui._scheduler_source_changed() is True
 
 
 def test_live_eta_displays_unified_source_and_iteration_progress():

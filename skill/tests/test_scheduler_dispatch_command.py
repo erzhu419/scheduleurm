@@ -179,6 +179,24 @@ def test_dispatch_command_runs_lock_light_prefetch_then_main_dispatch():
     assert ("print", "=== dispatch === (nothing queued)") in calls
 
 
+def test_targeted_dispatch_eta_does_not_scan_unrelated_queued_batch():
+    calls = []
+    target = {"id": "t1", "status": "queued"}
+    peer = {"id": "t2", "status": "running"}
+    unrelated = [{"id": f"other{i}", "status": "queued"} for i in range(1000)]
+    state = {"tasks": [target, peer, *unrelated]}
+
+    run_dispatch_command(
+        _args(dispatch_task_ids=["t1"]),
+        deps=_deps(calls=calls, states=[state]),
+    )
+
+    eta_state = next(call[1] for call in calls if call[0] == "seed_eta")
+    assert eta_state["tasks"] == [target, peer]
+    assert eta_state["tasks"][0] is target
+    assert len(state["tasks"]) == 1002
+
+
 def test_targeted_dispatch_skips_migration_and_result_sync():
     calls = []
 

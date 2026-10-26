@@ -25,12 +25,14 @@ def node_processes(name: str, *, deps: AdoptProbeDeps) -> list[dict]:
     """Fetch GPU compute processes and metadata from one Linux node."""
     if deps.node_is_windows(name):
         return []
+    info = deps.node_configs.get(name, {}) or {}
+    nvidia_smi = shlex.quote(str(info.get("nvidia_smi_path") or info.get("nvidia_smi") or "nvidia-smi"))
     cmd = (
-        "nvidia-smi --query-compute-apps=gpu_bus_id,pid,used_memory --format=csv,noheader,nounits 2>/dev/null; "
+        f"{nvidia_smi} --query-compute-apps=gpu_bus_id,pid,used_memory --format=csv,noheader,nounits 2>/dev/null; "
         "echo '===BUS==='; "
-        "nvidia-smi --query-gpu=index,gpu_bus_id --format=csv,noheader,nounits 2>/dev/null; "
+        f"{nvidia_smi} --query-gpu=index,gpu_bus_id --format=csv,noheader,nounits 2>/dev/null; "
         "echo '===META==='; "
-        "for p in $(nvidia-smi --query-compute-apps=pid --format=csv,noheader,nounits 2>/dev/null); do "
+        f"for p in $({nvidia_smi} --query-compute-apps=pid --format=csv,noheader,nounits 2>/dev/null); do "
         "  o=$(ps -o user= -p \"$p\" 2>/dev/null | tr -d ' '); "
         "  c=$(readlink /proc/$p/cwd 2>/dev/null); "
         "  r=$(awk '/^VmRSS:/ {print $2}' /proc/$p/status 2>/dev/null); "
@@ -310,6 +312,12 @@ def node_cpu_processes(name: str, *, deps: AdoptProbeDeps) -> list[dict]:
 def refresh_adopted_resources(state: dict, gpu_proc_lists: list, cpu_proc_lists: list, *, deps: AdoptProbeDeps) -> None:
     """Refresh running auto-adopted task CPU/RAM estimates from current probes."""
     pid_stats = {}
+    gpu_by_group = {}
+    gpu_by_pid = {}
+    for plist in gpu_proc_lists:
+        for proc in plist:
+            gpu_by_pid.setdefault((proc["node"], proc["pid"]), []).append(proc)
+            gpu_by_group.setdefault((proc["node"], proc.get("pgid")), []).append(proc)
     for plist in gpu_proc_lists + cpu_proc_lists:
         for proc in plist:
             key = (proc["node"], proc["pid"])
@@ -321,6 +329,24 @@ def refresh_adopted_resources(state: dict, gpu_proc_lists: list, cpu_proc_lists:
         pids = deps.task_pids(task)
         if not node or not pids:
             continue
+        gpu_procs = {
+            (proc["pid"], proc["gpu_idx"]): proc
+            for pid in pids for proc in gpu_by_pid.get((node, pid), [])
+        }
+        if task.get("process_group"):
+            for proc in gpu_by_group.get((node, task["process_group"]), []):
+                gpu_procs[(proc["pid"], proc["gpu_idx"])] = proc
+        if gpu_procs:
+            indices = sorted({proc["gpu_idx"] for proc in gpu_procs.values()})
+            vram = sum(proc["used_mb"] for proc in gpu_procs.values())
+            task["gpu_idx"], task["gpu_indices"] = indices[0], indices
+            task["current_vram_mb"] = vram
+            task["peak_vram_mb"] = max(int(task.get("peak_vram_mb") or 0), vram)
+            task["est_vram_mb"] = max(int(task.get("est_vram_mb") or 0), vram)
+            task["remote_pids"] = sorted(set(pids) | {proc["pid"] for proc in gpu_procs.values()})
+            pids = task["remote_pids"]
+            task["description"] = (task.get("description") or "").replace(
+                f"{node}:CPU-only", f"{node}:GPU{indices[0]}")
         sum_pcpu, sum_rss = 0.0, 0
         pgids_seen = set()
         seen = 0

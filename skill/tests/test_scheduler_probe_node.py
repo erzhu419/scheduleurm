@@ -99,6 +99,17 @@ def test_hpc_individual_probe_budgets_physical_cores_not_smt_threads():
         assert result["free_cpu"] == 76
 
 
+def test_node007_probe_does_not_count_64_smt_threads_as_physical_capacity():
+    for loadavg, expected_free in (("20.0", 12), ("32.0", 0), ("35.05", 0)):
+        result = parse_probe_output(
+            "node007", scheduler_nodes.NODES["node007"],
+            _sample_output(cores=64, loadavg=loadavg), deps=_deps(),
+        )
+        assert result["cores"] == 64
+        assert result["total_cpu"] == 32
+        assert result["free_cpu"] == expected_free
+
+
 def test_local_probe_prefers_windows_nvidia_smi_and_folds_host_extras():
     run_calls = []
     deps = _deps(

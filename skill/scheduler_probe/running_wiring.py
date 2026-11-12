@@ -278,6 +278,7 @@ def build_eta_background_refresh_deps(
         notify=_ns(namespace, "notify"),
         now=time_mod.time,
         record_eta_analysis_tasks=_ns(namespace, "_record_eta_analysis_tasks"),
+        seed_pending_eta_from_history=_ns(namespace, "_seed_pending_eta_from_history"),
     )
 
 

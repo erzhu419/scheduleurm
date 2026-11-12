@@ -96,6 +96,19 @@ def test_claim_resource_record_caps_startup_estimate_before_observation():
     assert record["pid"] is None
 
 
+def test_remote_gpu_claim_reserves_cpu_under_live_scheduler_policy(sch):
+    for name in ("node007", "gpu_a", "gpu_b"):
+        record = claim_records.claim_resource_record_for_task(
+            {"node": name, "gpu_idx": 0, "est_vram_mb": 768, "cpu_cores": 2},
+            node_configs=sch.NODES,
+            ignore_cpu_for_server_gpu_task=sch._ignore_cpu_for_server_gpu_task,
+            task_ignores_one_third_pack_rule=lambda *args: False,
+            default_ram_mb=1024, default_cpu_cores=1, startup_floor_mb=500,
+        )
+        assert record["cpu_cores"] == 2
+        assert record["ignore_cpu_capacity"] is False
+
+
 def test_release_task_claims_and_intents_deduplicates_filters_and_preserves_unreleased_markers():
     released = []
 

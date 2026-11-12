@@ -19,6 +19,7 @@ class PreemptionDeps:
     task_evict_loss_protected: Callable[[dict], bool]
     task_ram_pressure_mb: Callable[[dict], int]
     task_progress_ratio: Callable[[dict], Optional[float]]
+    queued_wait_for_file_block_reason: Callable[[dict], Optional[str]]
     evict_to_queue: Callable[[dict, dict, str, str], None]
     format_mem_gb: Callable[[int], str]
     now: Callable[[], float]
@@ -32,6 +33,7 @@ def _queued_high_priority_tasks(state: dict, deps: PreemptionDeps) -> list[dict]
         and task.get("priority") == "high"
         and task.get("submitted_at")
         and (now - task["submitted_at"]) > deps.queue_wait_min * 60
+        and not deps.queued_wait_for_file_block_reason(task)
     ]
     queued_high.sort(key=lambda task: task.get("submitted_at", 0))
     return queued_high

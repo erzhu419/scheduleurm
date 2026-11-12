@@ -11,6 +11,8 @@ import subprocess
 from dataclasses import dataclass
 from typing import Any, Callable
 
+from .processes import parse_process_snapshot, process_probe_command
+
 
 @dataclass(frozen=True)
 class SudoCpuBatchProbeDeps:
@@ -39,7 +41,8 @@ def cpu_only_sudo_probe_cmd() -> str:
         "ul=$(ulimit -u 2>/dev/null || echo 0); "
         "cg=$(cat /sys/fs/cgroup/pids.current 2>/dev/null || echo 0); "
         "cm=$(cat /sys/fs/cgroup/pids.max 2>/dev/null || echo 0); "
-        "printf '%s %s %s %s\\n' \"$ut\" \"$ul\" \"$cg\" \"$cm\""
+        "printf '%s %s %s %s\\n' \"$ut\" \"$ul\" \"$cg\" \"$cm\"; "
+        + process_probe_command()
     )
 
 
@@ -56,6 +59,8 @@ def _parse_probe_int(values: list[str], idx: int):
 
 
 def parse_cpu_only_sudo_probe(name: str, body: str, *, node_configs: dict) -> dict:
+    process_snapshot = parse_process_snapshot(body)
+    body = body.partition("===SCHEDULEURM_PROCESSES===")[0]
     info = node_configs.get(name, {}) or {}
     parts = str(body or "").split("__SEP__")
     mem_lines = [int(x) for x in parts[0].strip().split() if x.isdigit()] if parts else []
@@ -107,6 +112,7 @@ def parse_cpu_only_sudo_probe(name: str, body: str, *, node_configs: dict) -> di
         result["cgroup_pids_max"] = cgroup_pids_max
         if cgroup_pids_current is not None:
             result["free_cgroup_pids"] = max(0, cgroup_pids_max - cgroup_pids_current)
+    result.update(process_snapshot)
     return result
 
 

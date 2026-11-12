@@ -171,6 +171,16 @@ def diagnose_terminal(task: dict, *, deps: TerminalDiagnosisDeps) -> dict:
         if result_artifact_success:
             success_matched = [result_artifact_success]
     if batch_probe_only and not err_matched and not success_matched:
+        if task.get("exit_code") == 0:
+            return {
+                "is_crash": False,
+                "reason": "backend confirmed exit0; batched log tail has no crash evidence",
+                "tail": tail_text[-600:].strip() if tail_text else "(no log)",
+                "lifetime_s": int(lifetime),
+                "log_size": log_size,
+                "log_path": log_path,
+                "success_marker": "BACKEND_EXIT_0",
+            }
         return {
             "is_crash": False,
             "reason": "terminal evidence is ambiguous; deep diagnosis required",

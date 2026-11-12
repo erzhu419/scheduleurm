@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+import pytest
+
 from skill.scheduler_watch_state_phase import (
     WatchStatePhaseDeps,
     run_watch_state_phase,
 )
 
 
-def test_run_watch_state_phase_preserves_watcher_state_side_effects():
+@pytest.mark.parametrize("defer_eta_refresh", [False, True])
+def test_run_watch_state_phase_preserves_watcher_state_side_effects(defer_eta_refresh):
     calls = []
     phases = []
     notifications = []
@@ -86,8 +89,10 @@ def test_run_watch_state_phase_preserves_watcher_state_side_effects():
         defer_launches=True,
         record_phase=record_phase,
         deps=deps,
+        defer_eta_refresh=defer_eta_refresh,
     )
 
+    assert calls.count("seed_eta") == int(not defer_eta_refresh)
     assert result.recovered_launching_count == 5
     assert result.recovered_queued_live_count == 1
     assert result.qcount == 2

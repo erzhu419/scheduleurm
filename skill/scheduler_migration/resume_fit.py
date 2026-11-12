@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import PurePosixPath
 from typing import Callable, Optional
 
 
@@ -133,6 +134,19 @@ def resume_stage_source_for_target(
                 if loc.get("node") != target_node
                 and _location_freshness(loc) == current_freshness
             ]
+            target_info = deps.node_configs.get(target_node, {}) or {}
+            group = target_info.get("shared_workspace_group")
+            workspace = target_info.get("remote_workspace_root")
+            target_path = target_location.get("path")
+            if (group and workspace and target_path
+                    and PurePosixPath(target_path).is_relative_to(workspace)):
+                # Peer NFS views are the same checkpoint directory, not rsync copies.
+                equivalent = [
+                    loc for loc in equivalent
+                    if not (loc.get("path") == target_path
+                            and (deps.node_configs.get(loc.get("node"), {}) or {}).get(
+                                "shared_workspace_group") == group)
+                ]
             route_sources = _route_sources_for_target(
                 equivalent, target_node, deps=deps)
             if route_sources and task.get("ckpt_dir"):

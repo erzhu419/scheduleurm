@@ -34,7 +34,8 @@ def _victim(task_id, **overrides):
     return task
 
 
-def _deps(evictions, *, protected=None, slurm=None, ignore_cpu=False, now=NOW, max_victims=3):
+def _deps(evictions, *, protected=None, slurm=None, ignore_cpu=False, now=NOW, max_victims=3,
+          wait_block_reason=lambda task: None):
     protected = protected or set()
     slurm = slurm or set()
 
@@ -56,6 +57,7 @@ def _deps(evictions, *, protected=None, slurm=None, ignore_cpu=False, now=NOW, m
         task_evict_loss_protected=lambda task: task["id"] in protected,
         task_ram_pressure_mb=lambda task: int(task.get("ram_mb") or 0),
         task_progress_ratio=lambda task: task.get("progress"),
+        queued_wait_for_file_block_reason=wait_block_reason,
         evict_to_queue=evict_to_queue,
         format_mem_gb=lambda mb: f"{mb}MB",
         now=lambda: now,
@@ -189,3 +191,35 @@ def test_preempt_skips_measurement_reserved_node():
     assert preempt_for_high_priority(state, nodes, deps=_deps(evictions)) == []
     assert evictions == []
     assert state["tasks"][1]["status"] == "running"
+
+
+def test_preempt_does_not_evict_for_missing_or_empty_prerequisite(sch, tmp_path):
+    marker = tmp_path / "finished.json"
+    nodes = [{"name": "n1", "free_cpu": 0, "free_ram_mb": 0}]
+    for empty in (False, True):
+        if empty:
+            marker.touch()
+        evictions = []
+        state = {"tasks": [_queued_high(wait_for_files=[str(marker)]), _victim("keep")]}
+        deps = _deps(evictions, wait_block_reason=sch._queued_wait_for_file_block_reason)
+        assert preempt_for_high_priority(state, nodes, deps=deps) == []
+        assert evictions == []
+        assert state["tasks"][1]["status"] == "running"
+    marker.write_text('{"complete": true}')
+    assert preempt_for_high_priority(state, nodes, deps=deps)[0]["target_id"] == "hi"
+
+
+def test_blocked_high_priority_task_does_not_hide_ready_target_on_same_node():
+    evictions = []
+    state = {"tasks": [
+        _queued_high("blocked", submitted_at=NOW-40*60, wait_for_files=["missing"]),
+        _queued_high("ready", cpu_cores=1, ram_mb=1000),
+        _victim("victim"),
+    ]}
+    nodes = [{"name": "n1", "free_cpu": 0, "free_ram_mb": 0}]
+    deps = _deps(evictions, wait_block_reason=lambda task: "missing" if task.get("wait_for_files") else None)
+    assert preempt_for_high_priority(state, nodes, deps=deps)[0]["target_id"] == "ready"
+
+
+def test_preemption_wiring_reuses_dispatch_prerequisite_gate(sch):
+    assert sch._preemption_deps().queued_wait_for_file_block_reason is sch._queued_wait_for_file_block_reason

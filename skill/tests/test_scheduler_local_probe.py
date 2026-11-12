@@ -154,6 +154,26 @@ def test_zombie_and_dead_ps_rows_do_not_revive_task():
     }
 
 
+def test_ram_sums_pss_not_repeated_rss_and_falls_back_when_unreadable():
+    probe = "\n".join([
+        "A100", "===VRAM===", "===PSALL===",
+        "100 1 6144000 10 S", "101 100 6144000 90 R",
+        "===PSS===", "100 1536000", "101 1536000",
+    ])
+    state = {"tasks": [_task("a", pids=[100])]}
+    out = local_backend_batch_probe(state, deps=_deps(outputs={"n1": (0, probe, "")}))
+    assert out["a"]["ram_mb"] == 3000
+    assert out["a"]["ram_measurement"] == "pss"
+    partial = probe.replace("101 1536000", "")
+    out = local_backend_batch_probe(state, deps=_deps(outputs={"n1": (0, partial, "")}))
+    assert out["a"]["ram_mb"] == 7500
+    assert out["a"]["ram_measurement"] == "rss"
+    no_pss = probe.partition("===PSS===")[0]
+    out = local_backend_batch_probe(state, deps=_deps(outputs={"n1": (0, no_pss, "")}))
+    assert out["a"]["state"] == "alive"
+    assert out["a"]["ram_mb"] == 12000
+
+
 def test_matching_exit_status_sentinel_is_authoritative_over_live_pid():
     task = _task("a", pids=[100])
     task.update(
@@ -212,6 +232,21 @@ def test_nonzero_exit_status_forces_terminal_failure():
     assert out["a"]["state"] == "dead"
     assert out["a"]["exit_code"] == 7
     assert out["a"]["terminal_ok"] is False
+
+
+def test_exit_time_uses_the_same_clock_offset_as_launch_time():
+    task = _task("clock", pids=[100])
+    task.update({
+        "exit_status_path": "/tmp/clock.status",
+        "exit_status_token": "launch-clock",
+        "remote_clock_offset_s": 15.25,
+    })
+    out = local_backend_batch_probe(
+        {"tasks": [task]},
+        deps=_deps(outputs={"n1": (0, "T\tclock\t0\t100.5\tlaunch-clock\n", "")}),
+    )
+    assert out["clock"]["backend_finished_at"] == 115.75
+    assert out["clock"]["terminal_ok"] is True
 
 
 def test_stale_exit_status_token_is_ignored():

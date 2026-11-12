@@ -158,7 +158,7 @@ def ignore_cpu_for_server_gpu_task(
     node_is_windows: Callable[[str], bool],
     node_configs: dict,
 ) -> bool:
-    """Remote Linux GPU jobs are GPU/RAM placed; CPU pressure only gates local and CPU-only work."""
+    """GPU jobs also require CPU capacity unless the operator explicitly opts out."""
     if not task_is_gpu_capacity_task(task):
         return False
     node_name = node_name or (node_state or {}).get("name") or task.get("node")
@@ -174,7 +174,7 @@ def ignore_cpu_for_server_gpu_task(
             return False
     elif gpu_idx is None and task.get("gpu_idx") is None:
         return False
-    return flag_enabled((info or {}).get("ignore_cpu_for_gpu_tasks"), True)
+    return flag_enabled((info or {}).get("ignore_cpu_for_gpu_tasks"), False)
 
 
 def task_ignores_one_third_pack_rule(

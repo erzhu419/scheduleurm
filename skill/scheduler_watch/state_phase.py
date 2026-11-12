@@ -105,7 +105,8 @@ def run_watch_state_phase(
     record_phase("save_after_running_update", phase_t0, tasks=len(state.get("tasks", [])))
 
     phase_t0 = deps.now()
-    deps.seed_pending_eta_from_history(state)
+    if not defer_eta_refresh:
+        deps.seed_pending_eta_from_history(state)
     record_phase("seed_pending_eta", phase_t0)
 
     phase_t0 = deps.now()

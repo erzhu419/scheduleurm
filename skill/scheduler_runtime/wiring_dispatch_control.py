@@ -78,6 +78,7 @@ def build_preemption_deps(namespace: Mapping[str, Any]) -> PreemptionDeps:
         task_evict_loss_protected=_ns(namespace, "_task_evict_loss_protected"),
         task_ram_pressure_mb=_ns(namespace, "_task_ram_pressure_mb"),
         task_progress_ratio=_ns(namespace, "_task_progress_ratio"),
+        queued_wait_for_file_block_reason=_ns(namespace, "_queued_wait_for_file_block_reason"),
         evict_to_queue=_ns(namespace, "_evict_to_queue"),
         format_mem_gb=_ns(namespace, "_format_mem_gb"),
         now=time_mod.time,

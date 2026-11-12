@@ -168,6 +168,33 @@ def test_retry_clone_restores_explicit_declared_cpu_contract():
     assert clone["cpu_cores_explicit"] is True
 
 
+def test_no_auto_requeue_keeps_failed_build_and_fees_without_retry_clones():
+    parent = _task(
+        signature="KG_op/current_mainline_lean_20261020/proof-check",
+        cmd="python run_current_mainline_lean_cluster.py --phase proof-check",
+        no_auto_requeue=True,
+        resolved_environment_retry=True,
+        retry_count=1,
+        finished_at=40.0,
+        exit_code=1,
+        cpu_seconds=12.5,
+        recovery_cpu_seconds=3.0,
+    )
+    original = dict(parent)
+    state = {"tasks": [parent], "next_id": 7}
+    escalations = []
+    deps = _deps(escalations=escalations)
+
+    for _ in range(3):
+        assert requeue_after_crash(parent, state, deps=deps) is None
+
+    assert state["tasks"] == [parent]
+    assert state["next_id"] == 7
+    assert "disabled for this task" in parent["last_block_reason"]
+    assert {key: value for key, value in parent.items() if key != "last_block_reason"} == original
+    assert escalations == []
+
+
 def test_completed_retry_syncs_new_completion_after_parent_partial_sync(tmp_path):
     from skill.scheduler_result_sync import sync_completed_results_outside_lock
     from skill.tests.test_scheduler_result_sync import _deps as sync_deps

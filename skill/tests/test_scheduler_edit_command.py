@@ -6,6 +6,7 @@ from types import SimpleNamespace
 import pytest
 
 from skill.scheduler_commands import edit
+from skill.scheduler_cpu.capacity import reserved_cpu_slots_for_task
 
 
 @contextmanager
@@ -105,6 +106,20 @@ def test_cmd_edit_clears_allowed_nodes_and_gpu_over_one_third():
     assert "allowed_nodes_expanded_reason" not in task
     assert "allow_gpu_over_one_third" not in task
     assert released == [("t1", {})]
+
+
+def test_cmd_edit_cpu_updates_the_declared_reservation_floor():
+    task = {
+        "id": "t1",
+        "status": "queued",
+        "cpu_cores": 12,
+        "cpu_declared_cores": 12,
+    }
+    edit.cmd_edit(_args(cpu=6), deps=_deps({"tasks": [task]}))
+
+    assert task["cpu_cores"] == 6
+    assert task["cpu_declared_cores"] == 6
+    assert reserved_cpu_slots_for_task(task, default_cpu_cores=1) == 6
 
 
 def test_cmd_edit_rejects_running_tasks():

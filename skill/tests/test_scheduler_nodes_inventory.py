@@ -17,6 +17,14 @@ def test_gpu2_small_jobs_use_cpu_bounded_capacity_without_relaxing_large_jobs():
 
 def test_311_gpu_jobs_require_available_host_cpu():
     assert scheduler_nodes.NODES["cpu_a"]["ignore_cpu_for_gpu_tasks"] is False
+    assert scheduler_nodes.NODES["node007"]["ignore_cpu_for_gpu_tasks"] is False
+
+
+def test_server_gpu_compute_saturation_remains_enabled_with_relaxed_memory_packing():
+    for name in ("node007", "gpu_a", "gpu_b"):
+        node = scheduler_nodes.NODES[name]
+        assert node["allow_gpu_over_one_third"] is True
+        assert node["gpu_util_saturation_pct"] == 85
 
 
 def test_node_inventory_keeps_temporarily_unreachable_hpc_nodes_visible():
@@ -32,6 +40,9 @@ def test_node_inventory_keeps_temporarily_unreachable_hpc_nodes_visible():
     for name in ("gpu_a", "gpu_b"):
         node = scheduler_nodes.NODES[name]
         for key, expected in scheduler_nodes.GPU_A_CAPACITY_POLICY.items():
+            if key == "gpu_util_saturation_pct":
+                # The synthetic cluster explicitly overrides the portable default.
+                continue
             assert node[key] == expected
     assert (
         "jax_experiments/analysis"

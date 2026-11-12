@@ -63,7 +63,7 @@ Install the versioned wheel without cloning the repository:
 ```bash
 python3 -m venv ~/.venvs/scheduleurm
 ~/.venvs/scheduleurm/bin/python -m pip install \
-  'scheduleurm[mcp,tui] @ https://github.com/erzhu419/scheduleurm/releases/download/v0.1.0/scheduleurm-0.1.0-py3-none-any.whl'
+  'scheduleurm[mcp,tui] @ https://github.com/erzhu419/scheduleurm/releases/download/v0.1.1/scheduleurm-0.1.1-py3-none-any.whl'
 ~/.venvs/scheduleurm/bin/scheduleurm --help
 ```
 

@@ -341,6 +341,36 @@ def test_collect_terminal_evidence_returns_at_deadline_when_remote_call_blocks(t
     assert time.monotonic() - started_at < 0.5
 
 
+def test_collect_terminal_evidence_retains_completed_chunk_when_next_chunk_times_out(tmp_path):
+    entered = threading.Event()
+    release = threading.Event()
+    marker = base64.b64encode(b"_SUCCESS.json").decode("ascii")
+
+    def run_on(_node, cmd, **_kwargs):
+        if "tid=fast" in cmd:
+            return 0, f"E\tfast\t0\t\t{marker}\t100\t\t0\t\n", ""
+        entered.set()
+        release.wait(timeout=2.0)
+        return 1, "", "blocked"
+
+    deps = replace(_artifact_deps(tmp_path), run_on=run_on)
+    tasks = [
+        {"id": tid, "status": "running", "node": "node001", "started_at": 90,
+         "log_path": f"/tmp/{tid}.log", "cmd": f"python eval.py --out-dir results/{tid}"}
+        for tid in ("fast", "slow")
+    ]
+    try:
+        evidence = collect_terminal_evidence(
+            tasks, deps=deps, batch_size=1, max_workers=1, timeout_s=0.1,
+        )
+    finally:
+        release.set()
+
+    assert entered.wait(timeout=0.5)
+    assert set(evidence) == {"fast"}
+    assert evidence["fast"]["success_marker"] == "result_artifact:_SUCCESS.json"
+
+
 def test_terminal_result_artifact_success_uses_completed_iteration_npy(tmp_path):
     out_dir = tmp_path / "results" / "run0"
     log_dir = out_dir / "logs"
@@ -492,7 +522,7 @@ def test_cmd_results_filters_queue_and_archive_and_emits_json(capsys):
     }
 
     @contextmanager
-    def state_lock():
+    def state_lock(**kwargs):
         yield
 
     args = Namespace(
@@ -526,3 +556,37 @@ def test_cmd_results_filters_queue_and_archive_and_emits_json(capsys):
     assert '"id": "t2"' in text
     assert '"id": "t1"' in text
     assert text.index('"id": "t2"') < text.index('"id": "t1"')
+
+
+def test_results_reads_archive_outside_shared_queue_lock_and_deduplicates(capsys):
+    locked = False
+    task = {"id": "t1", "status": "done", "signature": "run/1", "submitted_at": 1}
+
+    @contextmanager
+    def state_lock(**kwargs):
+        nonlocal locked
+        assert kwargs.get("shared") is True
+        locked = True
+        try:
+            yield
+        finally:
+            locked = False
+
+    def archive():
+        assert not locked
+        return [task, {"id": "t2", "status": "done", "submitted_at": 2}]
+
+    cmd_results(
+        Namespace(task_ids=[], no_archive=False, scan_logs=False, no_log_scan=True,
+                  status=[], project=None, signature=None, limit=0,
+                  include_empty=True, json=True),
+        deps=ResultsCommandDeps(
+            state_lock=state_lock,
+            load_state=lambda: {"tasks": [task]},
+            load_archive_tasks=archive,
+            task_result_artifacts_for_display=lambda *args, **kwargs: [],
+        ),
+    )
+    text = capsys.readouterr().out
+    assert '"matched": 2' in text
+    assert text.count('"id": "t1"') == 1

@@ -140,6 +140,20 @@ def test_submit_parser_uses_dynamic_node_choices_and_defaults():
     assert args.priority == "normal"
     assert args.env_spec == "none"
     assert args.protect_from_auto_eviction is False
+    assert args.no_auto_requeue is False
+
+
+def test_submit_parsers_accept_explicit_no_auto_requeue():
+    parser = build_parser(_deps())
+    for command, command_args in (
+        ("submit", ["--cmd", "python build.py"]),
+        ("submit-cpu-batch", ["--items", "1", "--cmd-template", "python build.py"]),
+    ):
+        args = parser.parse_args([
+            command, "--description", "one build", "--cwd", "/work",
+            "--signature", "proof/build", "--no-auto-requeue", *command_args,
+        ])
+        assert args.no_auto_requeue is True
 
 
 def test_submit_parser_accepts_explicit_auto_eviction_protection():

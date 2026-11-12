@@ -10,6 +10,8 @@ except ModuleNotFoundError:
 from dataclasses import dataclass
 from typing import Any, Callable
 
+from .processes import parse_process_snapshot, process_probe_command
+
 
 @dataclass(frozen=True)
 class ProbeNodeDeps:
@@ -47,7 +49,8 @@ def _probe_command(nvsmi: str) -> str:
         "ul=$(ulimit -u 2>/dev/null || echo 0); "
         "cg=$(cat /sys/fs/cgroup/pids.current 2>/dev/null || echo 0); "
         "cm=$(cat /sys/fs/cgroup/pids.max 2>/dev/null || echo 0); "
-        "printf '%s %s %s %s\\n' \"$ut\" \"$ul\" \"$cg\" \"$cm\""
+        "printf '%s %s %s %s\\n' \"$ut\" \"$ul\" \"$cg\" \"$cm\"; "
+        + process_probe_command(nvsmi)
     )
 
 
@@ -127,6 +130,8 @@ def _merge_local_windows_extras(result: dict, total_cpu: int, loadavg: float,
 
 
 def parse_probe_output(name: str, info: dict, out: str, *, deps: ProbeNodeDeps) -> dict:
+    process_snapshot = parse_process_snapshot(out)
+    out = out.partition("===SCHEDULEURM_PROCESSES===")[0]
     parts = out.split("===SEP===")
     gpus = _parse_gpus(parts[0] if parts else "", parts[4] if len(parts) > 4 else "")
     mem_lines = (
@@ -184,6 +189,7 @@ def parse_probe_output(name: str, info: dict, out: str, *, deps: ProbeNodeDeps) 
             result["free_cgroup_pids"] = max(0, cgroup_pids_max - cgroup_pids_current)
     if name == "local":
         _merge_local_windows_extras(result, total_cpu, loadavg, deps)
+    result.update(process_snapshot)
     return result
 
 

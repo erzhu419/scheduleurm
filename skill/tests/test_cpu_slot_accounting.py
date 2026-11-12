@@ -112,6 +112,35 @@ def test_hpc_slot_accounting_converts_old_probe_capacity_without_changing_tasks(
         assert task["cpu_cores"] == 120
 
 
+def test_node007_capacity_reduction_converts_old_cache_without_killing_tasks(sch):
+    task = {"id": "old", "status": "running", "node": "node007",
+            "cpu_cores": 40, "started_at": 1}
+    for free_cpu, expected in ((64, 32), (44, 12), (29, 0)):
+        nodes = [{"name": "node007", "total_cpu": 64, "free_cpu": free_cpu}]
+        sch._apply_cpu_slot_accounting_to_nodes({"tasks": [task]}, nodes)
+        assert nodes[0]["total_cpu"] == 32
+        assert nodes[0]["observed_free_cpu"] == expected
+        assert nodes[0]["cpu_slot_free"] == 0
+        assert nodes[0]["cpu_slot_overcommitted"] == 8
+        assert task["status"] == "running"
+        assert task["cpu_cores"] == 40
+
+
+def test_node007_at_35_load_rejects_cpu_and_gpu_jobs_even_without_tracked_tasks(sch):
+    node = {"name": "node007", "alive": True, "total_cpu": 64,
+            "free_cpu": 29, "loadavg": 35.05, "free_ram_mb": 150000,
+            "total_ram_mb": 209191, "gpus": [{"idx": 0, "free_mb": 10000}],
+            "user_threads": 100, "user_thread_limit": 4096}
+    sch._apply_cpu_slot_accounting_to_nodes({"tasks": []}, [node])
+    assert node["observed_free_cpu"] == 0
+    for vram in (0, 1024):
+        task = {"id": "new", "status": "queued", "cpu_cores": 1,
+                "ram_mb": 1024, "est_vram_mb": vram}
+        ok, reason = sch._node_resources_ok(task, node, sch.NODES["node007"])
+        assert not ok
+        assert "cpu: need 1, free 0/32" in reason
+
+
 def test_hpc_starting_wide_tasks_keep_hard_reservations_with_live_probe(check, sch):
     state = {
         "tasks": [

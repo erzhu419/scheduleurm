@@ -66,7 +66,9 @@ def apply_edit_to_task(task: dict, args, *, deps: EditCommandDeps) -> tuple[list
         task["ram_mb_explicit"] = True
     if args.cpu is not None:
         changes.append(("cpu_cores", task.get("cpu_cores"), int(args.cpu)))
+        changes.append(("cpu_declared_cores", task.get("cpu_declared_cores"), int(args.cpu)))
         task["cpu_cores"] = int(args.cpu)
+        task["cpu_declared_cores"] = int(args.cpu)
         task["cpu_cores_explicit"] = True
     if args.description is not None:
         changes.append(("description", task.get("description"), args.description))

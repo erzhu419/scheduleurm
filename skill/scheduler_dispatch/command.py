@@ -222,7 +222,17 @@ def run_dispatch_command(args, *, deps: DispatchCommandDeps) -> None:
                 eta_probed_task_ids=eta_tail_ids,
                 terminal_diagnostics=terminal_diagnostics,
             )
-        deps.seed_pending_eta_from_history(state)
+        eta_state = state
+        if targeted_dispatch:
+            eta_state = {
+                **state,
+                "tasks": [
+                    task for task in state.get("tasks", [])
+                    if task.get("id") in target_task_ids
+                    or task.get("status") == "running"
+                ],
+            }
+        deps.seed_pending_eta_from_history(eta_state)
         deps.remember_running_resource_snapshots(state, nodes)
         deps.reconcile_aggregate_only_vram(state, nodes)
         deps.reserve_inflight_vram(state, nodes)

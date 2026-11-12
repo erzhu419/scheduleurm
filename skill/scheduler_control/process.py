@@ -28,6 +28,11 @@ def is_scheduler_control_cmdline(
     subcommands = {str(x) for x in control_subcommands}
     markers = tuple(str(x) for x in path_markers)
     for i, part in enumerate(parts[:-1]):
+        if os.path.basename(part) == "scheduler_tui_snapshot.py":
+            norm = os.path.normpath(part)
+            if (os.path.dirname(norm) == os.path.dirname(self_path)
+                    or any(marker in norm for marker in markers)):
+                return True
         if os.path.basename(part) != "scheduler.py":
             continue
         norm = os.path.normpath(part)

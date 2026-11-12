@@ -112,6 +112,38 @@ def test_resource_snapshot_compaction_is_idempotent_for_neighbor_counts():
     assert "same_node_running_tasks" not in compact_twice
 
 
+def test_done_snapshots_keep_neighbor_ids_and_own_resources_without_peer_copies():
+    snapshot = {
+        "stage": "running_probe",
+        "task": _verbose_neighbor(99),
+        "node_ram": {"free_mb": 80000},
+        "same_gpu_task_count": 30,
+        "same_gpu_tasks": [_verbose_neighbor(i) for i in range(18, 30)],
+    }
+    state = {"tasks": [
+        {"id": "done", "status": "done", "peak_ram_mb": 2048,
+         "last_resource_snapshot": snapshot},
+        {"id": "failed", "status": "failed", "last_resource_snapshot": snapshot},
+        {"id": "running", "status": "running", "last_resource_snapshot": snapshot},
+    ]}
+
+    state_compaction.compact_state_for_persistence(state)
+    done, failed, running = state["tasks"]
+    compact = done["last_resource_snapshot"]
+    assert compact["same_gpu_tasks"] == []
+    assert compact["same_gpu_task_ids"] == [f"t{i}" for i in range(18, 30)]
+    assert compact["same_gpu_task_count"] == 30
+    assert compact["task"]["peak_ram_mb"] == snapshot["task"]["peak_ram_mb"]
+    assert compact["node_ram"] == snapshot["node_ram"]
+    assert done["peak_ram_mb"] == 2048
+    assert len(failed["last_resource_snapshot"]["same_gpu_tasks"]) == 12
+    assert len(running["last_resource_snapshot"]["same_gpu_tasks"]) == 12
+
+    once = json.dumps(state, sort_keys=True)
+    state_compaction.compact_state_for_persistence(state)
+    assert json.dumps(state, sort_keys=True) == once
+
+
 def test_resource_snapshot_generation_is_compact(sch):
     tasks = []
     for i in range(15):

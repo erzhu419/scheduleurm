@@ -68,6 +68,8 @@ def compact_resource_snapshot(
             out[key] = snapshot.get(key)
     if isinstance(snapshot.get("task"), dict):
         out["task"] = compact_resource_task_summary(snapshot.get("task") or {})
+    if snapshot.get("same_gpu_task_ids"):
+        out["same_gpu_task_ids"] = list(snapshot["same_gpu_task_ids"])[-12:]
     same_gpu = snapshot.get("same_gpu_tasks")
     try:
         prior_same_gpu_count = max(0, int(snapshot.get("same_gpu_task_count") or 0))
@@ -75,10 +77,18 @@ def compact_resource_snapshot(
         prior_same_gpu_count = 0
     if isinstance(same_gpu, list):
         out["same_gpu_task_count"] = max(prior_same_gpu_count, len(same_gpu))
-        out["same_gpu_tasks"] = [
-            compact_resource_task_summary(x) for x in same_gpu[-max_same_gpu:]
-            if isinstance(x, dict)
-        ]
+        if max_same_gpu > 0:
+            out["same_gpu_tasks"] = [
+                compact_resource_task_summary(x) for x in same_gpu[-max_same_gpu:]
+                if isinstance(x, dict)
+            ]
+        else:
+            out["same_gpu_tasks"] = []
+            if same_gpu:
+                out["same_gpu_task_ids"] = [
+                    x["id"] for x in same_gpu[-12:]
+                    if isinstance(x, dict) and x.get("id")
+                ]
     elif prior_same_gpu_count:
         out["same_gpu_task_count"] = prior_same_gpu_count
     same_node = snapshot.get("same_node_running_tasks")
@@ -118,7 +128,12 @@ def compact_state_for_persistence(state: dict) -> dict:
             continue
         for key in PERSISTED_SNAPSHOT_KEYS:
             if key in task:
-                task[key] = compact_resource_snapshot(task.get(key))
+                # Successful historical jobs need resource totals and peer
+                # identities, not repeated copies of each peer's live metrics.
+                task[key] = compact_resource_snapshot(
+                    task.get(key),
+                    max_same_gpu=0 if task.get("status") == "done" else 12,
+                )
         crash = task.get("last_crash_forensics")
         if isinstance(crash, dict):
             for key in ("last_resource_snapshot", "crash_probe_snapshot"):

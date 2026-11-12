@@ -69,7 +69,9 @@ def checkpoint_migration_extra_allowed_nodes(
             continue
         if node_name in blocked or node_name in launch_failed:
             continue
-        if allowed and node_name not in allowed and node_name != "local":
+        if allowed and node_name not in allowed and (
+            node_name != "local" or task.get("allowed_nodes_user_explicit")
+        ):
             continue
         if deps.pick_placement(task, [node_state], extra_allowed_nodes=[node_name]) is None:
             continue

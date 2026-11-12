@@ -69,3 +69,13 @@ def test_is_scheduler_control_process_filters_repo_tests_and_helpers_only():
         "python3 -m pytest -q",
         **common,
     )
+
+
+def test_display_reader_is_a_control_process_not_an_external_workload():
+    common = dict(scheduler_file=SCHEDULER_FILE, control_subcommands=SUBCOMMANDS, path_markers=MARKERS)
+    assert control.is_scheduler_control_cmdline(
+        f"python3 {SCHEDULER_FILE.with_name('scheduler_tui_snapshot.py')} /state/queue.json", **common,
+    )
+    assert not control.is_scheduler_control_cmdline(
+        "python3 /other/project/scheduler_tui_snapshot.py data.json", **common,
+    )

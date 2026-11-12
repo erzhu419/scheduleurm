@@ -11,6 +11,11 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from typing import Callable
 
+try:
+    from scheduler_probe.memory import TASK_MEMORY_SCRIPT
+except ModuleNotFoundError:
+    from ..scheduler_probe.memory import TASK_MEMORY_SCRIPT
+
 
 MAX_LOCAL_PROBE_SHELL_BYTES = 16 * 1024
 
@@ -99,7 +104,11 @@ def _probe_node(
         f"({control_checks}; true); echo '===VRAM==='; "
         f"{nvidia_smi} --query-compute-apps=pid,used_memory --format=csv,noheader,nounits 2>/dev/null; "
         "echo '===PSALL==='; "
-        "ps -eo pid= -o ppid= -o rss= -o pcpu= -o stat= 2>/dev/null; true"
+        "psall=$(ps -eo pid= -o ppid= -o rss= -o pcpu= -o stat= 2>/dev/null); "
+        "printf '%s\n' \"$psall\"; echo '===PSS==='; "
+        "_sched_python=$(command -v python3 || command -v python); "
+        f"printf '%s\n' \"$psall\" | \"$_sched_python\" -c {shlex.quote(TASK_MEMORY_SCRIPT)} "
+        + " ".join(str(pid) for pid in all_pids) + "; true"
     )
     try:
         timeout_s = max(1, int(deps.timeout_s or 30))
@@ -144,6 +153,7 @@ def _parse_probe_output(out: str):
     lines = [line.strip() for line in out.splitlines() if line.strip()]
     vram_sep = lines.index("===VRAM===") if "===VRAM===" in lines else len(lines)
     ps_sep = lines.index("===PSALL===") if "===PSALL===" in lines else len(lines)
+    pss_sep = lines.index("===PSS===") if "===PSS===" in lines else len(lines)
     alive_roots = {
         int(line[1:])
         for line in lines[:vram_sep]
@@ -185,7 +195,7 @@ def _parse_probe_output(out: str):
     rss_per_pid: dict[int, int] = {}
     pcpu_per_pid: dict[int, float] = {}
     ppid_of: dict[int, int] = {}
-    for ps_line in lines[ps_sep + 1 :]:
+    for ps_line in lines[ps_sep + 1 : pss_sep]:
         bits = ps_line.split()
         if len(bits) < 5:
             continue
@@ -202,6 +212,11 @@ def _parse_probe_output(out: str):
         ppid_of[pid] = parent
         rss_per_pid[pid] = rss_kb // 1024
         pcpu_per_pid[pid] = pcpu
+    pss_per_pid = {}
+    for pss_line in lines[pss_sep + 1 :]:
+        bits = pss_line.split()
+        if len(bits) == 2 and all(bit.isdigit() for bit in bits):
+            pss_per_pid[int(bits[0])] = int(bits[1])
     return (
         alive_roots,
         vram_per_pid,
@@ -211,6 +226,7 @@ def _parse_probe_output(out: str):
         exit_statuses,
         identity_roots,
         identity_mismatches,
+        pss_per_pid,
     )
 
 
@@ -245,6 +261,7 @@ def _apply_probe_result(
         exit_statuses,
         identity_roots,
         identity_mismatches,
+        pss_per_pid,
     ) = _parse_probe_output(out)
     for task, pids in task_specs:
         task_id = str(task.get("id") or "")
@@ -262,7 +279,10 @@ def _apply_probe_result(
                 "ram_mb": 0,
                 "pcpu": 0.0,
                 "exit_code": exit_code,
-                "backend_finished_at": exit_status.get("finished_at"),
+                "backend_finished_at": (
+                    float(exit_status["finished_at"])
+                    + float(task.get("remote_clock_offset_s") or 0)
+                ),
                 "backend_state": "LOCAL_EXIT_STATUS",
                 "terminal_reason": f"launcher exit-status sentinel recorded rc={exit_code}",
                 "terminal_diagnosis_deferred": True,
@@ -303,7 +323,9 @@ def _apply_probe_result(
             "state": "alive",
             "alive_pids": sorted(this_alive),
             "vram_mb": sum(vram_per_pid.get(pid, 0) for pid in this_alive),
-            "ram_mb": sum(rss_per_pid.get(pid, 0) for pid in this_alive),
+            "ram_mb": sum(pss_per_pid.get(pid, rss_per_pid.get(pid, 0) * 1024)
+                          for pid in this_alive) // 1024,
+            "ram_measurement": "pss" if this_alive <= pss_per_pid.keys() else "rss",
             "pcpu": sum(pcpu_per_pid.get(pid, 0.0) for pid in this_alive),
         }
 

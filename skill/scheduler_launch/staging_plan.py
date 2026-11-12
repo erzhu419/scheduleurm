@@ -37,13 +37,17 @@ class LaunchStagingPlan:
 def build_protected_under_cwd(tasks: list[dict]) -> dict[str, set[str]]:
     """Return cwd-relative paths that rsync --delete must never remove."""
     protected: dict[str, set[str]] = {}
+    safe_cwds: dict[str, bool] = {}
     for task in tasks:
         cwd = task.get("cwd")
         if not cwd:
             continue
-        if unsafe_staging_cwd_reason(cwd):
+        cwd = str(cwd)
+        if cwd not in safe_cwds:
+            safe_cwds[cwd] = not unsafe_staging_cwd_reason(cwd)
+        if not safe_cwds[cwd]:
             continue
-        cwd_norm = str(cwd).rstrip("/")
+        cwd_norm = cwd.rstrip("/")
         for exclude in (task.get("stage_excludes") or []):
             exclude = str(exclude or "").strip().strip("/")
             if exclude:
@@ -63,6 +67,23 @@ def build_protected_under_cwd(tasks: list[dict]) -> dict[str, set[str]]:
                         protected.setdefault(cwd_norm, set()).add(rel.rstrip("/") + "/")
             except (ValueError, OSError):
                 pass
+    for cwd, excludes in protected.items():
+        # Historical output paths can number in the tens of thousands. A
+        # literal excluded parent already protects every descendant from delete.
+        literal_parents = {
+            exclude.rstrip("/") for exclude in excludes
+            if not any(char in exclude for char in "*?[\\")
+        }
+        compact = set()
+        for exclude in excludes:
+            ancestor = exclude.rstrip("/")
+            while "/" in ancestor:
+                ancestor = ancestor.rsplit("/", 1)[0]
+                if ancestor in literal_parents:
+                    break
+            else:
+                compact.add(exclude)
+        protected[cwd] = compact
     return protected
 
 
@@ -190,6 +211,7 @@ def collect_launch_staging_plan(
     ckpt_candidates: list[tuple[dict, str, dict]] = []
     input_candidates: dict[tuple, tuple[dict, str]] = {}
     planned_ckpt_counts: dict[str, int] = {}
+    cwd_needs_staging: dict[tuple, bool] = {}
 
     for task in queued_tasks:
         waiting_for_files = bool(deps.queued_wait_for_file_block_reason(task))
@@ -219,7 +241,14 @@ def collect_launch_staging_plan(
                 ):
                     continue
                 cwd_key = ("local", target, cwd)
-                if deps.staging_cache_hit(cwd_key) or deps.staging_cap_recent(cwd_key):
+                # A receipt check fingerprints shared source files. Reuse it
+                # within this plan only; the next plan must see source changes.
+                if cwd_key not in cwd_needs_staging:
+                    cwd_needs_staging[cwd_key] = not (
+                        deps.staging_cache_hit(cwd_key)
+                        or deps.staging_cap_recent(cwd_key)
+                    )
+                if not cwd_needs_staging[cwd_key]:
                     continue
                 candidates.add((target, cwd))
 

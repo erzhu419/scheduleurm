@@ -4,6 +4,7 @@ import subprocess
 import copy
 import shlex
 import time
+import pytest
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
@@ -155,6 +156,19 @@ def test_local_node_uses_state_dir_log_path(tmp_path: Path):
     assert task["log_path"] == f"{tmp_path}/logs/t1.log"
 
 
+def test_remote_start_time_precedes_a_delayed_launch_acknowledgement(tmp_path):
+    task = _task()
+    deps = _deps(tmp_path, run_results=[
+        (0, "", ""),
+        (0, "PID=4242\nSTART_TICKS=777\nSTARTED_AT=90.125\nREMOTE_NOW=100.125\n", ""),
+    ])
+
+    assert local_backend_launch(task, node_state=None, deps=deps)[0]
+    assert task["started_at"] == 113.0
+    assert task["remote_started_at"] == 90.125
+    assert task["remote_clock_offset_s"] == 22.875
+
+
 def test_launch_transport_replay_runs_once_and_preserves_terminal_evidence(tmp_path, monkeypatch):
     from skill.scheduler_backend import local_launch
 
@@ -190,6 +204,10 @@ def test_launch_transport_replay_runs_once_and_preserves_terminal_evidence(tmp_p
     after_exit = copy.deepcopy(task)
     assert local_backend_launch(after_exit, node_state=None, deps=deps)[0]
     assert after_exit["remote_pids"] == attempts[0]["remote_pids"]
+    assert after_exit["remote_started_at"] == attempts[0]["remote_started_at"]
+    assert after_exit["started_at"] == pytest.approx(attempts[0]["started_at"], abs=0.5)
+    finished_at = float(original_status.split(b"\t")[1]) + after_exit["remote_clock_offset_s"]
+    assert finished_at >= after_exit["started_at"]
     assert births.read_text() == "once\n"
     assert status_path.read_bytes() == original_status
     assert log_path.read_bytes() == original_log

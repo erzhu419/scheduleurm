@@ -57,7 +57,7 @@ GPU 在 dispatch 时通过 `nvidia-smi --query-gpu=memory.used,memory.total,util
 ```bash
 python3 -m venv ~/.venvs/scheduleurm
 ~/.venvs/scheduleurm/bin/python -m pip install \
-  'scheduleurm[mcp,tui] @ https://github.com/erzhu419/scheduleurm/releases/download/v0.1.0/scheduleurm-0.1.0-py3-none-any.whl'
+  'scheduleurm[mcp,tui] @ https://github.com/erzhu419/scheduleurm/releases/download/v0.1.1/scheduleurm-0.1.1-py3-none-any.whl'
 ~/.venvs/scheduleurm/bin/scheduleurm --help
 ```
 

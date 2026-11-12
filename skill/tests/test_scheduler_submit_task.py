@@ -65,6 +65,7 @@ def test_single_submit_preserves_v2_eta_metadata_and_submitted_environment():
         cpu=8,
         priority="normal",
         protect_from_auto_eviction=True,
+        no_auto_requeue=True,
         preferred_node=None,
         require_node=None,
         allowed_nodes=[],
@@ -132,6 +133,7 @@ def test_single_submit_preserves_v2_eta_metadata_and_submitted_environment():
     assert result.task["resume_managed_by_cmd"] is False
     assert result.task["skip_resume_scan"] is False
     assert result.task["protect_from_auto_eviction"] is True
+    assert result.task["no_auto_requeue"] is True
     assert seed_calls == [{"tasks": [result.task]}]
 
     managed = build_submit_task_for_state(
